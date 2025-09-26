@@ -13,10 +13,7 @@ export default function ApiTestPage() {
       credentials: "include",
       headers: { Accept: "application/json" },
     })
-      .then(async (r) => {
-        const text = await r.text();
-        setResult(`STATUS ${r.status} — ${text}`);
-      })
+      .then(async (r) => setResult(`STATUS ${r.status} — ${await r.text()}`))
       .catch((e) => setResult(`ERRORE: ${String(e)}`));
   }, []);
 
@@ -24,7 +21,8 @@ export default function ApiTestPage() {
     <div style={{ padding: 24 }}>
       <h1>API Test</h1>
       <p>
-        Chiamo il backend con <code>credentials: &quot;include&quot;</code>.
+        Chiamo il backend con{" "}
+        <code>{'credentials: "include"'}</code>
       </p>
       <pre>{result}</pre>
     </div>
