@@ -11,7 +11,7 @@ export default function ApiTestPage() {
 
     fetch(url, {
       method: "GET",
-      credentials: "include", // lato fetch va bene così
+      credentials: "include",
       headers: { Accept: "application/json" },
     })
       .then(async (r) => {
