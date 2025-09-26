@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import { useEffect, useState } from "react";
 
@@ -5,12 +6,12 @@ export default function ApiTestPage() {
   const [result, setResult] = useState<string>("(in corso...)");
 
   useEffect(() => {
-    const api = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const api = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
     const url = `${api}/health`;
 
     fetch(url, {
       method: "GET",
-      credentials: "include",
+      credentials: "include", // lato fetch va bene così
       headers: { Accept: "application/json" },
     })
       .then(async (r) => {
