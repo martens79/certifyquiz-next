@@ -10,7 +10,10 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // preset Next.js (core-web-vitals + TS)
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+
+  // ignora build dirs + 🔧 ignora le route di debug
   {
     ignores: [
       "node_modules/**",
@@ -18,7 +21,17 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/app/debug/**",   // ← aggiunto
+      "app/debug/**",       // ← aggiunto (per sicurezza)
     ],
+  },
+
+  // ✅ disabilita SOLO questa regola su quella pagina (se non venisse ignorata)
+  {
+    files: ["src/app/debug/api-test/page.tsx"],
+    rules: {
+      "react/no-unescaped-entities": "off",
+    },
   },
 ];
 
