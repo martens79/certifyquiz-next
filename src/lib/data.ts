@@ -8,38 +8,115 @@ export type Cert = {
   faq: { q: string; a: string }[];
 };
 
-const API = process.env.API_BASE_URL!; // su Vercel: API_BASE_URL=https://api.certifyquiz.com
+// --- Mock di fallback (puoi rimuoverlo quando non serve più) ---
+const MOCK: Cert[] = [
+  {
+    slug: "comptia-itf-plus",
+    locale: "it",
+    title: "CompTIA ITF+",
+    h1: "Quiz CompTIA ITF+ (Simulatore d’esame)",
+    intro:
+      "Allenati all’esame CompTIA ITF+ con quiz aggiornati e spiegazioni passo-passo. Modalità allenamento ed esame, statistiche e badge.",
+    seoDescription:
+      "Allenati all’esame CompTIA ITF+ con quiz reali e spiegazioni chiare. Modalità allenamento/esame e progressi. Provalo gratis.",
+    faq: [
+      { q: "Quanto dura l’esame ITF+?", a: "Circa 60 minuti con domande a scelta multipla." },
+      { q: "Quanti punti servono per superare?", a: "In genere intorno a 650 su 900." },
+    ],
+  },
+];
 
-function normalizeFaq(x: any): { q: string; a: string }[] {
+const API = process.env.API_BASE_URL; // es: https://api.certifyquiz.com
+
+// ---------- Type guards & helpers (niente any) ----------
+function isString(v: unknown): v is string {
+  return typeof v === "string";
+}
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === "object";
+}
+function getString(r: Record<string, unknown>, key: string): string | undefined {
+  const v = r[key];
+  return typeof v === "string" ? v : undefined;
+}
+function normalizeFaq(x: unknown): { q: string; a: string }[] {
   if (!Array.isArray(x)) return [];
-  return x.map((f: any) => ({
-    q: f?.q ?? f?.question ?? "",
-    a: f?.a ?? f?.answer ?? "",
-  }));
+  const out: { q: string; a: string }[] = [];
+  for (const it of x) {
+    if (!isRecord(it)) continue;
+    const q = getString(it, "q") ?? getString(it, "question") ?? "";
+    const a = getString(it, "a") ?? getString(it, "answer") ?? "";
+    if (q || a) out.push({ q, a });
+  }
+  return out;
 }
 
+// ---------- API ----------
 export async function getAllCertSlugs(locale: Cert["locale"] = "it"): Promise<string[]> {
-  const r = await fetch(`${API}/certifications?locale=${locale}&fields=slug`, {
-    next: { revalidate: 86400 },
-  });
-  if (!r.ok) return [];
-  const data = await r.json();
-  return data.map((it: any) => (typeof it === "string" ? it : it.slug)).filter(Boolean);
+  if (!API) {
+    return MOCK.filter((c) => c.locale === locale).map((c) => c.slug);
+  }
+  try {
+    const r = await fetch(`${API}/certifications?locale=${locale}&fields=slug`, {
+      next: { revalidate: 86400 },
+    });
+    if (!r.ok) return [];
+    const data: unknown = await r.json();
+
+    if (!Array.isArray(data)) return [];
+    const slugs: string[] = [];
+    for (const item of data) {
+      if (isString(item)) {
+        slugs.push(item);
+      } else if (isRecord(item)) {
+        const s = getString(item, "slug");
+        if (s) slugs.push(s);
+      }
+    }
+    return slugs;
+  } catch {
+    return MOCK.filter((c) => c.locale === locale).map((c) => c.slug);
+  }
 }
 
-export async function getCertBySlug(slug: string, locale: Cert["locale"] = "it"): Promise<Cert | null> {
-  const r = await fetch(`${API}/certifications/${slug}?locale=${locale}`, {
-    next: { revalidate: 86400 },
-  });
-  if (!r.ok) return null;
-  const x = await r.json();
-  return {
-    slug: x.slug ?? slug,
-    locale,
-    title: x.title ?? x.name ?? x.h1 ?? slug,
-    h1: x.h1 ?? x.title ?? x.name ?? slug,
-    intro: x.intro ?? x.description ?? "",
-    seoDescription: x.seoDescription ?? x.seo ?? x.description ?? "",
-    faq: normalizeFaq(x.faq),
-  };
+export async function getCertBySlug(
+  slug: string,
+  locale: Cert["locale"] = "it"
+): Promise<Cert | null> {
+  if (!API) {
+    return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
+  }
+  try {
+    const r = await fetch(`${API}/certifications/${slug}?locale=${locale}`, {
+      next: { revalidate: 86400 },
+    });
+    if (!r.ok) return null;
+    const raw: unknown = await r.json();
+    if (!isRecord(raw)) return null;
+
+    const title =
+      getString(raw, "title") ??
+      getString(raw, "name") ??
+      getString(raw, "h1") ??
+      slug;
+
+    const h1 =
+      getString(raw, "h1") ??
+      getString(raw, "title") ??
+      getString(raw, "name") ??
+      slug;
+
+    const intro = getString(raw, "intro") ?? getString(raw, "description") ?? "";
+    const seoDescription =
+      getString(raw, "seoDescription") ??
+      getString(raw, "seo") ??
+      getString(raw, "description") ??
+      "";
+
+    const faq = normalizeFaq(raw["faq"]);
+
+    return { slug, locale, title, h1, intro, seoDescription, faq };
+  } catch {
+    return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
+  }
 }
