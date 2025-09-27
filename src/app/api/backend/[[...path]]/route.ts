@@ -1,14 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-const API_BASE = process.env.API_BASE_URL!; // -> imposta su Vercel: API_BASE_URL=https://api.certifyquiz.com
+const API_BASE = process.env.API_BASE_URL!; // imposta su Vercel
 
-function target(path: string[] = [], search: string) {
-  const p = path.join("/");
-  return `${API_BASE}${p ? `/${p}` : ""}${search ? `?${search}` : ""}`;
+function buildTarget(path: string[] | undefined, search: string) {
+  const segs = path && path.length ? "/" + path.join("/") : "";
+  return `${API_BASE}${segs}${search ? `?${search}` : ""}`;
 }
 
-async function forward(req: NextRequest, method: string, path?: string[]) {
-  const url = target(path ?? [], req.nextUrl.searchParams.toString());
+async function forward(method: string, req: NextRequest, path: string[] | undefined) {
+  const url = buildTarget(path, req.nextUrl.searchParams.toString());
   const body = method === "GET" || method === "HEAD" ? undefined : await req.arrayBuffer();
 
   const res = await fetch(url, {
@@ -23,19 +24,37 @@ async function forward(req: NextRequest, method: string, path?: string[]) {
     cache: "no-store",
   });
 
+  // Copia body e header principali
   const text = await res.text();
   const out = new NextResponse(text, { status: res.status });
 
   const setCookie = res.headers.get("set-cookie");
   if (setCookie) out.headers.set("set-cookie", setCookie);
+
   const ct = res.headers.get("content-type");
   if (ct) out.headers.set("content-type", ct);
 
   return out;
 }
 
-export const GET    = (req: NextRequest, { params }: { params: { path?: string[] } }) => forward(req, "GET", params.path);
-export const POST   = (req: NextRequest, { params }: { params: { path?: string[] } }) => forward(req, "POST", params.path);
-export const PUT    = (req: NextRequest, { params }: { params: { path?: string[] } }) => forward(req, "PUT", params.path);
-export const PATCH  = (req: NextRequest, { params }: { params: { path?: string[] } }) => forward(req, "PATCH", params.path);
-export const DELETE = (req: NextRequest, { params }: { params: { path?: string[] } }) => forward(req, "DELETE", params.path);
+// 👇 In Next 15, context.params è una Promise: serve await
+export async function GET(req: NextRequest, context: { params: Promise<{ path?: string[] }> }) {
+  const { path } = await context.params;
+  return forward("GET", req, path);
+}
+export async function POST(req: NextRequest, context: { params: Promise<{ path?: string[] }> }) {
+  const { path } = await context.params;
+  return forward("POST", req, path);
+}
+export async function PUT(req: NextRequest, context: { params: Promise<{ path?: string[] }> }) {
+  const { path } = await context.params;
+  return forward("PUT", req, path);
+}
+export async function PATCH(req: NextRequest, context: { params: Promise<{ path?: string[] }> }) {
+  const { path } = await context.params;
+  return forward("PATCH", req, path);
+}
+export async function DELETE(req: NextRequest, context: { params: Promise<{ path?: string[] }> }) {
+  const { path } = await context.params;
+  return forward("DELETE", req, path);
+}
