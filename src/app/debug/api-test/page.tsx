@@ -2,24 +2,32 @@
 "use client";
 import { useEffect, useState } from "react";
 
+async function probe(): Promise<string> {
+  const endpoints = [
+    "/api/backend/health",
+    "/api/backend/ping",
+    "/api/backend/version",
+  ];
+  for (const ep of endpoints) {
+    try {
+      const r = await fetch(ep, {
+        credentials: "include",
+        headers: { Accept: "text/plain,application/json" },
+      });
+      const txt = await r.text();
+      return "GET " + ep + " → " + r.status + " — " + txt;
+    } catch {
+      // prova il prossimo
+    }
+  }
+  return "Tutte le prove sono fallite. Cambia endpoint con uno esistente del tuo Express.";
+}
+
 export default function ApiTestPage() {
   const [result, setResult] = useState("(in corso...)");
-
   useEffect(() => {
-    const api = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-    const url = api + "/health";
-    fetch(url, {
-      method: "GET",
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    })
-      .then(async (r) => {
-        const text = await r.text();
-        setResult("STATUS " + r.status + " — " + text);
-      })
-      .catch((e) => setResult("ERRORE: " + String(e)));
+    probe().then(setResult).catch((e) => setResult("ERRORE: " + String(e)));
   }, []);
-
   return (
     <div style={{ padding: 24 }}>
       <h1>API Test</h1>
