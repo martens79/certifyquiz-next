@@ -1,45 +1,43 @@
-// src/app/api/revalidate-cert/[slug]/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-// GET di diagnosi (puoi rimuoverlo dopo i test)
-export async function GET(
-  _req: NextRequest,
-  ctx: { params: Promise<{ slug: string }> } // 👈 params come Promise
-) {
-  const { slug } = await ctx.params;
-  return NextResponse.json({ ok: true, msg: "Route OK, usa POST", slug });
-}
-
-export async function POST(
-  req: NextRequest,
-  ctx: { params: Promise<{ slug: string }> }
-) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ slug: string }> }) {
   const { slug } = await ctx.params;
 
-  // prendi segreti e normalizza (trim per rimuovere spazi accidentali)
   const envSecret = (process.env.REVALIDATE_SECRET ?? "").trim();
-  const hdrSecret = (req.headers.get("x-revalidate-secret") ?? "").trim();
 
-  // 🔎 modalità debug: aggiungi ?debug=1 alla URL per vedere lo stato
+  // Accetta il secret in 3 modi: header, query (?secret=), body {secret:"..."}
+  const hdrSecret = (req.headers.get("x-revalidate-secret") ?? "").trim();
+  const urlSecret = (req.nextUrl.searchParams.get("secret") ?? "").trim();
+  let bodySecret = "";
+  try {
+    const body = await req.json();
+    if (body && typeof body.secret === "string") bodySecret = body.secret.trim();
+  } catch {
+    // body vuoto o non JSON: ok
+  }
+
+  const provided = hdrSecret || urlSecret || bodySecret;
+
+  // Debug sicuro: non mostriamo i valori, solo stato/length/uguaglianza
   const debug = req.nextUrl.searchParams.get("debug") === "1";
-  if (!envSecret || !hdrSecret || envSecret !== hdrSecret) {
+  if (!envSecret || !provided || envSecret !== provided) {
     const payload = {
       ok: false,
       reason: !envSecret
         ? "Missing ENV REVALIDATE_SECRET"
-        : !hdrSecret
-        ? "Missing header x-revalidate-secret"
+        : !provided
+        ? "Missing secret (header/query/body)"
         : "Secret mismatch",
-      // info innocue per capire: NIENTE segreti in chiaro
       envPresent: !!envSecret,
-      hdrPresent: !!hdrSecret,
+      providedPresent: !!provided,
       envLen: envSecret.length,
-      hdrLen: hdrSecret.length,
-      equal: envSecret === hdrSecret,
+      providedLen: provided.length,
+      equal: envSecret === provided,
+      source: hdrSecret ? "header" : urlSecret ? "query" : bodySecret ? "body" : "none",
     };
     return NextResponse.json(payload, { status: 401 });
   }
