@@ -1,27 +1,29 @@
+// src/app/api/revalidate-cert/[slug]/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-// ✅ GET di diagnosi: serve solo per test
+// GET di diagnosi (puoi rimuoverlo dopo i test)
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { slug: string } }
+  ctx: { params: Promise<{ slug: string }> } // 👈 params come Promise
 ) {
-  return NextResponse.json({ ok: true, msg: "Route OK, usa POST", slug: params.slug });
+  const { slug } = await ctx.params;
+  return NextResponse.json({ ok: true, msg: "Route OK, usa POST", slug });
 }
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  ctx: { params: Promise<{ slug: string }> } // 👈 params come Promise
 ) {
+  const { slug } = await ctx.params;
+
   const secret = req.headers.get("x-revalidate-secret");
   if (!secret || secret !== process.env.REVALIDATE_SECRET) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
-
-  const slug = params.slug;
   if (!slug) {
     return NextResponse.json({ ok: false, error: "Missing slug" }, { status: 400 });
   }
