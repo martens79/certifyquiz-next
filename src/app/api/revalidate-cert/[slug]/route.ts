@@ -20,14 +20,19 @@ export async function POST(
 ) {
   const { slug } = await ctx.params;
 
-  // 1) Legge i segreti ammessi (lista o singolo)
-  const allowed = ((process.env.REVALIDATE_SECRETS ??
-                    process.env.REVALIDATE_SECRET ??
-                    "") as string)
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
+  // 1) Legge i segreti ammessi (qui hardcodati per sblocco temporaneo)
+const allowed = [
+  "supersegreto_lungo",
+  "ilnomedimianonnaealbertatoch",
+];
 
+// --- versione definitiva con env (da ripristinare dopo il test) ---
+// const allowed = ((process.env.REVALIDATE_SECRETS ??
+//                   process.env.REVALIDATE_SECRET ??
+//                   "") as string)
+//   .split(",")
+//   .map(s => s.trim())
+//   .filter(Boolean);
   // 2) Raccoglie il secret "fornito" (header, query, body)
   const hdrSecret = (req.headers.get("x-revalidate-secret") ?? "").trim();
   const qsSecret  = (req.nextUrl.searchParams.get("secret") ?? "").trim();
