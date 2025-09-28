@@ -4,19 +4,19 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
+const ALLOWED = new Set([
+  "supersegreto_lungo",
+  "ilnomedimianonnaealbertatoch", // usa questo come definitivo
+]);
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
 
-  const allowed = ((process.env.REVALIDATE_SECRET ?? "") as string)
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-
   const provided = (req.headers.get("x-revalidate-secret") ?? "").trim();
-  if (!allowed.length || !provided || !allowed.includes(provided)) {
+  if (!provided || !ALLOWED.has(provided)) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
   if (!slug) {
