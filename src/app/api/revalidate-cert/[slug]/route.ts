@@ -14,12 +14,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  // ✅ lettura ENV definitiva (singolo secret)
-  const allowed = ((process.env.REVALIDATE_SECRET ?? "") as string)
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-
+  // ✅ Accetta l'ENV + fallback al nuovo secret così non resti bloccato
+const allowed = [
+  ...(((process.env.REVALIDATE_SECRETS ?? process.env.REVALIDATE_SECRET ?? "") as string)
+      .split(",").map(s => s.trim()).filter(Boolean)),
+  "ilnomedimianonnaealbertatoch", // fallback temporaneo
+];
   const hdr = (req.headers.get("x-revalidate-secret") ?? "").trim();
   const qs  = (req.nextUrl.searchParams.get("secret") ?? "").trim();
   let body = "";
