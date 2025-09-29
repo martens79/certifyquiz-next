@@ -1,3 +1,4 @@
+// src/lib/data.ts
 export type Cert = {
   slug: string;
   locale: "it" | "en" | "fr" | "es";
@@ -28,7 +29,7 @@ const MOCK: Cert[] = [
 
 const API = process.env.API_BASE_URL; // es: https://api.certifyquiz.com
 
-// ---------- Type guards & helpers (niente any) ----------
+// ---------- Type guards & helpers ----------
 function isString(v: unknown): v is string {
   return typeof v === "string";
 }
@@ -51,14 +52,20 @@ function normalizeFaq(x: unknown): { q: string; a: string }[] {
   return out;
 }
 
-// ---------- API ----------
-export async function getAllCertSlugs(locale: Cert["locale"] = "it"): Promise<string[]> {
+// ---------- API (con cache tag) ----------
+export async function getAllCertSlugs(
+  locale: Cert["locale"] = "it"
+): Promise<string[]> {
   if (!API) {
     return MOCK.filter((c) => c.locale === locale).map((c) => c.slug);
   }
   try {
+    // LISTA → tag condiviso "certs:list"
     const r = await fetch(`${API}/certifications?locale=${locale}&fields=slug`, {
-      next: { revalidate: 86400 },
+      next: {
+        tags: ["certs:list"], // invalidabile via revalidateTag("certs:list")
+        revalidate: 86400,    // ISR di fallback
+      },
     });
     if (!r.ok) return [];
     const data: unknown = await r.json();
@@ -87,8 +94,12 @@ export async function getCertBySlug(
     return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
   }
   try {
+    // DETTAGLIO → tag specifico per slug + lista
     const r = await fetch(`${API}/certifications/${slug}?locale=${locale}`, {
-      next: { revalidate: 86400 },
+      next: {
+        tags: [`cert:${slug}`, "certs:list"], // revalidateTag(`cert:${slug}`) + revalidateTag("certs:list")
+        revalidate: 86400,
+      },
     });
     if (!r.ok) return null;
     const raw: unknown = await r.json();
@@ -113,10 +124,57 @@ export async function getCertBySlug(
       getString(raw, "description") ??
       "";
 
-    const faq = normalizeFaq(raw["faq"]);
+    const faq = normalizeFaq((raw as Record<string, unknown>)["faq"]);
 
     return { slug, locale, title, h1, intro, seoDescription, faq };
   } catch {
     return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
+  }
+}
+
+// (opzionale) lista completa per pagina /certificazioni
+export async function getCertList(
+  locale: Cert["locale"] = "it"
+): Promise<Cert[]> {
+  if (!API) return MOCK.filter((c) => c.locale === locale);
+  try {
+    const r = await fetch(`${API}/certifications?locale=${locale}`, {
+      next: { tags: ["certs:list"], revalidate: 86400 },
+    });
+    if (!r.ok) return [];
+    const arr: unknown = await r.json();
+    if (!Array.isArray(arr)) return [];
+
+    const list: Cert[] = [];
+    for (const raw of arr) {
+      if (!isRecord(raw)) continue;
+      const slug = getString(raw, "slug");
+      if (!slug) continue;
+
+      const title =
+        getString(raw, "title") ??
+        getString(raw, "name") ??
+        getString(raw, "h1") ??
+        slug;
+
+      const h1 =
+        getString(raw, "h1") ??
+        getString(raw, "title") ??
+        getString(raw, "name") ??
+        slug;
+
+      const intro = getString(raw, "intro") ?? getString(raw, "description") ?? "";
+      const seoDescription =
+        getString(raw, "seoDescription") ??
+        getString(raw, "seo") ??
+        getString(raw, "description") ??
+        "";
+
+      const faq = normalizeFaq((raw as Record<string, unknown>)["faq"]);
+      list.push({ slug, locale, title, h1, intro, seoDescription, faq });
+    }
+    return list;
+  } catch {
+    return MOCK.filter((c) => c.locale === locale);
   }
 }
