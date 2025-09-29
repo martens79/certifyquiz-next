@@ -1,20 +1,24 @@
+// src/app/it/certificazioni/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
 
-export const revalidate = 86400;
+export const revalidate = 86400; // ISR: 24h
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const slugs = await getAllCertSlugs("it");
-  return slugs.map(slug => ({ slug }));
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata(
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ): Promise<Metadata> {
-  const data = await getCertBySlug(params.slug, "it");
+  const { slug } = await params;
+  const data = await getCertBySlug(slug, "it");
   if (!data) return {};
+
   const url = `https://www.certifyquiz.com/it/certificazioni/${data.slug}`;
+
   return {
     title: `Quiz ${data.title} – Simulatore d’Esame | CertifyQuiz`,
     description: data.seoDescription,
@@ -30,22 +34,33 @@ export async function generateMetadata(
       url,
       title: `Quiz ${data.title}`,
       description: data.seoDescription,
+      images: [`https://www.certifyquiz.com/og-home.jpg`], // opzionale
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Quiz ${data.title}`,
+      description: data.seoDescription,
+      images: [`https://www.certifyquiz.com/og-home.jpg`], // opzionale
     },
   };
 }
 
-export default async function CertPage({ params }: { params: { slug: string } }) {
-  const data = await getCertBySlug(params.slug, "it");
+export default async function CertPage(
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  const { slug } = await params;
+
+  const data = await getCertBySlug(slug, "it");
   if (!data) return notFound();
 
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": data.faq.map(f => ({
+    "mainEntity": data.faq.map((f: { q: string; a: string }) => ({
       "@type": "Question",
       "name": f.q,
-      "acceptedAnswer": { "@type": "Answer", "text": f.a }
-    }))
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
   };
 
   return (
@@ -55,8 +70,10 @@ export default async function CertPage({ params }: { params: { slug: string } })
 
       <h2 className="text-xl font-semibold">FAQ</h2>
       <ul className="list-disc ml-5">
-        {data.faq.map(f => (
-          <li key={f.q}><strong>{f.q}</strong> — {f.a}</li>
+        {data.faq.map((f: { q: string; a: string }) => (
+          <li key={f.q}>
+            <strong>{f.q}</strong> — {f.a}
+          </li>
         ))}
       </ul>
 
