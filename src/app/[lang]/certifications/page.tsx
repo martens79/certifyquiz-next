@@ -3,8 +3,14 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getCertList } from "@/lib/data";
 
-const SUPPORTED = ["it","en","fr","es"] as const;
+const SUPPORTED = ["it", "en", "fr", "es"] as const;
 type Lang = typeof SUPPORTED[number];
+
+type CertListItem = {
+  slug: string;
+  title: string;
+  intro?: string;
+};
 
 export const revalidate = 3600;
 
@@ -18,7 +24,6 @@ export async function generateMetadata(
   const { lang } = await params;
   if (!SUPPORTED.includes(lang)) return {};
 
-  // Canonical localizzato
   const canonical =
     lang === "it" ? "/it/certificazioni" :
     lang === "es" ? "/es/certificaciones" :
@@ -49,9 +54,9 @@ export default async function ListPage(
   const { lang } = await params;
   if (!SUPPORTED.includes(lang)) return notFound();
 
-  const certs = await getCertList(lang);
+  // tipizziamo il risultato del fetch
+  const certs = (await getCertList(lang)) as CertListItem[];
 
-  // Helpers per path pubblici localizzati
   const toDetail = (l: Lang, slug: string) =>
     l === "it" ? `/it/certificazioni/${slug}` :
     l === "es" ? `/es/certificaciones/${slug}` :
@@ -65,7 +70,7 @@ export default async function ListPage(
          lang === "es" ? "Certificaciones (ES)" : "Certifications (EN)"}
       </h1>
       <ul className="space-y-2">
-        {certs.map((c: any) => (
+        {certs.map((c) => (
           <li key={c.slug} className="border p-3 rounded">
             <Link href={toDetail(lang, c.slug)} className="font-semibold hover:underline">
               {c.title}
