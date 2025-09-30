@@ -3,6 +3,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Lang = "it" | "en" | "fr" | "es";
+type SlugItem = { slug?: string } | string;
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return v !== null && typeof v === "object";
+}
 
 export async function GET() {
   const site = "https://www.certifyquiz.com";
@@ -26,21 +31,25 @@ export async function GET() {
     status = r.status;
     ok = r.ok;
     if (r.ok) {
-      const data = await r.json();
+      const data: unknown = await r.json();
       if (Array.isArray(data)) {
         slugs = data
-          .map((x: any) => (typeof x === "string" ? x : (x?.slug ?? null)))
-          .filter(Boolean);
+          .map((x: SlugItem) => {
+            if (typeof x === "string") return x;
+            if (isRecord(x) && typeof x.slug === "string") return x.slug;
+            return null;
+          })
+          .filter((s): s is string => Boolean(s));
       }
     }
-  } catch (_) {
-    // keep defaults
+  } catch {
+    // lascio slugs = []
   }
 
   const now = new Date().toISOString();
   const urls: string[] = [];
 
-  // Home + lingue + liste
+  // Home
   urls.push(`
     <url>
       <loc>${site}/</loc>
@@ -48,6 +57,8 @@ export async function GET() {
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
+
+  // Lingue + liste
   for (const l of langs) {
     urls.push(`
       <url>
@@ -65,9 +76,12 @@ export async function GET() {
       </url>`);
   }
 
-  // 1 blocco <url> per slug, alternates + x-default
+  // 1 blocco <url> per ogni slug con alternates + x-default
   for (const slug of slugs) {
-    const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`])) as Record<Lang,string>;
+    const map = Object.fromEntries(
+      langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
+    ) as Record<Lang, string>;
+
     urls.push(`
       <url>
         <loc>${map.it}</loc>
@@ -88,14 +102,7 @@ export async function GET() {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      // cache temporaneamente disattivata per vedere la versione nuova
-      "Cache-Control": "no-store",
-      // 🔎 debug
-      "X-Api-Base-Url": API || "EMPTY",
-      "X-Api-Url": apiUrl,
-      "X-Api-Ok": String(ok),
-      "X-Api-Status": String(status),
-      "X-Slugs-Len": String(slugs.length),
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }
