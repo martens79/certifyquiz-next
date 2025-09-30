@@ -1,20 +1,43 @@
 // app/sitemap-index.xml/route.ts
-import { getAllCertSlugs } from "@/lib/data";
-
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+type Lang = "it" | "en" | "fr" | "es";
+
 export async function GET() {
   const site = "https://www.certifyquiz.com";
-  const langs = ["it", "en", "fr", "es"] as const;
-  const base: Record<(typeof langs)[number], string> = {
+  const langs: Lang[] = ["it", "en", "fr", "es"];
+  const base: Record<Lang, string> = {
     it: "certificazioni",
     en: "certifications",
     fr: "certifications",
     es: "certificaciones",
   };
 
-  const slugs = await getAllCertSlugs("it");
+  const API = (process.env.API_BASE_URL || "").replace(/\/+$/, ""); // senza trailing slash
+  const url = `${API}/certifications?locale=it&fields=slug`;
+
+  let slugs: string[] = [];
+  try {
+    const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 } });
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data)) {
+        slugs = data
+          .map((x: unknown) =>
+            typeof x === "string"
+              ? x
+              : x && typeof x === "object" && typeof (x as any).slug === "string"
+              ? (x as any).slug
+              : null
+          )
+          .filter(Boolean) as string[];
+      }
+    }
+  } catch {
+    slugs = [];
+  }
+
   const now = new Date().toISOString();
 
   const urls: string[] = [];
@@ -46,9 +69,9 @@ export async function GET() {
       </url>`);
   }
 
-  // Un solo blocco <url> per slug con tutti gli alternates + x-default
+  // 1 blocco <url> per ogni slug, con tutte le alternates + x-default
   for (const slug of slugs) {
-    const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
+    const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`])) as Record<Lang, string>;
     urls.push(`
       <url>
         <loc>${map.it}</loc>
