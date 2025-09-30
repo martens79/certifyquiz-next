@@ -8,6 +8,15 @@ type SlugItem = { slug?: string } | string;
 function isRecord(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object";
 }
+function pickSlugs(data: unknown): string[] {
+  if (!Array.isArray(data)) return [];
+  const out: string[] = [];
+  for (const x of data) {
+    if (typeof x === "string") out.push(x);
+    else if (isRecord(x) && typeof (x as any).slug === "string") out.push((x as any).slug);
+  }
+  return out;
+}
 
 export async function GET() {
   const site = "https://www.certifyquiz.com";
@@ -19,29 +28,41 @@ export async function GET() {
     es: "certificaciones",
   };
 
+  // ⚠️ deve finire con /api
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
-  const apiUrl = `${API}/certifications?locale=it&fields=slug&limit=1000`;
+  const baseQs = "locale=it&fields=slug";
 
-  let slugs: string[] = [];
-  let status = 0;
-  let ok = false;
+  // proviamo diversi nomi param di paginazione (alcuni backend ignorano 'limit')
+  const candidates = [
+    `${API}/certifications?${baseQs}`,                                 // nessun limite
+    `${API}/certifications?${baseQs}&limit=1000`,
+    `${API}/certifications?${baseQs}&pageSize=1000`,
+    `${API}/certifications?${baseQs}&per_page=1000`,
+    `${API}/certifications?${baseQs}&take=1000`,
+    `${API}/certifications?${baseQs}&offset=0&limit=1000`,
+    `${API}/certifications?${baseQs}&page=1&per_page=1000`,
+  ].filter(Boolean);
 
-  try {
-    const r = await fetch(apiUrl, { cache: "no-store", next: { revalidate: 0 } });
-    status = r.status;
-    ok = r.ok;
-    if (r.ok) {
+  let bestSlugs: string[] = [];
+  const tried: string[] = [];
+  for (const url of candidates) {
+    tried.push(url);
+    try {
+      const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 } });
+      if (!r.ok) continue;
       const data: unknown = await r.json();
-      if (Array.isArray(data)) {
-        slugs = data
-          .map((x: SlugItem) => (typeof x === "string" ? x : (isRecord(x) && typeof x.slug === "string" ? x.slug : null)))
-          .filter((s): s is string => Boolean(s));
+      const slugs = Array.from(new Set(pickSlugs(data)));
+      if (slugs.length > bestSlugs.length) {
+        bestSlugs = slugs;
+        // se superiamo 30, fermiamoci (soddisfa il tuo caso)
+        if (bestSlugs.length >= 30) break;
       }
+    } catch {
+      // ignora e prova il prossimo
     }
-  } catch {
-    // lascia slugs=[]
   }
 
+  const slugs = bestSlugs;
   const now = new Date().toISOString();
   const urls: string[] = [];
 
@@ -72,7 +93,7 @@ export async function GET() {
       </url>`);
   }
 
-  // 1 blocco <url> per ogni slug con alternates + x-default
+  // 1 blocco per slug, con hreflang + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(
       langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
@@ -94,20 +115,21 @@ export async function GET() {
           xmlns:xhtml="http://www.w3.org/1999/xhtml">
     ${urls.join("\n")}
   </urlset>`;
-
-  // timbro per distinguere la build
   xml = xml.replace("<urlset ", `<urlset data-build="${Date.now()}" `);
 
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "no-store",               // ⬅️ temporaneo per bypassare CDN
+      // tieni no-store finché verifichi; poi rimetteremo s-maxage
+      "Cache-Control": "no-store",
+      // debug
       "X-Api-Base-Url": API || "EMPTY",
-      "X-Api-Url": apiUrl,
-      "X-Api-Ok": String(ok),
-      "X-Api-Status": String(status),
       "X-Slugs-Len": String(slugs.length),
-      "X-Source": "index-route-direct-v1",
+      "X-Tried-Count": String(tried.length),
+      "X-Tried-1": tried[0] || "",
+      "X-Tried-2": tried[1] || "",
+      "X-Tried-3": tried[2] || "",
+      "X-Tried-4": tried[3] || "",
     },
   });
 }
