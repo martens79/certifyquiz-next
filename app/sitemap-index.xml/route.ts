@@ -1,4 +1,5 @@
-﻿import { getAllCertSlugs } from "@/lib/data";
+// app/sitemap-index.xml/route.ts
+import { getAllCertSlugs } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,7 @@ export async function GET() {
 
   const urls: string[] = [];
 
+  // Home + lingue + liste
   urls.push(`
     <url>
       <loc>${site}/</loc>
@@ -25,7 +27,6 @@ export async function GET() {
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
-
   for (const l of langs) {
     urls.push(`
       <url>
@@ -34,9 +35,6 @@ export async function GET() {
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
       </url>`);
-  }
-
-  for (const l of langs) {
     urls.push(`
       <url>
         <loc>${site}/${l}/${base[l]}</loc>
@@ -46,6 +44,7 @@ export async function GET() {
       </url>`);
   }
 
+  // Dettagli con hreflang
   for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
     for (const l of langs) {
