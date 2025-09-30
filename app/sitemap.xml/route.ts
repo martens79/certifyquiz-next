@@ -1,5 +1,4 @@
-// app/sitemap.xml/route.ts
-import { getAllCertSlugs } from "@/lib/data";
+﻿import { getAllCertSlugs } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
