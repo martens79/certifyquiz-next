@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Lang = "it" | "en" | "fr" | "es";
-type SlugItem = { slug?: string } | string;
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object";
@@ -12,8 +11,12 @@ function pickSlugs(data: unknown): string[] {
   if (!Array.isArray(data)) return [];
   const out: string[] = [];
   for (const x of data) {
-    if (typeof x === "string") out.push(x);
-    else if (isRecord(x) && typeof (x as any).slug === "string") out.push((x as any).slug);
+    if (typeof x === "string") {
+      out.push(x);
+    } else if (isRecord(x)) {
+      const slug = x["slug"];
+      if (typeof slug === "string") out.push(slug);
+    }
   }
   return out;
 }
@@ -28,20 +31,19 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  // ⚠️ deve finire con /api
+  // ⚠️ deve finire con /api (es: https://api.certifyquiz.com/api)
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
   const baseQs = "locale=it&fields=slug";
 
-  // proviamo diversi nomi param di paginazione (alcuni backend ignorano 'limit')
-  const candidates = [
-    `${API}/certifications?${baseQs}`,                                 // nessun limite
+  const candidates: string[] = [
+    `${API}/certifications?${baseQs}`,
     `${API}/certifications?${baseQs}&limit=1000`,
     `${API}/certifications?${baseQs}&pageSize=1000`,
     `${API}/certifications?${baseQs}&per_page=1000`,
     `${API}/certifications?${baseQs}&take=1000`,
     `${API}/certifications?${baseQs}&offset=0&limit=1000`,
     `${API}/certifications?${baseQs}&page=1&per_page=1000`,
-  ].filter(Boolean);
+  ];
 
   let bestSlugs: string[] = [];
   const tried: string[] = [];
@@ -54,11 +56,10 @@ export async function GET() {
       const slugs = Array.from(new Set(pickSlugs(data)));
       if (slugs.length > bestSlugs.length) {
         bestSlugs = slugs;
-        // se superiamo 30, fermiamoci (soddisfa il tuo caso)
-        if (bestSlugs.length >= 30) break;
+        if (bestSlugs.length >= 30) break; // sufficiente per il tuo caso
       }
     } catch {
-      // ignora e prova il prossimo
+      // passa alla prossima variante
     }
   }
 
@@ -115,21 +116,16 @@ export async function GET() {
           xmlns:xhtml="http://www.w3.org/1999/xhtml">
     ${urls.join("\n")}
   </urlset>`;
-  xml = xml.replace("<urlset ", `<urlset data-build="${Date.now()}" `);
+  xml = xml.replace("<urlset ", `<urlset data-build="${Date.now()}" `); // stamp per diagnosi
 
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      // tieni no-store finché verifichi; poi rimetteremo s-maxage
-      "Cache-Control": "no-store",
-      // debug
+      "Cache-Control": "no-store", // durante i test; poi metti s-maxage
+      // debug minimi utili
       "X-Api-Base-Url": API || "EMPTY",
       "X-Slugs-Len": String(slugs.length),
       "X-Tried-Count": String(tried.length),
-      "X-Tried-1": tried[0] || "",
-      "X-Tried-2": tried[1] || "",
-      "X-Tried-3": tried[2] || "",
-      "X-Tried-4": tried[3] || "",
     },
   });
 }
