@@ -19,27 +19,27 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  // ⚠️ Deve finire con /api in Vercel (es: https://api.certifyquiz.com/api)
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
   const apiUrl = `${API}/certifications?locale=it&fields=slug&limit=1000`;
 
   let slugs: string[] = [];
+  let status = 0;
+  let ok = false;
+
   try {
     const r = await fetch(apiUrl, { cache: "no-store", next: { revalidate: 0 } });
+    status = r.status;
+    ok = r.ok;
     if (r.ok) {
       const data: unknown = await r.json();
       if (Array.isArray(data)) {
         slugs = data
-          .map((x: SlugItem) => {
-            if (typeof x === "string") return x;
-            if (isRecord(x) && typeof x.slug === "string") return x.slug;
-            return null;
-          })
+          .map((x: SlugItem) => (typeof x === "string" ? x : (isRecord(x) && typeof x.slug === "string" ? x.slug : null)))
           .filter((s): s is string => Boolean(s));
       }
     }
   } catch {
-    slugs = [];
+    // lascia slugs=[]
   }
 
   const now = new Date().toISOString();
@@ -89,16 +89,25 @@ export async function GET() {
       </url>`);
   }
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
           xmlns:xhtml="http://www.w3.org/1999/xhtml">
     ${urls.join("\n")}
   </urlset>`;
 
+  // timbro per distinguere la build
+  xml = xml.replace("<urlset ", `<urlset data-build="${Date.now()}" `);
+
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
+      "Cache-Control": "no-store",               // ⬅️ temporaneo per bypassare CDN
+      "X-Api-Base-Url": API || "EMPTY",
+      "X-Api-Url": apiUrl,
+      "X-Api-Ok": String(ok),
+      "X-Api-Status": String(status),
+      "X-Slugs-Len": String(slugs.length),
+      "X-Source": "index-route-direct-v1",
     },
   });
 }
