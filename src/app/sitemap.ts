@@ -1,45 +1,70 @@
+// src/app/sitemap.ts
 import { getAllCertSlugs } from "@/lib/data";
+
+export const revalidate = 86400; // rigenera ogni 24h
 
 export default async function sitemap() {
   const site = "https://www.certifyquiz.com";
   const langs = ["it", "en", "fr", "es"] as const;
   const base = { it:"certificazioni", en:"certifications", fr:"certifications", es:"certificaciones" };
 
-  // prendo gli slug (puoi farlo una sola volta, tanto slug è comune)
   const slugs = await getAllCertSlugs("it");
+  const now = new Date().toISOString();
 
-  const now = new Date();
+  const urls: string[] = [];
 
   // Home
-  const home = [{ url: site, lastModified: now, changefreq: "weekly", priority: 1 }];
+  urls.push(`
+    <url>
+      <loc>${site}/</loc>
+      <lastmod>${now}</lastmod>
+      <changefreq>weekly</changefreq>
+      <priority>1.0</priority>
+    </url>`);
 
   // Lingue
-  const langHomes = langs.map(l => ({
-    url: `${site}/${l}`,
-    lastModified: now,
-    changefreq: "weekly",
-    priority: 0.8,
-  }));
+  for (const l of langs) {
+    urls.push(`
+      <url>
+        <loc>${site}/${l}</loc>
+        <lastmod>${now}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+      </url>`);
+  }
 
-  // Liste certificazioni
-  const lists = langs.map(l => ({
-    url: `${site}/${l}/${base[l]}`,
-    lastModified: now,
-    changefreq: "weekly",
-    priority: 0.8,
-  }));
+  // Liste
+  for (const l of langs) {
+    urls.push(`
+      <url>
+        <loc>${site}/${l}/${base[l]}</loc>
+        <lastmod>${now}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+      </url>`);
+  }
 
-  // Dettagli certificazioni + hreflang
-  const entries = slugs.flatMap(slug => {
+  // Certificazioni con hreflang
+  for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
-    return langs.map(l => ({
-      url: map[l],
-      lastModified: now,
-      changefreq: "weekly",
-      priority: 0.7,
-      alternates: { languages: map }, // <-- hreflang
-    }));
-  });
+    for (const l of langs) {
+      urls.push(`
+        <url>
+          <loc>${map[l]}</loc>
+          <lastmod>${now}</lastmod>
+          <changefreq>weekly</changefreq>
+          <priority>0.7</priority>
+          ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
+        </url>`);
+    }
+  }
 
-  return [...home, ...langHomes, ...lists, ...entries];
+  return new Response(
+    `<?xml version="1.0" encoding="UTF-8"?>
+     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+             xmlns:xhtml="http://www.w3.org/1999/xhtml">
+       ${urls.join("\n")}
+     </urlset>`,
+    { headers: { "Content-Type": "application/xml" } }
+  );
 }
