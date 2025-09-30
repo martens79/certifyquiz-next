@@ -1,7 +1,8 @@
 // app/sitemap.xml/route.ts
 import { getAllCertSlugs } from "@/lib/data";
 
-export const revalidate = 86400; // rigenera ogni 24h
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   const site = "https://www.certifyquiz.com";
@@ -18,7 +19,6 @@ export async function GET() {
 
   const urls: string[] = [];
 
-  // Home
   urls.push(`
     <url>
       <loc>${site}/</loc>
@@ -27,7 +27,6 @@ export async function GET() {
       <priority>1.0</priority>
     </url>`);
 
-  // Lingue
   for (const l of langs) {
     urls.push(`
       <url>
@@ -38,7 +37,6 @@ export async function GET() {
       </url>`);
   }
 
-  // Liste
   for (const l of langs) {
     urls.push(`
       <url>
@@ -49,7 +47,6 @@ export async function GET() {
       </url>`);
   }
 
-  // Certificazioni con hreflang
   for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
     for (const l of langs) {
