@@ -19,17 +19,13 @@ export async function GET() {
     es: "certificaciones",
   };
 
+  // ⚠️ Deve finire con /api in Vercel (es: https://api.certifyquiz.com/api)
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
-  const apiUrl = `${API}/certifications?locale=it&fields=slug`;
+  const apiUrl = `${API}/certifications?locale=it&fields=slug&limit=1000`;
 
   let slugs: string[] = [];
-  let status = 0;
-  let ok = false;
-
   try {
     const r = await fetch(apiUrl, { cache: "no-store", next: { revalidate: 0 } });
-    status = r.status;
-    ok = r.ok;
     if (r.ok) {
       const data: unknown = await r.json();
       if (Array.isArray(data)) {
@@ -43,7 +39,7 @@ export async function GET() {
       }
     }
   } catch {
-    // lascio slugs = []
+    slugs = [];
   }
 
   const now = new Date().toISOString();
