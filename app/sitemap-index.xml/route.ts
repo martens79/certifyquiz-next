@@ -14,9 +14,18 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  const slugs = await getAllCertSlugs("it");
-  const now = new Date().toISOString();
+  let slugs: string[] = [];
+  try {
+    slugs = await getAllCertSlugs("it");
+  } catch {
+    slugs = [];
+  }
+  // ✅ Fallback: se non arriva nulla dall'API, usa almeno un esempio (MOCK)
+  if (!slugs || slugs.length === 0) {
+    slugs = ["comptia-itf-plus"];
+  }
 
+  const now = new Date().toISOString();
   const urls: string[] = [];
 
   // Home + lingue + liste
@@ -65,5 +74,10 @@ export async function GET() {
     ${urls.join("\n")}
   </urlset>`;
 
-  return new Response(xml, { headers: { "Content-Type": "application/xml" } });
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml",
+      "X-Slugs-Count": String(slugs.length), // 🔎 debug veloce
+    },
+  });
 }
