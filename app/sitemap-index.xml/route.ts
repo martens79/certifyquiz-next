@@ -46,7 +46,7 @@ export async function GET() {
       </url>`);
   }
 
-  // 🔹 UN SOLO BLOCCO <url> PER SLUG (più compatto), con alternates + x-default
+  // Un solo blocco <url> per slug con tutti gli alternates + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
     urls.push(`
@@ -66,14 +66,10 @@ export async function GET() {
     ${urls.join("\n")}
   </urlset>`;
 
-  // Header di debug: quanti x-default abbiamo generato (== numero slug)
-  const xDefaultCount = slugs.length.toString();
-
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
       "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
-      "X-XDefault-Count": xDefaultCount,
     },
   });
 }
