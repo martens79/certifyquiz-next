@@ -14,35 +14,33 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  const API = (process.env.API_BASE_URL || "").replace(/\/+$/, ""); // senza trailing slash
-  const url = `${API}/certifications?locale=it&fields=slug`;
+  const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
+  const apiUrl = `${API}/certifications?locale=it&fields=slug`;
 
   let slugs: string[] = [];
+  let status = 0;
+  let ok = false;
+
   try {
-    const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 } });
+    const r = await fetch(apiUrl, { cache: "no-store", next: { revalidate: 0 } });
+    status = r.status;
+    ok = r.ok;
     if (r.ok) {
       const data = await r.json();
       if (Array.isArray(data)) {
         slugs = data
-          .map((x: unknown) =>
-            typeof x === "string"
-              ? x
-              : x && typeof x === "object" && typeof (x as any).slug === "string"
-              ? (x as any).slug
-              : null
-          )
-          .filter(Boolean) as string[];
+          .map((x: any) => (typeof x === "string" ? x : (x?.slug ?? null)))
+          .filter(Boolean);
       }
     }
-  } catch {
-    slugs = [];
+  } catch (_) {
+    // keep defaults
   }
 
   const now = new Date().toISOString();
-
   const urls: string[] = [];
 
-  // Home
+  // Home + lingue + liste
   urls.push(`
     <url>
       <loc>${site}/</loc>
@@ -50,8 +48,6 @@ export async function GET() {
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
-
-  // Lingue + liste
   for (const l of langs) {
     urls.push(`
       <url>
@@ -69,9 +65,9 @@ export async function GET() {
       </url>`);
   }
 
-  // 1 blocco <url> per ogni slug, con tutte le alternates + x-default
+  // 1 blocco <url> per slug, alternates + x-default
   for (const slug of slugs) {
-    const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`])) as Record<Lang, string>;
+    const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`])) as Record<Lang,string>;
     urls.push(`
       <url>
         <loc>${map.it}</loc>
@@ -92,7 +88,14 @@ export async function GET() {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
+      // cache temporaneamente disattivata per vedere la versione nuova
+      "Cache-Control": "no-store",
+      // 🔎 debug
+      "X-Api-Base-Url": API || "EMPTY",
+      "X-Api-Url": apiUrl,
+      "X-Api-Ok": String(ok),
+      "X-Api-Status": String(status),
+      "X-Slugs-Len": String(slugs.length),
     },
   });
 }
