@@ -14,21 +14,13 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  let slugs: string[] = [];
-  try {
-    slugs = await getAllCertSlugs("it");
-  } catch {
-    slugs = [];
-  }
-  // ✅ Fallback: se non arriva nulla dall'API, usa almeno un esempio (MOCK)
-  if (!slugs || slugs.length === 0) {
-    slugs = ["comptia-itf-plus"];
-  }
+  // slug reali dall’API (niente fallback)
+  const slugs = await getAllCertSlugs("it");
 
   const now = new Date().toISOString();
   const urls: string[] = [];
 
-  // Home + lingue + liste
+  // Home
   urls.push(`
     <url>
       <loc>${site}/</loc>
@@ -36,6 +28,8 @@ export async function GET() {
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
+
+  // Lingue + liste
   for (const l of langs) {
     urls.push(`
       <url>
@@ -77,7 +71,7 @@ export async function GET() {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "X-Slugs-Count": String(slugs.length), // 🔎 debug veloce
+      "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
     },
   });
 }
