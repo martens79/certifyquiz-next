@@ -46,20 +46,19 @@ export async function GET() {
       </url>`);
   }
 
-  // Dettagli certificazioni con hreflang + x-default per OGNI slug
+  // 🔹 UN SOLO BLOCCO <url> PER SLUG, con tutti gli alternates + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
-    for (const l of langs) {
-      urls.push(`
-        <url>
-          <loc>${map[l]}</loc>
-          <lastmod>${now}</lastmod>
-          <changefreq>weekly</changefreq>
-          <priority>0.7</priority>
-          ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
-          <xhtml:link rel="alternate" hreflang="x-default" href="${map.it}"/>
-        </url>`);
-    }
+
+    urls.push(`
+      <url>
+        <loc>${map.it}</loc>
+        <lastmod>${now}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+        ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
+        <xhtml:link rel="alternate" hreflang="x-default" href="${map.it}"/>
+      </url>`);
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
