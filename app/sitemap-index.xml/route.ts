@@ -15,7 +15,8 @@ export async function GET() {
   };
 
   const slugs = await getAllCertSlugs("it");
-  const now = new Date().toISOString();
+  const nowISO = new Date().toISOString();
+  const buildTag = `smi-${Date.now()}`; // 🔎 per distinguere la build
 
   const urls: string[] = [];
 
@@ -23,7 +24,7 @@ export async function GET() {
   urls.push(`
     <url>
       <loc>${site}/</loc>
-      <lastmod>${now}</lastmod>
+      <lastmod>${nowISO}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
@@ -33,27 +34,26 @@ export async function GET() {
     urls.push(`
       <url>
         <loc>${site}/${l}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${nowISO}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
       </url>`);
     urls.push(`
       <url>
         <loc>${site}/${l}/${base[l]}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${nowISO}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
       </url>`);
   }
 
-  // 🔹 UN SOLO BLOCCO <url> PER SLUG, con tutti gli alternates + x-default
+  // 🔹 UN SOLO BLOCCO <url> PER OGNI SLUG (default = IT), con tutti gli alternates + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`]));
-
     urls.push(`
       <url>
         <loc>${map.it}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${nowISO}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
         ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
@@ -62,6 +62,7 @@ export async function GET() {
   }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
+  <!-- ${buildTag} -->
   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
           xmlns:xhtml="http://www.w3.org/1999/xhtml">
     ${urls.join("\n")}
@@ -70,7 +71,10 @@ export async function GET() {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "s-maxage=3600, stale-while-revalidate=86400",
+      // cache leggero + SWR; querystring farà comunque cache miss
+      "Cache-Control": "s-maxage=300, stale-while-revalidate=3600",
+      "X-Slugs-Count": String(slugs.length),
+      "X-Build-Tag": buildTag,
     },
   });
 }
