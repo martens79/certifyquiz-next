@@ -1,27 +1,37 @@
-// src/app/api/revalidate/route.ts
+// app/api/revalidate/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
-type Lang = "it" | "en" | "fr" | "es" | "all";
+// ---- i18n base paths per lingua
+const ALL_LOCALES = ["it", "en", "fr", "es"] as const;
+type Locale = typeof ALL_LOCALES[number];
+type Lang = Locale | "all";
 
-type RevalidateBody = {
-  // Formati già supportati
-  path?: string;
-  paths?: string[];
-  tags?: string[];         // supporto revalidateTag
-  dryRun?: boolean;        // test senza eseguire
-
-  // Estensioni “universali”
-  certSlug?: string;       // es. "comptia-itf-plus"
-  lang?: Lang;             // "it"|"en"|"fr"|"es"|"all"
-  cascade?: boolean;       // se true, revalida anche la lista /[lang]/certificazioni
+const BASE_BY_LANG: Record<Locale, string> = {
+  it: "/it/certificazioni",
+  en: "/en/certifications",
+  fr: "/fr/certifications",
+  es: "/es/certificaciones",
 };
 
-const MAX_ITEMS = 100;       // hard cap anti-abuso
-const MAX_PATH_LEN = 2048;   // sanity check
+type RevalidateBody = {
+  // formati generici
+  path?: string;
+  paths?: string[];
+  tags?: string[];
+  dryRun?: boolean;
+
+  // estensioni “universali”
+  certSlug?: string; // es. "comptia-itf-plus"
+  lang?: Lang;       // "it"|"en"|"fr"|"es"|"all"
+  cascade?: boolean; // se true, revalida anche la lista per lingua
+};
+
+const MAX_ITEMS = 100;
+const MAX_PATH_LEN = 2048;
 
 function isStringArray(a: unknown): a is string[] {
   return Array.isArray(a) && a.every((x) => typeof x === "string");
@@ -37,48 +47,42 @@ function uniq<T>(a: T[]): T[] {
   return Array.from(new Set(a));
 }
 
-// Handler di cortesia per verificare che la route sia deployata
+// ping/health
 export async function GET() {
-  return NextResponse.json({ ok: true, hint: "Use POST", version: "v2-unified+fallback" });
+  return NextResponse.json({ ok: true, hint: "Use POST", version: "v2-unified+langmap" });
 }
 
-
-// Espone anche OPTIONS così l'header Allow è chiaro
+// per chiarezza sui metodi
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: { Allow: "OPTIONS, GET, POST" } });
 }
 
 export async function POST(req: NextRequest) {
- // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// Auth — strict in prod, ma normalizza (trim + strip quotes/newlines) per evitare mismatch involontari
-const env = process.env.VERCEL_ENV ?? "development";
-const url = new URL(req.url);
+  // --- AUTH: header obbligatorio in prod; in preview consento anche ?secret= e normalizzo ---
+  const env = process.env.VERCEL_ENV ?? "development";
+  const url = new URL(req.url);
 
-const pick =
-  (req.headers.get("x-revalidate-secret") ?? "") ||
-  (env !== "production" ? (url.searchParams.get("secret") ?? "") : "");
+  const pick =
+    (req.headers.get("x-revalidate-secret") ?? "") ||
+    (env !== "production" ? (url.searchParams.get("secret") ?? "") : "");
 
-const normalize = (s: string) =>
-  s.replace(/^\s+|\s+$/g, "")          // trim spazi/newline
-   .replace(/^['"]+|['"]+$/g, "");     // rimuovi virgolette esterne
+  const normalize = (s: string) =>
+    s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, ""); // trim + strip quotes
 
-const provided = normalize(pick);
-const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
+  const provided = normalize(pick);
+  const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
 
-if (!provided) {
-  return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
-}
-if (env === "production") {
-  if (!expected || provided !== expected) {
-    return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
+  if (!provided) {
+    return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
   }
-}
-// in preview/dev accettiamo qualunque non-vuoto; in prod confronto rigoroso (ma normalizzato)
+  if (env === "production") {
+    if (!expected || provided !== expected) {
+      return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
+    }
+  }
+  // in preview/dev: accetto qualsiasi secret non vuoto (ma se expected è settato e coincide, OK)
 
-
-
-
-  // 2) Body parsing safe
+  // ---- Body parsing safe
   let body: RevalidateBody = {};
   try {
     const raw = await req.json();
@@ -87,7 +91,7 @@ if (env === "production") {
     // body vuoto → gestiamo sotto
   }
 
-  // 3) Raccolta input (paths/tags “diretti”)
+  // ---- Input diretto
   const list: string[] = [];
   if (typeof body.path === "string") list.push(body.path);
   if (isStringArray(body.paths)) list.push(...body.paths);
@@ -96,29 +100,30 @@ if (env === "production") {
     ? uniq(body.tags.map((t) => t.trim()).filter(Boolean))
     : [];
 
-  // 4) Derivati da certSlug/lang/cascade (i18n)
-  const locales = body.lang && body.lang !== "all" ? [body.lang] : ["it", "en", "fr", "es"];
-  const derived: string[] = [];
+  // ---- Derivati da certSlug/lang/cascade (i18n corretta)
+  const locales: Locale[] =
+    body.lang && body.lang !== "all" ? [body.lang as Locale] : [...ALL_LOCALES];
 
+  const derived: string[] = [];
   if (body.certSlug) {
     for (const L of locales) {
-      derived.push(`/${L}/certificazioni/${body.certSlug}`);
-      if (body.cascade) {
-        derived.push(`/${L}/certificazioni`); // lista per lingua
-      }
+      const base = BASE_BY_LANG[L];
+      derived.push(`${base}/${body.certSlug}`);
+      if (body.cascade) derived.push(base);
+    }
+    if (body.cascade && (body.lang === "all" || !body.lang)) {
+      derived.push("/"); // opzionale: tocca anche la home
     }
   }
 
-  // 5) Normalizza e limita
-  const uniquePaths = uniq(
-    list.concat(derived).map(normPath).filter(Boolean)
-  ).slice(0, MAX_ITEMS);
+  // ---- Normalizza & limita
+  const uniquePaths = uniq(list.concat(derived).map(normPath).filter(Boolean)).slice(0, MAX_ITEMS);
 
   if (uniquePaths.length === 0 && tags.length === 0) {
     return NextResponse.json({ ok: false, error: "Missing path(s) or tags or certSlug" }, { status: 400 });
   }
 
-  // 6) Dry-run?
+  // ---- Dry-run
   if (body.dryRun) {
     return NextResponse.json({
       ok: true,
@@ -129,14 +134,10 @@ if (env === "production") {
     });
   }
 
-  // 7) Esecuzione
+  // ---- Esecuzione
   try {
-    for (const p of uniquePaths) {
-      revalidatePath(p, "page"); // esplicito
-    }
-    for (const t of tags) {
-      revalidateTag(t);
-    }
+    for (const p of uniquePaths) revalidatePath(p, "page");
+    for (const t of tags) revalidateTag(t);
 
     return NextResponse.json({
       ok: true,
