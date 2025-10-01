@@ -3,20 +3,24 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 type Lang = "it" | "en" | "fr" | "es";
+type UnknownRecord = Record<string, unknown>;
 
-function isRecord(v: unknown): v is Record<string, unknown> {
+function isRecord(v: unknown): v is UnknownRecord {
   return v !== null && typeof v === "object";
 }
+
+// Estrae un array da varie chiavi comuni (senza usare `any`)
 function arrayFromUnknown(u: unknown): unknown[] {
   if (Array.isArray(u)) return u;
   if (isRecord(u)) {
-    for (const k of ["data", "items", "results", "rows", "list", "payload", "certifications"]) {
-      const v = (u as any)[k];
-      if (Array.isArray(v)) return v;
+    for (const k of ["data", "items", "results", "rows", "list", "payload", "certifications"] as const) {
+      const v = (u as UnknownRecord)[k as keyof UnknownRecord];
+      if (Array.isArray(v)) return v as unknown[];
     }
   }
   return [];
 }
+
 function pickSlugs(u: unknown): string[] {
   const arr = arrayFromUnknown(u);
   const out: string[] = [];
@@ -30,7 +34,7 @@ function pickSlugs(u: unknown): string[] {
 async function fetchJSON(url: string, init?: RequestInit) {
   const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 }, ...init });
   if (!r.ok) throw new Error(`Fetch ${url} -> ${r.status}`);
-  return r.json();
+  return (await r.json()) as unknown;
 }
 
 export async function GET() {
@@ -47,34 +51,33 @@ export async function GET() {
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
   const SECRET = process.env.REVALIDATE_SECRET || "";
 
-  let source = "none";
+  let source: "admin" | "public" | "empty" = "empty";
   let slugs: string[] = [];
-  let tried: string[] = [];
-  let rawCounts: number[] = [];
+  const tried: string[] = [];
+  const rawCounts: number[] = [];
 
   if (API) {
-    // 1) Tenta l’endpoint admin senza paging
+    // 1) Endpoint admin senza paging
     const adminUrl = `${API}/admin/all-cert-slugs`;
     tried.push(adminUrl);
     try {
-      const data: unknown = await fetchJSON(adminUrl, {
+      const data = await fetchJSON(adminUrl, {
         headers: SECRET ? { "x-revalidate-secret": SECRET } : {},
       });
       const arr = Array.isArray(data) ? data : [];
       slugs = Array.from(new Set(arr.filter((s): s is string => typeof s === "string"))).sort();
       source = "admin";
     } catch {
-      // 2) Fallback al vecchio endpoint pubblico (potrebbe dare 4)
+      // 2) Fallback: endpoint pubblico (potrebbe restare a 4)
       const publicUrl = `${API}/certifications?locale=it&fields=slug`;
       tried.push(publicUrl);
       try {
-        const data: unknown = await fetchJSON(publicUrl);
+        const data = await fetchJSON(publicUrl);
         const picked = pickSlugs(data);
         rawCounts.push(picked.length);
         slugs = Array.from(new Set(picked)).sort();
         source = "public";
       } catch {
-        // 3) Ultimo fallback: nessuno slug
         slugs = [];
         source = "empty";
       }
@@ -114,7 +117,7 @@ export async function GET() {
   // 1 blocco per slug (loc IT) + hreflang reciproci + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(
-      langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
+      langs.map((l) => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
     ) as Record<Lang, string>;
 
     urls.push(`
@@ -123,7 +126,7 @@ export async function GET() {
         <lastmod>${lastmod}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
-        ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
+        ${langs.map((x) => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
         <xhtml:link rel="alternate" hreflang="x-default" href="${map.it}"/>
       </url>`);
   }
