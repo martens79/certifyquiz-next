@@ -12,15 +12,21 @@ const BASE_BY_LANG = {
 } as const;
 
 export async function POST(req: Request) {
-  const provided = (req.headers.get("x-revalidate-secret") ?? "").trim();
+  // URL per estrarre query e slug
+  const url = new URL(req.url);
+
+  // Auth: header oppure ?secret= (solo fuori da production)
+  const fromHeader = (req.headers.get("x-revalidate-secret") ?? "").trim();
+  const fromQs = url.searchParams.get("secret")?.trim() || "";
+  const provided =
+    fromHeader || (process.env.VERCEL_ENV !== "production" ? fromQs : "");
+
   if (!provided || provided !== process.env.REVALIDATE_SECRET) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
   // Ricava lo slug dalla URL: /api/revalidate-cert/<slug>?cascade=1
-  const url = new URL(req.url);
-  const pathname = url.pathname; // es. /api/revalidate-cert/comptia-itf-plus
-  const slug = decodeURIComponent(pathname.replace(/^\/api\/revalidate-cert\//, "") || "");
+  const slug = decodeURIComponent(url.pathname.replace(/^\/api\/revalidate-cert\//, "") || "");
   if (!slug) {
     return NextResponse.json({ ok: false, error: "Missing slug" }, { status: 400 });
   }
@@ -35,7 +41,7 @@ export async function POST(req: Request) {
   });
   if (cascade) paths.push("/");
 
-  // Base URL dell’app (env o origin richiesta)
+  // Base URL dell’app (env o origin della richiesta)
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? url.origin;
 
   // Forward verso l’endpoint universale

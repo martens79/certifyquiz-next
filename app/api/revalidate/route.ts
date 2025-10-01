@@ -48,11 +48,15 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  // 1) Auth
-  const provided = req.headers.get("x-revalidate-secret")?.trim();
-  if (!provided || provided !== process.env.REVALIDATE_SECRET) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  // 1) Auth (accetta ?secret= solo fuori da production)
+const url = new URL(req.url);
+const fromHeader = req.headers.get("x-revalidate-secret")?.trim();
+const fromQs = url.searchParams.get("secret")?.trim() || undefined;
+const provided = fromHeader || (process.env.VERCEL_ENV !== "production" ? fromQs : undefined);
+
+if (!provided || provided !== process.env.REVALIDATE_SECRET) {
+  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+}
 
   // 2) Body parsing safe
   let body: RevalidateBody = {};
