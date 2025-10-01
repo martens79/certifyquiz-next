@@ -58,30 +58,15 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  // --- AUTH: header obbligatorio in prod; in preview consento anche ?secret= e normalizzo ---
-  const env = process.env.VERCEL_ENV ?? "development";
-  const url = new URL(req.url);
+  // AUTH — produzione: SOLO header + confronto rigoroso (con normalizzazione prudente)
+const norm = (s: string) => s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, "");
 
-  const pick =
-    (req.headers.get("x-revalidate-secret") ?? "") ||
-    (env !== "production" ? (url.searchParams.get("secret") ?? "") : "");
+const provided = norm(req.headers.get("x-revalidate-secret") ?? "");
+const expected = norm(process.env.REVALIDATE_SECRET ?? "");
 
-  const normalize = (s: string) =>
-    s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, ""); // trim + strip quotes
-
-  const provided = normalize(pick);
-  const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
-
-  if (!provided) {
-    return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
-  }
-  if (env === "production") {
-    if (!expected || provided !== expected) {
-      return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
-    }
-  }
-  // in preview/dev: accetto qualsiasi secret non vuoto (ma se expected è settato e coincide, OK)
-
+if (!provided || !expected || provided !== expected) {
+  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+}
   // ---- Body parsing safe
   let body: RevalidateBody = {};
   try {

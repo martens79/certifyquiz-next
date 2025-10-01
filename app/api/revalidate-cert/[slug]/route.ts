@@ -15,31 +15,15 @@ export async function POST(req: Request) {
   // URL per estrarre query e slug
 
   // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// Auth — strict in prod, ma normalizza (trim + strip quotes/newlines) per evitare mismatch involontari
-const env = process.env.VERCEL_ENV ?? "development";
-const url = new URL(req.url);
+// AUTH — produzione: SOLO header + confronto rigoroso (con normalizzazione prudente)
+const norm = (s: string) => s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, "");
 
-const pick =
-  (req.headers.get("x-revalidate-secret") ?? "") ||
-  (env !== "production" ? (url.searchParams.get("secret") ?? "") : "");
+const provided = norm(req.headers.get("x-revalidate-secret") ?? "");
+const expected = norm(process.env.REVALIDATE_SECRET ?? "");
 
-const normalize = (s: string) =>
-  s.replace(/^\s+|\s+$/g, "")          // trim spazi/newline
-   .replace(/^['"]+|['"]+$/g, "");     // rimuovi virgolette esterne
-
-const provided = normalize(pick);
-const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
-
-if (!provided) {
-  return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
+if (!provided || !expected || provided !== expected) {
+  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
 }
-if (env === "production") {
-  if (!expected || provided !== expected) {
-    return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
-  }
-}
-// in preview/dev accettiamo qualunque non-vuoto; in prod confronto rigoroso (ma normalizzato)
-
 
 
 
