@@ -2,7 +2,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 const BASE_BY_LANG = {
   it: "/it/certificazioni",
@@ -11,22 +11,20 @@ const BASE_BY_LANG = {
   es: "/es/certificaciones",
 } as const;
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { slug: string } } // ✅ tipo inline richiesto da Next
-) {
+export async function POST(req: Request) {
   const provided = (req.headers.get("x-revalidate-secret") ?? "").trim();
   if (!provided || provided !== process.env.REVALIDATE_SECRET) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const slugRaw = params?.slug ?? "";
-  const slug = decodeURIComponent(slugRaw);
+  // Ricava lo slug dalla URL: /api/revalidate-cert/<slug>?cascade=1
+  const url = new URL(req.url);
+  const pathname = url.pathname; // es. /api/revalidate-cert/comptia-itf-plus
+  const slug = decodeURIComponent(pathname.replace(/^\/api\/revalidate-cert\//, "") || "");
   if (!slug) {
     return NextResponse.json({ ok: false, error: "Missing slug" }, { status: 400 });
   }
 
-  const url = new URL(req.url);
   const cascade = url.searchParams.get("cascade") === "1";
 
   // Costruisci i path da revalidare
@@ -37,7 +35,7 @@ export async function POST(
   });
   if (cascade) paths.push("/");
 
-  // Base URL dell'app (usa env se presente, altrimenti l'origin della richiesta)
+  // Base URL dell’app (env o origin richiesta)
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? url.origin;
 
   // Forward verso l’endpoint universale
@@ -52,8 +50,7 @@ export async function POST(
       lang: "all",
       cascade,
       paths,
-      // Se usi i tag, scommenta e allinea i nomi:
-      // tags: ["certs:list", `cert:${slug}`],
+      // tags: ["certs:list", `cert:${slug}`], // se usi i tag, scommenta/allinea
     }),
     cache: "no-store",
   }).catch(() => null);
