@@ -50,16 +50,17 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
  // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// Auth — strict in production, ma normalizza (trim + strip quotes) per evitare mismatch accidentali
+// Auth — strict in prod, ma normalizza (trim + strip quotes/newlines) per evitare mismatch involontari
 const env = process.env.VERCEL_ENV ?? "development";
 const url = new URL(req.url);
 
-const fromHeader = (req.headers.get("x-revalidate-secret") ?? "");
-const fromQs = url.searchParams.get("secret") ?? "";
-const pick = fromHeader || (env !== "production" ? fromQs : "");
+const pick =
+  (req.headers.get("x-revalidate-secret") ?? "") ||
+  (env !== "production" ? (url.searchParams.get("secret") ?? "") : "");
 
 const normalize = (s: string) =>
-  s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, ""); // trim + togli quote esterne
+  s.replace(/^\s+|\s+$/g, "")          // trim spazi/newline
+   .replace(/^['"]+|['"]+$/g, "");     // rimuovi virgolette esterne
 
 const provided = normalize(pick);
 const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
@@ -72,7 +73,7 @@ if (env === "production") {
     return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
   }
 }
-// in preview/dev: se c'è expected e coincide bene, altrimenti accettiamo purché non vuoto
+// in preview/dev accettiamo qualunque non-vuoto; in prod confronto rigoroso (ma normalizzato)
 
 
 
