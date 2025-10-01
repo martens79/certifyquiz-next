@@ -9,26 +9,12 @@ function isRecord(v: unknown): v is UnknownRecord {
   return v !== null && typeof v === "object";
 }
 
-function arrayFromUnknown(u: unknown): unknown[] {
+function pickFrom(u: unknown, key: string): unknown[] {
   if (Array.isArray(u)) return u;
-  if (isRecord(u)) {
-    const keys = ["data", "items", "results", "rows", "list", "payload", "certifications"] as const;
-    for (const k of keys) {
-      const v = (u as UnknownRecord)[k];
-      if (Array.isArray(v)) return v as unknown[];
-    }
+  if (isRecord(u) && Array.isArray((u as UnknownRecord)[key])) {
+    return (u as UnknownRecord)[key] as unknown[];
   }
   return [];
-}
-
-function pickSlugs(u: unknown): string[] {
-  const arr = arrayFromUnknown(u);
-  const out: string[] = [];
-  for (const x of arr) {
-    if (typeof x === "string") out.push(x);
-    else if (isRecord(x) && typeof (x as UnknownRecord).slug === "string") out.push(String((x as UnknownRecord).slug));
-  }
-  return out;
 }
 
 async function fetchJSON(url: string, init?: RequestInit) {
@@ -48,36 +34,45 @@ export async function GET() {
   };
 
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
-  const SECRET = (process.env.REVALIDATE_SECRET || "").trim();
 
-  let source: "admin" | "public" | "empty" = "empty";
+  let source: "availability" | "public" | "empty" = "empty";
   let slugs: string[] = [];
 
   if (API) {
-    // 1) Prova l'endpoint admin con doppia auth (header + querystring)
+    // 1) Endpoint pubblico “pro”: quiz-translation-availability (ha già slug fallback)
     try {
-      const adminUrl =
-        API + "/admin/all-cert-slugs" + (SECRET ? "?secret=" + encodeURIComponent(SECRET) : "");
-      const data = await fetchJSON(adminUrl, {
-        headers: SECRET
-          ? {
-              "x-revalidate-secret": SECRET,
-              authorization: `Bearer ${SECRET}`,
-            }
-          : {},
-      });
-      if (Array.isArray(data)) {
-        slugs = Array.from(new Set(data.filter((s): s is string => typeof s === "string"))).sort();
-        source = "admin";
+      const url = API + "/quiz-translation-availability?lang=en";
+      const data = await fetchJSON(url);
+      const items = pickFrom(data, "items");
+      const got = items
+        .map((x) => (isRecord(x) && typeof x.slug === "string" ? x.slug : null))
+        .filter((s): s is string => !!s);
+      if (got.length) {
+        slugs = Array.from(new Set(got)).sort();
+        source = "availability";
       } else {
-        throw new Error("bad_admin_payload");
+        throw new Error("empty_availability");
       }
     } catch {
-      // 2) Fallback all'endpoint pubblico (potrebbe restare a 4)
+      // 2) Fallback “pubblico base”
       try {
-        const pubUrl = API + "/certifications?locale=it&fields=slug";
-        const data = await fetchJSON(pubUrl);
-        slugs = Array.from(new Set(pickSlugs(data))).sort();
+        const url = API + "/certifications?locale=it&fields=slug";
+        const data = await fetchJSON(url);
+        const arr = Array.isArray(data)
+          ? data
+          : pickFrom(data, "data").length
+          ? pickFrom(data, "data")
+          : pickFrom(data, "items");
+        const got = arr
+          .map((x) =>
+            typeof x === "string"
+              ? x
+              : isRecord(x) && typeof x.slug === "string"
+              ? (x.slug as string)
+              : null
+          )
+          .filter((s): s is string => !!s);
+        slugs = Array.from(new Set(got)).sort();
         source = "public";
       } catch {
         slugs = [];
@@ -119,7 +114,7 @@ export async function GET() {
     push("  </url>");
   }
 
-  // 1 blocco per certificazione (loc IT) + hreflang reciproci + x-default
+  // 1 blocco per certificazione (loc IT) + hreflang + x-default
   for (const slug of slugs) {
     const map: Record<Lang, string> = {
       it: `${site}/it/${baseByLang.it}/${slug}`,
@@ -147,8 +142,8 @@ export async function GET() {
   const headers = new Headers({
     "Content-Type": "application/xml; charset=utf-8",
     "Cache-Control": "no-store",
-    "X-Source": source,
-    "X-Slugs-Len": String(slugs.length),
+    "X-Source": source,                 // "availability" | "public" | "empty"
+    "X-Slugs-Len": String(slugs.length)
   });
 
   return new Response(xml, { headers });
