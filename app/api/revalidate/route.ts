@@ -39,8 +39,9 @@ function uniq<T>(a: T[]): T[] {
 
 // Handler di cortesia per verificare che la route sia deployata
 export async function GET() {
-  return NextResponse.json({ ok: true, hint: "Use POST", version: "v2-unified" });
+  return NextResponse.json({ ok: true, hint: "Use POST", version: "v2-unified+fallback" });
 }
+
 
 // Espone anche OPTIONS così l'header Allow è chiaro
 export async function OPTIONS() {
@@ -49,24 +50,21 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
  // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
+// 1) Auth — header o ?secret= (solo fuori da production) + fallback se ENV mancante
 const url = new URL(req.url);
-const fromHeader = req.headers.get("x-revalidate-secret")?.trim();
-const fromQs = url.searchParams.get("secret")?.trim() || undefined;
-const provided = fromHeader || (process.env.VERCEL_ENV !== "production" ? fromQs : undefined);
-const expected = process.env.REVALIDATE_SECRET?.trim();
+const fromHeader = req.headers.get("x-revalidate-secret")?.trim() || "";
+const fromQs = url.searchParams.get("secret")?.trim() || "";
+const provided = fromHeader || (process.env.VERCEL_ENV !== "production" ? fromQs : "");
+const expected = process.env.REVALIDATE_SECRET?.trim() || "";
 
-// niente secret fornito -> 401
 if (!provided) {
   return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
 }
-
-// se il server ha un secret configurato, deve combaciare -> 401 su mismatch
 if (expected) {
   if (provided !== expected) {
     return NextResponse.json({ ok: false, error: "Unauthorized (secret mismatch)" }, { status: 401 });
   }
 } else {
-  // il server NON ha REVALIDATE_SECRET: consenti SOLO fuori da production
   if (process.env.VERCEL_ENV === "production") {
     return NextResponse.json({ ok: false, error: "Server misconfigured (no REVALIDATE_SECRET)" }, { status: 500 });
   }
