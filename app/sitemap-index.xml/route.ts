@@ -7,18 +7,30 @@ type Lang = "it" | "en" | "fr" | "es";
 function isRecord(v: unknown): v is Record<string, unknown> {
   return v !== null && typeof v === "object";
 }
-function pickSlugs(data: unknown): string[] {
-  if (!Array.isArray(data)) return [];
-  const out: string[] = [];
-  for (const x of data) {
-    if (typeof x === "string") {
-      out.push(x);
-    } else if (isRecord(x)) {
-      const slug = x["slug"];
-      if (typeof slug === "string") out.push(slug);
+function arrayFromUnknown(u: unknown): unknown[] {
+  if (Array.isArray(u)) return u;
+  if (isRecord(u)) {
+    for (const k of ["data", "items", "results", "rows", "list", "payload", "certifications"]) {
+      const v = (u as any)[k];
+      if (Array.isArray(v)) return v;
     }
   }
+  return [];
+}
+function pickSlugs(u: unknown): string[] {
+  const arr = arrayFromUnknown(u);
+  const out: string[] = [];
+  for (const x of arr) {
+    if (typeof x === "string") out.push(x);
+    else if (isRecord(x) && typeof x.slug === "string") out.push(String(x.slug));
+  }
   return out;
+}
+
+async function fetchJSON(url: string, init?: RequestInit) {
+  const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 }, ...init });
+  if (!r.ok) throw new Error(`Fetch ${url} -> ${r.status}`);
+  return r.json();
 }
 
 export async function GET() {
@@ -33,45 +45,50 @@ export async function GET() {
 
   // ⚠️ deve finire con /api (es: https://api.certifyquiz.com/api)
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
-  const baseQs = "locale=it&fields=slug";
+  const SECRET = process.env.REVALIDATE_SECRET || "";
 
-  const candidates: string[] = [
-    `${API}/certifications?${baseQs}`,
-    `${API}/certifications?${baseQs}&limit=1000`,
-    `${API}/certifications?${baseQs}&pageSize=1000`,
-    `${API}/certifications?${baseQs}&per_page=1000`,
-    `${API}/certifications?${baseQs}&take=1000`,
-    `${API}/certifications?${baseQs}&offset=0&limit=1000`,
-    `${API}/certifications?${baseQs}&page=1&per_page=1000`,
-  ];
+  let source = "none";
+  let slugs: string[] = [];
+  let tried: string[] = [];
+  let rawCounts: number[] = [];
 
-  let bestSlugs: string[] = [];
-  const tried: string[] = [];
-  for (const url of candidates) {
-    tried.push(url);
+  if (API) {
+    // 1) Tenta l’endpoint admin senza paging
+    const adminUrl = `${API}/admin/all-cert-slugs`;
+    tried.push(adminUrl);
     try {
-      const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 } });
-      if (!r.ok) continue;
-      const data: unknown = await r.json();
-      const slugs = Array.from(new Set(pickSlugs(data)));
-      if (slugs.length > bestSlugs.length) {
-        bestSlugs = slugs;
-        if (bestSlugs.length >= 30) break; // sufficiente per il tuo caso
-      }
+      const data: unknown = await fetchJSON(adminUrl, {
+        headers: SECRET ? { "x-revalidate-secret": SECRET } : {},
+      });
+      const arr = Array.isArray(data) ? data : [];
+      slugs = Array.from(new Set(arr.filter((s): s is string => typeof s === "string"))).sort();
+      source = "admin";
     } catch {
-      // passa alla prossima variante
+      // 2) Fallback al vecchio endpoint pubblico (potrebbe dare 4)
+      const publicUrl = `${API}/certifications?locale=it&fields=slug`;
+      tried.push(publicUrl);
+      try {
+        const data: unknown = await fetchJSON(publicUrl);
+        const picked = pickSlugs(data);
+        rawCounts.push(picked.length);
+        slugs = Array.from(new Set(picked)).sort();
+        source = "public";
+      } catch {
+        // 3) Ultimo fallback: nessuno slug
+        slugs = [];
+        source = "empty";
+      }
     }
   }
 
-  const slugs = bestSlugs;
-  const now = new Date().toISOString();
+  const lastmod = new Date().toISOString();
   const urls: string[] = [];
 
   // Home
   urls.push(`
     <url>
       <loc>${site}/</loc>
-      <lastmod>${now}</lastmod>
+      <lastmod>${lastmod}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>1.0</priority>
     </url>`);
@@ -81,20 +98,20 @@ export async function GET() {
     urls.push(`
       <url>
         <loc>${site}/${l}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${lastmod}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
       </url>`);
     urls.push(`
       <url>
         <loc>${site}/${l}/${base[l]}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${lastmod}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
       </url>`);
   }
 
-  // 1 blocco per slug, con hreflang + x-default
+  // 1 blocco per slug (loc IT) + hreflang reciproci + x-default
   for (const slug of slugs) {
     const map = Object.fromEntries(
       langs.map(l => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
@@ -103,7 +120,7 @@ export async function GET() {
     urls.push(`
       <url>
         <loc>${map.it}</loc>
-        <lastmod>${now}</lastmod>
+        <lastmod>${lastmod}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
         ${langs.map(x => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
@@ -112,20 +129,24 @@ export async function GET() {
   }
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
-  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-          xmlns:xhtml="http://www.w3.org/1999/xhtml">
-    ${urls.join("\n")}
-  </urlset>`;
-  xml = xml.replace("<urlset ", `<urlset data-build="${Date.now()}" `); // stamp per diagnosi
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  data-build="${Date.now()}">
+  ${urls.join("\n")}
+</urlset>`;
 
-  return new Response(xml, {
-    headers: {
-      "Content-Type": "application/xml",
-      "Cache-Control": "no-store", // durante i test; poi metti s-maxage
-      // debug minimi utili
-      "X-Api-Base-Url": API || "EMPTY",
-      "X-Slugs-Len": String(slugs.length),
-      "X-Tried-Count": String(tried.length),
-    },
+  const headers = new Headers({
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": "no-store", // metti s-maxage dopo i test
+    "X-Api-Base-Url": API || "EMPTY",
+    "X-Slugs-Len": String(slugs.length),
+    "X-Source": source,               // "admin" | "public" | "empty"
+    "X-Raw-Attempts": String(rawCounts.join(",")),
+    "X-Tried-Count": String(tried.length),
   });
+
+  xml += `\n<!-- tried=${tried.length} source=${source} -->`;
+
+  return new Response(xml, { headers });
 }
