@@ -14,7 +14,7 @@ function arrayFromUnknown(u: unknown): unknown[] {
   if (Array.isArray(u)) return u;
   if (isRecord(u)) {
     for (const k of ["data", "items", "results", "rows", "list", "payload", "certifications"] as const) {
-      const v = (u as UnknownRecord)[k as keyof UnknownRecord];
+      const v = (u as UnknownRecord)[k];
       if (Array.isArray(v)) return v as unknown[];
     }
   }
@@ -55,6 +55,7 @@ export async function GET() {
   let slugs: string[] = [];
   const tried: string[] = [];
   const rawCounts: number[] = [];
+  const comments: string[] = [];
 
   if (API) {
     // 1) Endpoint admin senza paging
@@ -67,7 +68,8 @@ export async function GET() {
       const arr = Array.isArray(data) ? data : [];
       slugs = Array.from(new Set(arr.filter((s): s is string => typeof s === "string"))).sort();
       source = "admin";
-    } catch {
+    } catch (e: unknown) {
+      if (e instanceof Error) comments.push(`admin_fetch_error="${e.message}"`);
       // 2) Fallback: endpoint pubblico (potrebbe restare a 4)
       const publicUrl = `${API}/certifications?locale=it&fields=slug`;
       tried.push(publicUrl);
@@ -77,7 +79,8 @@ export async function GET() {
         rawCounts.push(picked.length);
         slugs = Array.from(new Set(picked)).sort();
         source = "public";
-      } catch {
+      } catch (ee: unknown) {
+        if (ee instanceof Error) comments.push(`public_fetch_error="${ee.message}"`);
         slugs = [];
         source = "empty";
       }
@@ -139,17 +142,22 @@ export async function GET() {
   ${urls.join("\n")}
 </urlset>`;
 
+  // Aggiungi commenti diagnostici (se presenti)
+  if (comments.length) {
+    xml += `\n<!-- ${comments.join(" ")} -->`;
+  }
+  xml += `\n<!-- tried=${tried.length} source=${source} -->`;
+
   const headers = new Headers({
     "Content-Type": "application/xml; charset=utf-8",
     "Cache-Control": "no-store", // metti s-maxage dopo i test
     "X-Api-Base-Url": API || "EMPTY",
     "X-Slugs-Len": String(slugs.length),
-    "X-Source": source,               // "admin" | "public" | "empty"
+    "X-Source": source,                    // "admin" | "public" | "empty"
     "X-Raw-Attempts": String(rawCounts.join(",")),
     "X-Tried-Count": String(tried.length),
+    "X-Secret-Present": SECRET ? "yes" : "no", // diagnostica rapida
   });
-
-  xml += `\n<!-- tried=${tried.length} source=${source} -->`;
 
   return new Response(xml, { headers });
 }
