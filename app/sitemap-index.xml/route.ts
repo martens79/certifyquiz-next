@@ -9,11 +9,11 @@ function isRecord(v: unknown): v is UnknownRecord {
   return v !== null && typeof v === "object";
 }
 
-// Estrae un array da varie chiavi comuni (senza usare `any`)
 function arrayFromUnknown(u: unknown): unknown[] {
   if (Array.isArray(u)) return u;
   if (isRecord(u)) {
-    for (const k of ["data", "items", "results", "rows", "list", "payload", "certifications"] as const) {
+    const keys = ["data", "items", "results", "rows", "list", "payload", "certifications"] as const;
+    for (const k of keys) {
       const v = (u as UnknownRecord)[k];
       if (Array.isArray(v)) return v as unknown[];
     }
@@ -26,14 +26,14 @@ function pickSlugs(u: unknown): string[] {
   const out: string[] = [];
   for (const x of arr) {
     if (typeof x === "string") out.push(x);
-    else if (isRecord(x) && typeof x.slug === "string") out.push(String(x.slug));
+    else if (isRecord(x) && typeof (x as UnknownRecord).slug === "string") out.push(String((x as UnknownRecord).slug));
   }
   return out;
 }
 
 async function fetchJSON(url: string, init?: RequestInit) {
   const r = await fetch(url, { cache: "no-store", next: { revalidate: 0 }, ...init });
-  if (!r.ok) throw new Error(`Fetch ${url} -> ${r.status}`);
+  if (!r.ok) throw new Error(`Fetch ${url} -> ${r.status} ${r.statusText}`);
   return (await r.json()) as unknown;
 }
 
@@ -47,7 +47,6 @@ export async function GET() {
     es: "certificaciones",
   };
 
-  // ⚠️ deve finire con /api (es: https://api.certifyquiz.com/api)
   const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
   const SECRET = process.env.REVALIDATE_SECRET || "";
 
@@ -58,8 +57,7 @@ export async function GET() {
   const comments: string[] = [];
 
   if (API) {
-    // 1) Endpoint admin senza paging
-    const adminUrl = `${API}/admin/all-cert-slugs`;
+    const adminUrl = API + "/admin/all-cert-slugs";
     tried.push(adminUrl);
     try {
       const data = await fetchJSON(adminUrl, {
@@ -68,10 +66,9 @@ export async function GET() {
       const arr = Array.isArray(data) ? data : [];
       slugs = Array.from(new Set(arr.filter((s): s is string => typeof s === "string"))).sort();
       source = "admin";
-    } catch (e: unknown) {
-      if (e instanceof Error) comments.push(`admin_fetch_error="${e.message}"`);
-      // 2) Fallback: endpoint pubblico (potrebbe restare a 4)
-      const publicUrl = `${API}/certifications?locale=it&fields=slug`;
+    } catch (e) {
+      comments.push(`admin_fetch_error`);
+      const publicUrl = API + "/certifications?locale=it&fields=slug";
       tried.push(publicUrl);
       try {
         const data = await fetchJSON(publicUrl);
@@ -79,8 +76,7 @@ export async function GET() {
         rawCounts.push(picked.length);
         slugs = Array.from(new Set(picked)).sort();
         source = "public";
-      } catch (ee: unknown) {
-        if (ee instanceof Error) comments.push(`public_fetch_error="${ee.message}"`);
+      } catch {
         slugs = [];
         source = "empty";
       }
@@ -90,73 +86,84 @@ export async function GET() {
   const lastmod = new Date().toISOString();
   const urls: string[] = [];
 
-  // Home
-  urls.push(`
-    <url>
-      <loc>${site}/</loc>
-      <lastmod>${lastmod}</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>1.0</priority>
-    </url>`);
+  urls.push(
+    [
+      "<url>",
+      `<loc>${site}/</loc>`,
+      `<lastmod>${lastmod}</lastmod>`,
+      "<changefreq>weekly</changefreq>",
+      "<priority>1.0</priority>",
+      "</url>",
+    ].join("")
+  );
 
-  // Lingue + liste
   for (const l of langs) {
-    urls.push(`
-      <url>
-        <loc>${site}/${l}</loc>
-        <lastmod>${lastmod}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-      </url>`);
-    urls.push(`
-      <url>
-        <loc>${site}/${l}/${base[l]}</loc>
-        <lastmod>${lastmod}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-      </url>`);
+    urls.push(
+      [
+        "<url>",
+        `<loc>${site}/${l}</loc>`,
+        `<lastmod>${lastmod}</lastmod>`,
+        "<changefreq>weekly</changefreq>",
+        "<priority>0.8</priority>",
+        "</url>",
+      ].join("")
+    );
+    urls.push(
+      [
+        "<url>",
+        `<loc>${site}/${l}/${base[l]}</loc>`,
+        `<lastmod>${lastmod}</lastmod>`,
+        "<changefreq>weekly</changefreq>",
+        "<priority>0.8</priority>",
+        "</url>",
+      ].join("")
+    );
   }
 
-  // 1 blocco per slug (loc IT) + hreflang reciproci + x-default
   for (const slug of slugs) {
-    const map = Object.fromEntries(
-      langs.map((l) => [l, `${site}/${l}/${base[l]}/${slug}`] as const)
-    ) as Record<Lang, string>;
+    const map: Record<Lang, string> = {
+      it: site + "/it/" + base.it + "/" + slug,
+      en: site + "/en/" + base.en + "/" + slug,
+      fr: site + "/fr/" + base.fr + "/" + slug,
+      es: site + "/es/" + base.es + "/" + slug,
+    };
 
-    urls.push(`
-      <url>
-        <loc>${map.it}</loc>
-        <lastmod>${lastmod}</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
-        ${langs.map((x) => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`).join("\n")}
-        <xhtml:link rel="alternate" hreflang="x-default" href="${map.it}"/>
-      </url>`);
+    urls.push(
+      [
+        "<url>",
+        `<loc>${map.it}</loc>`,
+        `<lastmod>${lastmod}</lastmod>`,
+        "<changefreq>weekly</changefreq>",
+        "<priority>0.7</priority>",
+        ...langs.map((x) => `<xhtml:link rel="alternate" hreflang="${x}" href="${map[x]}"/>`),
+        `<xhtml:link rel="alternate" hreflang="x-default" href="${map.it}"/>`,
+        "</url>",
+      ].join("")
+    );
   }
 
-  let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset
-  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml"
-  data-build="${Date.now()}">
-  ${urls.join("\n")}
-</urlset>`;
+  let xml =
+    '<?xml version="1.0" encoding="UTF-8"?>' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" data-build="' +
+    Date.now() +
+    '">' +
+    urls.join("\n") +
+    "</urlset>";
 
-  // Aggiungi commenti diagnostici (se presenti)
   if (comments.length) {
-    xml += `\n<!-- ${comments.join(" ")} -->`;
+    xml += "\n<!-- " + comments.join(" ") + " -->";
   }
-  xml += `\n<!-- tried=${tried.length} source=${source} -->`;
+  xml += "\n<!-- tried=" + tried.length + " source=" + source + " -->";
 
   const headers = new Headers({
     "Content-Type": "application/xml; charset=utf-8",
-    "Cache-Control": "no-store", // metti s-maxage dopo i test
+    "Cache-Control": "no-store",
     "X-Api-Base-Url": API || "EMPTY",
     "X-Slugs-Len": String(slugs.length),
-    "X-Source": source,                    // "admin" | "public" | "empty"
+    "X-Source": source,
     "X-Raw-Attempts": String(rawCounts.join(",")),
     "X-Tried-Count": String(tried.length),
-    "X-Secret-Present": SECRET ? "yes" : "no", // diagnostica rapida
+    "X-Secret-Present": SECRET ? "yes" : "no",
   });
 
   return new Response(xml, { headers });
