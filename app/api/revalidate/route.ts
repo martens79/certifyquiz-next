@@ -50,26 +50,28 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
  // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// 1) Auth — header o ?secret= (solo fuori da production) + fallback se ENV mancante
+// 1) Auth — preview permissiva: accetta header o ?secret= se non sei in production
+const env = process.env.VERCEL_ENV ?? "development";
 const url = new URL(req.url);
 const fromHeader = req.headers.get("x-revalidate-secret")?.trim() || "";
 const fromQs = url.searchParams.get("secret")?.trim() || "";
-const provided = fromHeader || (process.env.VERCEL_ENV !== "production" ? fromQs : "");
+const provided = fromHeader || (env !== "production" ? fromQs : "");
 const expected = process.env.REVALIDATE_SECRET?.trim() || "";
 
 if (!provided) {
   return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
 }
-if (expected) {
-  if (provided !== expected) {
-    return NextResponse.json({ ok: false, error: "Unauthorized (secret mismatch)" }, { status: 401 });
+
+if (env === "production") {
+  // in production: confronto rigoroso
+  if (!expected || provided !== expected) {
+    return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
   }
 } else {
-  if (process.env.VERCEL_ENV === "production") {
-    return NextResponse.json({ ok: false, error: "Server misconfigured (no REVALIDATE_SECRET)" }, { status: 500 });
-  }
-  // in preview/dev accettiamo qualunque secret non vuoto
+  // in preview/dev: se c'è un expected e combacia, bene; altrimenti accettiamo comunque
+  // (niente altro da fare)
 }
+
 
 
   // 2) Body parsing safe
