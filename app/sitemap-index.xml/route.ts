@@ -54,9 +54,10 @@ export async function GET() {
   let slugs: string[] = [];
 
   if (API) {
-    // 1) Prova endpoint admin (senza paging) con doppia autenticazione header
+    // 1) Prova l'endpoint admin con doppia auth (header + querystring)
     try {
-      const adminUrl = API + "/admin/all-cert-slugs";
+      const adminUrl =
+        API + "/admin/all-cert-slugs" + (SECRET ? "?secret=" + encodeURIComponent(SECRET) : "");
       const data = await fetchJSON(adminUrl, {
         headers: SECRET
           ? {
@@ -72,7 +73,7 @@ export async function GET() {
         throw new Error("bad_admin_payload");
       }
     } catch {
-      // 2) Fallback: endpoint pubblico (potrebbe restare a 4)
+      // 2) Fallback all'endpoint pubblico (potrebbe restare a 4)
       try {
         const pubUrl = API + "/certifications?locale=it&fields=slug";
         const data = await fetchJSON(pubUrl);
