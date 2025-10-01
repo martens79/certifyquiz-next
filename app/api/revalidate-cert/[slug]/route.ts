@@ -12,20 +12,16 @@ const BASE_BY_LANG = {
 } as const;
 
 export async function POST(req: Request) {
-  // URL per estrarre query e slug
+  // AUTH — solo header, confronto rigoroso (normalizzato)
+  const norm = (s: string) => s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, "");
+  const provided = norm(req.headers.get("x-revalidate-secret") ?? "");
+  const expected = norm(process.env.REVALIDATE_SECRET ?? "");
+  if (!provided || !expected || provided !== expected) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
 
-  // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// AUTH — produzione: SOLO header + confronto rigoroso (con normalizzazione prudente)
-const norm = (s: string) => s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, "");
-
-const provided = norm(req.headers.get("x-revalidate-secret") ?? "");
-const expected = norm(process.env.REVALIDATE_SECRET ?? "");
-
-if (!provided || !expected || provided !== expected) {
-  return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-}
-
-
+  // URL per query/slug/base
+  const url = new URL(req.url);
 
   // Ricava lo slug dalla URL: /api/revalidate-cert/<slug>?cascade=1
   const slug = decodeURIComponent(url.pathname.replace(/^\/api\/revalidate-cert\//, "") || "");
@@ -35,7 +31,7 @@ if (!provided || !expected || provided !== expected) {
 
   const cascade = url.searchParams.get("cascade") === "1";
 
-  // Costruisci i path da revalidare
+  // Path da revalidare (tutte le lingue)
   const paths: string[] = [];
   (Object.keys(BASE_BY_LANG) as Array<keyof typeof BASE_BY_LANG>).forEach((L) => {
     paths.push(`${BASE_BY_LANG[L]}/${slug}`);
@@ -43,8 +39,8 @@ if (!provided || !expected || provided !== expected) {
   });
   if (cascade) paths.push("/");
 
-  // Base URL dell’app (env o origin della richiesta)
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? url.origin;
+  // Base dell’app: env o origin richiesta
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? `${url.protocol}//${url.host}`;
 
   // Forward verso l’endpoint universale
   const res = await fetch(`${base}/api/revalidate`, {
