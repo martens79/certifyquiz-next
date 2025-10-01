@@ -15,24 +15,30 @@ export async function POST(req: Request) {
   // URL per estrarre query e slug
 
   // --- AUTH robusta: header o ?secret= (solo fuori da prod), con fallback se ENV mancante ---
-// Auth — preview permissiva: accetta header o ?secret= se non sei in production
+// Auth — strict in production, ma normalizza (trim + strip quotes) per evitare mismatch accidentali
 const env = process.env.VERCEL_ENV ?? "development";
 const url = new URL(req.url);
-const fromHeader = (req.headers.get("x-revalidate-secret") ?? "").trim();
-const fromQs = url.searchParams.get("secret")?.trim() || "";
-const provided = fromHeader || (env !== "production" ? fromQs : "");
-const expected = process.env.REVALIDATE_SECRET?.trim() || "";
+
+const fromHeader = (req.headers.get("x-revalidate-secret") ?? "");
+const fromQs = url.searchParams.get("secret") ?? "";
+const pick = fromHeader || (env !== "production" ? fromQs : "");
+
+const normalize = (s: string) =>
+  s.replace(/^\s+|\s+$/g, "").replace(/^['"]+|['"]+$/g, ""); // trim + togli quote esterne
+
+const provided = normalize(pick);
+const expected = normalize(process.env.REVALIDATE_SECRET ?? "");
 
 if (!provided) {
   return NextResponse.json({ ok: false, error: "Unauthorized (missing secret)" }, { status: 401 });
 }
-
 if (env === "production") {
   if (!expected || provided !== expected) {
     return NextResponse.json({ ok: false, error: "Unauthorized (prod secret mismatch)" }, { status: 401 });
   }
 }
-// in preview/dev non confrontiamo: basta che sia non-vuoto
+// in preview/dev: se c'è expected e coincide bene, altrimenti accettiamo purché non vuoto
+
 
 
   // Ricava lo slug dalla URL: /api/revalidate-cert/<slug>?cascade=1
