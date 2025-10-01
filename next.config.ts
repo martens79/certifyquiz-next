@@ -2,9 +2,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // <-- top-level, NON dentro experimental
-  turbopack: {
-    root: __dirname, // forza la root corretta per zittire il warning
+  turbopack: { root: __dirname },
+  output: "standalone",         // ✅ importante per API/SSR/ISR su Vercel
+  async rewrites() {
+    return [
+      {
+        source: "/api/backend/:path*",
+        destination: "https://api.certifyquiz.com/api/:path*",
+      },
+    ];
   },
 };
 
