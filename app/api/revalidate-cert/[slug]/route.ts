@@ -1,66 +1,67 @@
-// src/app/api/revalidate-cert/[slug]/route.ts
+// app/api/revalidate-cert/[slug]/route.ts
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { ENV } from "@/lib/env";
 
-// Base path per lingua (coerente con le tue route pubbliche)
-const BASE_BY_LANG: Record<"it"|"en"|"fr"|"es", string> = {
+const BASE_BY_LANG = {
   it: "/it/certificazioni",
   en: "/en/certifications",
   fr: "/fr/certifications",
   es: "/es/certificaciones",
-};
+} as const;
 
-type Params = { params: { slug: string } };
-
-export async function POST(req: NextRequest, { params }: Params) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { slug: string } } // ✅ tipo inline richiesto da Next
+) {
   const provided = (req.headers.get("x-revalidate-secret") ?? "").trim();
-  if (provided !== ENV.REVALIDATE_SECRET) {
+  if (!provided || provided !== process.env.REVALIDATE_SECRET) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const raw = params?.slug ?? "";
-  const slug = decodeURIComponent(raw);
+  const slugRaw = params?.slug ?? "";
+  const slug = decodeURIComponent(slugRaw);
   if (!slug) {
     return NextResponse.json({ ok: false, error: "Missing slug" }, { status: 400 });
   }
 
-  // Se vuoi accettare ?cascade=1 per revalidare anche le liste:
   const url = new URL(req.url);
   const cascade = url.searchParams.get("cascade") === "1";
 
-  // Costruisco i path derivati (pagina + liste per lingua)
+  // Costruisci i path da revalidare
   const paths: string[] = [];
   (Object.keys(BASE_BY_LANG) as Array<keyof typeof BASE_BY_LANG>).forEach((L) => {
     paths.push(`${BASE_BY_LANG[L]}/${slug}`);
     if (cascade) paths.push(BASE_BY_LANG[L]);
   });
-  // Home opzionale:
   if (cascade) paths.push("/");
 
-  // 🔁 Forward verso l’endpoint universale (mantenendo segreto + compat)
-  const forwardRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/revalidate`, {
+  // Base URL dell'app (usa env se presente, altrimenti l'origin della richiesta)
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? url.origin;
+
+  // Forward verso l’endpoint universale
+  const res = await fetch(`${base}/api/revalidate`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       "x-revalidate-secret": provided,
     },
     body: JSON.stringify({
-      // Usando l’API “nuova” tieni anche i tag se vuoi:
       certSlug: slug,
       lang: "all",
       cascade,
-      paths,            // espliciti
-      // tags: ["certs:list", `cert:${slug}`], // se li usi, allinea i nomi ai tuoi
+      paths,
+      // Se usi i tag, scommenta e allinea i nomi:
+      // tags: ["certs:list", `cert:${slug}`],
     }),
     cache: "no-store",
   }).catch(() => null);
 
-  if (!forwardRes) {
+  if (!res) {
     return NextResponse.json({ ok: false, error: "forward failed" }, { status: 500 });
   }
 
-  const json = await forwardRes.json().catch(() => ({ ok: false, error: "bad JSON" }));
-  return NextResponse.json(json, { status: forwardRes.ok ? 200 : forwardRes.status });
+  const json = await res.json().catch(() => ({ ok: false, error: "bad JSON" }));
+  return NextResponse.json(json, { status: res.ok ? 200 : res.status });
 }
