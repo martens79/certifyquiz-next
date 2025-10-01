@@ -1,15 +1,26 @@
 // src/app/api/revalidate/route.ts
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 
+type Lang = "it" | "en" | "fr" | "es" | "all";
+
 type RevalidateBody = {
+  // Formati già supportati
   path?: string;
   paths?: string[];
-  tags?: string[];       // NEW: revalidateTag support
-  dryRun?: boolean;      // NEW: test senza eseguire
+  tags?: string[];         // supporto revalidateTag
+  dryRun?: boolean;        // test senza eseguire
+
+  // Estensioni “universali”
+  certSlug?: string;       // es. "comptia-itf-plus"
+  lang?: Lang;             // "it"|"en"|"fr"|"es"|"all"
+  cascade?: boolean;       // se true, revalida anche la lista /[lang]/certificazioni
 };
 
-const MAX_ITEMS = 100;       // hard cap per evitare abusi
+const MAX_ITEMS = 100;       // hard cap anti-abuso
 const MAX_PATH_LEN = 2048;   // sanity check
 
 function isStringArray(a: unknown): a is string[] {
@@ -17,10 +28,23 @@ function isStringArray(a: unknown): a is string[] {
 }
 
 function normPath(p: string): string {
-  // trim, forza slash iniziale, rimuovi spazi doppi
   let out = p.trim();
   if (!out.startsWith("/")) out = "/" + out;
   return out.slice(0, MAX_PATH_LEN);
+}
+
+function uniq<T>(a: T[]): T[] {
+  return Array.from(new Set(a));
+}
+
+// Handler di cortesia per verificare che la route sia deployata
+export async function GET() {
+  return NextResponse.json({ ok: true, hint: "Use POST", version: "v2-unified" });
+}
+
+// Espone anche OPTIONS così l'header Allow è chiaro
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: { Allow: "OPTIONS, GET, POST" } });
 }
 
 export async function POST(req: NextRequest) {
@@ -36,24 +60,41 @@ export async function POST(req: NextRequest) {
     const raw = await req.json();
     if (raw && typeof raw === "object") body = raw as RevalidateBody;
   } catch {
-    // body vuoto → va bene, gestiamo sotto
+    // body vuoto → gestiamo sotto
   }
 
-  // 3) Raccolta input
+  // 3) Raccolta input (paths/tags “diretti”)
   const list: string[] = [];
   if (typeof body.path === "string") list.push(body.path);
   if (isStringArray(body.paths)) list.push(...body.paths);
 
-  const tags = isStringArray(body.tags) ? Array.from(new Set(body.tags.map((t) => t.trim()).filter(Boolean))) : [];
+  const tags = isStringArray(body.tags)
+    ? uniq(body.tags.map((t) => t.trim()).filter(Boolean))
+    : [];
 
-  // 4) Normalizza path
-  const uniquePaths = Array.from(new Set(list.map(normPath))).filter(Boolean).slice(0, MAX_ITEMS);
+  // 4) Derivati da certSlug/lang/cascade (i18n)
+  const locales = body.lang && body.lang !== "all" ? [body.lang] : ["it", "en", "fr", "es"];
+  const derived: string[] = [];
 
-  if (uniquePaths.length === 0 && tags.length === 0) {
-    return NextResponse.json({ ok: false, error: "Missing path(s) or tags" }, { status: 400 });
+  if (body.certSlug) {
+    for (const L of locales) {
+      derived.push(`/${L}/certificazioni/${body.certSlug}`);
+      if (body.cascade) {
+        derived.push(`/${L}/certificazioni`); // lista per lingua
+      }
+    }
   }
 
-  // 5) Dry-run?
+  // 5) Normalizza e limita
+  const uniquePaths = uniq(
+    list.concat(derived).map(normPath).filter(Boolean)
+  ).slice(0, MAX_ITEMS);
+
+  if (uniquePaths.length === 0 && tags.length === 0) {
+    return NextResponse.json({ ok: false, error: "Missing path(s) or tags or certSlug" }, { status: 400 });
+  }
+
+  // 6) Dry-run?
   if (body.dryRun) {
     return NextResponse.json({
       ok: true,
@@ -64,7 +105,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // 6) Esecuzione
+  // 7) Esecuzione
   try {
     for (const p of uniquePaths) {
       revalidatePath(p, "page"); // esplicito
