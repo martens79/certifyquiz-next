@@ -12,7 +12,7 @@ function isRecord(v: unknown): v is UnknownRecord {
 function arrayFromUnknown(u: unknown): unknown[] {
   if (Array.isArray(u)) return u;
   if (isRecord(u)) {
-    const keys = ["data","items","results","rows","list","payload","certifications"] as const;
+    const keys = ["data", "items", "results", "rows", "list", "payload", "certifications"] as const;
     for (const k of keys) {
       const v = (u as UnknownRecord)[k];
       if (Array.isArray(v)) return v as unknown[];
@@ -39,26 +39,31 @@ async function fetchJSON(url: string, init?: RequestInit) {
 
 export async function GET() {
   const site = "https://www.certifyquiz.com";
-  const langs: Lang[] = ["it","en","fr","es"];
-  const baseByLang: Record<Lang,string> = {
+  const langs: Lang[] = ["it", "en", "fr", "es"];
+  const baseByLang: Record<Lang, string> = {
     it: "certificazioni",
     en: "certifications",
     fr: "certifications",
     es: "certificaciones",
   };
 
-  const API    = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
+  const API = (process.env.API_BASE_URL || "").replace(/\/+$/, "");
   const SECRET = (process.env.REVALIDATE_SECRET || "").trim();
 
   let source: "admin" | "public" | "empty" = "empty";
   let slugs: string[] = [];
 
   if (API) {
-    // 1) admin (senza paging)
+    // 1) Prova endpoint admin (senza paging) con doppia autenticazione header
     try {
       const adminUrl = API + "/admin/all-cert-slugs";
       const data = await fetchJSON(adminUrl, {
-        headers: SECRET ? { "x-revalidate-secret": SECRET } : {},
+        headers: SECRET
+          ? {
+              "x-revalidate-secret": SECRET,
+              authorization: `Bearer ${SECRET}`,
+            }
+          : {},
       });
       if (Array.isArray(data)) {
         slugs = Array.from(new Set(data.filter((s): s is string => typeof s === "string"))).sort();
@@ -67,7 +72,7 @@ export async function GET() {
         throw new Error("bad_admin_payload");
       }
     } catch {
-      // 2) fallback pubblico (potrebbe restare a 4)
+      // 2) Fallback: endpoint pubblico (potrebbe restare a 4)
       try {
         const pubUrl = API + "/certifications?locale=it&fields=slug";
         const data = await fetchJSON(pubUrl);
@@ -82,8 +87,6 @@ export async function GET() {
 
   const lastmod = new Date().toISOString();
   const lines: string[] = [];
-
-  // helper per blocchi leggibili
   const push = (s: string) => lines.push(s);
 
   push('<?xml version="1.0" encoding="UTF-8"?>');
@@ -117,7 +120,7 @@ export async function GET() {
 
   // 1 blocco per certificazione (loc IT) + hreflang reciproci + x-default
   for (const slug of slugs) {
-    const map: Record<Lang,string> = {
+    const map: Record<Lang, string> = {
       it: `${site}/it/${baseByLang.it}/${slug}`,
       en: `${site}/en/${baseByLang.en}/${slug}`,
       fr: `${site}/fr/${baseByLang.fr}/${slug}`,
