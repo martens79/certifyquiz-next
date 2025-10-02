@@ -14,23 +14,25 @@ type CertListItem = {
 
 export const revalidate = 3600;
 
-export async function generateStaticParams() {
-  return SUPPORTED.map((lang) => ({ lang }));
+export function generateStaticParams() {
+  return (SUPPORTED as readonly string[]).map((lang) => ({ lang }));
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ lang: Lang }> }
-): Promise<Metadata> {
-  const { lang } = await params;
-  if (!SUPPORTED.includes(lang)) return {};
+export function generateMetadata(
+  { params }: { params: { lang: string } }
+): Metadata {
+  const lang: Lang = (SUPPORTED as readonly string[]).includes(params.lang)
+    ? (params.lang as Lang)
+    : "it";
 
-  const canonical =
-    lang === "it" ? "/it/certificazioni" :
-    lang === "es" ? "/es/certificaciones" :
-    `/${lang}/certifications`;
+  // Per ORA usiamo lo slug *unificato* /[lang]/certifications (niente 404)
+  const canonical = `/${lang}/certifications`;
 
   return {
-    title: lang === "it" ? "Certificazioni IT — CertifyQuiz" : "IT Certifications — CertifyQuiz",
+    title:
+      lang === "it"
+        ? "Certificazioni IT — CertifyQuiz"
+        : "IT Certifications — CertifyQuiz",
     description:
       lang === "it"
         ? "Elenco delle certificazioni con quiz e spiegazioni in italiano."
@@ -38,10 +40,10 @@ export async function generateMetadata(
     alternates: {
       canonical,
       languages: {
-        it: "/it/certificazioni",
+        it: "/it/certifications",
         en: "/en/certifications",
         fr: "/fr/certifications",
-        es: "/es/certificaciones",
+        es: "/es/certifications",
         "x-default": "/en/certifications",
       },
     },
@@ -49,25 +51,26 @@ export async function generateMetadata(
 }
 
 export default async function ListPage(
-  { params }: { params: Promise<{ lang: Lang }> }
+  { params }: { params: { lang: string } }
 ) {
-  const { lang } = await params;
-  if (!SUPPORTED.includes(lang)) return notFound();
+  const langOk = (SUPPORTED as readonly string[]).includes(params.lang);
+  if (!langOk) return notFound();
+  const lang = params.lang as Lang;
 
-  // tipizziamo il risultato del fetch
   const certs = (await getCertList(lang)) as CertListItem[];
 
-  const toDetail = (l: Lang, slug: string) =>
-    l === "it" ? `/it/certificazioni/${slug}` :
-    l === "es" ? `/es/certificaciones/${slug}` :
-    `/${l}/certifications/${slug}`;
+  const toDetail = (l: Lang, slug: string) => `/${l}/certifications/${slug}`;
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-4">
       <h1 className="text-2xl font-bold">
-        {lang === "it" ? "Certificazioni (IT)" :
-         lang === "fr" ? "Certifications (FR)" :
-         lang === "es" ? "Certificaciones (ES)" : "Certifications (EN)"}
+        {lang === "it"
+          ? "Certificazioni (IT)"
+          : lang === "fr"
+          ? "Certifications (FR)"
+          : lang === "es"
+          ? "Certifications (ES)"
+          : "Certifications (EN)"}
       </h1>
       <ul className="space-y-2">
         {certs.map((c) => (
@@ -75,7 +78,9 @@ export default async function ListPage(
             <Link href={toDetail(lang, c.slug)} className="font-semibold hover:underline">
               {c.title}
             </Link>
-            {c.intro ? <p className="text-sm text-gray-600 mt-1">{c.intro}</p> : null}
+            {c.intro ? (
+              <p className="text-sm text-gray-600 mt-1">{c.intro}</p>
+            ) : null}
           </li>
         ))}
       </ul>

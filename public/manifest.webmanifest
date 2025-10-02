@@ -1,0 +1,6 @@
+{
+  "name": "CertifyQuiz",
+  "short_name": "CertifyQuiz",
+  "start_url": "/it",
+  "display": "standalone",
+  "background_color": "#ffffff
