@@ -1,180 +1,120 @@
 // src/lib/data.ts
+// Layer dati con fallback locali finché il backend reale non è allineato.
+
+export type Lang = "it" | "en" | "fr" | "es";
+
 export type Cert = {
   slug: string;
-  locale: "it" | "en" | "fr" | "es";
   title: string;
-  h1: string;
-  intro: string;
-  seoDescription: string;
-  faq: { q: string; a: string }[];
+  h1?: string;
+  intro?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  faq?: { q: string; a: string }[];
 };
 
-// --- Mock di fallback (puoi rimuoverlo quando non serve più) ---
-const MOCK: Cert[] = [
-  {
-    slug: "comptia-itf-plus",
-    locale: "it",
-    title: "CompTIA ITF+",
-    h1: "Quiz CompTIA ITF+ (Simulatore d’esame)",
-    intro:
-      "Allenati all’esame CompTIA ITF+ con quiz aggiornati e spiegazioni passo-passo. Modalità allenamento ed esame, statistiche e badge.",
-    seoDescription:
-      "Allenati all’esame CompTIA ITF+ con quiz reali e spiegazioni chiare. Modalità allenamento/esame e progressi. Provalo gratis.",
-    faq: [
-      { q: "Quanto dura l’esame ITF+?", a: "Circa 60 minuti con domande a scelta multipla." },
-      { q: "Quanti punti servono per superare?", a: "In genere intorno a 650 su 900." },
-    ],
-  },
-];
+// Usa il proxy (next.config.ts -> /api/backend -> https://api.certifyquiz.com/api)
+const API_BASE = "/api/backend";
 
-const API = process.env.API_BASE_URL; // es: https://api.certifyquiz.com
+// ---- FALLBACK LOCALI (minimi ma sufficienti a non 404-are) ----
+const FALLBACKS: Record<Lang, Cert[]> = {
+  it: [
+    {
+      slug: "jncie",
+      title: "JNCIE",
+      h1: "JNCIE — Juniper Networks Certified Internet Expert",
+      intro: "Preparati all’esame JNCIE con quiz realistici e spiegazioni.",
+      seoDescription: "Quiz JNCIE con spiegazioni in italiano per preparare l’esame Expert di Juniper.",
+      faq: [
+        { q: "Quanto dura l’esame JNCIE?", a: "Dipende dalla traccia, in genere exam lab di più ore." },
+      ],
+    },
+    {
+      slug: "f5",
+      title: "F5 Certified Professional",
+      h1: "F5 Certified Professional",
+      intro: "Application Delivery e sicurezza: metti alla prova le tue competenze.",
+      seoDescription: "Quiz per certificazioni F5 con focus su ADC e sicurezza applicativa.",
+    },
+    {
+      slug: "aws-cloud-practitioner",
+      title: "AWS Cloud Practitioner",
+      h1: "AWS Certified Cloud Practitioner",
+      intro: "Fondamenti del cloud AWS: servizi base, fatturazione e best practice.",
+      seoDescription: "Quiz AWS Cloud Practitioner in italiano con spiegazioni passo-passo.",
+    },
+    {
+      slug: "cisco-ccst-networking",
+      title: "Cisco CCST – Networking",
+      h1: "Cisco CCST – Networking",
+      intro: "Reti di base, modelli, indirizzamento e troubleshooting entry-level.",
+      seoDescription: "Quiz Cisco CCST Networking con spiegazioni e domande aggiornate.",
+    },
+    // Se vuoi testare anche ITF+:
+    // { slug: "comptia-itf-plus", title: "CompTIA ITF+", seoDescription: "Quiz ITF+ con spiegazioni." },
+  ],
+  en: [],
+  fr: [],
+  es: [],
+};
 
-// ---------- Type guards & helpers ----------
-function isString(v: unknown): v is string {
-  return typeof v === "string";
-}
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return v !== null && typeof v === "object";
-}
-function getString(r: Record<string, unknown>, key: string): string | undefined {
-  const v = r[key];
-  return typeof v === "string" ? v : undefined;
-}
-function normalizeFaq(x: unknown): { q: string; a: string }[] {
-  if (!Array.isArray(x)) return [];
-  const out: { q: string; a: string }[] = [];
-  for (const it of x) {
-    if (!isRecord(it)) continue;
-    const q = getString(it, "q") ?? getString(it, "question") ?? "";
-    const a = getString(it, "a") ?? getString(it, "answer") ?? "";
-    if (q || a) out.push({ q, a });
+// ---- Helper robusto per fetch JSON ----
+async function jsonOrThrow<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
   }
-  return out;
+  return res.json() as Promise<T>;
 }
 
-// ---------- API (con cache tag) ----------
-export async function getAllCertSlugs(
-  locale: Cert["locale"] = "it"
-): Promise<string[]> {
-  if (!API) {
-    return MOCK.filter((c) => c.locale === locale).map((c) => c.slug);
-  }
+// ---- API: LISTA ----
+export async function getCertList(lang: Lang): Promise<Cert[]> {
   try {
-    // LISTA → tag condiviso "certs:list"
-    const r = await fetch(`${API}/certifications?locale=${locale}&fields=slug`, {
-      next: {
-        tags: ["certs:list"], // invalidabile via revalidateTag("certs:list")
-        revalidate: 86400,    // ISR di fallback
-      },
+    const res = await fetch(`${API_BASE}/certifications?lang=${lang}`, {
+      // SSG con revalidate breve per lista
+      next: { revalidate: 3600 },
     });
-    if (!r.ok) return [];
-    const data: unknown = await r.json();
-
-    if (!Array.isArray(data)) return [];
-    const slugs: string[] = [];
-    for (const item of data) {
-      if (isString(item)) {
-        slugs.push(item);
-      } else if (isRecord(item)) {
-        const s = getString(item, "slug");
-        if (s) slugs.push(s);
-      }
-    }
-    return slugs;
+    const data = await jsonOrThrow<Cert[]>(res);
+    if (Array.isArray(data) && data.length) return data;
+    // Se l'API risponde ma è vuota, usa fallback
+    const fb = FALLBACKS[lang]?.length ? FALLBACKS[lang] : FALLBACKS.it;
+    return fb;
   } catch {
-    return MOCK.filter((c) => c.locale === locale).map((c) => c.slug);
+    const fb = FALLBACKS[lang]?.length ? FALLBACKS[lang] : FALLBACKS.it;
+    return fb;
   }
 }
 
-export async function getCertBySlug(
-  slug: string,
-  locale: Cert["locale"] = "it"
-): Promise<Cert | null> {
-  if (!API) {
-    return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
-  }
+// ---- API: SOLO SLUG ----
+export async function getAllCertSlugs(lang: Lang): Promise<string[]> {
   try {
-    // DETTAGLIO → tag specifico per slug + lista
-    const r = await fetch(`${API}/certifications/${slug}?locale=${locale}`, {
-      next: {
-        tags: [`cert:${slug}`, "certs:list"], // revalidateTag(`cert:${slug}`) + revalidateTag("certs:list")
-        revalidate: 86400,
-      },
+    const res = await fetch(`${API_BASE}/certifications/slugs?lang=${lang}`, {
+      next: { revalidate: 3600 },
     });
-    if (!r.ok) return null;
-    const raw: unknown = await r.json();
-    if (!isRecord(raw)) return null;
-
-    const title =
-      getString(raw, "title") ??
-      getString(raw, "name") ??
-      getString(raw, "h1") ??
-      slug;
-
-    const h1 =
-      getString(raw, "h1") ??
-      getString(raw, "title") ??
-      getString(raw, "name") ??
-      slug;
-
-    const intro = getString(raw, "intro") ?? getString(raw, "description") ?? "";
-    const seoDescription =
-      getString(raw, "seoDescription") ??
-      getString(raw, "seo") ??
-      getString(raw, "description") ??
-      "";
-
-    const faq = normalizeFaq((raw as Record<string, unknown>)["faq"]);
-
-    return { slug, locale, title, h1, intro, seoDescription, faq };
+    const data = await jsonOrThrow<string[]>(res);
+    if (Array.isArray(data) && data.length) return data;
+    // Fallback: deriva dagli item fallback
+    const list = await getCertList(lang);
+    return list.map((c) => c.slug);
   } catch {
-    return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
+    const list = await getCertList(lang);
+    return list.map((c) => c.slug);
   }
 }
 
-// (opzionale) lista completa per pagina /certificazioni
-export async function getCertList(
-  locale: Cert["locale"] = "it"
-): Promise<Cert[]> {
-  if (!API) return MOCK.filter((c) => c.locale === locale);
+// ---- API: DETTAGLIO ----
+export async function getCertBySlug(slug: string, lang: Lang): Promise<Cert | null> {
   try {
-    const r = await fetch(`${API}/certifications?locale=${locale}`, {
-      next: { tags: ["certs:list"], revalidate: 86400 },
+    const res = await fetch(`${API_BASE}/certifications/${slug}?lang=${lang}`, {
+      // Dettaglio può essere più “fresco”
+      next: { revalidate: 300 },
     });
-    if (!r.ok) return [];
-    const arr: unknown = await r.json();
-    if (!Array.isArray(arr)) return [];
-
-    const list: Cert[] = [];
-    for (const raw of arr) {
-      if (!isRecord(raw)) continue;
-      const slug = getString(raw, "slug");
-      if (!slug) continue;
-
-      const title =
-        getString(raw, "title") ??
-        getString(raw, "name") ??
-        getString(raw, "h1") ??
-        slug;
-
-      const h1 =
-        getString(raw, "h1") ??
-        getString(raw, "title") ??
-        getString(raw, "name") ??
-        slug;
-
-      const intro = getString(raw, "intro") ?? getString(raw, "description") ?? "";
-      const seoDescription =
-        getString(raw, "seoDescription") ??
-        getString(raw, "seo") ??
-        getString(raw, "description") ??
-        "";
-
-      const faq = normalizeFaq((raw as Record<string, unknown>)["faq"]);
-      list.push({ slug, locale, title, h1, intro, seoDescription, faq });
-    }
-    return list;
+    const item = await jsonOrThrow<Cert>(res);
+    if (item && item.slug) return item;
+    // Se l'API risponde ma non torna un item valido, prova fallback
+    const list = await getCertList(lang);
+    return list.find((c) => c.slug === slug) ?? null;
   } catch {
-    return MOCK.filter((c) => c.locale === locale);
+    const list = await getCertList(lang);
+    return list.find((c) => c.slug === slug) ?? null;
   }
 }
