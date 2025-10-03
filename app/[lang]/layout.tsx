@@ -1,22 +1,20 @@
-// src/app/[lang]/layout.tsx
-import { isLocale, type Locale, defaultLocale } from "@/lib/i18n";
+// app/[lang]/layout.tsx
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { isLocale, defaultLocale, type Locale } from "@/lib/i18n";
 
-export default function LangLayout({
+export default async function LangLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { lang: string };
+  params: Promise<{ lang: string }>;
 }) {
-  const lang: Locale = isLocale(params.lang) ? (params.lang as Locale) : defaultLocale;
+  const { lang: raw } = await params;
+  const lang: Locale = isLocale(raw) ? (raw as Locale) : defaultLocale;
 
   return (
     <>
-      {/* Imposta l'attributo lang sul root <html> via side-effect se vuoi (opzionale) */}
-      {/* <script dangerouslySetInnerHTML={{ __html: `document.documentElement.lang='${lang}'` }} /> */}
-
       <Header lang={lang} />
       <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
       <Footer lang={lang} />

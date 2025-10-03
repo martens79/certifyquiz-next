@@ -1,13 +1,16 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
+import { prettyDetail } from "@/lib/prettyPaths";
 
 const SUPPORTED = ["it", "en", "fr", "es"] as const;
-type Lang = typeof SUPPORTED[number];
+type Lang = (typeof SUPPORTED)[number];
 
 export const revalidate = 86400;
 
-// ✅ parallelizza lo scraping degli slug per tutte le lingue
+// Usa l'ENV in prod (Vercel): NEXT_PUBLIC_SITE_URL=https://www.certifyquiz.com
+const ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com";
+
 export async function generateStaticParams() {
   const lists = await Promise.all(
     (SUPPORTED as readonly Lang[]).map(async (lang) => {
@@ -18,22 +21,23 @@ export async function generateStaticParams() {
   return lists.flat();
 }
 
-// ✅ params non è una Promise
 export async function generateMetadata(
-  { params }: { params: { lang: string; slug: string } }
+  { params }: { params: Promise<{ lang: string; slug: string }> }
 ): Promise<Metadata> {
-  const lang = (SUPPORTED as readonly string[]).includes(params.lang)
-    ? (params.lang as Lang)
-    : "it";
+  const { lang: raw, slug } = await params;
+  const lang: Lang = (SUPPORTED as readonly string[]).includes(raw) ? (raw as Lang) : "it";
 
-  const data = await getCertBySlug(params.slug, lang);
+  const data = await getCertBySlug(slug, lang);
   if (!data) return {};
 
-  // Se hai messo le rewrites "belle" in next.config.ts, i canonical localizzati non daranno 404
-  const url =
-    lang === "it" ? `https://www.certifyquiz.com/it/certificazioni/${data.slug}` :
-    lang === "es" ? `https://www.certifyquiz.com/es/certificaciones/${data.slug}` :
-    `https://www.certifyquiz.com/${lang}/certifications/${data.slug}`;
+  // Canonical/hreflang con PRETTY URL
+  const canonicalRel = prettyDetail(lang, data.slug);
+  const hrefs = {
+    it: prettyDetail("it", data.slug),
+    en: prettyDetail("en", data.slug),
+    fr: prettyDetail("fr", data.slug),
+    es: prettyDetail("es", data.slug),
+  };
 
   const titleByLang: Record<Lang, string> = {
     it: `Quiz ${data.title} – Simulatore d’Esame | CertifyQuiz`,
@@ -46,33 +50,34 @@ export async function generateMetadata(
     title: titleByLang[lang],
     description: data.seoDescription,
     alternates: {
-      canonical: url,
+      // Canonical può essere relativo (Next lo risolve) — gli hrefLang meglio assoluti per chiarezza
+      canonical: canonicalRel,
       languages: {
-        it: `https://www.certifyquiz.com/it/certificazioni/${data.slug}`,
-        en: `https://www.certifyquiz.com/en/certifications/${data.slug}`,
-        fr: `https://www.certifyquiz.com/fr/certifications/${data.slug}`,
-        es: `https://www.certifyquiz.com/es/certificaciones/${data.slug}`,
-        "x-default": `https://www.certifyquiz.com/en/certifications/${data.slug}`,
+        "it-IT": `${ORIGIN}${hrefs.it}`,
+        "en-US": `${ORIGIN}${hrefs.en}`,
+        "fr-FR": `${ORIGIN}${hrefs.fr}`,
+        "es-ES": `${ORIGIN}${hrefs.es}`,
+        "x-default": `${ORIGIN}${hrefs.en}`,
       },
     },
     openGraph: {
       type: "article",
-      url,
+      url: `${ORIGIN}${canonicalRel}`,
       title: `Quiz ${data.title}`,
       description: data.seoDescription,
+      siteName: "CertifyQuiz",
     },
   };
 }
 
-// ✅ params non è una Promise
 export default async function CertPage(
-  { params }: { params: { lang: string; slug: string } }
+  { params }: { params: Promise<{ lang: string; slug: string }> }
 ) {
-  const langOk = (SUPPORTED as readonly string[]).includes(params.lang);
-  if (!langOk) return notFound();
-  const lang = params.lang as Lang;
+  const { lang: raw, slug } = await params;
+  if (!(SUPPORTED as readonly string[]).includes(raw)) return notFound();
+  const lang = raw as Lang;
 
-  const data = await getCertBySlug(params.slug, lang);
+  const data = await getCertBySlug(slug, lang);
   if (!data) return notFound();
 
   const cta: Record<Lang, string> = {
@@ -82,23 +87,22 @@ export default async function CertPage(
     es: "Comenzar el quiz",
   };
 
-  // FAQ JSON-LD (opzionale)
   const faqJsonLd = data.faq?.length
     ? {
         "@context": "https://schema.org",
         "@type": "FAQPage",
-        "mainEntity": data.faq.map((f: { q: string; a: string }) => ({
+        mainEntity: data.faq.map((f: { q: string; a: string }) => ({
           "@type": "Question",
-          "name": f.q,
-          "acceptedAnswer": { "@type": "Answer", "text": f.a },
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
         })),
       }
     : null;
 
   return (
     <article className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">{data.h1}</h1>
-      <p>{data.intro}</p>
+      <h1 className="text-3xl font-bold">{data.h1 ?? data.title}</h1>
+      {data.intro && <p>{data.intro}</p>}
 
       <a
         href={`https://app.certifyquiz.com/${lang}/quiz/cert/${data.slug}`}

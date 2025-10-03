@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const SUPPORTED = ["it", "en", "fr", "es"] as const;
-type Lang = typeof SUPPORTED[number];
+type Lang = "it" | "en" | "fr" | "es";
+
 
 function pickPreferred(): Lang {
   if (typeof navigator === "undefined") return "it";

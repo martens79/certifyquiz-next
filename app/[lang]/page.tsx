@@ -1,8 +1,9 @@
 import { type Locale, isLocale, defaultLocale, dict, withLang } from "@/lib/i18n";
 import Link from "next/link";
 
-export default function Home({ params }: { params: { lang: string } }) {
-  const lang: Locale = isLocale(params.lang) ? params.lang as Locale : defaultLocale;
+export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: raw } = await params;
+  const lang: Locale = isLocale(raw) ? (raw as Locale) : defaultLocale;
   const t = dict[lang];
 
   return (
