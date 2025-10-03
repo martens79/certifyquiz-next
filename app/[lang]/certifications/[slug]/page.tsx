@@ -43,7 +43,7 @@ export async function generateMetadata(
 
   return {
     title: titleByLang[lang],
-    description: data.seoDescription,
+    description: data.seoDescription ?? "",
     alternates: {
       canonical: canonicalRel,
       languages: {
@@ -53,13 +53,6 @@ export async function generateMetadata(
         "es-ES": `${ORIGIN}${hrefs.es}`,
         "x-default": `${ORIGIN}${hrefs.en}`,
       },
-    },
-    openGraph: {
-      type: "article",
-      url: `${ORIGIN}${canonicalRel}`,
-      title: `Quiz ${data.title}`,
-      description: data.seoDescription,
-      siteName: "CertifyQuiz",
     },
   };
 }
@@ -81,12 +74,13 @@ export default async function CertPage(
     es: "Comenzar el quiz",
   };
 
-  // normalizza FAQ per evitare errori TS quando è assente
+  // Normalizza FAQ senza usare `any`
   type FaqItem = { q: string; a: string };
-  const faqItems: FaqItem[] = Array.isArray((data as any).faq) ? ((data as any).faq as FaqItem[]) : [];
+  const faqRaw = (data as { faq?: FaqItem[] }).faq;
+  const faqItems: FaqItem[] = Array.isArray(faqRaw) ? faqRaw : [];
 
   const faqJsonLd =
-    faqItems.length
+    faqItems.length > 0
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
