@@ -1,8 +1,8 @@
-// src/app/layout.tsx
+// app/layout.tsx  ← (attenzione: NON src/app/)
 import type { Metadata } from "next";
 import "./globals.css";
 
-const site = "https://www.certifyquiz.com";
+const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(site),
@@ -19,15 +19,7 @@ export const metadata: Metadata = {
       "x-default": "/en",
     },
   },
-  openGraph: {
-    type: "website",
-    siteName: "CertifyQuiz",
-    url: site,
-    title: "CertifyQuiz — Quiz per certificazioni IT",
-    description:
-      "CertifyQuiz ti aiuta a preparare le certificazioni IT con quiz realistici e spiegazioni dettagliate, in più lingue.",
-    images: [`${site}/og-home.jpg`],
-  },
+  // ❌ NIENTE openGraph qui: lo impostano le singole pagine (lista/dettaglio)
   twitter: {
     card: "summary_large_image",
     title: "CertifyQuiz — Quiz per certificazioni IT",
@@ -38,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const GA_ID = "G-W0YB8XL3FE"; // stesso che usi ora
+  const GA_ID = "G-W0YB8XL3FE";
   return (
     <html lang="it">
       <head>
@@ -54,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             `,
           }}
         />
-        {/* Manifest / PWA base */}
+        {/* PWA / icone */}
         <link rel="manifest" href="/manifest.webmanifest" />
         <meta name="theme-color" content="#1a73e8" />
         <link rel="icon" href="/favicon.ico" />
