@@ -1,41 +1,21 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAllCertSlugs, getCertBySlug, getCertList } from "@/lib/data";
+import { getCertBySlug } from "@/lib/data";
 import { prettyDetail } from "@/lib/prettyPaths";
 
 const SUPPORTED = ["it", "en", "fr", "es"] as const;
 type Lang = (typeof SUPPORTED)[number];
 
 export const revalidate = 86400;
-export const dynamicParams = true; // ✅ genera on-demand slug non presenti in generateStaticParams
+export const dynamicParams = true; // genera on-demand gli slug non pre-elencati
+
+// esplicito (niente fetch durante il build)
+export async function generateStaticParams() {
+  return [];
+}
 
 // Usa l'ENV in prod (Vercel): NEXT_PUBLIC_SITE_URL=https://www.certifyquiz.com
 const ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com";
-
-export async function generateStaticParams() {
-  const out: { lang: Lang; slug: string }[] = [];
-
-  for (const lang of SUPPORTED as readonly Lang[]) {
-    let slugs: string[] = [];
-    try {
-      slugs = await getAllCertSlugs(lang);
-    } catch {
-      // ignora errori runtime
-    }
-    // Fallback robusto: se slugs è vuoto, derivali dalla lista
-    if (!slugs?.length) {
-      try {
-        const list = await getCertList(lang);
-        slugs = list.map((c: { slug: string }) => c.slug);
-      } catch {
-        // ancora vuoto? pazienza: ci penserà dynamicParams al primo hit
-      }
-    }
-    slugs?.forEach((slug) => out.push({ lang, slug }));
-  }
-
-  return out;
-}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ lang: string; slug: string }> }
@@ -46,7 +26,6 @@ export async function generateMetadata(
   const data = await getCertBySlug(slug, lang);
   if (!data) return {};
 
-  // Canonical/hreflang con PRETTY URL
   const canonicalRel = prettyDetail(lang, data.slug);
   const hrefs = {
     it: prettyDetail("it", data.slug),
@@ -66,7 +45,7 @@ export async function generateMetadata(
     title: titleByLang[lang],
     description: data.seoDescription,
     alternates: {
-      canonical: canonicalRel, // relativo ok
+      canonical: canonicalRel,
       languages: {
         "it-IT": `${ORIGIN}${hrefs.it}`,
         "en-US": `${ORIGIN}${hrefs.en}`,
@@ -102,17 +81,22 @@ export default async function CertPage(
     es: "Comenzar el quiz",
   };
 
-  const faqJsonLd = data.faq?.length
-    ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: data.faq.map((f: { q: string; a: string }) => ({
-          "@type": "Question",
-          name: f.q,
-          acceptedAnswer: { "@type": "Answer", text: f.a },
-        })),
-      }
-    : null;
+  // normalizza FAQ per evitare errori TS quando è assente
+  type FaqItem = { q: string; a: string };
+  const faqItems: FaqItem[] = Array.isArray((data as any).faq) ? ((data as any).faq as FaqItem[]) : [];
+
+  const faqJsonLd =
+    faqItems.length
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqItems.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }
+      : null;
 
   return (
     <article className="max-w-3xl mx-auto p-6 space-y-6">
