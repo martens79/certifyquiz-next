@@ -1,24 +1,40 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
+import { getAllCertSlugs, getCertBySlug, getCertList } from "@/lib/data";
 import { prettyDetail } from "@/lib/prettyPaths";
 
 const SUPPORTED = ["it", "en", "fr", "es"] as const;
 type Lang = (typeof SUPPORTED)[number];
 
 export const revalidate = 86400;
+export const dynamicParams = true; // ✅ genera on-demand slug non presenti in generateStaticParams
 
 // Usa l'ENV in prod (Vercel): NEXT_PUBLIC_SITE_URL=https://www.certifyquiz.com
 const ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com";
 
 export async function generateStaticParams() {
-  const lists = await Promise.all(
-    (SUPPORTED as readonly Lang[]).map(async (lang) => {
-      const slugs = await getAllCertSlugs(lang);
-      return slugs.map((slug: string) => ({ lang, slug }));
-    })
-  );
-  return lists.flat();
+  const out: { lang: Lang; slug: string }[] = [];
+
+  for (const lang of SUPPORTED as readonly Lang[]) {
+    let slugs: string[] = [];
+    try {
+      slugs = await getAllCertSlugs(lang);
+    } catch {
+      // ignora errori runtime
+    }
+    // Fallback robusto: se slugs è vuoto, derivali dalla lista
+    if (!slugs?.length) {
+      try {
+        const list = await getCertList(lang);
+        slugs = list.map((c: { slug: string }) => c.slug);
+      } catch {
+        // ancora vuoto? pazienza: ci penserà dynamicParams al primo hit
+      }
+    }
+    slugs?.forEach((slug) => out.push({ lang, slug }));
+  }
+
+  return out;
 }
 
 export async function generateMetadata(
@@ -50,8 +66,7 @@ export async function generateMetadata(
     title: titleByLang[lang],
     description: data.seoDescription,
     alternates: {
-      // Canonical può essere relativo (Next lo risolve) — gli hrefLang meglio assoluti per chiarezza
-      canonical: canonicalRel,
+      canonical: canonicalRel, // relativo ok
       languages: {
         "it-IT": `${ORIGIN}${hrefs.it}`,
         "en-US": `${ORIGIN}${hrefs.en}`,
