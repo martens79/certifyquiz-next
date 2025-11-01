@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/* =============================
+   🎨 Palette + Font + Breakpoints (Tailwind v4)
+============================= */
+@theme {
+  --color-cq-bg: #ffffff;
+  --color-cq-text: #0f172a;
+  --color-cq-mute: #475569;
+  --color-cq-border: #e5e7eb;
+  --color-cq-primary: #2563eb;
+  --color-cq-primary-dark: #1e40af;
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  --font-heading: var(--font-heading), var(--font-sans), ui-sans-serif, system-ui;
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+/* =============================
+   Base reset + tipografia
+============================= */
+html, body {
+  @apply min-h-screen bg-[--color-cq-bg] text-[--color-cq-text] antialiased transition-colors duration-300;
+  font-family: var(--font-sans);
+}
+
+@layer base {
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.015em;
+  }
+  h1 { @apply text-3xl md:text-4xl font-bold; }
+  h2 { @apply text-2xl md:text-3xl font-semibold; }
+  h3 { @apply text-xl md:text-2xl font-semibold; }
+
+  p  { @apply text-base leading-7 text-[--color-cq-mute]; }
+  a  { @apply text-[--color-cq-primary] underline-offset-2 hover:underline transition-colors duration-200; }
+}
+
+/* =============================
+   Componenti riutilizzabili
+============================= */
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium border border-transparent;
+    @apply bg-[--color-cq-primary] text-white hover:bg-[--color-cq-primary-dark] transition-colors duration-200;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium border;
+    @apply border-[--color-cq-border] bg-white text-gray-900 hover:bg-gray-50 transition-colors duration-200;
+  }
+
+  .card {
+    @apply rounded-[var(--radius-2xl)] border border-[--color-cq-border] bg-white shadow-sm transition-colors duration-200;
+  }
+
+  .container { @apply mx-auto max-w-6xl px-4; }
+
+  /* Tipografia per pagine MDX / testi lunghi */
+  .prose {
+    @apply text-[--color-cq-text] leading-relaxed max-w-none;
+  }
+  .prose h1, .prose h2, .prose h3 { @apply font-heading mt-6 mb-3; }
+  .prose p { @apply mb-4 text-[--color-cq-mute]; }
+  .prose a { @apply text-[--color-cq-primary] hover:text-[--color-cq-primary-dark] underline; }
+  .prose ul, .prose ol { @apply ml-5 list-disc space-y-2; }
+}
+
+/* =============================
+   Utility custom
+============================= */
+@layer utilities {
+  .muted { @apply text-[--color-cq-mute]; }
+}
+
+/* =============================
+   🌙 Dark mode (auto)
+============================= */
+@media (prefers-color-scheme: dark) {
+  html, body { @apply bg-[#0f172a] text-gray-100; }
+  a { @apply text-blue-400 hover:text-blue-300; }
+  .card { @apply bg-[#1e293b] border-gray-700; }
+  .btn { @apply bg-blue-500 hover:bg-blue-600; }
+  .btn-ghost { @apply border-gray-600 text-gray-100 hover:bg-[#1e293b]; }
+  .muted { @apply text-gray-400; }
+}

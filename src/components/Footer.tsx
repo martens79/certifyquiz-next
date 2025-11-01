@@ -1,34 +1,91 @@
+// src/components/layout/Footer.tsx
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { dict, type Locale, withLang } from "@/lib/i18n";
+import { dict, type Locale, legalPath, withLang } from "@/lib/i18n";
+
+// Tipizzazione robusta per lo stato, evita problemi di narrowing
+type Status = "idle" | "loading" | "ok" | "err";
 
 export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
 
+  // Link legali centralizzati (slug localizzati da i18n.LEGAL_PAGES)
   const links = [
-    { href: withLang(lang, "/privacy"), label: t.privacy },
-    { href: withLang(lang, "/termini"), label: t.terms },
-    { href: withLang(lang, "/cookie"), label: t.cookies },
-    { href: withLang(lang, "/contatti"), label: t.contact },
-  ];
+    { href: legalPath(lang, "privacy"), label: t.nav.privacy },
+    { href: legalPath(lang, "terms"),   label: t.nav.terms },
+    { href: legalPath(lang, "cookies"), label: t.nav.cookies },
+    { href: legalPath(lang, "contact"), label: t.nav.contact },
+  ] as const;
+
+  // Newsletter state
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [msg, setMsg] = useState("");
+  const [hp, setHp] = useState(""); // honeypot anti-bot
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (hp) {
+      // se il campo nascosto è valorizzato → probabilmente è un bot
+      setStatus("ok");
+      setMsg(t.newsletterOk ?? "Subscribed!");
+      setEmail("");
+      return;
+    }
+    if (!email || status === "loading") return;
+
+    setStatus("loading");
+    setMsg("");
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, lang }),
+      });
+      const data = await res.json().catch(() => ({} as any));
+      if (res.ok) {
+        setStatus("ok");
+        setMsg(t.newsletterOk ?? "Subscribed!");
+        setEmail("");
+      } else {
+        setStatus("err");
+        setMsg(data?.error || t.newsletterErr || "Something went wrong. Please try again.");
+      }
+    } catch {
+      setStatus("err");
+      setMsg(t.newsletterErr || "Something went wrong. Please try again.");
+    }
+  }
+
+  // Usa una variabile alias per evitare qualsiasi perdita di tipo dovuta al narrowing
+  const s: Status = status;
 
   return (
     <footer className="border-t bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-10 grid gap-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-3">
+        {/* Brand */}
         <div>
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-xl bg-gray-900 text-white grid place-items-center text-xs font-bold">
-              CQ
-            </div>
+            <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">CQ</div>
             <span className="font-semibold">CertifyQuiz</span>
           </div>
           <p className="mt-3 text-sm text-gray-600">
-            Quiz realistici, spiegazioni dettagliate e badge per certificazioni IT.
+            {lang === "it"
+              ? "Quiz realistici, spiegazioni dettagliate e badge per certificazioni IT."
+              : lang === "es"
+              ? "Tests realistas, explicaciones detalladas y badges para certificaciones IT."
+              : lang === "fr"
+              ? "Tests réalistes, explications détaillées et badges pour les certifications IT."
+              : "Realistic quizzes, detailed explanations and badges for IT certifications."}
           </p>
         </div>
 
+        {/* Links */}
         <nav>
-          <h3 className="text-sm font-semibold mb-2">Links</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t.links ?? "Links"}</h3>
           <ul className="space-y-1">
             {links.map((l) => (
               <li key={l.href}>
@@ -40,31 +97,74 @@ export default function Footer({ lang }: { lang: Locale }) {
           </ul>
         </nav>
 
+        {/* Newsletter */}
         <div>
-          <h3 className="text-sm font-semibold mb-2">Newsletter</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t.newsletterTitle ?? "Newsletter"}</h3>
           <p className="text-sm text-gray-600">
-            Iscriviti per aggiornamenti su nuove certificazioni e funzionalità.
+            {t.newsletterBlurb ?? "Subscribe for updates on new certifications and features."}
           </p>
-          {/* placeholder form; collega al tuo backend/newsletter */}
-          <form className="mt-3 flex gap-2">
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              className="w-full rounded-md border px-3 py-2 text-sm"
-            />
-            <button
-              type="submit"
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
-              OK
-            </button>
-          </form>
+
+          {s === "ok" ? (
+            <p className="mt-3 text-sm text-emerald-700" role="status" aria-live="polite">
+              {t.newsletterOk ?? "Subscribed!"}
+            </p>
+          ) : (
+            <>
+              <form onSubmit={onSubmit} className="mt-3 flex gap-2" noValidate>
+                {/* honeypot */}
+                <input
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="hidden"
+                  value={hp}
+                  onChange={(e) => setHp(e.target.value)}
+                />
+
+                <label htmlFor="newsletter-email" className="sr-only">
+                  Email
+                </label>
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  name="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t.newsletterPlaceholder ?? "you@example.com"}
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  autoComplete="email"
+                  inputMode="email"
+                />
+                <button
+                  type="submit"
+                  disabled={s === "loading"}
+                  className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+                  aria-busy={s === "loading"}
+                >
+                  {s === "loading" ? "…" : t.newsletterCta ?? "Subscribe"}
+                </button>
+              </form>
+
+              <div className="mt-2 text-sm" aria-live="polite" role="status">
+                {msg && (
+                  <span className={s === "err" ? "text-red-600" : "text-gray-700"}>
+                    {msg}
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Bottom bar */}
       <div className="border-t">
-        <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-gray-500 flex items-center justify-between">
-          <span>© {year} CertifyQuiz. All rights reserved.</span>
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 text-xs text-gray-500">
+          <span>
+            © {year} CertifyQuiz. {t.rights ?? "All rights reserved."}
+          </span>
           <span>vNext</span>
         </div>
       </div>

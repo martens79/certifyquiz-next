@@ -1,0 +1,8 @@
+# LOGIN → ottieni accessToken
+$login = Invoke-RestMethod -Uri "https://www.certifyquiz.com/api/auth/login" `
+  -Method POST `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"email":"<dolman.martens@gmail.com>","password":"<ZeD79_Mate!>"}'
+
+$token = $login.accessToken
+$token
