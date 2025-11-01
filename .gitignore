@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -39,3 +41,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ✅ aggiunte per il tuo setup
+app.bak/              # cartella di backup temporanea
+migrazione/           # PDF e checkpoint locali
+*.pdf                 # evita di committare PDF report
