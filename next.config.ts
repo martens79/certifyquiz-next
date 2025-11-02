@@ -8,9 +8,21 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   outputFileTracingRoot: path.resolve(__dirname),
   turbopack: { root: __dirname },
-  // non serve pageExtensions mdx, perché NON importiamo mdx come moduli
-  // sperimentalmente puoi tenere mdxRs spento (qui inutile)
   experimental: {},
+
+  async rewrites() {
+    return [
+      // Liste (URL pubblici “belli” → route fisica)
+      { source: "/en/certifications", destination: "/en/certificazioni" },
+      { source: "/fr/certifications", destination: "/fr/certificazioni" },
+      { source: "/es/certificaciones", destination: "/es/certificazioni" },
+
+      // Detail
+      { source: "/en/certifications/:slug", destination: "/en/certificazioni/:slug" },
+      { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
+      { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
+    ];
+  },
 };
 
 export default nextConfig;
