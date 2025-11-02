@@ -17,21 +17,25 @@
   },
   "//deps": "📦 Dipendenze runtime del progetto",
   "dependencies": {
-    "@mdx-js/react": "^3.1.1",
-    "@next/mdx": "^15.5.6",
+    "@mdx-js/react": "^2.3.0",
     "@portabletext/react": "^4.0.3",
     "@sanity/client": "^7.12.0",
+    "gray-matter": "4.0.3",
     "groq": "^4.10.2",
     "lucide-react": "^0.546.0",
     "next": "15.5.3",
     "next-sanity": "^11.4.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "rehype-stringify": "10.0.1",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "unified": "11.0.5"
   },
   "//dev": "🧰 DevDependencies per linting, testing, build e tipizzazione",
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@mdx-js/loader": "^3.1.1",
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/node": "^20",
@@ -43,5 +47,24 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.16",
     "typescript": "^5"
-  }
+  },
+  "overrides": {
+    "@mdx-js/react": "^2.3.0"
+  },
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "main": "postcss.config.js",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/martens79/certifyquiz-next.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/martens79/certifyquiz-next/issues"
+  },
+  "homepage": "https://github.com/martens79/certifyquiz-next#readme"
 }

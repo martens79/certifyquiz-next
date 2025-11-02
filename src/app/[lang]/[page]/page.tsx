@@ -1,12 +1,22 @@
 // File: src/app/[lang]/[page]/page.tsx
+// Render pagine legali da Markdown → HTML (Remark/Rehype). Niente React/MDX runtime.
+
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { ComponentType } from "react";
+import fs from "node:fs/promises";
+import path from "node:path";
+import matter from "gray-matter";
+
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeStringify from "rehype-stringify";
 
 import { locales, type Locale } from "@/lib/i18n";
 import { seo } from "@/dict/seo";
 
-// Mappa slug locali per lingua
+/* -------------------------- Slug localizzati -------------------------- */
 const PAGES = {
   privacy: { it: "privacy", en: "privacy", fr: "confidentialite", es: "privacidad" },
   terms:   { it: "termini",  en: "terms",   fr: "conditions",      es: "terminos"    },
@@ -23,45 +33,26 @@ function resolveKeyFromSlug(lang: Locale, slug: string): PageKey | null {
   return null;
 }
 
-/** Loader MDX (una entry per lingua+pagina). */
-const MDX_MAP: Record<
-  Locale,
-  Record<PageKey, () => Promise<{ default: ComponentType }>>
-> = {
-  it: {
-    privacy: () => import("@/content/legal/privacy.it.mdx"),
-    terms:   () => import("@/content/legal/termini.it.mdx"),
-    cookies: () => import("@/content/legal/cookie.it.mdx"),
-    contact: () => import("@/content/legal/contatti.it.mdx"),
-  },
-  en: {
-    privacy: () => import("@/content/legal/privacy.en.mdx"),
-    terms:   () => import("@/content/legal/terms.en.mdx"),
-    cookies: () => import("@/content/legal/cookies.en.mdx"),
-    contact: () => import("@/content/legal/contact.en.mdx"),
-  },
-  fr: {
-    privacy: () => import("@/content/legal/confidentialite.fr.mdx"),
-    terms:   () => import("@/content/legal/conditions.fr.mdx"),
-    cookies: () => import("@/content/legal/cookies.fr.mdx"),
-    contact: () => import("@/content/legal/contact.fr.mdx"),
-  },
-  es: {
-    privacy: () => import("@/content/legal/privacidad.es.mdx"),
-    terms:   () => import("@/content/legal/terminos.es.mdx"),
-    cookies: () => import("@/content/legal/cookies.es.mdx"),
-    contact: () => import("@/content/legal/contacto.es.mdx"),
-  },
-};
+/* ---------------------------- Mappatura file --------------------------- */
+function filenameFor(lang: Locale, key: PageKey): string {
+  const files = {
+    privacy: { it: "privacy.it.mdx", en: "privacy.en.mdx", fr: "confidentialite.fr.mdx", es: "privacidad.es.mdx" },
+    terms:   { it: "termini.it.mdx",  en: "terms.en.mdx",   fr: "conditions.fr.mdx",      es: "terminos.es.mdx"    },
+    cookies: { it: "cookie.it.mdx",   en: "cookies.en.mdx", fr: "cookies.fr.mdx",         es: "cookies.es.mdx"     },
+    contact: { it: "contatti.it.mdx", en: "contact.en.mdx", fr: "contact.fr.mdx",         es: "contacto.es.mdx"    },
+  } as const;
+  return files[key][lang];
+}
 
+/* -------------------------------- SEO --------------------------------- */
 type MetaShape = { title?: string; description?: string };
-
 function getSeoMeta(lang: Locale, key: PageKey, slug: string): MetaShape | undefined {
   const langSeo = (seo as any)?.[lang] as Record<string, MetaShape> | undefined;
   if (!langSeo) return undefined;
   return langSeo[`/${slug}`] ?? langSeo[slug] ?? langSeo[key];
 }
 
+/* --------------------------- Static params (SSG) --------------------------- */
 export async function generateStaticParams() {
   const params: Array<{ lang: Locale; page: string }> = [];
   for (const lang of locales) {
@@ -110,6 +101,19 @@ export async function generateMetadata(
   };
 }
 
+/* ------------------------------ Markdown → HTML ------------------------------ */
+async function renderMarkdownToHtml(markdown: string): Promise<string> {
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)              // tabelle, liste, ecc.
+    .use(remarkRehype)           // md → hast
+    .use(rehypeStringify)        // hast → html
+    .process(markdown);
+
+  return String(file);
+}
+
+/* --------------------------------- Page ---------------------------------- */
 export default async function Page(
   props: { params: Promise<{ lang: Locale; page: string }> }
 ) {
@@ -117,16 +121,25 @@ export default async function Page(
   const key = resolveKeyFromSlug(lang, page);
   if (!key) return notFound();
 
-  const loader = MDX_MAP[lang][key];
-  if (!loader) return notFound();
+  const filePath = path.join(process.cwd(), "content", "legal", filenameFor(lang, key));
 
-  const MDX = (await loader()).default;
+  let raw: string;
+  try {
+    raw = await fs.readFile(filePath, "utf8");
+  } catch {
+    return notFound();
+  }
+
+  // separa frontmatter (se presente) e contenuto markdown
+  const { content } = matter(raw);
+  const html = await renderMarkdownToHtml(content);
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <article className="prose prose-zinc dark:prose-invert">
-        <MDX />
-      </article>
+      <article
+        className="prose prose-zinc dark:prose-invert"
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
     </main>
   );
 }
