@@ -1,9 +1,12 @@
+// File: src/app/[lang]/[page]/page.tsx
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import type { ComponentType } from "react";
+
 import { locales, type Locale } from "@/lib/i18n";
 import { seo } from "@/dict/seo";
 
-// mappa slug locali per lingua (ce l'hai già)
+// Mappa slug locali per lingua
 const PAGES = {
   privacy: { it: "privacy", en: "privacy", fr: "confidentialite", es: "privacidad" },
   terms:   { it: "termini",  en: "terms",   fr: "conditions",      es: "terminos"    },
@@ -20,9 +23,11 @@ function resolveKeyFromSlug(lang: Locale, slug: string): PageKey | null {
   return null;
 }
 
-/* 🔗 NOVITÀ: loader MDX per ogni lingua+chiave
-   (file names come da tua cartella: privacy.it.mdx, terms.en.mdx, ecc.) */
-const MDX_MAP: Record<Locale, Record<PageKey, () => Promise<{ default: React.ComponentType }>>> = {
+/** Loader MDX (una entry per lingua+pagina). */
+const MDX_MAP: Record<
+  Locale,
+  Record<PageKey, () => Promise<{ default: ComponentType }>>
+> = {
   it: {
     privacy: () => import("@/content/legal/privacy.it.mdx"),
     terms:   () => import("@/content/legal/termini.it.mdx"),
@@ -50,6 +55,7 @@ const MDX_MAP: Record<Locale, Record<PageKey, () => Promise<{ default: React.Com
 };
 
 type MetaShape = { title?: string; description?: string };
+
 function getSeoMeta(lang: Locale, key: PageKey, slug: string): MetaShape | undefined {
   const langSeo = (seo as any)?.[lang] as Record<string, MetaShape> | undefined;
   if (!langSeo) return undefined;
@@ -71,7 +77,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { lang, page } = await props.params;
   const key = resolveKeyFromSlug(lang, page);
-  const siteUrl = "https://www.certifyquiz.com";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
 
   if (!key) {
     return { title: "CertifyQuiz", description: "Pagina non trovata", robots: { index: false, follow: false } };
@@ -85,13 +91,22 @@ export async function generateMetadata(
     alternates: {
       canonical: `${siteUrl}/${lang}/${page}`,
       languages: {
-        it: `${siteUrl}/it/${PAGES[key].it}`,
-        en: `${siteUrl}/en/${PAGES[key].en}`,
-        fr: `${siteUrl}/fr/${PAGES[key].fr}`,
-        es: `${siteUrl}/es/${PAGES[key].es}`,
+        "it-IT": `${siteUrl}/it/${PAGES[key].it}`,
+        "en-US": `${siteUrl}/en/${PAGES[key].en}`,
+        "fr-FR": `${siteUrl}/fr/${PAGES[key].fr}`,
+        "es-ES": `${siteUrl}/es/${PAGES[key].es}`,
         "x-default": `${siteUrl}/it/${PAGES[key].it}`,
       },
     },
+    openGraph: {
+      title: meta?.title ?? "CertifyQuiz",
+      description: meta?.description ?? "Quiz realistici con spiegazioni per le principali certificazioni IT.",
+      url: `${siteUrl}/${lang}/${page}`,
+      siteName: "CertifyQuiz",
+      type: "article",
+      locale: lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES",
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 

@@ -57,10 +57,12 @@ const SEO = {
 } satisfies Record<Locale, { title: string; description: string }>;
 
 /* ------------------------------- Metadata -------------------------------- */
+// ⬇️ Next 15: params è awaitable → tipizza come Promise e fai await
 export async function generateMetadata(
-  { params }: { params: { lang: string } }
+  { params }: { params: Promise<{ lang: string }> }
 ): Promise<Metadata> {
-  const L: Locale = isLocale(params.lang) ? params.lang : "it";
+  const { lang } = await params;
+  const L: Locale = isLocale(lang) ? lang as Locale : "it";
   const { title, description } = SEO[L];
 
   // hreflang con locale completi
@@ -107,10 +109,12 @@ export async function generateStaticParams() {
 }
 
 /* --------------------------------- Page ---------------------------------- */
+// ⬇️ Next 15: anche qui params è Promise → fai await
 export default async function Page(
-  { params }: { params: { lang: string } }
+  { params }: { params: Promise<{ lang: string }> }
 ) {
-  const L: Locale = isLocale(params.lang) ? params.lang : "it";
+  const { lang } = await params;
+  const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
   const certs: Cert[] = await getCertList(L);
 
   const itemList = {

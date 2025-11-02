@@ -4,7 +4,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { locales, type Locale, isLocale } from "@/lib/i18n";
-import { getCertBySlug, type Cert } from "@/lib/data";
+import { getCertBySlug, getCertList, type Cert } from "@/lib/data";
 
 export const revalidate = 86400; // 24h
 
@@ -35,12 +35,36 @@ const toHreflang = (l: Locale): string =>
   l === "fr" ? "fr-FR" :
   l === "es" ? "es-ES" : "it-IT";
 
+// ✅ Helper per avere immagini assolute negli OG/Twitter
+const toAbsolute = (url?: string) => {
+  if (!url) return undefined;
+  try {
+    // se è già assoluto, lo ritorna; altrimenti lo risolve su SITE_URL
+    return new URL(url, SITE_URL).toString();
+  } catch {
+    return undefined;
+  }
+};
+
+/* -------------------------- Static params (SSG/ISR) -------------------------- */
+export async function generateStaticParams() {
+  // Prerender di base: prendi la lista per ogni lingua e prebuilda gli slug noti
+  const params: Array<{ lang: Locale; slug: string }> = [];
+  for (const lang of locales) {
+    const list = await getCertList(lang);
+    for (const c of list) {
+      params.push({ lang, slug: c.slug });
+    }
+  }
+  return params;
+}
+
 /* ------------------------------- METADATA -------------------------------- */
 export async function generateMetadata(
   { params }: { params: Promise<{ lang: string; slug: string }> }
 ): Promise<Metadata> {
   const { lang, slug } = await params;
-  const L: Locale = isLocale(lang) ? lang : "it";
+  const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const cert: Cert | null = await getCertBySlug(slug, L);
   if (!cert) {
@@ -60,6 +84,8 @@ export async function generateMetadata(
 
   const canonical = new URL(`${listPathByLang[L]}/${slug}`, SITE_URL).toString();
 
+  const ogImage = toAbsolute(cert.imageUrl);
+
   return {
     title,
     description,
@@ -74,13 +100,13 @@ export async function generateMetadata(
       url: canonical,
       siteName: "CertifyQuiz",
       locale: toHreflang(L),
-      images: cert.imageUrl ? [{ url: cert.imageUrl }] : undefined,
+      images: ogImage ? [{ url: ogImage }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: cert.imageUrl ? [cert.imageUrl] : undefined,
+      images: ogImage ? [ogImage] : undefined,
     },
   };
 }
@@ -90,7 +116,7 @@ export default async function Page(
   { params }: { params: Promise<{ lang: string; slug: string }> }
 ) {
   const { lang, slug } = await params;
-  const L: Locale = isLocale(lang) ? lang : "it";
+  const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const cert: Cert | null = await getCertBySlug(slug, L);
   if (!cert) return notFound();
