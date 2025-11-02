@@ -46,3 +46,6 @@ next-env.d.ts
 app.bak/              # cartella di backup temporanea
 migrazione/           # PDF e checkpoint locali
 *.pdf                 # evita di committare PDF report
+
+app.bak/
+migrazione/
