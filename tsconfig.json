@@ -14,10 +14,10 @@
     "jsx": "preserve",
     "incremental": true,
     "types": ["node"],
-    "baseUrl": ".",                         // 👈 cambiato
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],                     // 👈 alias alla cartella src
-      "@/content/*": ["content/*"]          // 👈 alias alla cartella content (fuori da src)
+      "@/*": ["src/*"],
+      "@/content/*": ["content/*"]
     },
     "plugins": [{ "name": "next" }],
     "forceConsistentCasingInFileNames": true,
@@ -25,10 +25,15 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/types/**/*.d.ts"                   // 👈 per le dichiarazioni mdx.d.ts
+    "src/**/*",
+    "types",
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "playwright-report",
+    "test-results",
+    "tests",
+    "src/__tests__"
+  ]
 }
