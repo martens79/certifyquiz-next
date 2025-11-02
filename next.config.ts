@@ -1,17 +1,6 @@
 ﻿// next.config.ts
 import type { NextConfig } from "next";
 import path from "node:path";
-import createMDX from "@next/mdx";
-
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-  options: {
-    // usa il provider ufficiale MDX (serve @mdx-js/react)
-    providerImportSource: "@mdx-js/react",
-    // remarkPlugins: [], // opzionale
-    // rehypePlugins: [], // opzionale
-  },
-});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -19,17 +8,9 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   outputFileTracingRoot: path.resolve(__dirname),
   turbopack: { root: __dirname },
-  pageExtensions: ["tsx", "ts", "jsx", "js", "mdx"],
-
-  // (opzionale) redirect dai vecchi URL non localizzati
-  // async redirects() {
-  //   return [
-  //     { source: "/privacy",  destination: "/it/privacy",  permanent: true },
-  //     { source: "/termini",  destination: "/it/termini",  permanent: true },
-  //     { source: "/cookie",   destination: "/it/cookie",   permanent: true },
-  //     { source: "/contatti", destination: "/it/contatti", permanent: true },
-  //   ];
-  // },
+  // non serve pageExtensions mdx, perché NON importiamo mdx come moduli
+  // sperimentalmente puoi tenere mdxRs spento (qui inutile)
+  experimental: {},
 };
 
-export default withMDX(nextConfig);
+export default nextConfig;
