@@ -9,6 +9,37 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   turbopack: { root: __dirname },
   experimental: {},
+  // opzionale: normalizza senza trailing slash
+  // trailingSlash: false,
+
+  async redirects() {
+    return [
+      // 0) non-www → www (hardening)
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "certifyquiz.com" }],
+        destination: "https://www.certifyquiz.com/:path*",
+        permanent: true,
+      },
+
+      // 1) root → /it (x-default fallback)
+      { source: "/", destination: "/it", permanent: true },
+
+      // 2) legacy senza lingua → mappa alle nuove rotte localizzate
+      // liste
+      { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
+      { source: "/certifications", destination: "/en/certifications", permanent: true },
+      { source: "/certificaciones", destination: "/es/certificaciones", permanent: true },
+      // detail
+      { source: "/certificazioni/:slug", destination: "/it/certificazioni/:slug", permanent: true },
+      { source: "/certifications/:slug", destination: "/en/certifications/:slug", permanent: true },
+      { source: "/certificaciones/:slug", destination: "/es/certificaciones/:slug", permanent: true },
+
+      // 3) vecchie rotte IT non localizzate (ulteriore hardening)
+      { source: "/it/certifications", destination: "/it/certificazioni", permanent: true },
+      { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug", permanent: true },
+    ];
+  },
 
   async rewrites() {
     return [
