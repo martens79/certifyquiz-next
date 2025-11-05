@@ -18,11 +18,9 @@ const getLabel = (dict: Partial<Record<Locale, string>>, lang: Locale) =>
 
 /* ───────────────────────────── SEO metadata ───────────────────────────── */
 export async function generateMetadata(
-  { params }: { params: { lang: Locale } }
+  props: { params: Promise<{ lang: Locale }> } // ✅ Next 15: params come Promise
 ): Promise<Metadata> {
-  const lang = (["it", "en", "fr", "es"].includes(params.lang)
-    ? params.lang
-    : "it") as Locale;
+  const { lang } = await props.params; // ✅ await
 
   const title = getLabel(
     {
@@ -45,6 +43,7 @@ export async function generateMetadata(
   );
 
   const canonical = `${SITE}/${lang}`;
+
   return {
     metadataBase: new URL(SITE),
     title,
@@ -88,25 +87,38 @@ export async function generateMetadata(
 
 /* ───────────────────────────── Pagina ───────────────────────────── */
 export default async function LangHome(
-  props: { params: Promise<{ lang: Locale }> }
+  props: { params: Promise<{ lang: Locale }> } // ✅ Next 15: params come Promise
 ) {
-  const { lang } = await props.params; // Next 15: params è una Promise
+  const { lang } = await props.params; // ✅ await
 
   // JSON-LD: Breadcrumbs per la home
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/${lang}` },
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: `${SITE}/${lang}`,
+      },
     ],
   };
 
-  // JSON-LD: ItemList delle 8 categorie principali (stessi slug usati nei link della Home)
+  // JSON-LD: ItemList delle 8 categorie principali
   const categoriesOrder = [
     { key: "base", label: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" } },
     { key: "sicurezza", label: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" } },
     { key: "reti", label: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" } },
-    { key: "intelligenza-artificiale", label: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" } },
+    {
+      key: "intelligenza-artificiale",
+      label: {
+        it: "Intelligenza Artificiale",
+        en: "Artificial Intelligence",
+        fr: "Intelligence Artificielle",
+        es: "Inteligencia Artificial",
+      },
+    },
     { key: "cloud", label: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Nube" } },
     { key: "database", label: { it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" } },
     { key: "programmazione", label: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" } },
