@@ -3,9 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { type Locale, withLang } from "@/lib/i18n";
-// import { useAuth } from "@/contexts/AuthContext";
 import BlogTeaser from "@/components/BlogTeaser";
-import logo from "@/../public/images/logo-certifyquiz.png"; // ✅ import static
+import logo from "@/../public/images/logo-certifyquiz.png";
 
 import {
   BrainCircuit,
@@ -22,15 +21,27 @@ import {
   Sparkles,
 } from "lucide-react";
 
-// helper "getLabel" locale
+/* Helpers */
 function L(
   o: { it: string; en: string; fr: string; es: string },
   lang: Locale
 ) {
-  return o[lang];
+  return o[lang] ?? o.it;
 }
 
-const borderColors = {
+type ColorKey =
+  | "red"
+  | "rose"
+  | "green"
+  | "purple"
+  | "yellow"
+  | "indigo"
+  | "orange"
+  | "cyan"
+  | "blue"
+  | "teal";
+
+const borderColors: Record<ColorKey, string> = {
   red: "border-red-300",
   rose: "border-rose-300",
   green: "border-green-300",
@@ -41,9 +52,9 @@ const borderColors = {
   cyan: "border-cyan-300",
   blue: "border-blue-300",
   teal: "border-teal-300",
-} as const;
+};
 
-const bgColors = {
+const bgColors: Record<ColorKey, string> = {
   red: "bg-red-100",
   rose: "bg-rose-100",
   green: "bg-green-100",
@@ -54,14 +65,24 @@ const bgColors = {
   cyan: "bg-cyan-100",
   blue: "bg-blue-100",
   teal: "bg-teal-100",
-} as const;
+};
 
-export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLoggedIn?: boolean }) {
-  // const { isLoggedIn } = useAuth();
-
-  const allCategories = [
+export default function Home({
+  lang,
+  isLoggedIn = false,
+}: {
+  lang: Locale;
+  isLoggedIn?: boolean;
+}) {
+  const allCategories: Array<{
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    href: string;
+    color: ColorKey;
+  }> = [
     {
-      icon: <BrainCircuit size={20} />,
+      icon: <BrainCircuit size={20} aria-hidden="true" />,
       title: L({ it: "Base", en: "Basic", fr: "Bases", es: "Básico" }, lang),
       description: L(
         {
@@ -73,10 +94,10 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/base"),
-      color: "blue" as const,
+      color: "blue",
     },
     {
-      icon: <LockKeyhole size={20} />,
+      icon: <LockKeyhole size={20} aria-hidden="true" />,
       title: L({ it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" }, lang),
       description: L(
         {
@@ -88,10 +109,10 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/sicurezza"),
-      color: "red" as const,
+      color: "red",
     },
     {
-      icon: <Network size={20} />,
+      icon: <Network size={20} aria-hidden="true" />,
       title: L({ it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" }, lang),
       description: L(
         {
@@ -103,10 +124,10 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/reti"),
-      color: "green" as const,
+      color: "green",
     },
     {
-      icon: <Cpu size={20} />,
+      icon: <Cpu size={20} aria-hidden="true" />,
       title: L(
         {
           it: "Intelligenza Artificiale",
@@ -126,10 +147,10 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/intelligenza-artificiale"),
-      color: "purple" as const,
+      color: "purple",
     },
     {
-      icon: <Cloud size={20} />,
+      icon: <Cloud size={20} aria-hidden="true" />,
       title: L({ it: "Cloud", en: "Cloud", fr: "Cloud", es: "Nube" }, lang),
       description: L(
         {
@@ -141,11 +162,14 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/cloud"),
-      color: "teal" as const,
+      color: "teal",
     },
     {
-      icon: <Database size={20} />,
-      title: L({ it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" }, lang),
+      icon: <Database size={20} aria-hidden="true" />,
+      title: L(
+        { it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" },
+        lang
+      ),
       description: L(
         {
           it: "Modellazione, interrogazione e gestione dei dati.",
@@ -156,11 +180,14 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/database"),
-      color: "orange" as const,
+      color: "orange",
     },
     {
-      icon: <Code size={20} />,
-      title: L({ it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" }, lang),
+      icon: <Code size={20} aria-hidden="true" />,
+      title: L(
+        { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
+        lang
+      ),
       description: L(
         {
           it: "Logica di programmazione e linguaggi moderni.",
@@ -171,11 +198,14 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/programmazione"),
-      color: "indigo" as const,
+      color: "indigo",
     },
     {
-      icon: <Layers size={20} />,
-      title: L({ it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" }, lang),
+      icon: <Layers size={20} aria-hidden="true" />,
+      title: L(
+        { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
+        lang
+      ),
       description: L(
         {
           it: "Tecnologie di virtualizzazione e ambienti cloud-native.",
@@ -186,13 +216,13 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         lang
       ),
       href: withLang(lang, "/virtualizzazione"),
-      color: "cyan" as const,
+      color: "cyan",
     },
   ];
 
   const infoBoxes = [
     {
-      icon: <BadgeCheck size={24} className="text-blue-600" />,
+      icon: <BadgeCheck size={24} className="text-blue-600" aria-hidden="true" />,
       title: L(
         { it: "Quiz ufficiali", en: "Official quizzes", fr: "Quiz officiels", es: "Cuestionarios oficiales" },
         lang
@@ -208,7 +238,7 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
       ),
     },
     {
-      icon: <BarChart3 size={24} className="text-purple-600" />,
+      icon: <BarChart3 size={24} className="text-purple-600" aria-hidden="true" />,
       title: L(
         { it: "Progresso tracciato", en: "Progress tracking", fr: "Suivi des progrès", es: "Seguimiento del progreso" },
         lang
@@ -224,7 +254,7 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
       ),
     },
     {
-      icon: <Sparkles size={24} className="text-yellow-500" />,
+      icon: <Sparkles size={24} className="text-yellow-500" aria-hidden="true" />,
       title: L(
         { it: "Badge ufficiali", en: "Official badges", fr: "Badges officiels", es: "Insignias oficiales" },
         lang
@@ -240,7 +270,7 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
       ),
     },
     {
-      icon: <Lock size={24} className="text-red-500" />,
+      icon: <Lock size={24} className="text-red-500" aria-hidden="true" />,
       title: L(
         { it: "3 argomenti inclusi", en: "3 topics included", fr: "3 sujets inclus", es: "3 temas incluidos" },
         lang
@@ -259,18 +289,19 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 overflow-x-hidden min-h-[100dvh]">
-      {/* Header centrato */}
+      {/* Header */}
       <header className="text-center">
         <div className="flex justify-center items-center gap-3 mb-2">
           <Image
-            src={logo}                 // ✅ import static
-            alt="CertifyQuiz Logo"
+            src={logo}
+            alt="CertifyQuiz"
             width={40}
             height={40}
+            sizes="(max-width: 640px) 40px, 40px"
             className="h-10 w-auto"
             priority
           />
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 font-serif">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800">
             CertifyQuiz
           </h1>
         </div>
@@ -282,11 +313,15 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
           CompTIA ITF+, A+, Network+, Security+, CEH, CISSP, CCNA, Azure, AWS, EIPASS, ECDL, PEKIT e molte altre.
         </p>
 
-        {/* Pulsanti Hero */}
+        {/* CTA */}
         <div className="mt-6 mb-8 flex justify-center gap-4">
           <Link
             href={withLang(lang, "/quiz-home")}
             className="inline-block bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-105"
+            aria-label={L(
+              { it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" },
+              lang
+            )}
           >
             {L(
               { it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" },
@@ -305,18 +340,17 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         </div>
       </header>
 
-      {/* Riga minima "Dal blog" sotto l'hero */}
-      <BlogTeaser lang={lang} variant="inline" className="mb-4" /> {/* ✅ passiamo lang */}
+      {/* Blog teaser (inline) */}
+      <BlogTeaser lang={lang} variant="inline" className="mb-4" />
 
-      {/* Contenuti principali */}
+      {/* Categorie */}
       <main className="space-y-6">
-        {/* Box categorie */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 justify-center">
           {allCategories.map((cat, i) => (
             <Link
               href={cat.href}
               key={i}
-              className={`${bgColors[cat.color]} hover:brightness-105 transition p-3 rounded-xl shadow border ${borderColors[cat.color]} text-left font-fredoka text-sm h-auto`}
+              className={`${bgColors[cat.color]} hover:brightness-105 transition p-3 rounded-xl shadow border ${borderColors[cat.color]} text-left text-sm`}
             >
               <div className="flex items-center gap-2 text-slate-800 font-bold mb-1">
                 {cat.icon}
@@ -331,7 +365,10 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
 
         {/* Link suggeriti */}
         <div className="text-center">
-          <Link href={withLang(lang, "/quiz-suggeriti")} className="text-blue-600 font-medium hover:underline text-sm">
+          <Link
+            href={withLang(lang, "/quiz-suggeriti")}
+            className="text-blue-600 font-medium hover:underline text-sm"
+          >
             ⭐{" "}
             {L(
               {
@@ -346,8 +383,8 @@ export default function Home({ lang, isLoggedIn = false }: { lang: Locale; isLog
         </div>
       </main>
 
-      {/* Box info */}
-      <section className="mt-6">
+      {/* Info boxes */}
+      <section className="mt-6" aria-label={L({ it: "Perché scegliere CertifyQuiz", en: "Why choose CertifyQuiz", fr: "Pourquoi choisir CertifyQuiz", es: "Por qué elegir CertifyQuiz" }, lang)}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
           {infoBoxes.map((box, i) => (
             <div key={i} className="bg-white border rounded-xl p-4 shadow-sm text-left flex items-start gap-3">
