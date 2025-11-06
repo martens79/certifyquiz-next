@@ -36,7 +36,11 @@ import PythonDeveloper from "./PythonDeveloper";
 import SecurityPlus from "./SecurityPlus";
 import VMwareVCP from "./VMwareVCP";
 
-// 👇 Registro centrale: nessuna modifica ai singoli moduli necessaria
+/**
+ * Registro centrale delle certificazioni.
+ * Gli slug usati in QuizHome devono corrispondere agli slug definiti qui dentro
+ * (nei singoli moduli).
+ */
 export const CERTS = [
   AWSCloudPractitioner,
   AWSSolutionsArchitect,
@@ -44,32 +48,52 @@ export const CERTS = [
   CCST,
   CEH,
   CiscoCCSTNetworking,
-  CiscoCCSTSecurity,
+  CiscoCCSTSecurity,          // -> slug atteso: "cisco-ccst-security"
   CISSP,
-  CompTIACloudPlus,
-  CompTIA_A_Plus,
-  CompTIA_ITF_Plus,
-  CSharpCertification,
-  ECDL,
-  EIPASS,
-  F5,
-  GoogleCloud,
-  GoogleTensorFlowDeveloper,
-  IBMCloudV5,
-  ISC2_CC,
-  JavaScriptDeveloper,
-  JavaSE,
-  JNCIE,
-  MicrosoftAIFundamentals,
-  MicrosoftAzureFundamentals,
-  MicrosoftSQLServer,
-  MicrosoftVirtualization,
-  MongoDBDeveloper,
-  MySQLCertification,
-  NetworkPlus,
-  OracleDatabaseSQL,
-  PEKIT,
-  PythonDeveloper,
-  SecurityPlus,
-  VMwareVCP,
+  CompTIACloudPlus,           // -> "comptia-cloud-plus"
+  CompTIA_A_Plus,             // -> "comptia-a-plus"
+  CompTIA_ITF_Plus,           // -> "comptia-itf-plus"
+  CSharpCertification,        // -> "csharp" (per ora)
+  ECDL,                       // -> "ecdl"
+  EIPASS,                     // -> "eipass"
+  F5,                         // -> "f5"
+  GoogleCloud,                // -> "google-cloud"
+  GoogleTensorFlowDeveloper,  // -> "tensorflow"
+  IBMCloudV5,                 // -> "ibm-cloud-v5"
+  ISC2_CC,                    // -> "isc2-cc"
+  JavaScriptDeveloper,        // -> "javascript-developer"
+  JavaSE,                     // -> "java-se"
+  JNCIE,                      // -> "jncie"
+  MicrosoftAIFundamentals,    // -> "microsoft-ai-fundamentals"
+  MicrosoftAzureFundamentals, // -> "microsoft-azure-fundamentals"
+  MicrosoftSQLServer,         // -> "microsoft-sql-server"
+  MicrosoftVirtualization,    // -> "microsoft-virtualization"
+  MongoDBDeveloper,           // -> "mongodb-developer"
+  MySQLCertification,         // -> "mysql"
+  NetworkPlus,                // -> "network-plus"
+  OracleDatabaseSQL,          // -> "oracle-database-sql"
+  PEKIT,                      // -> "pekit"
+  PythonDeveloper,            // -> "python-developer"
+  SecurityPlus,               // -> "security-plus"
+  VMwareVCP,                  // -> "vmware-vcp"
 ] as const satisfies readonly CertificationData[];
+
+// Slug list utile per generateStaticParams / sitemap
+export const CERT_SLUGS = CERTS.map(c => c.slug) as readonly string[];
+
+// Lookup veloce: slug -> dato certificazione
+export const CERTS_BY_SLUG: Record<string, CertificationData> =
+  Object.fromEntries(CERTS.map(c => [c.slug, c]));
+
+// (facoltativo) mini check in dev: slug duplicati
+if (process.env.NODE_ENV !== "production") {
+  const seen = new Set<string>();
+  for (const s of CERT_SLUGS) {
+    if (seen.has(s)) {
+      console.warn(`[certs] Duplicate slug found: ${s}`);
+    }
+    seen.add(s);
+  }
+}
+
+export default CERTS;
