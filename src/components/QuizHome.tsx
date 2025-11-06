@@ -7,7 +7,9 @@ import { GraduationCap, Lock, Network, Cloud, Database, Code, Server, Cpu } from
 import QuizTitle from '@/components/QuizTitle';
 import CategoryBox from '@/components/CategoryBox';
 import BottomNavbar from '@/components/BottomNavbar';
-import { certPath } from '@/lib/data';
+import { certPath } from '@/lib/paths'; // ← niente "type Locale" qui
+
+
 
 type Locale = 'it' | 'en' | 'fr' | 'es';
 type I18nText = Partial<Record<Locale, string>>;
