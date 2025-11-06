@@ -11,8 +11,9 @@ import CategoryBox from '@/components/CategoryBox';
 import BottomNavbar from '@/components/BottomNavbar';
 
 // 👇 prendiamo Locale e il costruttore di path certificazioni
-import type { Locale } from '@/lib/data';
-import { certPath } from '@/lib/data';
+import type { Locale } from '@/lib/paths';
+import { certPath } from '@/lib/paths';
+
 
 /* ---------- i18n helpers ---------- */
 type I18nText = Partial<Record<Locale, string>>;
