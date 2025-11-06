@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   turbopack: { root: __dirname },
   experimental: {},
-  // opzionale: normalizza senza trailing slash
   // trailingSlash: false,
 
   async redirects() {
@@ -25,7 +24,7 @@ const nextConfig: NextConfig = {
       // 1) root → /it (x-default fallback)
       { source: "/", destination: "/it", permanent: true },
 
-      // 2) legacy senza lingua → mappa alle nuove rotte localizzate
+      // 2) legacy senza lingua → nuove rotte localizzate
       // liste
       { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
       { source: "/certifications", destination: "/en/certifications", permanent: true },
@@ -44,11 +43,13 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       // Liste (URL pubblici “belli” → route fisica)
+      { source: "/it/certifications", destination: "/it/certificazioni" },
       { source: "/en/certifications", destination: "/en/certificazioni" },
       { source: "/fr/certifications", destination: "/fr/certificazioni" },
       { source: "/es/certificaciones", destination: "/es/certificazioni" },
 
       // Detail
+      { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug" },
       { source: "/en/certifications/:slug", destination: "/en/certificazioni/:slug" },
       { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
