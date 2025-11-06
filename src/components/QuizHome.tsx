@@ -10,10 +10,9 @@ import QuizTitle from '@/components/QuizTitle';
 import CategoryBox from '@/components/CategoryBox';
 import BottomNavbar from '@/components/BottomNavbar';
 
-// 👇 prendiamo Locale e il costruttore di path certificazioni
+// Locale + builder dei path certificazioni (client-safe)
 import type { Locale } from '@/lib/paths';
 import { certPath } from '@/lib/paths';
-
 
 /* ---------- i18n helpers ---------- */
 type I18nText = Partial<Record<Locale, string>>;
@@ -34,18 +33,15 @@ function isArrayPayload(x: unknown): x is BackendAvailabilityItem[] {
   return Array.isArray(x);
 }
 function hasItemsPayload(x: unknown): x is { items: BackendAvailabilityItem[] } {
-  return typeof x === 'object' && x !== null && Array.isArray((x as any).items);
+  return typeof x === 'object' && x !== null && Array.isArray((x as Record<string, unknown>).items);
 }
 
 /* ---------- Util per badge ---------- */
 const slugFromLink = (link?: string | null) => {
   if (!link) return null;
-  const i = link.indexOf('/certificazioni/');
-  const j = link.indexOf('/certifications/');
-  const base = i !== -1 ? '/certificazioni/' : j !== -1 ? '/certifications/' : null;
-  if (!base) return null;
-  const k = link.indexOf(base);
-  return link.slice(k + base.length).replace(/\/+$/, '');
+  // match sia "certificazioni" (IT) che "certifications" (EN/FR) e "certificaciones" (ES)
+  const m = link.match(/\/(certificazioni|certifications|certificaciones)\/([^/?#]+)/i);
+  return m?.[2] ? m[2].replace(/\/+$/, '') : null;
 };
 
 const translatedCountForLink = (availability: AvailabilityMap, link?: string | null) => {
@@ -383,6 +379,7 @@ export default function QuizHome({ lang }: { lang: Locale }) {
                         ${!isDisabled ? 'bg-white border-emerald-300 hover:bg-emerald-100' : 'bg-gray-200 border-gray-300 cursor-not-allowed text-gray-500'}`}
                       title={label}
                       aria-disabled={isDisabled}
+                      prefetch={false}
                     >
                       <span>{c.name}</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 border border-emerald-400">
