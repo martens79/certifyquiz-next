@@ -7,12 +7,12 @@ import { GraduationCap, Lock, Network, Cloud, Database, Code, Server, Cpu } from
 import QuizTitle from '@/components/QuizTitle';
 import CategoryBox from '@/components/CategoryBox';
 import BottomNavbar from '@/components/BottomNavbar';
+import { certPath } from '@/lib/data';
 
 type Locale = 'it' | 'en' | 'fr' | 'es';
 type I18nText = Partial<Record<Locale, string>>;
 
-const getLabel = (d: I18nText, lang: Locale) =>
-  d[lang] ?? d.it ?? d.en ?? d.fr ?? d.es ?? '';
+const getLabel = (d: I18nText, lang: Locale) => d[lang] ?? d.it ?? d.en ?? d.fr ?? d.es ?? '';
 
 /* ---------- Tipi availability (backend) ---------- */
 type AvailabilityMap = Record<string, { translated: number; total: number }>;
@@ -23,23 +23,21 @@ type BackendAvailabilityItem = {
   topics_total?: number;
 };
 
-type BackendAvailabilityPayload =
-  | { items?: BackendAvailabilityItem[] }
-  | BackendAvailabilityItem[];
+type BackendAvailabilityPayload = { items?: BackendAvailabilityItem[] } | BackendAvailabilityItem[];
 
 function isArrayPayload(x: unknown): x is BackendAvailabilityItem[] {
   return Array.isArray(x);
 }
-
 function hasItemsPayload(x: unknown): x is { items: BackendAvailabilityItem[] } {
   return typeof x === 'object' && x !== null && Array.isArray((x as { items?: unknown }).items);
 }
 
 /* ---------- Util per link/slug e badge ---------- */
+// ✅ Estrae lo slug da tutte le lingue (it/en/fr/es) e varianti route
 const slugFromLink = (link?: string | null) => {
   if (!link) return null;
-  const i = link.indexOf('/certifications/');
-  return i === -1 ? null : link.slice(i + '/certifications/'.length).replace(/\/+$/, '');
+  const m = link.match(/^\/(it|en|fr|es)\/(certificazioni|certifications|certificaciones)\/([^/?#]+)/i);
+  return m?.[3] ?? null;
 };
 
 const translatedCountForLink = (availability: AvailabilityMap, link?: string | null) => {
@@ -124,55 +122,52 @@ export default function QuizHome({ lang }: { lang: Locale }) {
         }
         setAvailability(map);
       })
-      .catch((_e) => {
-        // Silenzioso: l’UI funziona comunque
-        setAvailability({});
-      });
+      .catch(() => setAvailability({})); // Silenzioso
   }, [lang]);
 
   const certificationNames: CertificationNames = {
     base: [
-      { name: 'EIPASS', link: `/${lang}/certifications/eipass` },
-      { name: 'ECDL', link: `/${lang}/certifications/ecdl` },
-      { name: 'PEKIT', link: `/${lang}/certifications/pekit` },
-      { name: 'A+', link: `/${lang}/certifications/comptia-a-plus` },
+      { name: 'EIPASS', link: certPath(lang, 'eipass') },
+      { name: 'ECDL', link: certPath(lang, 'ecdl') },
+      { name: 'PEKIT', link: certPath(lang, 'pekit') },
+      { name: 'A+', link: certPath(lang, 'comptia-a-plus') },
       { name: 'IC3', link: null },
-      { name: 'CompTIA Tech+ (ex ITF+)', link: `/${lang}/certifications/comptia-itf-plus` },
+      { name: 'CompTIA Tech+ (ex ITF+)', link: certPath(lang, 'comptia-itf-plus') },
     ],
     sicurezza: [
-      { name: 'Security+', link: `/${lang}/certifications/security-plus` },
-      { name: 'CEH', link: `/${lang}/certifications/ceh` },
-      { name: 'CISSP', link: `/${lang}/certifications/cissp` },
+      { name: 'Security+', link: certPath(lang, 'security-plus') },
+      { name: 'CEH', link: certPath(lang, 'ceh') },
+      { name: 'CISSP', link: certPath(lang, 'cissp') },
       { name: 'CISM', link: null },
-      { name: 'ISC2 CC', link: `/${lang}/certifications/isc2-cc` },
-      { name: 'CCST Cybersecurity', link: `/${lang}/certifications/cisco-ccst-security` },
+      { name: 'ISC2 CC', link: certPath(lang, 'isc2-cc') },
+      { name: 'CCST Cybersecurity', link: certPath(lang, 'cisco-ccst-security') },
     ],
     reti: [
-      { name: 'Network+', link: `/${lang}/certifications/network-plus` },
-      { name: 'CCNA', link: `/${lang}/certifications/ccna` },
-      { name: 'JNCIE', link: `/${lang}/certifications/jncie` },
-      { name: 'CCST Networking', link: `/${lang}/certifications/cisco-ccst-networking` },
-      { name: 'F5-CTS', link: `/${lang}/certifications/f5` },
+      { name: 'Network+', link: certPath(lang, 'network-plus') },
+      { name: 'CCNA', link: certPath(lang, 'ccna') },
+      { name: 'JNCIE', link: certPath(lang, 'jncie') },
+      { name: 'CCST Networking', link: certPath(lang, 'cisco-ccst-networking') },
+      { name: 'F5-CTS', link: certPath(lang, 'f5') },
     ],
     cloud: [
-      { name: 'AWS Cloud Practitioner', link: `/${lang}/certifications/aws-cloud-practitioner` },
-      { name: 'Azure', link: `/${lang}/certifications/microsoft-azure-fundamentals` },
-      { name: 'Google Cloud', link: `/${lang}/certifications/google-cloud` },
-      { name: 'CompTIA Cloud+', link: `/${lang}/certifications/comptia-cloud-plus` },
-      { name: 'IBM Cloud v5', link: `/${lang}/certifications/ibm-cloud-v5` },
-      { name: 'AWS Solutions Architect', link: `/${lang}/certifications/aws-solutions-architect` },
+      { name: 'AWS Cloud Practitioner', link: certPath(lang, 'aws-cloud-practitioner') },
+      { name: 'Azure', link: certPath(lang, 'microsoft-azure-fundamentals') },
+      { name: 'Google Cloud', link: certPath(lang, 'google-cloud') },
+      { name: 'CompTIA Cloud+', link: certPath(lang, 'comptia-cloud-plus') },
+      { name: 'IBM Cloud v5', link: certPath(lang, 'ibm-cloud-v5') },
+      { name: 'AWS Solutions Architect', link: certPath(lang, 'aws-solutions-architect') },
     ],
     database: [
-      { name: 'Microsoft SQL Server', link: `/${lang}/certifications/microsoft-sql-server` },
-      { name: 'Oracle', link: `/${lang}/certifications/oracle-database-sql` },
-      { name: 'MySQL', link: `/${lang}/certifications/mysql` },
-      { name: 'MongoDB', link: `/${lang}/certifications/mongodb-developer` },
+      { name: 'Microsoft SQL Server', link: certPath(lang, 'microsoft-sql-server') },
+      { name: 'Oracle', link: certPath(lang, 'oracle-database-sql') },
+      { name: 'MySQL', link: certPath(lang, 'mysql') },
+      { name: 'MongoDB', link: certPath(lang, 'mongodb-developer') },
     ],
     programmazione: [
-      { name: 'Java SE', link: `/${lang}/certifications/java-se` },
-      { name: 'Python', link: `/${lang}/certifications/python-developer` },
-      { name: 'JavaScript', link: `/${lang}/certifications/javascript-developer` },
-      { name: 'C#', link: `/${lang}/certifications/csharp` },
+      { name: 'Java SE', link: certPath(lang, 'java-se') },
+      { name: 'Python', link: certPath(lang, 'python-developer') },
+      { name: 'JavaScript', link: certPath(lang, 'javascript-developer') },
+      { name: 'C#', link: certPath(lang, 'csharp') },
       { name: 'TypeScript', link: null, comingSoon: true },
       { name: 'Kotlin', link: null, comingSoon: true },
       { name: 'Go', link: null, comingSoon: true },
@@ -180,15 +175,15 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       { name: 'Swift', link: null, comingSoon: true },
     ],
     virtualizzazione: [
-      { name: 'VMware VCP', link: `/${lang}/certifications/vmware-vcp` },
+      { name: 'VMware VCP', link: certPath(lang, 'vmware-vcp') },
       { name: 'Hyper-V', link: null },
-      { name: 'Microsoft Virtualization', link: `/${lang}/certifications/microsoft-virtualization` },
+      { name: 'Microsoft Virtualization', link: certPath(lang, 'microsoft-virtualization') },
     ],
     'intelligenza-artificiale': [
-      { name: 'Google TensorFlow Developer', link: `/${lang}/certifications/tensorflow` },
+      { name: 'Google TensorFlow Developer', link: certPath(lang, 'tensorflow') },
       { name: 'PyTorch', link: null },
       { name: 'OpenAI', link: null },
-      { name: 'Microsoft AI Fundamentals', link: `/${lang}/certifications/microsoft-ai-fundamentals` },
+      { name: 'Microsoft AI Fundamentals', link: certPath(lang, 'microsoft-ai-fundamentals') },
     ],
   };
 
@@ -330,21 +325,11 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       key: 'intelligenza-artificiale',
       route: '/intelligenza-artificiale',
       name: getLabel(
-        {
-          it: 'Intelligenza Artificiale',
-          en: 'Artificial Intelligence',
-          es: 'Inteligencia Artificial',
-          fr: 'Intelligence Artificielle',
-        },
+        { it: 'Intelligenza Artificiale', en: 'Artificial Intelligence', es: 'Inteligencia Artificial', fr: 'Intelligence Artificielle' },
         lang
       ),
       description: getLabel(
-        {
-          it: 'Machine learning e AI applicata.',
-          en: 'Machine learning and applied AI.',
-          es: 'Aprendizaje automático e IA aplicada.',
-          fr: 'Apprentissage automatique et IA appliquée.',
-        },
+        { it: 'Machine learning e AI applicata.', en: 'Machine learning and applied AI.', es: 'Aprendizaje automático e IA aplicada.', fr: 'Apprentissage automatique et IA appliquée.' },
         lang
       ),
       color: 'cyan',
