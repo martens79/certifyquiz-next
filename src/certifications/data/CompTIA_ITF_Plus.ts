@@ -2,7 +2,7 @@
 // Data consumabile dal renderer server (niente JSX/router).
 
 const ITFPlus = {
-  slug: "itfplus",
+  slug: "comptia-itf-plus",
   imageUrl: "/images/certifications/itf-icon.png", // sostituisci quando avrai l’icona Tech+
   officialUrl: "https://www.comptia.org/en-us/certifications/tech/",
 

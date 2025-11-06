@@ -3,7 +3,7 @@
 // 🖼️ Metti l'immagine in /public/images/certifications/tensorflow-icon.png
 
 const GoogleTensorFlowDeveloper = {
-  slug: "google-tensorflow-developer",
+  slug: "tensorflow",
   imageUrl: "/images/certifications/tensorflow-icon.png",
   officialUrl: "https://www.tensorflow.org/certificate",
 

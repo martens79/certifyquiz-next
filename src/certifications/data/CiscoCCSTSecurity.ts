@@ -2,7 +2,7 @@
 // Data-only per CertificationPage (server). Nessun JSX/Router.
 
 const CISCO_CCST_CYBERSECURITY = {
-  slug: "cisco-ccst-cybersecurity",
+  slug: "cisco-ccst-security",
   imageUrl: "/images/certifications/ccst_cybersecurity.png", // metti il logo in /public/images/certifications/ccst_cybersecurity.png
   officialUrl:
     "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-cybersecurity.html",

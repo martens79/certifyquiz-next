@@ -2,7 +2,7 @@
 // Modulo dati per "MySQL Certification" (no React/JSX).
 
 const MySQLCertification = {
-  slug: "mysql-certification",
+  slug: "mysql",
   imageUrl: "/images/certifications/mysql.png",
 
   // Pagina ufficiale generale (documentazione MySQL)

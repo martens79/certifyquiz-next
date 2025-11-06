@@ -210,6 +210,7 @@ const MOCK: Cert[] = [
     faq: [],
     imageUrl: "/og/cert-default.png",
   },
+  
 ];
 
 /* =============================== Public API =============================== */

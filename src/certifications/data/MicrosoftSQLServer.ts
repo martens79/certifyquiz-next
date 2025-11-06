@@ -2,7 +2,7 @@
 // Modulo dati puro per la pagina "Microsoft SQL Server" (no React/JSX).
 
 const MicrosoftSQLServer = {
-  slug: "sql-server",
+  slug: "microsoft-sql-server",
   imageUrl: "/images/certifications/sqlserver.png",
 
   // 🔗 Pagina “ufficiale” di prodotto (documentazione SQL Server)
