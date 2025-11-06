@@ -26,8 +26,17 @@ export type Locale = Cert["locale"];
 // Usa il proxy Next se non definisci API_BASE_URL (vedi app/api/backend/*)
 const API = "/api/backend";
 
-// filtra alle certificazioni presenti ora
-const LIVE = new Set(["jncie", "f5", "aws-cloud-practitioner", "cisco-ccst-networking"]);
+// ✅ Slug già online/abilitati in staging (lista bianca)
+const LIVE = new Set([
+  "jncie",
+  "f5",
+  "aws-cloud-practitioner",
+  "cisco-ccst-networking",
+  // aggiunti per test
+  "eipass",
+  "pekit",
+  "ecdl",
+]);
 
 /* ---------------------------- Helpers & guards ---------------------------- */
 
@@ -110,7 +119,7 @@ async function fetchWithTimeout(input: RequestInfo | URL, init: NextFetchInit = 
 function toAbsoluteUrl(url?: string): string | undefined {
   if (!url) return undefined;
   if (/^https?:\/\//i.test(url)) return url;
-  const BASE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/,"");
+  const BASE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
   const clean = url.startsWith("/") ? url : `/${url}`;
   return `${BASE}${clean}`;
 }
@@ -166,6 +175,38 @@ const MOCK: Cert[] = [
     h1: "Cisco CCST – Networking",
     intro: "Reti di base, modelli, indirizzamento e troubleshooting entry-level.",
     seoDescription: "Quiz Cisco CCST Networking con spiegazioni e domande aggiornate.",
+    faq: [],
+    imageUrl: "/og/cert-default.png",
+  },
+
+  // 👇 MOCK minimi per staging (nuovi)
+  {
+    slug: "eipass",
+    locale: "it",
+    title: "EIPASS",
+    h1: "EIPASS",
+    intro: "Quiz e spiegazioni per EIPASS.",
+    seoDescription: "Allenati per EIPASS con domande aggiornate.",
+    faq: [],
+    imageUrl: "/og/cert-default.png",
+  },
+  {
+    slug: "pekit",
+    locale: "it",
+    title: "PEKIT",
+    h1: "PEKIT",
+    intro: "Quiz e spiegazioni per PEKIT.",
+    seoDescription: "Allenati per PEKIT con domande aggiornate.",
+    faq: [],
+    imageUrl: "/og/cert-default.png",
+  },
+  {
+    slug: "ecdl",
+    locale: "it",
+    title: "ECDL",
+    h1: "ECDL",
+    intro: "Quiz e spiegazioni per ECDL/ICDL.",
+    seoDescription: "Allenati per ICDL/ECDL con domande aggiornate.",
     faq: [],
     imageUrl: "/og/cert-default.png",
   },
@@ -338,17 +379,6 @@ export async function getCertList(locale: Locale = "it"): Promise<Cert[]> {
     return MOCK.filter((c) => c.locale === locale && LIVE.has(c.slug));
   }
 }
-
-/* ------------------------------- URL helper ------------------------------- */
-
-export const certPath = (lang: Locale, slug: string) => {
-  switch (lang) {
-    case "it": return `/it/certificazioni/${slug}`;
-    case "en": return `/en/certifications/${slug}`;
-    case "fr": return `/fr/certifications/${slug}`;
-    case "es": return `/es/certificaciones/${slug}`;
-  }
-};
 
 /* ---------------------------- Quiz intro (SSR) ---------------------------- */
 
