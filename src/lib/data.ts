@@ -435,3 +435,19 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
     return null;
   }
 }
+/* ------------------------------- URL helper ------------------------------- */
+
+export const certPath = (lang: "it" | "en" | "fr" | "es", slug: string): string => {
+  switch (lang) {
+    case "it":
+      return `/it/certificazioni/${slug}`;
+    case "en":
+      return `/en/certifications/${slug}`;
+    case "fr":
+      return `/fr/certifications/${slug}`;
+    case "es":
+      return `/es/certificaciones/${slug}`;
+    default:
+      return `/it/certificazioni/${slug}`;
+  }
+};

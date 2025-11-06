@@ -3,43 +3,48 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Lock, Network, Cloud, Database, Code, Server, Cpu } from 'lucide-react';
+import {
+  GraduationCap, Lock, Network, Cloud, Database, Code, Server, Cpu,
+} from 'lucide-react';
 import QuizTitle from '@/components/QuizTitle';
 import CategoryBox from '@/components/CategoryBox';
 import BottomNavbar from '@/components/BottomNavbar';
-import { certPath } from '@/lib/paths'; // ← niente "type Locale" qui
 
+// 👇 prendiamo Locale e il costruttore di path certificazioni
+import type { Locale } from '@/lib/data';
+import { certPath } from '@/lib/data';
 
-
-type Locale = 'it' | 'en' | 'fr' | 'es';
+/* ---------- i18n helpers ---------- */
 type I18nText = Partial<Record<Locale, string>>;
-
 const getLabel = (d: I18nText, lang: Locale) => d[lang] ?? d.it ?? d.en ?? d.fr ?? d.es ?? '';
 
 /* ---------- Tipi availability (backend) ---------- */
 type AvailabilityMap = Record<string, { translated: number; total: number }>;
-
 type BackendAvailabilityItem = {
   slug?: string;
   topics_with_translations?: number;
   topics_total?: number;
 };
-
-type BackendAvailabilityPayload = { items?: BackendAvailabilityItem[] } | BackendAvailabilityItem[];
+type BackendAvailabilityPayload =
+  | { items?: BackendAvailabilityItem[] }
+  | BackendAvailabilityItem[];
 
 function isArrayPayload(x: unknown): x is BackendAvailabilityItem[] {
   return Array.isArray(x);
 }
 function hasItemsPayload(x: unknown): x is { items: BackendAvailabilityItem[] } {
-  return typeof x === 'object' && x !== null && Array.isArray((x as { items?: unknown }).items);
+  return typeof x === 'object' && x !== null && Array.isArray((x as any).items);
 }
 
-/* ---------- Util per link/slug e badge ---------- */
-// ✅ Estrae lo slug da tutte le lingue (it/en/fr/es) e varianti route
+/* ---------- Util per badge ---------- */
 const slugFromLink = (link?: string | null) => {
   if (!link) return null;
-  const m = link.match(/^\/(it|en|fr|es)\/(certificazioni|certifications|certificaciones)\/([^/?#]+)/i);
-  return m?.[3] ?? null;
+  const i = link.indexOf('/certificazioni/');
+  const j = link.indexOf('/certifications/');
+  const base = i !== -1 ? '/certificazioni/' : j !== -1 ? '/certifications/' : null;
+  if (!base) return null;
+  const k = link.indexOf(base);
+  return link.slice(k + base.length).replace(/\/+$/, '');
 };
 
 const translatedCountForLink = (availability: AvailabilityMap, link?: string | null) => {
@@ -114,7 +119,6 @@ export default function QuizHome({ lang }: { lang: Locale }) {
           : hasItemsPayload(data)
           ? data.items
           : [];
-
         for (const it of rows) {
           if (!it?.slug) continue;
           map[it.slug] = {
@@ -124,9 +128,10 @@ export default function QuizHome({ lang }: { lang: Locale }) {
         }
         setAvailability(map);
       })
-      .catch(() => setAvailability({})); // Silenzioso
+      .catch(() => setAvailability({}));
   }, [lang]);
 
+  /* ---------- SLUG ufficiali (tutti con certPath) ---------- */
   const certificationNames: CertificationNames = {
     base: [
       { name: 'EIPASS', link: certPath(lang, 'eipass') },
@@ -169,7 +174,7 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       { name: 'Java SE', link: certPath(lang, 'java-se') },
       { name: 'Python', link: certPath(lang, 'python-developer') },
       { name: 'JavaScript', link: certPath(lang, 'javascript-developer') },
-      { name: 'C#', link: certPath(lang, 'csharp') },
+      { name: 'C#', link: certPath(lang, 'csharp') }, // (nota: in futuro potrai migrare a /azure-developer)
       { name: 'TypeScript', link: null, comingSoon: true },
       { name: 'Kotlin', link: null, comingSoon: true },
       { name: 'Go', link: null, comingSoon: true },
@@ -327,11 +332,21 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       key: 'intelligenza-artificiale',
       route: '/intelligenza-artificiale',
       name: getLabel(
-        { it: 'Intelligenza Artificiale', en: 'Artificial Intelligence', es: 'Inteligencia Artificial', fr: 'Intelligence Artificielle' },
+        {
+          it: 'Intelligenza Artificiale',
+          en: 'Artificial Intelligence',
+          es: 'Inteligencia Artificial',
+          fr: 'Intelligence Artificielle',
+        },
         lang
       ),
       description: getLabel(
-        { it: 'Machine learning e AI applicata.', en: 'Machine learning and applied AI.', es: 'Aprendizaje automático e IA aplicada.', fr: 'Apprentissage automatique et IA appliquée.' },
+        {
+          it: 'Machine learning e AI applicata.',
+          en: 'Machine learning and applied AI.',
+          es: 'Aprendizaje automático e IA aplicada.',
+          fr: 'Apprentissage automatique et IA appliquée.',
+        },
         lang
       ),
       color: 'cyan',
@@ -353,31 +368,28 @@ export default function QuizHome({ lang }: { lang: Locale }) {
                 <div className="opacity-80">{AVAILABLE_TXT[lang]?.lead || 'Already translated in this language:'}</div>
               </div>
               <div className="flex flex-wrap gap-2">
-                {allCerts
-                  .filter((c) => translatedCountForLink(availability, c.link) > 0)
-                  .sort((a, b) => translatedCountForLink(availability, b.link) - translatedCountForLink(availability, a.link))
-                  .map((c) => {
-                    const label = smartBadgeLabel(availability, c.link, lang);
-                    const isDisabled = !c.link;
-                    return (
-                      <Link
-                        key={c.link ?? c.name}
-                        href={c.link ?? '#'}
-                        onClick={(e) => {
-                          if (isDisabled) e.preventDefault();
-                        }}
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition
-                          ${!isDisabled ? 'bg-white border-emerald-300 hover:bg-emerald-100' : 'bg-gray-200 border-gray-300 cursor-not-allowed text-gray-500'}`}
-                        title={label}
-                        aria-disabled={isDisabled}
-                      >
-                        <span>{c.name}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 border border-emerald-400">
-                          {label}
-                        </span>
-                      </Link>
-                    );
-                  })}
+                {translatedCertsForLang.map((c) => {
+                  const label = smartBadgeLabel(availability, c.link, lang);
+                  const isDisabled = !c.link;
+                  return (
+                    <Link
+                      key={c.link ?? c.name}
+                      href={c.link ?? '#'}
+                      onClick={(e) => {
+                        if (isDisabled) e.preventDefault();
+                      }}
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition
+                        ${!isDisabled ? 'bg-white border-emerald-300 hover:bg-emerald-100' : 'bg-gray-200 border-gray-300 cursor-not-allowed text-gray-500'}`}
+                      title={label}
+                      aria-disabled={isDisabled}
+                    >
+                      <span>{c.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 border border-emerald-400">
+                        {label}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
