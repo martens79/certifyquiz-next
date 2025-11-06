@@ -1,6 +1,7 @@
 // File: src/app/[lang]/[page]/page.tsx
 // Render pagine legali da Markdown → HTML (Remark/Rehype). Niente React/MDX runtime.
 
+import type React from "react"; // ✅ Aggiunta per JSX.Element
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import fs from "node:fs/promises";
@@ -46,14 +47,18 @@ function filenameFor(lang: Locale, key: PageKey): string {
 
 /* -------------------------------- SEO --------------------------------- */
 type MetaShape = { title?: string; description?: string };
+type SEOByLang = Partial<Record<Locale, Record<string, MetaShape>>>;
+
+const SEO_MAP = seo as SEOByLang;
+
 function getSeoMeta(lang: Locale, key: PageKey, slug: string): MetaShape | undefined {
-  const langSeo = (seo as any)?.[lang] as Record<string, MetaShape> | undefined;
+  const langSeo = SEO_MAP?.[lang];
   if (!langSeo) return undefined;
   return langSeo[`/${slug}`] ?? langSeo[slug] ?? langSeo[key];
 }
 
 /* --------------------------- Static params (SSG) --------------------------- */
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<Array<{ lang: Locale; page: string }>> {
   const params: Array<{ lang: Locale; page: string }> = [];
   for (const lang of locales) {
     for (const key of Object.keys(PAGES) as PageKey[]) {
@@ -71,28 +76,32 @@ export async function generateMetadata(
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
 
   if (!key) {
-    return { title: "CertifyQuiz", description: "Pagina non trovata", robots: { index: false, follow: false } };
+    return {
+      title: "CertifyQuiz",
+      description: "Pagina non trovata",
+      robots: { index: false, follow: false },
+    };
   }
 
   const meta = getSeoMeta(lang, key, page);
+  const canonical = `${siteUrl}/${lang}/${page}`;
+
+  const languages: NonNullable<Metadata["alternates"]>["languages"] = {
+    "it-IT": `${siteUrl}/it/${PAGES[key].it}`,
+    "en-US": `${siteUrl}/en/${PAGES[key].en}`,
+    "fr-FR": `${siteUrl}/fr/${PAGES[key].fr}`,
+    "es-ES": `${siteUrl}/es/${PAGES[key].es}`,
+    "x-default": `${siteUrl}/it/${PAGES[key].it}`,
+  };
 
   return {
     title: meta?.title ?? "CertifyQuiz",
     description: meta?.description ?? "Quiz realistici con spiegazioni per le principali certificazioni IT.",
-    alternates: {
-      canonical: `${siteUrl}/${lang}/${page}`,
-      languages: {
-        "it-IT": `${siteUrl}/it/${PAGES[key].it}`,
-        "en-US": `${siteUrl}/en/${PAGES[key].en}`,
-        "fr-FR": `${siteUrl}/fr/${PAGES[key].fr}`,
-        "es-ES": `${siteUrl}/es/${PAGES[key].es}`,
-        "x-default": `${siteUrl}/it/${PAGES[key].it}`,
-      },
-    },
+    alternates: { canonical, languages },
     openGraph: {
       title: meta?.title ?? "CertifyQuiz",
       description: meta?.description ?? "Quiz realistici con spiegazioni per le principali certificazioni IT.",
-      url: `${siteUrl}/${lang}/${page}`,
+      url: canonical,
       siteName: "CertifyQuiz",
       type: "article",
       locale: lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES",
@@ -105,9 +114,9 @@ export async function generateMetadata(
 async function renderMarkdownToHtml(markdown: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
-    .use(remarkGfm)              // tabelle, liste, ecc.
-    .use(remarkRehype)           // md → hast
-    .use(rehypeStringify)        // hast → html
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeStringify)
     .process(markdown);
 
   return String(file);
@@ -116,7 +125,7 @@ async function renderMarkdownToHtml(markdown: string): Promise<string> {
 /* --------------------------------- Page ---------------------------------- */
 export default async function Page(
   props: { params: Promise<{ lang: Locale; page: string }> }
-) {
+): Promise<React.JSX.Element> {   // ✅ Tipo corretto
   const { lang, page } = await props.params;
   const key = resolveKeyFromSlug(lang, page);
   if (!key) return notFound();
@@ -130,7 +139,6 @@ export default async function Page(
     return notFound();
   }
 
-  // separa frontmatter (se presente) e contenuto markdown
   const { content } = matter(raw);
   const html = await renderMarkdownToHtml(content);
 

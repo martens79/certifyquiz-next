@@ -1,41 +1,52 @@
 // src/utils/langUtils.ts
 import React, { isValidElement } from "react";
+import { locales as ALL_LOCALES, type Locale } from "@/lib/i18n";
 
-export const SUPPORTED_LANGS = ["it", "en", "fr", "es"] as const;
-export type Locale = (typeof SUPPORTED_LANGS)[number];
+/** Per compatibilità con il resto del codice */
+export const SUPPORTED_LANGS = ALL_LOCALES;
 
+/** Rileva la lingua dal path (prima segment) */
 export function getCurrentLangFromPath(path = "/"): Locale {
   try {
-    const seg = path.split("?")[0].split("#")[0].split("/").filter(Boolean)[0]?.toLowerCase();
-    return (SUPPORTED_LANGS as readonly string[]).includes(seg || "") ? (seg as Locale) : "it";
+    const seg = path.split("?")[0].split("#")[0].split("/").filter(Boolean)[0]?.toLowerCase() || "";
+    return (ALL_LOCALES as readonly string[]).includes(seg) ? (seg as Locale) : "it";
   } catch {
     return "it";
   }
 }
 
+/** Rileva la lingua in runtime (client); fallback IT lato server */
 export function getCurrentLang(): Locale {
   if (typeof window === "undefined") return "it";
   return getCurrentLangFromPath(window.location?.pathname || "/");
 }
 
+/** Parse sicuro di un oggetto JSON (solo object “puro”) */
 function tryParseJSONObject(s: unknown): Record<string, unknown> | null {
   if (typeof s !== "string") return null;
   const t = s.trim();
   if (!(t.startsWith("{") && t.endsWith("}"))) return null;
   try {
-    const o = JSON.parse(t);
+    const o = JSON.parse(t) as unknown;
     return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : null;
   } catch {
     return null;
   }
 }
 
+/** Type guard: è un ReactElement? */
 function isReactEl(x: unknown): x is React.ReactElement {
   return !!x && isValidElement(x);
 }
 
+/** ReactElement con props.children opzionale (evita l’errore su props: {}) */
+type ReactElementWithChildren = React.ReactElement & {
+  props?: { children?: unknown };
+};
+
+/** Strategia di pick: lang → it → resto → primo non null */
 function pickI18nValue(obj: Record<string, unknown>, lang: Locale) {
-  const order: string[] = [lang, "it", ...SUPPORTED_LANGS.filter((l) => l !== lang && l !== "it")];
+  const order: string[] = [lang, "it", ...ALL_LOCALES.filter((l) => l !== lang && l !== "it")];
   for (const k of order) {
     if (obj[k] != null) return obj[k];
   }
@@ -45,47 +56,55 @@ function pickI18nValue(obj: Record<string, unknown>, lang: Locale) {
   return "";
 }
 
+/** Estrae testo “umano” da valori eterogenei */
 function extractText(node: unknown): string {
   if (node == null) return "";
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(extractText).join(" ");
-  if (isReactEl(node)) return extractText((node.props as any)?.children);
+  if (isReactEl(node)) {
+    const el = node as ReactElementWithChildren;
+    return extractText(el.props?.children);
+  }
   if (typeof node === "object") return "";
   return String(node ?? "");
 }
 
 /**
  * getLabel:
- *  - input: string | number | JSX | oggetto i18n | stringa JSON i18n
- *  - output: string | JSX
+ * - input: string | number | JSX | object i18n | stringa JSON i18n
+ * - output: string | JSX (se l’input è JSX)
  */
 export function getLabel(
-  input: any,
+  input: unknown,
   lang?: Locale
 ): string | number | React.ReactElement | React.ReactNode {
   const _lang = lang || getCurrentLang();
   if (input == null) return "";
 
+  // Se è già JSX lo restituiamo così com’è (il caller potrà renderizzarlo)
   if (isReactEl(input)) return input;
 
+  // Oggetto i18n (non array)
   if (typeof input === "object" && !Array.isArray(input)) {
     const picked = pickI18nValue(input as Record<string, unknown>, _lang);
     if (isReactEl(picked)) return picked;
-    if (typeof picked === "string" || typeof picked === "number") return String(picked);
-    return (picked as any) ?? "";
+    if (typeof picked === "string" || typeof picked === "number") return picked;
+    return "";
   }
 
+  // Stringa potenzialmente JSON-i18n
   if (typeof input === "string") {
     const parsed = tryParseJSONObject(input);
     if (parsed) return getLabel(parsed, _lang);
     return input;
   }
 
+  // Numeri / altre primitive
   return String(input);
 }
 
 /** come getLabel ma garantisce una stringa */
-export function safeLabel(input: any, lang?: Locale): string {
+export function safeLabel(input: unknown, lang?: Locale): string {
   const v = getLabel(input, lang);
   if (isReactEl(v)) return extractText(v);
   if (Array.isArray(v)) return v.map(extractText).join(" ");
@@ -211,16 +230,21 @@ export const STATIC_LABELS = {
     fr: "Questions aléatoires sur plusieurs sujets.",
     es: "Preguntas aleatorias de varios temas.",
   },
-};
+} as const;
 
 function interpolate(template: string, vars: Record<string, string | number> = {}) {
   return template.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
 }
 
-export function t(key: keyof typeof STATIC_LABELS, lang?: Locale, vars?: Record<string, string | number>) {
+/** t(): sempre string — se la label è JSX, estraiamo testo leggibile */
+export function t(
+  key: keyof typeof STATIC_LABELS,
+  lang?: Locale,
+  vars?: Record<string, string | number>
+): string {
   const _lang = lang || getCurrentLang();
   const labelObj = STATIC_LABELS[key];
-  if (!labelObj) return key as string;
   const raw = getLabel(labelObj, _lang);
-  return typeof raw === "string" ? interpolate(raw, vars || {}) : (raw as any);
+  const s = typeof raw === "string" || typeof raw === "number" ? String(raw) : extractText(raw);
+  return interpolate(s, vars || {});
 }

@@ -1,7 +1,6 @@
-﻿// src/app/[lang]/page.tsx
-import Home from "@/components/home/Home"; // componente client reale
+﻿import Home from "@/components/home/Home";
 import StructuredData from "@/components/StructuredData";
-import type { Locale } from "@/lib/i18n";
+import type { Locale, Localized } from "@/lib/i18n";
 import type { Metadata } from "next";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
@@ -13,14 +12,14 @@ const ogLocale: Record<Locale, string> = {
   es: "es_ES",
 };
 
-const getLabel = (dict: Partial<Record<Locale, string>>, lang: Locale) =>
+const getLabel = (dict: Partial<Record<Locale, string>>, lang: Locale): string =>
   dict[lang] ?? dict.it ?? dict.en ?? dict.fr ?? dict.es ?? "";
 
-/* ───────────────────────────── SEO metadata ───────────────────────────── */
+/* ─────────────── SEO metadata ─────────────── */
 export async function generateMetadata(
-  props: { params: Promise<{ lang: Locale }> } // ✅ Next 15: params come Promise
+  props: { params: Promise<{ lang: Locale }> }
 ): Promise<Metadata> {
-  const { lang } = await props.params; // ✅ await
+  const { lang } = await props.params;
 
   const title = getLabel(
     {
@@ -85,13 +84,13 @@ export async function generateMetadata(
   };
 }
 
-/* ───────────────────────────── Pagina ───────────────────────────── */
+/* ─────────────── Pagina ─────────────── */
 export default async function LangHome(
-  props: { params: Promise<{ lang: Locale }> } // ✅ Next 15: params come Promise
+  props: { params: Promise<{ lang: Locale }> }
 ) {
-  const { lang } = await props.params; // ✅ await
+  const { lang } = await props.params;
 
-  // JSON-LD: Breadcrumbs per la home
+  // JSON-LD: Breadcrumbs
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -103,9 +102,9 @@ export default async function LangHome(
         item: `${SITE}/${lang}`,
       },
     ],
-  };
+  } as const;
 
-  // JSON-LD: ItemList delle 8 categorie principali
+  // JSON-LD: ItemList categorie
   const categoriesOrder = [
     { key: "base", label: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" } },
     { key: "sicurezza", label: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" } },
@@ -123,7 +122,7 @@ export default async function LangHome(
     { key: "database", label: { it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" } },
     { key: "programmazione", label: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" } },
     { key: "virtualizzazione", label: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" } },
-  ] as const;
+  ] as ReadonlyArray<{ key: string; label: Localized<string> }>;
 
   const categoriesItemListLd = {
     "@context": "https://schema.org",
@@ -134,10 +133,10 @@ export default async function LangHome(
     itemListElement: categoriesOrder.map((c, idx) => ({
       "@type": "ListItem",
       position: idx + 1,
-      name: (c.label as any)[lang] ?? (c.label as any).it,
+      name: c.label[lang] ?? c.label.it ?? "",
       url: `${SITE}/${lang}/${c.key}`,
     })),
-  };
+  } as const;
 
   return (
     <>

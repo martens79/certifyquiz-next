@@ -10,11 +10,19 @@ export type QuizPageProps = {
   defaultMode?: "exam" | "training";
 };
 
+type Copy = {
+  title: string;
+  training: string;
+  exam: string;
+  start: string;
+  note: string;
+};
+
 export default function QuizPage({ lang, certSlug, defaultMode = "training" }: QuizPageProps) {
   const [mode, setMode] = useState<"exam" | "training">(defaultMode);
 
-  const t = useMemo(() => {
-    const map: Record<Locale, any> = {
+  const t = useMemo<Copy>(() => {
+    const map: Record<Locale, Copy> = {
       it: {
         title: "Modalità quiz",
         training: "Allenamento",
@@ -50,14 +58,8 @@ export default function QuizPage({ lang, certSlug, defaultMode = "training" }: Q
     return map[lang];
   }, [lang]);
 
-  // TODO: qui colleghi le tue API esistenti (esempi)
-  // - GET  /api/backend/quiz/next?slug={certSlug}&mode={mode}
-  // - POST /api/backend/quiz/answer
-  // - POST /api/backend/quiz/finish
   const handleStart = () => {
-    // Inserisci qui la tua logica di avvio quiz (router push, state machine, ecc.)
-    // Per ora teniamo il “guscio” pronto.
-    // console.log("Start quiz", { certSlug, mode });
+    // hook-in API/Router qui
   };
 
   return (

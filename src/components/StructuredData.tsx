@@ -1,10 +1,20 @@
-// src/components/StructuredData.tsx
 'use client';
-import Script from 'next/script';
+import React from 'react';
 
-export default function StructuredData({ id, data }: { id: string; data: any }) {
+type StructuredDataProps = {
+  id?: string;
+  /** Qualsiasi JSON serializzabile */
+  data: unknown;
+};
+
+export default function StructuredData({ id, data }: StructuredDataProps) {
+  const json = JSON.stringify(data);
   return (
-    <Script id={id} type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+    <script
+      id={id}
+      type="application/ld+json"
+      // OK: script inline per JSON-LD
+      dangerouslySetInnerHTML={{ __html: json }}
+    />
   );
 }

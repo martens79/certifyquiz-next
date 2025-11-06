@@ -14,6 +14,15 @@ type User = {
 type StreakResp = { current: number };
 type QuizStat = { day: string; score: number };
 
+function isQuizStat(x: unknown): x is QuizStat {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    typeof (x as { day?: unknown }).day === "string" &&
+    typeof (x as { score?: unknown }).score === "number"
+  );
+}
+
 export default function ProfileClient({ lang }: { lang: Locale }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -27,9 +36,20 @@ export default function ProfileClient({ lang }: { lang: Locale }) {
     // /user/me
     apiFetch("/user/me")
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
-      .then((data: User) => {
+      .then((data: unknown) => {
         if (!mounted) return;
-        setUser(data);
+        // accettiamo il payload solo se ha email (campo minimo)
+        const u = data as Partial<User>;
+        if (typeof u?.email === "string" && typeof u?.id === "number") {
+          setUser({
+            id: u.id,
+            email: u.email,
+            name: u.name ?? null,
+            createdAt: u.createdAt ?? null,
+          });
+        } else {
+          setUser(null);
+        }
       })
       .catch((_err: unknown) => {
         if (!mounted) return;
@@ -43,9 +63,10 @@ export default function ProfileClient({ lang }: { lang: Locale }) {
     // /user/streak
     apiFetch("/user/streak")
       .then((r) => (r.ok ? r.json() : Promise.reject(r)))
-      .then((data: StreakResp) => {
+      .then((data: unknown) => {
         if (!mounted) return;
-        setStreak(typeof data?.current === "number" ? data.current : 0);
+        const cur = (data as Partial<StreakResp>)?.current;
+        setStreak(typeof cur === "number" ? cur : 0);
       })
       .catch((_err: unknown) => {
         if (!mounted) return;
@@ -58,13 +79,7 @@ export default function ProfileClient({ lang }: { lang: Locale }) {
       .then((data: unknown) => {
         if (!mounted) return;
         if (Array.isArray(data)) {
-          const safe: QuizStat[] = data
-            .filter((d: unknown): d is QuizStat => {
-              return (
-                typeof (d as any)?.day === "string" &&
-                typeof (d as any)?.score === "number"
-              );
-            });
+          const safe = data.filter(isQuizStat);
           setWeekly(safe);
         }
       })
@@ -84,7 +99,7 @@ export default function ProfileClient({ lang }: { lang: Locale }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [lang]); // se cambia lingua, riconfigura (utile per testi/locale)
 
   if (loading) return <div className="p-6">Loading…</div>;
   if (!user) return <div className="p-6">Please login.</div>;

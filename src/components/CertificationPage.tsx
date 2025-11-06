@@ -1,28 +1,41 @@
 // src/components/CertificationPage.tsx
 import Image from "next/image";
-import type {
-  CertificationData,
-  LocalizedText,
-} from "@/certifications/types";
+import Link from "next/link";
+import type { CertificationData, LocalizedText } from "@/certifications/types";
 
 type Lang = "it" | "en" | "fr" | "es";
+
+/* -------------------- helpers i18n sicuri -------------------- */
 
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
-  // LocalizedText ha sempre le 4 lingue, ma teniamo un fallback safe
+  // LocalizedText ha (di norma) le 4 lingue; fallback robusto
   return obj[lang] ?? obj.it ?? obj.en ?? obj.fr ?? obj.es ?? "";
 }
 
+function isLocalizedArray<T>(
+  v: unknown
+): v is Readonly<Record<Lang, ReadonlyArray<T>>> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false;
+  const rec = v as Record<string, unknown>;
+  // basta che almeno una lingua valida sia un array
+  return (["it", "en", "fr", "es"] as const).some(
+    (k) => Array.isArray(rec[k])
+  );
+}
+
 function getList<T>(
-  rec:
-    | Readonly<Record<Lang, ReadonlyArray<T>>>
-    | undefined,
+  rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined,
   lang: Lang
 ): T[] {
   if (!rec) return [];
-  return (rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? []) as T[];
+  const list =
+    rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
+  return Array.isArray(list) ? [...list] : [];
 }
+
+/* -------------------- componente -------------------- */
 
 export default function CertificationPage({
   lang,
@@ -39,7 +52,6 @@ export default function CertificationPage({
     imageUrl,
     extraContent,
     imageSide = "left",
-    quizRoute,
   } = data;
 
   const pageTitle = pickLabel(title, lang) || "Certification";
@@ -58,20 +70,27 @@ export default function CertificationPage({
   // Topics (ReadonlyArray<LocalizedText>)
   const pageTopics = topics.map((t) => pickLabel(t, lang)).filter(Boolean);
 
-  // Extra content (già readonly-friendly nei tipi centrali)
-  const learn = getList<string>(extraContent?.learn, lang);
-  const whyChoose = getList<string>(extraContent?.whyChoose, lang);
-  const faqRaw = getList<{ q: string; a: string }>(extraContent?.faq as any, lang);
-  const examRefsRaw = getList<{ text: string; url: string }>(
-    extraContent?.examReference as any,
-    lang
-  );
+  // Extra content (con guard di tipo per evitare any)
+  const learn = isLocalizedArray<string>(extraContent?.learn)
+    ? getList<string>(extraContent!.learn, lang)
+    : [];
+
+  const whyChoose = isLocalizedArray<string>(extraContent?.whyChoose)
+    ? getList<string>(extraContent!.whyChoose, lang)
+    : [];
+
+  type FaqItem = { q: string; a: string };
+  const faqRaw = isLocalizedArray<FaqItem>(extraContent?.faq)
+    ? getList<FaqItem>(extraContent!.faq, lang)
+    : [];
+
+  type RefItem = { text: string; url: string };
+  const examRefsRaw = isLocalizedArray<RefItem>(extraContent?.examReference)
+    ? getList<RefItem>(extraContent!.examReference, lang)
+    : [];
 
   const faq = faqRaw
-    .map((f) => ({
-      q: f?.q ?? "",
-      a: f?.a ?? "",
-    }))
+    .map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" }))
     .filter((x) => x.q || x.a);
 
   const examRefs = examRefsRaw.map((r) => ({
@@ -79,7 +98,9 @@ export default function CertificationPage({
     url: r?.url,
   }));
 
-  const quizHref = data.quizRoute[lang] ?? data.quizRoute.it ?? "";
+  // CTA (route per lingua, con fallback)
+  const quizHref =
+    (data.quizRoute && (data.quizRoute[lang] ?? data.quizRoute.it)) || "";
 
   return (
     <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
@@ -121,7 +142,7 @@ export default function CertificationPage({
         {/* CTA */}
         {quizHref ? (
           <div className="mt-2 mb-6 text-center">
-            <a
+            <Link
               href={quizHref}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
             >
@@ -132,7 +153,7 @@ export default function CertificationPage({
                 fr: "Accéder aux quiz",
                 es: "Ir a los cuestionarios",
               }[lang] ?? "Go to quiz"}
-            </a>
+            </Link>
           </div>
         ) : null}
 
@@ -142,12 +163,12 @@ export default function CertificationPage({
           {pageTopics.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {{
+                {({
                   it: "Argomenti dell'esame",
                   en: "Exam Topics",
                   fr: "Sujets de l'examen",
                   es: "Temas del examen",
-                }[lang] ?? "Exam Topics"}
+                } as const)[lang] ?? "Exam Topics"}
               </h2>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {pageTopics.map((t, i) => (
@@ -161,12 +182,12 @@ export default function CertificationPage({
           {examRefs.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {{
+                {({
                   it: "Esami ufficiali di riferimento",
                   en: "Official reference exams",
                   fr: "Examens officiels",
                   es: "Exámenes oficiales",
-                }[lang] ?? "Official reference exams"}
+                } as const)[lang] ?? "Official reference exams"}
               </h2>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {examRefs.map((item, idx) => (
@@ -194,12 +215,12 @@ export default function CertificationPage({
           {whyChoose.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow col-span-full">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {{
+                {({
                   it: "Perché scegliere questa certificazione",
                   en: "Why choose this certification",
                   fr: "Pourquoi choisir cette certification",
                   es: "Por qué elegir esta certificación",
-                }[lang] ?? "Why choose this certification"}
+                } as const)[lang] ?? "Why choose this certification"}
               </h2>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {whyChoose.map((item, idx) => (
@@ -214,12 +235,12 @@ export default function CertificationPage({
         {learn.length > 0 && (
           <section className="mt-4">
             <h2 className="text-lg font-semibold mb-2">
-              {{
+              {({
                 it: "Cosa impari",
                 en: "What you’ll learn",
                 fr: "Ce que vous apprendrez",
                 es: "Lo que aprenderás",
-              }[lang] ?? "What you’ll learn"}
+              } as const)[lang] ?? "What you’ll learn"}
             </h2>
             <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
               {learn.map((l, i) => (

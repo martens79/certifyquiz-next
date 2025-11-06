@@ -1,5 +1,3 @@
-// src/lib/i18n.ts
-
 // === Lingue supportate ===
 export const locales = ['it', 'en', 'fr', 'es'] as const;
 export type Locale = typeof locales[number];
@@ -7,7 +5,8 @@ export const defaultLocale: Locale = 'it';
 
 // === Utility base ===
 export function isLocale(x: string): x is Locale {
-  return (locales as readonly string[]).includes(x as any);
+  // niente any: TS sa che x è string
+  return (locales as readonly string[]).includes(x);
 }
 
 /** Aggiunge il prefisso lingua a un path relativo ("/" incluso). */
@@ -19,13 +18,12 @@ export function withLang(lang: Locale, path: string) {
 /** Estrae la lingua dal pathname (es. "/it/certificazioni") */
 export function langFromPathname(pathname: string | null | undefined): Locale {
   const seg = (pathname ?? '').split('/').filter(Boolean)[0];
-  return isLocale(seg ?? '') ? (seg as Locale) : defaultLocale;
+  return seg && isLocale(seg) ? seg : defaultLocale;
 }
 
 /**
  * Cambia lingua mantenendo path (senza il prefisso lingua),
  * con normalizzazione degli slash finali.
- * Accetta opzionalmente query e hash (già pronti con "?" e "#").
  */
 export function switchLangPath(
   pathname: string,
@@ -35,11 +33,14 @@ export function switchLangPath(
 ): string {
   const parts = pathname.split('/').filter(Boolean);
   const first = parts[0];
-  const rest = isLocale(first ?? '') ? parts.slice(1) : parts;
+  const rest = first && isLocale(first) ? parts.slice(1) : parts;
   let newPath = `/${nextLang}/${rest.join('/')}`.replace(/\/+$/, '/').replace(/\/$/, '');
   if (newPath === `/${nextLang}`) newPath = `/${nextLang}/`;
   return `${newPath}${search || ''}${hash || ''}`;
 }
+
+// === Tipi utili i18n ===
+export type Localized<T = string> = Partial<Record<Locale, T>>;
 
 // === Dizionario (testi UI + SEO) ===
 export type BaseDict = {
@@ -294,13 +295,15 @@ export function routeContact(lang: Locale) {
 export function getSeoTitle(lang: Locale, pathnameKey: '/' | '/certificazioni' | '/blog'): string | undefined {
   return dict[lang].seo?.titles?.[pathnameKey];
 }
+
 export function getSeoDescription(
   lang: Locale,
   pathnameKey: '/' | '/certificazioni' | '/blog'
 ): string | undefined {
   return dict[lang].seo?.descriptions?.[pathnameKey];
 }
-// === Helper per testi multilingua usato in molte pagine ===
+
+// === Helper multilingua di base ===
 export function getLabel<T extends string>(
   obj: Partial<Record<Locale, T>>,
   lang: Locale

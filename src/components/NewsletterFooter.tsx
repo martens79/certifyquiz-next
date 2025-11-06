@@ -1,5 +1,10 @@
+// src/components/NewsletterFooter.tsx
 "use client";
+
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { langFromPathname, legalPath, type Locale } from "@/lib/i18n";
 
 type Props = {
   className?: string;
@@ -8,6 +13,10 @@ type Props = {
 export default function NewsletterFooter({ className }: Props) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "exists" | "error">("idle");
+
+  // lingua corrente dal pathname (it/en/fr/es)
+  const pathname = usePathname();
+  const lang: Locale = langFromPathname(pathname);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -56,6 +65,7 @@ export default function NewsletterFooter({ className }: Props) {
         <button
           type="submit"
           disabled={status === "loading"}
+          aria-busy={status === "loading"}
           className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
         >
           {status === "loading" ? "Invio..." : "Iscriviti"}
@@ -64,7 +74,10 @@ export default function NewsletterFooter({ className }: Props) {
 
       <p className="mt-2 text-xs text-gray-600 dark:text-neutral-400">
         Iscrivendoti accetti la nostra{" "}
-        <a href="/it/privacy" className="underline">Privacy Policy</a>.
+        <Link href={legalPath(lang, "privacy")} className="underline">
+          Privacy Policy
+        </Link>
+        .
       </p>
 
       {status === "ok" && (

@@ -1,35 +1,38 @@
 // src/components/layout/Footer.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { dict, type Locale, legalPath, withLang } from "@/lib/i18n";
+import { dict, type Locale, legalPath } from "@/lib/i18n";
 
-// Tipizzazione robusta per lo stato, evita problemi di narrowing
 type Status = "idle" | "loading" | "ok" | "err";
+
+type ApiResp = {
+  status?: string;
+  error?: string;
+};
 
 export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
 
-  // Link legali centralizzati (slug localizzati da i18n.LEGAL_PAGES)
   const links = [
     { href: legalPath(lang, "privacy"), label: t.nav.privacy },
-    { href: legalPath(lang, "terms"),   label: t.nav.terms },
+    { href: legalPath(lang, "terms"), label: t.nav.terms },
     { href: legalPath(lang, "cookies"), label: t.nav.cookies },
     { href: legalPath(lang, "contact"), label: t.nav.contact },
   ] as const;
 
-  // Newsletter state
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [msg, setMsg] = useState("");
-  const [hp, setHp] = useState(""); // honeypot anti-bot
+  const [hp, setHp] = useState(""); // honeypot
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     if (hp) {
-      // se il campo nascosto è valorizzato → probabilmente è un bot
+      // bot honeypot
       setStatus("ok");
       setMsg(t.newsletterOk ?? "Subscribed!");
       setEmail("");
@@ -39,20 +42,28 @@ export default function Footer({ lang }: { lang: Locale }) {
 
     setStatus("loading");
     setMsg("");
+
     try {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, lang }),
       });
-      const data = await res.json().catch(() => ({} as any));
+
+      let data: ApiResp = {};
+      try {
+        data = (await res.json()) as ApiResp;
+      } catch {
+        // body non JSON: lascio data = {}
+      }
+
       if (res.ok) {
         setStatus("ok");
         setMsg(t.newsletterOk ?? "Subscribed!");
         setEmail("");
       } else {
         setStatus("err");
-        setMsg(data?.error || t.newsletterErr || "Something went wrong. Please try again.");
+        setMsg(data.error || t.newsletterErr || "Something went wrong. Please try again.");
       }
     } catch {
       setStatus("err");
@@ -60,7 +71,6 @@ export default function Footer({ lang }: { lang: Locale }) {
     }
   }
 
-  // Usa una variabile alias per evitare qualsiasi perdita di tipo dovuta al narrowing
   const s: Status = status;
 
   return (

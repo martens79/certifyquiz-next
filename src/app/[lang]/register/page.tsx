@@ -8,12 +8,52 @@ import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
 import { setToken, backendUrl } from '@/lib/auth';
 
+type FormDataState = {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+type RegisterSuccess = {
+  token?: string;
+  user?: {
+    id: number;
+    email: string;
+    username?: string;
+  };
+};
+
+type RegisterError = {
+  error?: string;
+  message?: string;
+};
+
+function getErrorMessage(err: unknown, fallback = 'Error'): string {
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object' && 'message' in err && typeof (err as any).message === 'string') {
+    return (err as { message: string }).message;
+  }
+  return fallback;
+}
+
+async function safeJson<T = unknown>(res: Response): Promise<T | null> {
+  try {
+    // Prova a leggere JSON solo se il server lo dichiara
+    const ctype = res.headers.get('content-type') || '';
+    if (!ctype.toLowerCase().includes('application/json')) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
 export default function RegisterPage() {
   const pathname = usePathname() ?? '/it';
   const lang = useMemo<Locale>(() => langFromPathname(pathname), [pathname]);
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     username: '',
     email: '',
     password: '',
@@ -30,7 +70,7 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!formData.username.trim()) {
@@ -61,11 +101,11 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await safeJson(res);
+      const data = await safeJson<RegisterSuccess & RegisterError>(res);
 
       if (!res.ok) {
         const status = res.status;
-        const backendErr: string | undefined = data?.error;
+        const backendErr = (data?.error || data?.message) ?? undefined;
 
         let friendly =
           backendErr ||
@@ -85,17 +125,20 @@ export default function RegisterPage() {
             backendErr ||
             String(getLabel({ it: 'Dati mancanti o non validi.', en: 'Missing or invalid data.' }, lang));
         }
+
         throw new Error(friendly);
       }
 
       // Se il backend restituisce user+token → login diretto
       if (data?.token && data?.user) {
         try {
-          setToken?.(data.token, true); // persistente di default
+          setToken?.(data.token, true); // persistente
         } catch {
           try {
             localStorage.setItem('cq_token', data.token);
-          } catch {}
+          } catch {
+            /* noop */
+          }
         }
         router.replace(`/${lang}/profile`);
         return;
@@ -105,14 +148,22 @@ export default function RegisterPage() {
       setMessage(
         String(
           getLabel(
-            { it: 'Registrazione completata! Ora puoi accedere.', en: 'Registration successful! You can now log in.' },
+            {
+              it: 'Registrazione completata! Ora puoi accedere.',
+              en: 'Registration successful! You can now log in.',
+            },
             lang
           )
         )
       );
       setTimeout(() => router.replace(`/${lang}/login`), 1200);
-    } catch (err: any) {
-      setError(err?.message || String(getLabel({ it: 'Errore', en: 'Error' }, lang)));
+    } catch (err: unknown) {
+      setError(
+        getErrorMessage(
+          err,
+          String(getLabel({ it: 'Errore', en: 'Error' }, lang))
+        )
+      );
     } finally {
       setSubmitting(false);
     }
@@ -125,12 +176,13 @@ export default function RegisterPage() {
           🔐 {String(getLabel({ it: 'Registrati', en: 'Register' }, lang))}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block font-medium text-gray-700 mb-1">
               📛 {String(getLabel({ it: 'Nome utente', en: 'Username' }, lang))}
             </label>
             <input
+              id="username"
               type="text"
               name="username"
               value={formData.username}
@@ -142,8 +194,9 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">📧 Email</label>
+            <label htmlFor="email" className="block font-medium text-gray-700 mb-1">📧 Email</label>
             <input
+              id="email"
               type="email"
               name="email"
               value={formData.email}
@@ -155,10 +208,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block font-medium text-gray-700 mb-1">
               🔒 {String(getLabel({ it: 'Password', en: 'Password' }, lang))}
             </label>
             <input
+              id="password"
               type="password"
               name="password"
               value={formData.password}
@@ -170,10 +224,11 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-medium text-gray-700 mb-1">
+            <label htmlFor="confirmPassword" className="block font-medium text-gray-700 mb-1">
               🔁 {String(getLabel({ it: 'Conferma Password', en: 'Confirm Password' }, lang))}
             </label>
             <input
+              id="confirmPassword"
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
@@ -207,12 +262,4 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
-
-async function safeJson(res: Response) {
-  try {
-    return await res.json();
-  } catch {
-    return null;
-  }
 }
