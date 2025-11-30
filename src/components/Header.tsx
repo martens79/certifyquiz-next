@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  Suspense,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { dict, type Locale, withLang } from "@/lib/i18n";
@@ -385,7 +386,9 @@ export default function Header({ lang }: { lang: Locale }) {
 
           {/* DESTRA DESKTOP */}
           <div className="hidden items-center gap-3 md:flex">
-            <LocaleSwitcher current={lang} />
+            <Suspense fallback={null}>
+              <LocaleSwitcher current={lang} />
+            </Suspense>
 
             {!isAuthenticated ? (
               <>
@@ -529,7 +532,9 @@ export default function Header({ lang }: { lang: Locale }) {
 
             {/* Azioni + lingua (mobile) */}
             <div className="mt-3 flex items-center gap-2">
-              <LocaleSwitcher current={lang} />
+              <Suspense fallback={null}>
+                <LocaleSwitcher current={lang} />
+              </Suspense>
               {!isAuthenticated ? (
                 <>
                   <Link
