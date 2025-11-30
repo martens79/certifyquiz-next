@@ -96,7 +96,7 @@ export const dict: Record<Locale, LocaleDict> = {
   it: {
     certifications: 'Certificazioni',
     blog: 'Blog',
-    pricing: 'Prezzi',
+    pricing: 'Premium',
     login: 'Accedi',
     start: 'Inizia',
     privacy: 'Privacy',
@@ -135,7 +135,7 @@ export const dict: Record<Locale, LocaleDict> = {
   en: {
     certifications: 'Certifications',
     blog: 'Blog',
-    pricing: 'Pricing',
+    pricing: 'Premium',
     login: 'Log in',
     start: 'Start',
     privacy: 'Privacy',
@@ -172,7 +172,7 @@ export const dict: Record<Locale, LocaleDict> = {
   fr: {
     certifications: 'Certifications',
     blog: 'Blog',
-    pricing: 'Tarifs',
+    pricing: 'Premium',
     login: 'Se connecter',
     start: 'Commencer',
     privacy: 'Confidentialité',
@@ -210,7 +210,7 @@ export const dict: Record<Locale, LocaleDict> = {
   es: {
     certifications: 'Certificaciones',
     blog: 'Blog',
-    pricing: 'Precios',
+    pricing: 'Premium',
     login: 'Acceder',
     start: 'Empezar',
     privacy: 'Privacidad',

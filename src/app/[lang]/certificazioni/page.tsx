@@ -1,13 +1,15 @@
 // src/app/[lang]/certificazioni/page.tsx
-// Lista certificazioni — Next 15 (PPR-compatible), ISR, SEO + JSON-LD
+// Lista certificazioni — Next 15 (PPR-compatible), ISR, SEO + JSON-LD (server-side fetch)
 
 import type { Metadata } from "next";
 import Script from "next/script";
 
 import { locales, type Locale, isLocale } from "@/lib/i18n";
-import { getCertList, type CertListItem } from "@/lib/apiClient";
-import { CertificationCard } from "@/components/CertificationCard";
 import { canonicalUrl } from "@/lib/seo";
+
+import { getCertificationsListRSC } from "@/lib/server/certs";
+import type { CertListItem } from "@/lib/certs";
+import { CertificationCard } from "@/components/CertificationCard";
 
 export const revalidate = 86400; // ISR: 24h
 // export const experimental_ppr = true; // opzionale
@@ -67,7 +69,7 @@ export async function generateMetadata(
       l === "fr" ? "fr-FR" : "es-ES";
     languages[hreflang] = canonicalUrl(listPathByLang[l]);
   }
-  // x-default → IT (puoi cambiare a EN)
+  // x-default → IT (cambia a EN se preferisci)
   languages["x-default"] = canonicalUrl(listPathByLang.it);
 
   const canonical = canonicalUrl(listPathByLang[L]);
@@ -103,7 +105,33 @@ export default async function Page(
   const { lang } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
-  const certs: CertListItem[] = await getCertList(L);
+  // ✅ SEO-first: fetch lato server con ISR e tag
+  const raw = await getCertificationsListRSC();
+
+  // Normalizzazione minimale per aderire a CertListItem (lib/certs)
+  // Il backend può restituire { slug, title?, name? ... } → risolviamo il titolo localizzato.
+  const certs: CertListItem[] = (raw as any[]).map((c: any) => {
+    const slug: string = String(c.slug || "").trim();
+    const title =
+      c.title && typeof c.title === "object"
+        ? c.title
+        : c.title ?? c.name ?? slug;
+
+    const imageUrl = c.imageUrl ?? c.image_url ?? null;
+    const level =
+      c.level && typeof c.level === "object"
+        ? c.level
+        : (c.level ?? null);
+    const description =
+      c.description && typeof c.description === "object"
+        ? c.description
+        : (c.description ?? null);
+
+    // se dal backend arriva una categoria “grezza”, la teniamo come string
+    const category = (c.category as CertListItem["category"]) ?? null;
+
+    return { slug, title, imageUrl, level, description, category };
+  });
 
   const visible = certs.filter(
     (c): c is CertListItem & { slug: string } =>
@@ -115,7 +143,10 @@ export default async function Page(
     "@type": "ItemList",
     name: SEO[L].title,
     itemListElement: visible.map((c, i) => {
-      const title = (c.name ?? c.slug).trim() || `Certificazione ${c.id}`;
+      const title =
+        typeof c.title === "string"
+          ? c.title
+          : c.title?.[L] ?? c.title?.it ?? c.slug;
       return {
         "@type": "ListItem",
         position: i + 1,
@@ -137,15 +168,29 @@ export default async function Page(
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.length ? (
           visible.map((c) => {
-            const title = (c.name ?? c.slug).trim() || `Certificazione ${c.id}`;
+            const title =
+              typeof c.title === "string"
+                ? c.title
+                : c.title?.[L] ?? c.title?.it ?? c.slug;
+
+            const level =
+              typeof c.level === "string"
+                ? c.level
+                : c.level?.[L] ?? c.level?.it;
+
+            const description =
+              typeof c.description === "string"
+                ? c.description
+                : c.description?.[L] ?? c.description?.it;
+
             return (
               <CertificationCard
                 key={c.slug}
                 href={detailPath(L, c.slug)}
                 title={title}
-                imageUrl={undefined}
-                level={undefined}
-                description={undefined}
+                imageUrl={c.imageUrl ?? undefined}
+                level={level ?? undefined}
+                description={description ?? undefined}
               />
             );
           })

@@ -1,22 +1,35 @@
+// src/components/layout/LocaleSwitcher.tsx
 "use client";
-import { usePathname, useRouter } from "next/navigation";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { locales, type Locale, isLocale } from "@/lib/i18n";
+
+const LANG_RE = /^\/(it|en|fr|es)(?=\/|$)/i;
 
 export default function LocaleSwitcher({ current }: { current: Locale }) {
   const router = useRouter();
   const pathname = usePathname() || "/";
+  const search = useSearchParams();
 
-  function switchTo(lang: string) {
+  const switchTo = (lang: string) => {
     if (!isLocale(lang)) return;
-    const parts = pathname.split("/").filter(Boolean);
-    if (parts.length === 0) {
-      router.push(`/${lang}`);
-      return;
+    if (lang === current) return;
+
+    let base = pathname;
+
+    // sostituisci solo il primo segmento se è una lingua; altrimenti preponi
+    if (LANG_RE.test(base)) {
+      base = base.replace(LANG_RE, `/${lang}`);
+    } else {
+      base = `/${lang}${base.startsWith("/") ? "" : "/"}${base}`;
     }
-    // sostituisce lo slug lingua (prima parte del path)
-    parts[0] = lang;
-    router.push("/" + parts.join("/"));
-  }
+
+    // preserva querystring se presente
+    const qs = search?.toString();
+    const next = qs ? `${base}?${qs}` : base;
+
+    router.push(next);
+  };
 
   return (
     <label className="inline-flex items-center gap-2 text-sm">

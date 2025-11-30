@@ -1,24 +1,43 @@
 // src/lib/auth.ts
 
-/** Chiave token (remember me opzionale via localStorage/sessionStorage) */
-export const AUTH_KEY = "cq_token";
+/** Chiave token principale (stessa usata da apiClient) */
+export const AUTH_KEY = "cq:access";
+/** Chiave legacy (per compatibilità temporanea) */
+const LEGACY_KEY = "cq_token";
 
-/** Utils runtime */
+/** NEW: chiave utente (cache locale) */
+export const USER_KEY = "cq_user";
+
+/** NEW: shape minima utente */
+export type MinimalUser = {
+  id: number;
+  email: string;
+  name?: string | null;
+  role?: string | null;
+  premium?: boolean | null;
+  username?: string | null;
+};
+
 function isBrowser(): boolean {
   return typeof window !== "undefined";
 }
 
-/** Legge il token: prima sessionStorage (non persistente), poi localStorage */
+/** ------- TOKEN ------- */
 export function getToken(): string | null {
   if (!isBrowser()) return null;
   try {
-    return sessionStorage.getItem(AUTH_KEY) ?? localStorage.getItem(AUTH_KEY) ?? null;
+    return (
+      sessionStorage.getItem(AUTH_KEY) ??
+      localStorage.getItem(AUTH_KEY) ??
+      sessionStorage.getItem(LEGACY_KEY) ??
+      localStorage.getItem(LEGACY_KEY) ??
+      null
+    );
   } catch {
     return null;
   }
 }
 
-/** Salva il token. Se persist=false usa sessionStorage (remember OFF) */
 export function setToken(token: string, persist: boolean = true) {
   if (!isBrowser()) return;
   try {
@@ -29,34 +48,56 @@ export function setToken(token: string, persist: boolean = true) {
       sessionStorage.setItem(AUTH_KEY, token);
       localStorage.removeItem(AUTH_KEY);
     }
-    // Notifica cambio token
     window.dispatchEvent(new CustomEvent("cq:token", { detail: token }));
-  } catch {
-    /* ignore */
-  }
+  } catch {}
 }
 
-/** Rimuove il token da entrambi gli storage */
 export function clearToken() {
   if (!isBrowser()) return;
   try {
     localStorage.removeItem(AUTH_KEY);
     sessionStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(LEGACY_KEY);
+    sessionStorage.removeItem(LEGACY_KEY);
     window.dispatchEvent(new CustomEvent("cq:token", { detail: null }));
-  } catch {
-    /* ignore */
-  }
+  } catch {}
 }
 
-/** Logged-in se esiste un token valido */
 export function isLoggedIn(): boolean {
   return !!getToken();
 }
 
-/** Header Authorization pronto se il token esiste */
 export function authHeader(): Record<string, string> {
   const t = getToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+/** ------- USER (cache locale) ------- */
+/** NEW */
+export function getUser(): MinimalUser | null {
+  if (!isBrowser()) return null;
+  try {
+    const raw = localStorage.getItem(USER_KEY) ?? sessionStorage.getItem(USER_KEY);
+    return raw ? (JSON.parse(raw) as MinimalUser) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** NEW */
+export function setUser(u: MinimalUser | null, persist: boolean = true) {
+  if (!isBrowser()) return;
+  try {
+    // pulizia preventiva
+    localStorage.removeItem(USER_KEY);
+    sessionStorage.removeItem(USER_KEY);
+    if (u) {
+      const json = JSON.stringify(u);
+      if (persist) localStorage.setItem(USER_KEY, json);
+      else sessionStorage.setItem(USER_KEY, json);
+    }
+    window.dispatchEvent(new CustomEvent("cq:user", { detail: u }));
+  } catch {}
 }
 
 /** Costruisce l’URL del backend passando dal proxy Next (/api/backend/...) */
@@ -66,10 +107,10 @@ export function backendUrl(path: string): string {
 }
 
 /**
- * Fetch autenticata con:
- * - Content-Type gestito automaticamente (no forzatura su FormData)
- * - credentials: "include" (cookie/same-site)
- * - cache: "no-store" di default (evita staleness in aree protette)
+ * Fetch autenticata:
+ * - Content-Type auto (no forzatura su FormData)
+ * - credentials: "include"
+ * - cache: "no-store" (default)
  */
 export async function authFetch(
   input: string,
@@ -77,7 +118,6 @@ export async function authFetch(
 ) {
   const { auth = true, headers, body, ...rest } = init;
 
-  // Non impostare Content-Type se body è FormData
   const baseHeaders: Record<string, string> =
     body instanceof FormData
       ? { ...(headers as Record<string, string> | undefined) }
@@ -98,9 +138,10 @@ export async function authFetch(
   });
 }
 
-/** Logout helper (solo token) */
+/** Logout helper */
 export function logout() {
   clearToken();
+  setUser(null); // NEW: pulisci anche l’utente
 }
 
 /** Logout + redirect immediato (client-side) */
@@ -110,7 +151,7 @@ export function logoutAndRedirect(url: string = "/it/login") {
 }
 
 /**
- * Wrapper compatibile usato ovunque nell’app.
+ * Wrapper compat ovunque nell’app.
  * - Usa backendUrl() + authFetch()
  * - Auto-logout su 401 con redirect alla /[lang]/login
  */
@@ -118,24 +159,22 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   const res = await authFetch(backendUrl(path), init);
 
   if (res.status === 401) {
-    // token scaduto/non valido → clear e redirect alla login della lingua corrente
     clearToken();
+    setUser(null); // NEW
     if (isBrowser()) {
       const m = location.pathname.match(/^\/(it|en|fr|es)(?:\/|$)/i);
       const lang = (m?.[1]?.toLowerCase() || "it") as "it" | "en" | "fr" | "es";
-      location.href = `/${lang}/login`;
+      location.href = `/${lang}/login?redirect=${encodeURIComponent(location.pathname)}`;
     }
   }
 
   return res;
 }
 
-/** Comodo: fetch + parse JSON tipizzato (throw su !ok) */
+/** Fetch + parse JSON tipizzato (throw su !ok) */
 export async function apiFetchJson<T>(path: string, init: RequestInit = {}) {
   const res = await apiFetch(path, init);
-  if (!res.ok) {
-    throw new Error(`${init.method ?? "GET"} ${path} -> ${res.status}`);
-  }
+  if (!res.ok) throw new Error(`${init.method ?? "GET"} ${path} -> ${res.status}`);
   return (await res.json()) as T;
 }
 
@@ -148,4 +187,15 @@ export function onTokenChange(cb: (token: string | null) => void): () => void {
   };
   window.addEventListener("cq:token", handler as EventListener);
   return () => window.removeEventListener("cq:token", handler as EventListener);
+}
+
+/** NEW: listener per cambi utente */
+export function onUserChange(cb: (user: MinimalUser | null) => void): () => void {
+  if (!isBrowser()) return () => {};
+  const handler = (e: Event) => {
+    const ev = e as CustomEvent<MinimalUser | null>;
+    cb(ev.detail ?? getUser());
+  };
+  window.addEventListener("cq:user", handler as EventListener);
+  return () => window.removeEventListener("cq:user", handler as EventListener);
 }

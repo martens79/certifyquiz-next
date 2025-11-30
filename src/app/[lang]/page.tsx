@@ -1,9 +1,12 @@
-﻿import Home from "@/components/home/Home";
+﻿import HomeWithAuth from "@/components/home/HomeWithAuth";
 import StructuredData from "@/components/StructuredData";
 import type { Locale, Localized } from "@/lib/i18n";
 import type { Metadata } from "next";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
+  /\/+$/,
+  ""
+);
 
 const ogLocale: Record<Locale, string> = {
   it: "it_IT",
@@ -14,6 +17,64 @@ const ogLocale: Record<Locale, string> = {
 
 const getLabel = (dict: Partial<Record<Locale, string>>, lang: Locale): string =>
   dict[lang] ?? dict.it ?? dict.en ?? dict.fr ?? dict.es ?? "";
+
+/* ─────────────── Helpers route per categoria ─────────────── */
+const segByLang: Record<Locale, string> = {
+  it: "categorie",
+  en: "categories",
+  fr: "categories",
+  es: "categorias",
+};
+
+const categoryUrl = (lang: Locale, catKey: string) =>
+  `${SITE}/${lang}/${segByLang[lang]}/${catKey}`;
+
+/* ─────────────── Ordine & etichette categorie ─────────────── */
+const categoriesOrder: ReadonlyArray<{ key: string; label: Localized<string> }> = [
+  { key: "base", label: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" } },
+  {
+    key: "sicurezza",
+    label: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
+  },
+  { key: "reti", label: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" } },
+  {
+    key: "ai",
+    label: {
+      it: "Intelligenza Artificiale",
+      en: "Artificial Intelligence",
+      fr: "Intelligence Artificielle",
+      es: "Inteligencia Artificial",
+    },
+  },
+  { key: "cloud", label: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Nube" } },
+  {
+    key: "database",
+    label: {
+      it: "Database",
+      en: "Databases",
+      fr: "Bases de données",
+      es: "Bases de datos",
+    },
+  },
+  {
+    key: "programmazione",
+    label: {
+      it: "Programmazione",
+      en: "Programming",
+      fr: "Programmation",
+      es: "Programación",
+    },
+  },
+  {
+    key: "virtualizzazione",
+    label: {
+      it: "Virtualizzazione",
+      en: "Virtualization",
+      fr: "Virtualisation",
+      es: "Virtualización",
+    },
+  },
+];
 
 /* ─────────────── SEO metadata ─────────────── */
 export async function generateMetadata(
@@ -104,26 +165,7 @@ export default async function LangHome(
     ],
   } as const;
 
-  // JSON-LD: ItemList categorie
-  const categoriesOrder = [
-    { key: "base", label: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" } },
-    { key: "sicurezza", label: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" } },
-    { key: "reti", label: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" } },
-    {
-      key: "intelligenza-artificiale",
-      label: {
-        it: "Intelligenza Artificiale",
-        en: "Artificial Intelligence",
-        fr: "Intelligence Artificielle",
-        es: "Inteligencia Artificial",
-      },
-    },
-    { key: "cloud", label: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Nube" } },
-    { key: "database", label: { it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" } },
-    { key: "programmazione", label: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" } },
-    { key: "virtualizzazione", label: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" } },
-  ] as ReadonlyArray<{ key: string; label: Localized<string> }>;
-
+  // JSON-LD: ItemList categorie (URL localizzati)
   const categoriesItemListLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -133,8 +175,11 @@ export default async function LangHome(
     itemListElement: categoriesOrder.map((c, idx) => ({
       "@type": "ListItem",
       position: idx + 1,
-      name: c.label[lang] ?? c.label.it ?? "",
-      url: `${SITE}/${lang}/${c.key}`,
+      name:
+        (c.label as Record<string, string>)[lang] ??
+        (c.label as Record<string, string>)["it"] ??
+        "",
+      url: categoryUrl(lang, c.key),
     })),
   } as const;
 
@@ -143,7 +188,8 @@ export default async function LangHome(
       <StructuredData id="ld-home-breadcrumb" data={breadcrumbLd} />
       <StructuredData id="ld-home-categories" data={categoriesItemListLd} />
       <main id="main">
-        <Home lang={lang} />
+        {/* HomeWithAuth gestisce il token e passa isLoggedIn a <Home /> */}
+        <HomeWithAuth lang={lang} />
       </main>
     </>
   );

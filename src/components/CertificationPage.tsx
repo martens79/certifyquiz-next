@@ -5,38 +5,26 @@ import type { CertificationData, LocalizedText } from "@/certifications/types";
 
 type Lang = "it" | "en" | "fr" | "es";
 
-/* -------------------- helpers i18n sicuri -------------------- */
-
+/* -------------------- i18n helpers -------------------- */
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
-  // LocalizedText ha (di norma) le 4 lingue; fallback robusto
   return obj[lang] ?? obj.it ?? obj.en ?? obj.fr ?? obj.es ?? "";
 }
 
-function isLocalizedArray<T>(
-  v: unknown
-): v is Readonly<Record<Lang, ReadonlyArray<T>>> {
+function isLocalizedArray<T>(v: unknown): v is Readonly<Record<Lang, ReadonlyArray<T>>> {
   if (!v || typeof v !== "object" || Array.isArray(v)) return false;
   const rec = v as Record<string, unknown>;
-  // basta che almeno una lingua valida sia un array
-  return (["it", "en", "fr", "es"] as const).some(
-    (k) => Array.isArray(rec[k])
-  );
+  return (["it", "en", "fr", "es"] as const).some((k) => Array.isArray(rec[k]));
 }
 
-function getList<T>(
-  rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined,
-  lang: Lang
-): T[] {
+function getList<T>(rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined, lang: Lang): T[] {
   if (!rec) return [];
-  const list =
-    rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
+  const list = rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
   return Array.isArray(list) ? [...list] : [];
 }
 
 /* -------------------- componente -------------------- */
-
 export default function CertificationPage({
   lang,
   data,
@@ -58,23 +46,15 @@ export default function CertificationPage({
   const pageDescription = pickLabel(description, lang);
   const levelText =
     pickLabel(
-      level ?? {
-        it: "Principiante",
-        en: "Beginner",
-        fr: "Débutant",
-        es: "Principiante",
-      },
+      level ?? { it: "Principiante", en: "Beginner", fr: "Débutant", es: "Principiante" },
       lang
     ) || "";
 
-  // Topics (ReadonlyArray<LocalizedText>)
   const pageTopics = topics.map((t) => pickLabel(t, lang)).filter(Boolean);
 
-  // Extra content (con guard di tipo per evitare any)
   const learn = isLocalizedArray<string>(extraContent?.learn)
     ? getList<string>(extraContent!.learn, lang)
     : [];
-
   const whyChoose = isLocalizedArray<string>(extraContent?.whyChoose)
     ? getList<string>(extraContent!.whyChoose, lang)
     : [];
@@ -89,18 +69,20 @@ export default function CertificationPage({
     ? getList<RefItem>(extraContent!.examReference, lang)
     : [];
 
-  const faq = faqRaw
-    .map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" }))
-    .filter((x) => x.q || x.a);
+  const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
+  const examRefs = examRefsRaw.map((r) => ({ text: r?.text ?? "", url: r?.url }));
 
-  const examRefs = examRefsRaw.map((r) => ({
-    text: r?.text ?? "",
-    url: r?.url,
-  }));
+  // ✅ CTA sempre coerente con lo slug reale del registry
+  const quizHref = `/${lang}/quiz/${data.slug}`;
 
-  // CTA (route per lingua, con fallback)
-  const quizHref =
-    (data.quizRoute && (data.quizRoute[lang] ?? data.quizRoute.it)) || "";
+  // (Dev) avvisa se il quizRoute definito nel file non combacia con lo slug
+  if (process.env.NODE_ENV !== "production" && data.quizRoute) {
+    const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
+    if (anyQ && !anyQ.endsWith(`/quiz/${data.slug}`)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[CertificationPage] quizRoute mismatch for "${data.slug}" → "${anyQ}"`);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
@@ -124,9 +106,7 @@ export default function CertificationPage({
           ) : null}
 
           <div className="max-w-full">
-            <h1 className="text-3xl font-bold text-blue-900 mb-2 leading-tight">
-              {pageTitle}
-            </h1>
+            <h1 className="text-3xl font-bold text-blue-900 mb-2 leading-tight">{pageTitle}</h1>
             {levelText && (
               <span className="inline-block bg-orange-400 text-white text-sm font-semibold px-3 py-1 rounded-full">
                 🎓 {levelText}
@@ -135,27 +115,23 @@ export default function CertificationPage({
           </div>
         </header>
 
-        {pageDescription ? (
-          <p className="text-gray-700 mb-4">{pageDescription}</p>
-        ) : null}
+        {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
         {/* CTA */}
-        {quizHref ? (
-          <div className="mt-2 mb-6 text-center">
-            <Link
-              href={quizHref}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
-            >
-              <span className="text-lg">🚀</span>
-              {{
-                it: "Vai ai quiz",
-                en: "Go to quiz",
-                fr: "Accéder aux quiz",
-                es: "Ir a los cuestionarios",
-              }[lang] ?? "Go to quiz"}
-            </Link>
-          </div>
-        ) : null}
+        <div className="mt-2 mb-6 text-center">
+          <Link
+            href={quizHref}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
+          >
+            <span className="text-lg">🚀</span>
+            {{
+              it: "Vai ai quiz",
+              en: "Go to quiz",
+              fr: "Accéder aux quiz",
+              es: "Ir a los cuestionarios",
+            }[lang] ?? "Go to quiz"}
+          </Link>
+        </div>
 
         {/* Blocchi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -163,12 +139,8 @@ export default function CertificationPage({
           {pageTopics.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {({
-                  it: "Argomenti dell'esame",
-                  en: "Exam Topics",
-                  fr: "Sujets de l'examen",
-                  es: "Temas del examen",
-                } as const)[lang] ?? "Exam Topics"}
+                {({ it: "Argomenti dell'esame", en: "Exam Topics", fr: "Sujets de l'examen", es: "Temas del examen" } as const)[lang] ??
+                  "Exam Topics"}
               </h2>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {pageTopics.map((t, i) => (
@@ -194,12 +166,7 @@ export default function CertificationPage({
                   <li key={idx}>
                     📘{" "}
                     {item.url ? (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-700 hover:underline"
-                      >
+                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">
                         {item.text}
                       </a>
                     ) : (

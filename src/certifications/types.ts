@@ -34,6 +34,9 @@ export type ExtraContent = {
 };
 
 export type CertificationData = {
+  // 🔢 opzionale, valorizzato via mapping ids.ts
+  id?: number;
+
   slug: string;
   imageUrl: string;
   officialUrl: string;
@@ -50,6 +53,9 @@ export type CertificationData = {
 
   quizRoute: LocalizedRoute;
   backRoute: LocalizedRoute;
+
+  // 🎨 opzionale (usato in alcune UI)
+  color?: string;
 
   imageSide?: "left" | "right";
 };
