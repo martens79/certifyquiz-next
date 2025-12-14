@@ -1,9 +1,11 @@
+// src/components/quiz/QuizEngine.tsx
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Answer, Question, QuizSummary, Locale } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
+import { withLang } from '@/lib/i18n';
 
 type Props = {
   lang: Locale;
@@ -18,6 +20,8 @@ type Props = {
   durationSec?: number | null;
   // callback di salvataggio su backend quando si chiude l’esame
   onFinish?: (summary: QuizSummary) => Promise<void> | void;
+  // URL a cui tornare col bottone "Torna ai quiz" (es. /it/quiz/java-se)
+  backToHref?: string;
 };
 
 export default function QuizEngine({
@@ -28,6 +32,7 @@ export default function QuizEngine({
   initialMode = 'training',
   durationSec,
   onFinish,
+  backToHref,
 }: Props) {
   const router = useRouter();
 
@@ -36,8 +41,13 @@ export default function QuizEngine({
   const [questions, setQuestions] = useState<Question[]>([]);
   const [idx, setIdx] = useState(0);
   const [mode, setMode] = useState<'training' | 'exam'>(initialMode);
+  const [reviewMode, setReviewMode] = useState(false);
+
+
+  // q.id -> answer.id | null
   const [marked, setMarked] = useState<Record<string | number, string | number | null>>({});
   const [reviewLater, setReviewLater] = useState<Set<string | number>>(new Set());
+
   const [finished, setFinished] = useState(false);
   const [lastSummary, setLastSummary] = useState<QuizSummary | null>(null);
 
@@ -46,7 +56,7 @@ export default function QuizEngine({
   const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
 
-  // LOAD
+  /* -------------------- LOAD DOMANDE + RIPRISTINO -------------------- */
   useEffect(() => {
     let alive = true;
     setLoading(true);
@@ -56,10 +66,11 @@ export default function QuizEngine({
       try {
         const qs = await fetchQuestions();
         if (!alive) return;
+
         setQuestions(qs ?? []);
 
-        // prepara timer
-        const total = durationSec === null ? null : (durationSec ?? (qs.length * 60));
+        // durata totale
+        const total = durationSec === null ? null : durationSec ?? qs.length * 60;
 
         // tenta ripristino locale
         const persisted = loadProgress(storageScope);
@@ -91,13 +102,14 @@ export default function QuizEngine({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchQuestions, storageScope]);
 
-  // TICK (solo in exam con timer attivo)
+  /* --------------------------- TICK TIMER ----------------------------- */
   useEffect(() => {
     if (mode !== 'exam' || remaining == null || finished) {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
       return;
     }
+
     if (startedAtRef.current == null) startedAtRef.current = Date.now();
 
     const total = durationSec ?? questions.length * 60;
@@ -108,7 +120,6 @@ export default function QuizEngine({
       const rest = Math.max(0, total - elapsed);
       setRemaining(rest);
       if (rest === 0) {
-        // tempo scaduto
         if (tickRef.current) cancelAnimationFrame(tickRef.current);
         tickRef.current = null;
         doFinish(true);
@@ -123,7 +134,7 @@ export default function QuizEngine({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, remaining, finished, durationSec, questions.length]);
 
-  // AUTOSAVE locale ad ogni cambiamento significativo
+  /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
     const payload = {
       qIds: questions.map((q) => q.id),
@@ -133,11 +144,11 @@ export default function QuizEngine({
       remainingSec: remaining,
       startedAt: startedAtRef.current,
     };
-    // piccolo debounce “frame” gratis
     const id = requestAnimationFrame(() => saveProgress(storageScope, payload));
     return () => cancelAnimationFrame(id);
   }, [questions, marked, reviewLater, mode, remaining, storageScope]);
 
+  /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
     () => Object.values(marked).filter((v) => v != null).length,
     [marked]
@@ -148,90 +159,170 @@ export default function QuizEngine({
     [questions, marked]
   );
 
-  const choose = (q: Question, a: Answer) => {
-    setMarked((m) => ({ ...m, [q.id]: a.id }));
-  };
+  // Indici (posizioni) delle domande non risposte
+  const unansweredPositions = useMemo(() => {
+    return questions
+      .map((q, i) => ((marked[q.id] === undefined || marked[q.id] === null) ? i : -1))
+      .filter((i) => i >= 0);
+  }, [questions, marked]);
 
-  const next = () => setIdx((i) => Math.min(i + 1, questions.length - 1));
-  const prev = () => setIdx((i) => Math.max(i - 1, 0));
+  // Indici (posizioni) delle domande ★ e non risposte
+  const reviewUnansweredPositions = useMemo(() => {
+    return questions
+      .map((q, i) => {
+        const isUnanswered = marked[q.id] === undefined || marked[q.id] === null;
+        return reviewLater.has(q.id) && isUnanswered ? i : -1;
+      })
+      .filter((i) => i >= 0);
+  }, [questions, marked, reviewLater]);
 
-  const toggleReviewLater = (qId: Question['id']) => {
-    setReviewLater((old) => {
-      const n = new Set(old);
-      if (n.has(qId)) n.delete(qId);
-      else n.add(qId);
-      return n;
-    });
-  };
+  // Indici (posizioni) delle domande ★ (anche se già risposte)
+const reviewPositions = useMemo(() => {
+  return questions
+    .map((q, i) => (reviewLater.has(q.id) ? i : -1))
+    .filter((i) => i >= 0);
+}, [questions, reviewLater]);
 
-  const goToFirstUnanswered = () => {
-    const pos = questions.findIndex(
-      (q) => marked[q.id] === undefined || marked[q.id] === null
-    );
-    if (pos >= 0) setIdx(pos);
-  };
+const hasReview = reviewPositions.length > 0;
+
+
+  const hasReviewUnanswered = reviewUnansweredPositions.length > 0;
 
   const scorePct = useMemo(() => {
     if (!questions.length) return 0;
     let ok = 0;
     for (const q of questions) {
       const chosen = marked[q.id];
-      const right = q.answers.find((a) => a.isCorrect)?.id;
+      const right = q.answers.find((a) => !!a.isCorrect)?.id;
       if (chosen != null && right != null && chosen === right) ok++;
     }
     return Math.round((ok / questions.length) * 100);
   }, [marked, questions]);
 
-  async function doFinish(timeExpired = false) {
-    setFinished(true);
-    const total = questions.length;
-    const correct = Math.round((scorePct / 100) * total);
-    const elapsedSec =
-      startedAtRef.current != null
-        ? Math.floor((Date.now() - startedAtRef.current) / 1000)
-        : 0;
+  /* ----------------------------- HANDLER ------------------------------ */
+const choose = (q: Question, a: Answer) => {
+  setMarked((m) => ({ ...m, [q.id]: a.id }));
+};
 
-    const summary: QuizSummary = {
-      total,
-      correct,
-      scorePct,
-      marked,
-      durationSec: elapsedSec,
-    };
+/**
+ * NEXT (fix):
+ * - Sempre lineare.
+ * - Solo se sei all’ultima domanda, in ALLENAMENTO, e ci sono ★ non risolte,
+ *   allora "Avanti" salta alla prima ★ non risolta.
+ */
+const next = () => {
+  // 🔁 MODALITÀ REVISIONE ★
+  if (reviewMode) {
+    const currentPos = reviewPositions.indexOf(idx);
+    const nextPos = reviewPositions[currentPos + 1];
 
-    setLastSummary(summary);
-
-    // salva su backend (best-effort)
-    try {
-      await onFinish?.(summary);
-    } catch {
-      /* ignore */
+    if (nextPos !== undefined) {
+      setIdx(nextPos);
+    } else {
+      // finite le ★ → esci dalla review
+      setReviewMode(false);
     }
-    // pulisci autosave
-    clearProgress(storageScope);
+    return;
   }
 
-  const restart = () => {
-    setIdx(0);
-    setMarked({});
-    setReviewLater(new Set());
-    setFinished(false);
-    setLastSummary(null);
-    startedAtRef.current = null;
-    setMode('training');
-    const total = durationSec === null ? null : durationSec ?? questions.length * 60;
-    setRemaining(total);
-    clearProgress(storageScope);
+  // ▶️ FLUSSO NORMALE
+  if (idx < questions.length - 1) {
+    setIdx((i) => i + 1);
+    return;
+  }
+
+  // ⭐ ARRIVATO ALLA FINE → entra in reviewMode
+  if (mode === 'training' && reviewPositions.length > 0) {
+    setReviewMode(true);
+    setIdx(reviewPositions[0]);
+  }
+};
+
+
+
+const prev = () => setIdx((i) => Math.max(i - 1, 0));
+
+const toggleReviewLater = (qId: Question['id']) => {
+  setReviewLater((old) => {
+    const n = new Set(old);
+    if (n.has(qId)) n.delete(qId);
+    else n.add(qId);
+    return n;
+  });
+
+  // 🔴 IMPORTANTISSIMO: se stai rivedendo le ★, esci dalla review
+  setReviewMode(false);
+};
+
+
+/**
+ * Vai alla prima non risolta:
+ * 1) priorità: ★ non risolte
+ * 2) fallback: prima non risolta normale
+ */
+const goToFirstUnanswered = () => {
+  if (reviewUnansweredPositions.length > 0) {
+    setIdx(reviewUnansweredPositions[0]);
+    return;
+  }
+  if (unansweredPositions.length > 0) {
+    setIdx(unansweredPositions[0]);
+  }
+};
+
+async function doFinish(_timeExpired = false) {
+  setFinished(true);
+  const total = questions.length;
+  const correct = Math.round((scorePct / 100) * total);
+  const elapsedSec =
+    startedAtRef.current != null
+      ? Math.floor((Date.now() - startedAtRef.current) / 1000)
+      : 0;
+
+  const summary: QuizSummary = {
+    total,
+    correct,
+    scorePct,
+    marked,
+    durationSec: elapsedSec,
   };
 
-  // UI base
+  setLastSummary(summary);
+
+  // best-effort verso backend
+  try {
+    await onFinish?.(summary);
+  } catch {
+    /* ignore */
+  }
+
+  clearProgress(storageScope);
+}
+
+const restart = () => {
+  setIdx(0);
+  setMarked({});
+  setReviewLater(new Set());
+  setFinished(false);
+  setLastSummary(null);
+  startedAtRef.current = null;
+  setMode('training');
+  const total = durationSec === null ? null : durationSec ?? questions.length * 60;
+  setRemaining(total);
+  clearProgress(storageScope);
+  setReviewMode(false);
+
+};
+
+
+  /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
   if (err) return <div className="min-h-screen grid place-items-center text-red-600">{err}</div>;
   if (!questions.length) return <div className="min-h-screen grid place-items-center">No questions.</div>;
 
   const gradient = `bg-gradient-to-b ${categoryColor} text-white`;
 
-  // UI riepilogo finale
+  /* ------------------------- SCHERMATA FINALE ------------------------- */
   if (finished) {
     const total = lastSummary?.total ?? questions.length;
     const correct = lastSummary?.correct ?? 0;
@@ -240,6 +331,32 @@ export default function QuizEngine({
       lastSummary && lastSummary.durationSec
         ? fmt(lastSummary.durationSec)
         : '--:--';
+
+    const backUrl = backToHref || withLang(lang, '/quiz-home');
+
+    // elenco domande sbagliate
+    const markedMap = lastSummary?.marked ?? marked;
+    const wrongDetails = questions
+      .map((q, index) => {
+        const chosenId = markedMap?.[q.id];
+        const rightAns = q.answers.find((a) => !!a.isCorrect);
+        const chosenAns = q.answers.find((a) => a.id === chosenId);
+
+        if (!rightAns || chosenId == null || chosenId === rightAns.id) return null;
+
+        return {
+          key: `${q.id}-${index}`,
+          question: q.question ?? '',
+          correct: rightAns.text ?? '',
+          chosen: chosenAns?.text ?? '',
+        };
+      })
+      .filter(Boolean) as {
+      key: string;
+      question: string;
+      correct: string;
+      chosen: string;
+    }[];
 
     return (
       <div className={`min-h-screen ${gradient}`}>
@@ -279,28 +396,65 @@ export default function QuizEngine({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 justify-end pt-2">
+            {/* Riepilogo errori */}
+            {!!wrongDetails.length && (
+              <div className="mt-4 border-t pt-4">
+                <h2 className="text-sm font-semibold text-gray-800 mb-2">
+                  {label('wrongSummaryTitle', lang)} ({wrongDetails.length})
+                </h2>
+                <ul className="space-y-3 max-h-72 overflow-auto pr-1">
+                  {wrongDetails.map((item, i) => (
+                    <li
+                      key={item.key}
+                      className="bg-slate-50 rounded-xl p-3 text-sm"
+                    >
+                      <p className="font-medium mb-1">
+                        {i + 1}. {item.question}
+                      </p>
+                      {item.chosen && (
+                        <p className="text-red-700 text-xs mb-0.5">
+                          {label('yourAnswer', lang)} {item.chosen}
+                        </p>
+                      )}
+                      <p className="text-emerald-700 text-xs">
+                        {label('correctAnswer', lang)} {item.correct}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Azioni finali */}
+            <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
+              <div className="flex flex-wrap gap-2 text-sm">
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+                  onClick={restart}
+                >
+                  {label('restart', lang)}
+                </button>
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(backUrl)}
+                >
+                  {label('backToQuizHome', lang)}
+                </button>
+                <button
+                  type="button"
+                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+                  onClick={() => router.push(withLang(lang, '/profile'))}
+                >
+                  {label('seeProfile', lang)}
+                </button>
+              </div>
+
               <button
-                className="px-4 py-2 rounded-lg bg-white/10 text-sm"
-                onClick={restart}
-              >
-                {label('restart', lang)}
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-white/10 text-sm"
-                onClick={() => router.push(`/${lang}/quiz-home`)}
-              >
-                {label('backToQuizHome', lang)}
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-white/10 text-sm"
-                onClick={() => router.push(`/${lang}/profile`)}
-              >
-                {label('seeProfile', lang)}
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm"
-                onClick={() => router.push(`/${lang}/prezzi`)}
+                type="button"
+                className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
+                onClick={() => router.push(withLang(lang, '/prezzi'))}
               >
                 {label('seePremium', lang)}
               </button>
@@ -311,10 +465,18 @@ export default function QuizEngine({
     );
   }
 
-  // UI quiz normale
+  /* --------------------------- UI QUIZ NORMALE ------------------------ */
   const q = questions[idx];
   const isExam = mode === 'exam';
   const chosen = marked[q.id];
+  const reviewTotal = reviewPositions.length;
+  const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
+
+
+  // ✅ Abilita "Avanti" anche all'ultima se in training ci sono ★ non risolte
+  const canGoNext =
+  idx < questions.length - 1 || (mode === 'training' && reviewPositions.length > 0);
+
 
   return (
     <div className={`min-h-screen ${gradient}`}>
@@ -322,20 +484,29 @@ export default function QuizEngine({
         {/* header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div className="text-sm opacity-90">
-            {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
-            {label('answered', lang)} {answeredCount}
-            {isExam && (
-              <>
-                {' '}
-                · {label('score', lang)} {scorePct}%{' '}
-                {remaining != null && (
-                  <>
-                    · ⏱ {fmt(remaining)}
-                  </>
-                )}
-              </>
-            )}
-          </div>
+  {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+  {label('answered', lang)} {answeredCount}
+
+  {/* ★ Review indicator */}
+  {reviewMode && reviewTotal > 0 && (
+    <>
+      {' '}
+      ·{' '}
+      <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+        ★ Review {reviewIndex}/{reviewTotal}
+      </span>
+    </>
+  )}
+
+  {isExam && (
+    <>
+      {' '}
+      · {label('score', lang)} {scorePct}%{' '}
+      {remaining != null && <> · ⏱ {fmt(remaining)}</>}
+    </>
+  )}
+</div>
+
 
           <div className="flex items-center gap-2">
             <button
@@ -366,21 +537,44 @@ export default function QuizEngine({
         <div className="space-y-3">
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
-            const isRight = a.isCorrect === true;
+            const isRight = !!a.isCorrect;
             const showFeedback = !isExam && chosen != null;
+
+            let btnClasses =
+              'bg-white text-gray-900 border border-white/20 hover:bg-white/90';
+
+            if (isExam) {
+              // ESAME: solo evidenzia la risposta scelta in verde
+              if (isChosen) {
+                btnClasses =
+                  'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+              }
+            } else {
+              // ALLENAMENTO
+              if (!showFeedback) {
+                // prima di dare feedback: come in esame
+                if (isChosen) {
+                  btnClasses =
+                    'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+                }
+              } else {
+                // feedback attivo: verde giusto, rosso sbagliato scelto
+                if (isRight) {
+                  btnClasses =
+                    'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]';
+                } else if (isChosen && !isRight) {
+                  btnClasses =
+                    'bg-red-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+                }
+              }
+            }
 
             return (
               <button
                 key={String(a.id)}
+                type="button"
                 onClick={() => choose(q, a)}
-                className={`w-full text-left rounded-2xl px-4 py-3 transition border-2
-                  ${
-  isChosen
-    ? 'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]'
-    : 'bg-white text-gray-900 border border-white/20 hover:bg-white/90'
-}
-
-                `}
+                className={`w-full text-left rounded-2xl px-4 py-3 transition border-2 ${btnClasses}`}
               >
                 {a.text}
                 {showFeedback && (
@@ -404,6 +598,7 @@ export default function QuizEngine({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
+              type="button"
               className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
               onClick={prev}
               disabled={idx === 0}
@@ -411,9 +606,10 @@ export default function QuizEngine({
               ‹ {label('back', lang)}
             </button>
             <button
+              type="button"
               className="px-4 py-2 rounded-lg bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
               onClick={next}
-              disabled={idx === questions.length - 1}
+              disabled={!canGoNext}
             >
               {label('next', lang)} ›
             </button>
@@ -421,20 +617,23 @@ export default function QuizEngine({
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
               className="px-4 py-2 rounded-lg bg-white/10"
               onClick={() => toggleReviewLater(q.id)}
             >
               {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
             </button>
             <button
+              type="button"
               className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
               onClick={goToFirstUnanswered}
-              disabled={!hasUnanswered}
+              disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
             >
               {label('gotoUn', lang)}
             </button>
             {isExam ? (
               <button
+                type="button"
                 className="px-4 py-2 rounded-lg bg-red-500"
                 onClick={() => doFinish(false)}
               >
@@ -442,6 +641,7 @@ export default function QuizEngine({
               </button>
             ) : (
               <button
+                type="button"
                 className="px-4 py-2 rounded-lg bg-white/10"
                 onClick={restart}
               >
@@ -539,5 +739,24 @@ const L = {
     en: 'See Premium',
     fr: 'Découvrir Premium',
     es: 'Descubrir Premium',
+  },
+  // riepilogo errori
+  wrongSummaryTitle: {
+    it: 'Domande da rivedere',
+    en: 'Questions to review',
+    fr: 'Questions à revoir',
+    es: 'Preguntas para revisar',
+  },
+  yourAnswer: {
+    it: 'Tua risposta:',
+    en: 'Your answer:',
+    fr: 'Votre réponse :',
+    es: 'Tu respuesta:',
+  },
+  correctAnswer: {
+    it: 'Risposta corretta:',
+    en: 'Correct answer:',
+    fr: 'Bonne réponse :',
+    es: 'Respuesta correcta:',
   },
 };

@@ -1,3 +1,6 @@
+// src/app/[lang]/prezzi/page.tsx (o Premium, a seconda del path reale)
+// Pagina Premium & prezzi — nuova UI con "carte" cliccabili
+
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { withLang } from "@/lib/i18n";
@@ -33,6 +36,12 @@ const labels = {
     en: "Choose between a subscription or unlocking only what you need.",
     fr: "Choisissez un abonnement ou débloquez seulement ce dont vous avez besoin.",
     es: "Elige entre suscripción o desbloquear solo lo que necesitas.",
+  },
+  betaBanner: {
+    it: "🚧 Sito in beta: per ora l’accesso è completamente gratuito. I prezzi qui sotto sono indicativi e potranno cambiare al lancio.",
+    en: "🚧 Beta version: for now access is completely free. Prices below are indicative and may change at launch.",
+    fr: "🚧 Version bêta : pour l’instant l’accès est entièrement gratuit. Les prix ci-dessous sont indicatifs et pourront changer au lancement.",
+    es: "🚧 Versión beta: por ahora el acceso es completamente gratuito. Los precios siguientes son orientativos y podrán cambiar en el lanzamiento.",
   },
 } as const;
 
@@ -93,7 +102,7 @@ export default async function PremiumPage(
 ) {
   const { lang } = await props.params;
 
-  // FAQ (testo base, semplice ma SEO-friendly)
+  // FAQ (riuso testo esistente)
   const faq = (() => {
     if (lang === "it") {
       return [
@@ -177,7 +186,12 @@ export default async function PremiumPage(
     <>
       <StructuredData id="ld-premium-faq" data={faqLd} />
 
-      <main id="main" className="mx-auto max-w-4xl px-4 py-8">
+      <main id="main" className="mx-auto max-w-5xl px-4 py-8">
+        {/* Banner beta */}
+        <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
+          {L(labels.betaBanner, lang)}
+        </div>
+
         {/* Header */}
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-extrabold text-slate-900">
@@ -188,100 +202,201 @@ export default async function PremiumPage(
           </p>
         </header>
 
-        {/* Sezione 1: Abbonamento Premium */}
-        <section className="mb-8 rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 className="mb-2 text-xl font-bold text-slate-900">
-            {lang === "it"
-              ? "Abbonamento Premium"
-              : lang === "en"
-              ? "Premium subscription"
-              : lang === "fr"
-              ? "Abonnement Premium"
-              : "Suscripción Premium"}
-          </h2>
-          <p className="mb-3 text-sm text-slate-700">
-            {lang === "it"
-              ? "L’abbonamento Premium ti dà accesso illimitato alle spiegazioni complete, a tutti i quiz inclusi nel piano e a funzionalità extra come statistiche avanzate e badge ufficiali."
-              : lang === "en"
-              ? "The Premium subscription gives you unlimited access to full explanations, all quizzes included in the plan and extra features such as advanced stats and official badges."
-              : lang === "fr"
-              ? "L’abonnement Premium vous donne un accès illimité aux explications complètes, à tous les quiz inclus dans l’offre et à des fonctionnalités avancées comme les statistiques détaillées et les badges officiels."
-              : "La suscripción Premium te da acceso ilimitado a explicaciones completas, a todos los cuestionarios incluidos en el plan y a funciones avanzadas como estadísticas detalladas e insignias oficiales."}
-          </p>
-          <ul className="mb-4 list-disc space-y-1 pl-5 text-sm text-slate-700">
-            <li>
-              {lang === "it"
-                ? "Ideale se stai preparando più certificazioni nello stesso periodo."
-                : lang === "en"
-                ? "Ideal if you are preparing multiple certifications at the same time."
-                : lang === "fr"
-                ? "Idéal si vous préparez plusieurs certifications en même temps."
-                : "Ideal si estás preparando varias certificaciones al mismo tiempo."}
-            </li>
-            <li>
-              {lang === "it"
-                ? "Accesso automatico ai nuovi quiz aggiunti alle certificazioni incluse."
-                : lang === "en"
-                ? "Automatic access to new quizzes added to the included certifications."
-                : lang === "fr"
-                ? "Accès automatique aux nouveaux quiz ajoutés aux certifications incluses."
-                : "Acceso automático a los nuevos cuestionarios añadidos a las certificaciones incluidas."}
-            </li>
-          </ul>
-          <p className="text-xs text-slate-500">
-            {lang === "it"
-              ? "I prezzi definitivi verranno pubblicati qui prima del lancio ufficiale."
-              : lang === "en"
-              ? "Final pricing will be published here before the official launch."
-              : lang === "fr"
-              ? "Les tarifs définitifs seront publiés ici avant le lancement officiel."
-              : "Los precios definitivos se publicarán aquí antes del lanzamiento oficial."}
-          </p>
+        {/* Carte prezzi */}
+        <section className="mb-10">
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Settimanale */}
+            <article className="flex flex-col rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-5 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-700">
+                {lang === "it"
+                  ? "Premium settimanale"
+                  : lang === "en"
+                  ? "Weekly Premium"
+                  : lang === "fr"
+                  ? "Premium hebdomadaire"
+                  : "Premium semanal"}
+              </h2>
+              <p className="mt-3 text-3xl font-extrabold text-slate-900">
+                4,99 €
+                <span className="ml-1 text-xs font-medium text-slate-500">
+                  / {lang === "it" || lang === "es" ? "settimana" : lang === "fr" ? "semaine" : "week"}
+                </span>
+              </p>
+              <p className="mt-2 text-xs text-slate-600">
+                {lang === "it"
+                  ? "Perfetto per un ripasso intensivo prima dell’esame."
+                  : lang === "en"
+                  ? "Perfect for an intensive review right before the exam."
+                  : lang === "fr"
+                  ? "Parfait pour une révision intensive juste avant l’examen."
+                  : "Perfecto para un repaso intenso justo antes del examen."}
+              </p>
+              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
+                <li>
+                  {lang === "it"
+                    ? "Accesso completo alle spiegazioni dei quiz inclusi."
+                    : lang === "en"
+                    ? "Full access to explanations for included quizzes."
+                    : lang === "fr"
+                    ? "Accès complet aux explications des quiz inclus."
+                    : "Acceso completo a las explicaciones de los cuestionarios incluidos."}
+                </li>
+                <li>
+                  {lang === "it"
+                    ? "Statistiche di base sui tuoi tentativi."
+                    : lang === "en"
+                    ? "Basic stats on your attempts."
+                    : lang === "fr"
+                    ? "Statistiques de base sur vos tentatives."
+                    : "Estadísticas básicas de tus intentos."}
+                </li>
+              </ul>
+              <button
+                type="button"
+                className="mt-4 cursor-not-allowed rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
+              >
+                {lang === "it"
+                  ? "Disponibile al lancio"
+                  : lang === "en"
+                  ? "Available at launch"
+                  : lang === "fr"
+                  ? "Disponible au lancement"
+                  : "Disponible en el lanzamiento"}
+              </button>
+            </article>
+
+            {/* Mensile */}
+            <article className="flex flex-col rounded-2xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-5 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-violet-700">
+                {lang === "it"
+                  ? "Premium mensile"
+                  : lang === "en"
+                  ? "Monthly Premium"
+                  : lang === "fr"
+                  ? "Premium mensuel"
+                  : "Premium mensual"}
+              </h2>
+              <p className="mt-3 text-3xl font-extrabold text-slate-900">
+                8,99 €
+                <span className="ml-1 text-xs font-medium text-slate-500">
+                  / {lang === "it" || lang === "es" ? "mese" : lang === "fr" ? "mois" : "month"}
+                </span>
+              </p>
+              <p className="mt-2 text-xs text-slate-600">
+                {lang === "it"
+                  ? "La scelta ideale se stai preparando più certificazioni."
+                  : lang === "en"
+                  ? "The ideal choice if you're preparing multiple certifications."
+                  : lang === "fr"
+                  ? "Le choix idéal si vous préparez plusieurs certifications."
+                  : "La opción ideal si estás preparando varias certificaciones."}
+              </p>
+              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
+                <li>
+                  {lang === "it"
+                    ? "Accesso a tutte le spiegazioni delle certificazioni incluse."
+                    : lang === "en"
+                    ? "Access to all explanations for included certifications."
+                    : lang === "fr"
+                    ? "Accès à toutes les explications pour les certifications incluses."
+                    : "Acceso a todas las explicaciones de las certificaciones incluidas."}
+                </li>
+                <li>
+                  {lang === "it"
+                    ? "Nuovi quiz e aggiornamenti inclusi automaticamente."
+                    : lang === "en"
+                    ? "New quizzes and updates automatically included."
+                    : lang === "fr"
+                    ? "Nouveaux quiz et mises à jour inclus automatiquement."
+                    : "Nuevos cuestionarios y actualizaciones incluidos automáticamente."}
+                </li>
+                <li>
+                  {lang === "it"
+                    ? "Badge e obiettivi per monitorare i tuoi progressi."
+                    : lang === "en"
+                    ? "Badges and goals to track your progress."
+                    : lang === "fr"
+                    ? "Badges et objectifs pour suivre vos progrès."
+                    : "Insignias y objetivos para seguir tu progreso."}
+                </li>
+              </ul>
+              <button
+                type="button"
+                className="mt-4 cursor-not-allowed rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
+              >
+                {lang === "it"
+                  ? "Disponibile al lancio"
+                  : lang === "en"
+                  ? "Available at launch"
+                  : lang === "fr"
+                  ? "Disponible au lancement"
+                  : "Disponible en el lanzamiento"}
+              </button>
+            </article>
+
+            {/* Acquisto singolo */}
+            <article className="flex flex-col rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+                {lang === "it"
+                  ? "Certificazione singola"
+                  : lang === "en"
+                  ? "Single certification"
+                  : lang === "fr"
+                  ? "Certification à l’unité"
+                  : "Certificación individual"}
+              </h2>
+              <p className="mt-3 text-3xl font-extrabold text-slate-900">
+                3,99 €
+                <span className="ml-1 text-xs font-medium text-slate-500">
+                  / {lang === "it" || lang === "es" ? "una tantum" : lang === "fr" ? "paiement unique" : "one-time"}
+                </span>
+              </p>
+              <p className="mt-2 text-xs text-slate-600">
+                {lang === "it"
+                  ? "Sblocca per sempre una certificazione o un singolo esame."
+                  : lang === "en"
+                  ? "Unlock a single certification or exam forever."
+                  : lang === "fr"
+                  ? "Débloquez une certification ou un examen unique pour toujours."
+                  : "Desbloquea una certificación o examen único para siempre."}
+              </p>
+              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
+                <li>
+                  {lang === "it"
+                    ? "Paghi una sola volta, senza abbonamento."
+                    : lang === "en"
+                    ? "Pay once, no subscription."
+                    : lang === "fr"
+                    ? "Vous payez une seule fois, sans abonnement."
+                    : "Pagas una sola vez, sin suscripción."}
+                </li>
+                <li>
+                  {lang === "it"
+                    ? "Accesso finché la certificazione resta su CertifyQuiz."
+                    : lang === "en"
+                    ? "Access as long as the certification remains on CertifyQuiz."
+                    : lang === "fr"
+                    ? "Accès tant que la certification reste disponible sur CertifyQuiz."
+                    : "Acceso mientras la certificación siga disponible en CertifyQuiz."}
+                </li>
+              </ul>
+              <button
+                type="button"
+                className="mt-4 cursor-not-allowed rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
+              >
+                {lang === "it"
+                  ? "Disponibile al lancio"
+                  : lang === "en"
+                  ? "Available at launch"
+                  : lang === "fr"
+                  ? "Disponible au lancement"
+                  : "Disponible en el lanzamiento"}
+              </button>
+            </article>
+          </div>
         </section>
 
-        {/* Sezione 2: Acquisti singoli */}
-        <section className="mb-8 rounded-2xl border bg-white p-5 shadow-sm">
-          <h2 className="mb-2 text-xl font-bold text-slate-900">
-            {lang === "it"
-              ? "Acquisti singoli"
-              : lang === "en"
-              ? "One-time purchases"
-              : lang === "fr"
-              ? "Achats à l’unité"
-              : "Compras únicas"}
-          </h2>
-          <p className="mb-3 text-sm text-slate-700">
-            {lang === "it"
-              ? "Se preferisci, puoi sbloccare solo una singola certificazione, un singolo argomento o un pacchetto tematico, senza abbonarti."
-              : lang === "en"
-              ? "If you prefer, you can unlock just a single certification, a single topic or a themed bundle, without subscribing."
-              : lang === "fr"
-              ? "Si vous préférez, vous pouvez débloquer uniquement une certification, un sujet ou un pack thématique, sans abonnement."
-              : "Si lo prefieres, puedes desbloquear solo una certificación, un tema o un paquete temático, sin suscripción."}
-          </p>
-          <ul className="mb-4 list-disc space-y-1 pl-5 text-sm text-slate-700">
-            <li>
-              {lang === "it"
-                ? "Paghi una volta sola e mantieni l’accesso finché l’esame resta disponibile su CertifyQuiz."
-                : lang === "en"
-                ? "You pay once and keep access as long as the exam is available on CertifyQuiz."
-                : lang === "fr"
-                ? "Vous payez une seule fois et gardez l’accès tant que l’examen reste disponible sur CertifyQuiz."
-                : "Pagas una sola vez y mantienes el acceso mientras el examen siga disponible en CertifyQuiz."}
-            </li>
-            <li>
-              {lang === "it"
-                ? "Perfetto se ti serve solo una certificazione specifica o un singolo argomento."
-                : lang === "en"
-                ? "Perfect if you only need a specific certification or a single topic."
-                : lang === "fr"
-                ? "Parfait si vous avez seulement besoin d’une certification ou d’un sujet précis."
-                : "Perfecto si solo necesitas una certificación específica o un único tema."}
-            </li>
-          </ul>
-        </section>
-
-        {/* Sezione 3: Quale scegliere? */}
+        {/* Quale scegliere? */}
         <section className="mb-10 rounded-2xl border bg-slate-50 p-5">
           <h2 className="mb-2 text-lg font-bold text-slate-900">
             {lang === "it"
@@ -354,19 +469,18 @@ export default async function PremiumPage(
               ? "Accéder aux quiz"
               : "Ir a los cuestionarios"}
           </a>
-         <a
-  href={withLang(lang, "/register")}
-  className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-white"
->
-  {lang === "it"
-    ? "Crea un account gratuito"
-    : lang === "en"
-    ? "Create a free account"
-    : lang === "fr"
-    ? "Créer un compte gratuit"
-    : "Crear una cuenta gratuita"}
-</a>
-
+          <a
+            href={withLang(lang, "/register")}
+            className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+          >
+            {lang === "it"
+              ? "Crea un account gratuito"
+              : lang === "en"
+              ? "Create a free account"
+              : lang === "fr"
+              ? "Créer un compte gratuit"
+              : "Crear una cuenta gratuita"}
+          </a>
         </div>
       </main>
     </>

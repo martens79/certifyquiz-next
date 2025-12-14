@@ -6,9 +6,20 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, getToken } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
+// 📈 Grafico andamento
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-// —— Tipi
+// —— Tipi base
 type Locale = "it" | "en" | "fr" | "es";
+
 type User = {
   id: number;
   email?: string;
@@ -51,7 +62,7 @@ type CertStat = {
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
 
-// ——— Label localizzate (senza toccare dict)
+// ——— Label localizzate (senza toccare dict globale)
 const LBL = {
   profile: {
     it: "Profilo",
@@ -179,6 +190,12 @@ const LBL = {
     fr: "Questions",
     es: "Preguntas",
   },
+  trendTitle: {
+    it: "Andamento punteggi",
+    en: "Score trend",
+    fr: "Évolution des scores",
+    es: "Evolución de los puntajes",
+  },
 };
 
 // ---------- helper fetch JSON (mai throw)
@@ -257,7 +274,7 @@ const computePercent = (ex: {
   return null;
 };
 
-// ---------- normalizzatori
+// ---------- normalizzatori per liste
 function normalizeCerts(data: any): CertRow[] {
   if (Array.isArray(data)) return data as CertRow[];
   if (Array.isArray(data?.items)) return data.items as CertRow[];
@@ -322,6 +339,86 @@ function normalizeHistory(data: any): QuizHistoryRow[] {
   });
 }
 
+// 🔧 normalizza le stats da endpoint /user-certification-stats
+// + fallback su history filtrata
+function normalizeCertStats(
+  raw: any,
+  historyRows: QuizHistoryRow[]
+): CertStat {
+  const hasHistory =
+    Array.isArray(historyRows) && historyRows.length > 0;
+
+  // 1) provo a leggere i campi dal backend
+  let total_exams = toNumFlexible(
+    raw?.total_exams ??
+      raw?.totalAttempts ??
+      raw?.exams_count ??
+      raw?.count ??
+      raw?.total ??
+      0
+  );
+
+  let avg = toNumFlexible(
+    raw?.average_score ??
+      raw?.avgScorePct ??
+      raw?.avg_score ??
+      raw?.avg_percentage ??
+      raw?.average ??
+      raw?.avg ??
+      0
+  );
+
+  let max = toNumFlexible(
+    raw?.max_score ??
+      raw?.best_score ??
+      raw?.highest ??
+      raw?.maxPct ??
+      raw?.max_percentage ??
+      0
+  );
+
+  // se il backend usa frazioni 0–1 → porto a 0–100
+  if (avg > 0 && avg <= 1) avg *= 100;
+  if (max > 0 && max <= 1) max *= 100;
+
+  avg = clamp(Math.round(avg * 10) / 10);
+  max = clamp(Math.round(max));
+
+  const hasBackendStats =
+    Number.isFinite(total_exams) &&
+    total_exams > 0 &&
+    Number.isFinite(avg) &&
+    Number.isFinite(max);
+
+  if (hasBackendStats) {
+    return {
+      total_exams,
+      average_score: avg,
+      max_score: max,
+    };
+  }
+
+  // 2) fallback → calcolo dalle righe di history (filtrate)
+  if (!hasHistory) return null;
+
+  const percents = historyRows
+    .map((ex) => computePercent(ex))
+    .filter((p): p is number => p != null && Number.isFinite(p));
+
+  if (!percents.length) return null;
+
+  const total = historyRows.length;
+  const maxFromHistory = Math.max(...percents);
+  const avgFromHistory =
+    percents.reduce((sum, p) => sum + p, 0) / percents.length;
+
+  return {
+    total_exams: total,
+    average_score: Math.round(avgFromHistory * 10) / 10,
+    max_score: Math.round(maxFromHistory),
+  };
+}
+
 const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
   const router = useRouter();
   const pathname = usePathname() ?? `/${lang}/profile`;
@@ -330,7 +427,7 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
   const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => setIsHydrated(true), []);
 
-  // 🔧 hasToken come stato (SSR-safe)
+  // 🔐 hasToken come stato (SSR-safe)
   const [hasToken, setHasToken] = useState<boolean | null>(null);
   useEffect(() => {
     setHasToken(!!getToken());
@@ -348,53 +445,55 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
   const [loadingUser, setLoadingUser] = useState(true);
 
   // —— User
-const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-useEffect(() => {
-  let alive = true;
+  useEffect(() => {
+    let alive = true;
 
-  (async () => {
-    // 🔧 leggiamo la risposta grezza (può essere { user: {...} } oppure direttamente {...})
-    const raw =
-      (await tryJson<any>("/auth/me")) ||
-      (await tryJson<any>("/user/me")) ||
-      (await tryJson<any>("/me"));
+    (async () => {
+      // 🔧 leggiamo la risposta grezza (può essere { user: {...} } oppure direttamente {...})
+      const raw =
+        (await tryJson<any>("/auth/me")) ||
+        (await tryJson<any>("/user/me")) ||
+        (await tryJson<any>("/me"));
 
-    if (!alive) return;
+      if (!alive) return;
 
-    const u: User | null = raw?.user ?? raw ?? null; // <-- qui estraiamo raw.user se esiste
+      const u: User | null = raw?.user ?? raw ?? null;
 
-    if (u && u.id) {
-      setUser(u);
-      try {
-        localStorage.setItem("user", JSON.stringify(u));
-      } catch {
-        // ignore
+      if (u && u.id) {
+        setUser(u);
+        try {
+          localStorage.setItem("user", JSON.stringify(u));
+        } catch {
+          // ignore
+        }
+      } else {
+        // fallback da localStorage se esiste qualcosa
+        try {
+          const ls = JSON.parse(localStorage.getItem("user") || "null");
+          if (ls?.id) setUser(ls);
+        } catch {
+          // ignore
+        }
       }
-    } else {
-      // fallback da localStorage se esiste qualcosa
-      try {
-        const ls = JSON.parse(localStorage.getItem("user") || "null");
-        if (ls?.id) setUser(ls);
-      } catch {
-        // ignore
-      }
-    }
 
-    setLoadingUser(false);
-  })();
+      setLoadingUser(false);
+    })();
 
-  return () => {
-    alive = false;
-  };
-}, []);
-
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // —— Streak
-  const [streak, setStreak] = useState<{ current: number; record: number }>({
-    current: 0,
-    record: 0,
-  });
+  const [streak, setStreak] = useState<{ current: number; record: number }>(
+    {
+      current: 0,
+      record: 0,
+    }
+  );
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -455,9 +554,9 @@ useEffect(() => {
     };
   }, []);
 
-  // —— Certificazioni + stats
+  // —— Certificazioni + filtro + stats
   const [certs, setCerts] = useState<CertRow[]>([]);
-  const [selectedCertId, setSelectedCertId] = useState<string>("");
+  const [selectedCertId, setSelectedCertId] = useState<string>(""); // "" = tutte
   const [certStats, setCertStats] = useState<CertStat>(null);
 
   useEffect(() => {
@@ -472,23 +571,55 @@ useEffect(() => {
     };
   }, []);
 
+  // 🔍 numero della cert selezionata (o null se "tutte")
+  const selectedCertNumeric = useMemo(
+    () => (selectedCertId ? Number(selectedCertId) : null),
+    [selectedCertId]
+  );
+
+  // 🔍 history filtrata per certificazione (usata da: storico + grafico + stats box)
+  const filteredHistory = useMemo(
+    () =>
+      selectedCertNumeric
+        ? history.filter(
+            (row) => row.certification_id === selectedCertNumeric
+          )
+        : history,
+    [history, selectedCertNumeric]
+  );
+
+  // 🔢 calcolo delle stats per la cert selezionata (o globali se "tutte")
   useEffect(() => {
     let alive = true;
     (async () => {
-      if (!user?.id || !selectedCertId) {
+      if (!user?.id) {
         if (alive) setCertStats(null);
         return;
       }
-      const data = await tryJsonMulti<CertStat>([
-        `/user-certification-stats/${user.id}/${selectedCertId}`,
-        `/api/user-certification-stats/${user.id}/${selectedCertId}`,
+
+      // se nessuna cert è selezionata → non chiamo il backend, ma calcolo dalle history globali
+      if (!selectedCertNumeric) {
+        const statsFromHistory = normalizeCertStats(
+          null,
+          filteredHistory
+        );
+        if (alive) setCertStats(statsFromHistory);
+        return;
+      }
+
+      // altrimenti provo l'endpoint dedicato, con fallback sempre su filteredHistory
+      const raw = await tryJsonMulti<any>([
+        `/user-certification-stats/${user.id}/${selectedCertNumeric}`,
+        `/api/user-certification-stats/${user.id}/${selectedCertNumeric}`,
       ]);
-      if (alive) setCertStats(data || null);
+
+      const stats = normalizeCertStats(raw, filteredHistory);
+      if (alive) setCertStats(stats);
     })();
     return () => {
       alive = false;
     };
-  }, [user?.id, selectedCertId]);
+  }, [user?.id, selectedCertNumeric, filteredHistory]);
 
   // —— Progresso per categoria
   const [categoryProgress, setCategoryProgress] = useState<
@@ -570,7 +701,7 @@ useEffect(() => {
     [lang]
   );
 
-  // —— Derivati
+  // —— Media generale (sempre su TUTTO lo storico, non filtrata)
   const overallAverage = useMemo(() => {
     const valid = history
       .map((ex) => {
@@ -616,62 +747,130 @@ useEffect(() => {
   const displayName = user?.username || user?.name || "User";
   const email = user?.email || "—";
 
+    const avatarBorderClass =
+    user?.role === "admin"
+      ? "ring-2 ring-red-400 bg-red-50"
+      : user?.premium
+      ? "ring-2 ring-amber-400 bg-amber-50"
+      : "ring-2 ring-slate-200 bg-sky-50";
+
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-indigo-50/30 text-[#0a1f44] p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-<div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-5">
-  <div className="flex items-start gap-4 justify-between flex-wrap">
-    {/* Colonna sinistra: dati profilo */}
-    <div>
-      <h1 className="text-2xl font-extrabold">
-        {getLabel(LBL.profile, lang)}: {displayName}
-      </h1>
+        <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-5">
+          <div className="flex items-start gap-4 justify-between flex-wrap">
 
-      {/* 🔧 QUI mostriamo i dati del profilo */}
-      <div className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
-        {/* Email */}
-        <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200">
-          📧 <span className="font-medium">{email}</span>
-        </div>
-
-        {/* ID + ruolo (se presenti) */}
-        {(user?.id || user?.role) && (
-          <div className="inline-flex flex-wrap items-center gap-2 text-xs text-slate-600">
-            {user?.id && (
-              <span className="inline-flex items-center gap-1">
-                🆔 <span>ID: {user.id}</span>
-              </span>
-            )}
-            {user?.role && (
-              <span className="inline-flex items-center gap-1">
-                👤 <span>Ruolo: {user.role}</span>
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Badge Premium, se utente premium */}
-        {user?.premium && (
-          <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1">
-            ⭐ Premium attivo
-          </div>
-        )}
-      </div>
+          {/* Colonna sinistra: avatar + dati profilo */}
+<div className="flex items-start gap-6 group">
+  {/* Wrapper avatar */}
+  <div className="relative">
+    {/* Halo neon dietro l'avatar */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div className="w-28 h-28 rounded-full bg-indigo-400/25 blur-xl group-hover:bg-pink-400/30 transition-colors duration-500" />
     </div>
 
-    {/* Colonna destra: pulsante Classifica */}
-    <div className="flex gap-2">
-      <Link
-        href={`/${lang}/leaderboard`}
-        className="inline-flex items-center gap-2 rounded-xl bg-amber-500/90 hover:bg-amber-500 px-3.5 py-2 text-white text-sm font-semibold shadow"
+    {/* Cerchio con gradiente e bordo dinamico */}
+    <div className="relative w-24 h-24">
+      <div
+        className={`
+          absolute inset-0 
+          rounded-full 
+          bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400
+          opacity-80
+          group-hover:opacity-100
+          transition-opacity duration-300
+        `}
+      />
+
+      <div
+        className={`
+          relative w-full h-full 
+          rounded-full 
+          shadow-lg overflow-hidden 
+          flex items-center justify-center 
+          transition-transform duration-300 ease-out 
+          group-hover:scale-110 group-hover:rotate-3
+          ${avatarBorderClass}
+        `}
       >
-        🏆 {getLabel(LBL.leaderboard, lang)}
-      </Link>
+        {/* Avatar BOTTTs (robot) */}
+        <img
+          src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
+            user?.username || user?.email || "user"
+          )}`}
+          alt="Avatar utente"
+          className="w-full h-full rounded-full object-cover bg-white"
+        />
+      </div>
+
+      {/* Chip "CQ" tech in basso a sinistra */}
+      <div className="absolute -bottom-1 -left-1 rounded-md bg-slate-900 text-[10px] px-1.5 py-0.5 text-slate-100 shadow ring-1 ring-slate-700/80">
+        CQ
+      </div>
+
+      {/* Badge Premium in basso a destra, animato */}
+      {user?.premium && (
+        <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-400 text-xs px-1.5 py-0.5 shadow ring-1 ring-yellow-500 animate-pulse">
+          ⭐
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* Testo profilo */}
+  <div className="flex flex-col justify-center">
+    <h1 className="text-3xl font-extrabold leading-snug">
+      {getLabel(LBL.profile, lang)}: {displayName}
+    </h1>
+
+    {/* 🔧 Dati del profilo */}
+    <div className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
+      {/* Email */}
+      <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200">
+        📧 <span className="font-medium">{email}</span>
+      </div>
+
+      {/* ID + ruolo */}
+      {(user?.id || user?.role) && (
+        <div className="inline-flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
+          {user?.id && (
+            <span className="inline-flex items-center gap-1">
+              🆔 <span>ID: {user.id}</span>
+            </span>
+          )}
+          {user?.role && (
+            <span className="inline-flex items-center gap-1">
+              🤖 <span>Ruolo: {user.role}</span>
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Badge Premium */}
+      {user?.premium && (
+        <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1">
+          ⭐ Premium attivo
+        </div>
+      )}
     </div>
   </div>
 </div>
 
+
+
+            {/* Colonna destra: pulsante Classifica */}
+            <div className="flex gap-2">
+              <Link
+                href={`/${lang}/leaderboard`}
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500/90 hover:bg-amber-500 px-3.5 py-2 text-white text-sm font-semibold shadow"
+              >
+                🏆 {getLabel(LBL.leaderboard, lang)}
+              </Link>
+            </div>
+          </div>
+        </div>
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -744,12 +943,18 @@ useEffect(() => {
           )}
         </div>
 
-        {/* Storico + Filtri/Stats + Categorie */}
+                {/* Storico + Filtri/Stats + Categorie + Grafico */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Colonna sinistra: storico + tabella categorie */}
           <div className="lg:col-span-2 space-y-6">
-            <HistoryGrid lang={lang} rows={history} dtf={dtf} />
+            {/* Storico filtrato in base alla certificazione selezionata */}
+            <HistoryGrid lang={lang} rows={filteredHistory} dtf={dtf} />
+
+            {/* Progresso per categoria */}
+            <CategoryTable lang={lang} rows={categoryProgress} />
           </div>
 
+          {/* Colonna destra: filtro certificazione + grafico andamento */}
           <div className="space-y-6">
             <FiltersAndStats
               lang={lang}
@@ -758,7 +963,13 @@ useEffect(() => {
               setSelectedCertId={setSelectedCertId}
               stats={certStats}
             />
-            <CategoryTable lang={lang} rows={categoryProgress} />
+
+            {/* Grafico andamento punteggi per la selezione corrente */}
+            <PerformanceChart
+              lang={lang}
+              rows={filteredHistory}
+              dtf={dtf}
+            />
           </div>
         </div>
       </div>
@@ -767,6 +978,7 @@ useEffect(() => {
 };
 
 export default ProfileClient;
+
 
 // ——— Mini componenti ———
 const StatCard: FC<{ label: string; value: string | number }> = ({
@@ -842,6 +1054,64 @@ const HistoryGrid: FC<{
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+};
+
+// 📈 Grafico andamento punteggi in base allo storico filtrato
+const PerformanceChart: FC<{
+  lang: Locale;
+  rows: QuizHistoryRow[];
+  dtf: Intl.DateTimeFormat;
+}> = ({ lang, rows, dtf }) => {
+  if (!rows.length) return null;
+
+  // Costruiamo dataset: ultimi 10 tentativi con percentuale valida
+  const data = rows
+    .map((ex) => {
+      const pct = computePercent(ex);
+      if (pct == null) return null;
+
+      const raw = ex.created_at || ex.date || null;
+      const label = raw ? dtf.format(new Date(raw)) : "#";
+
+      return {
+        label,
+        value: pct,
+      };
+    })
+    .filter((d): d is { label: string; value: number } => !!d)
+    .slice(-10); // ultimi 10
+
+  if (!data.length) return null;
+
+  const title = getLabel(LBL.trendTitle, lang);
+
+  return (
+    <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
+      <h3 className="text-lg font-semibold mb-2">📈 {title}</h3>
+      <div className="h-52">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 10 }}
+              interval="preserveStartEnd"
+            />
+            <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+            <Tooltip />
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="#2563eb"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              activeDot={{ r: 5 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -923,7 +1193,9 @@ const CategoryTable: FC<{ lang: Locale; rows: CategoryProgressRow[] }> = ({
               return (
                 <tr key={i} className="odd:bg-white even:bg-slate-50">
                   <td className="px-3 py-2">{r.category}</td>
-                  <td className="text-center px-3 py-2">{r.quizTaken}</td>
+                  <td className="text-center px-3 py-2">
+                    {r.quizTaken}
+                  </td>
                   <td className="text-center px-3 py-2">
                     {r.total_topics}
                   </td>

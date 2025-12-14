@@ -1,9 +1,7 @@
-// src/app/[lang]/leaderboard/leaderboard-client.tsx
 "use client";
 
-import { useEffect, useMemo, useState, type FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { getLabel } from "@/lib/i18n";
@@ -121,7 +119,7 @@ async function tryJson<T>(path: string): Promise<T | null> {
   }
 }
 
-// prova più endpoint (non tocchiamo il backend, solo frontend flessibile)
+// prova più endpoint
 async function tryJsonMulti<T>(paths: string[]): Promise<T | null> {
   for (const p of paths) {
     const v = await tryJson<T>(p);
@@ -180,48 +178,43 @@ function normalizeRow(x: LeaderboardRow): NormalizedRow {
 }
 
 const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
-  const router = useRouter();
-  const pathname = usePathname() ?? `/${lang}/leaderboard`;
-
   const [rows, setRows] = useState<NormalizedRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<number | null>(null);
+  const [hasToken, setHasToken] = useState(false);
 
-  const hasToken = !!getToken();
-
-  // soft-guard: se non loggato → login con redirect
+  // inizializza hasToken in modo safe
   useEffect(() => {
-    if (!hasToken) {
-      router.replace(`/${lang}/login?redirect=${encodeURIComponent(pathname)}`);
+    try {
+      setHasToken(!!getToken());
+    } catch {
+      setHasToken(false);
     }
-  }, [hasToken, lang, pathname, router]);
+  }, []);
 
-  // carica userId da /auth/me (così evidenziamo la riga corrente se presente)
+  // carica userId da /auth/me (solo se loggato)
   useEffect(() => {
+    if (!hasToken) return;
+
     let alive = true;
     (async () => {
-      try {
-        const me =
-          (await tryJson<any>("/auth/me")) ||
-          (await tryJson<any>("/user/me")) ||
-          (await tryJson<any>("/me"));
-        if (!alive) return;
-        if (me?.id && typeof me.id === "number") setMyId(me.id);
-      } catch {
-        // ignore
-      }
+      const me =
+        (await tryJson<any>("/auth/me")) ||
+        (await tryJson<any>("/user/me")) ||
+        (await tryJson<any>("/me"));
+      if (!alive) return;
+      if (me?.id && typeof me.id === "number") setMyId(me.id);
     })();
     return () => {
       alive = false;
     };
-  }, []);
+  }, [hasToken]);
 
   // carica leaderboard
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
-      // 🔧 adattabile: usa il primo endpoint che risponde
       const raw = await tryJsonMulti<any>([
         "/leaderboard",
         "/user/leaderboard",
@@ -232,10 +225,8 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
 
       const normalized = normalizeRaw(raw)
         .map(normalizeRow)
-        // filtra quelli senza almeno una simulazione
         .filter((r) => r.totalExams > 0);
 
-      // ordiniamo per bestPct desc, poi avgPct desc
       normalized.sort((a, b) => {
         const bestA = a.bestPct ?? -1;
         const bestB = b.bestPct ?? -1;
@@ -263,11 +254,6 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
   const tStreak = getLabel(LBL.streak, lang);
   const tNoData = getLabel(LBL.noData, lang);
   const tBackProfile = getLabel(LBL.backProfile, lang);
-
-  if (!hasToken) {
-    // evita flicker: la useEffect farà redirect
-    return null;
-  }
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -368,10 +354,10 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
                         {r.totalExams}
                       </td>
                       <td className="px-3 py-2 text-center">
-                          {r.avgPct != null ? `${r.avgPct}%` : "—"}
+                        {r.avgPct != null ? `${r.avgPct}%` : "—"}
                       </td>
                       <td className="px-3 py-2 text-center">
-                          {r.bestPct != null ? `${r.bestPct}%` : "—"}
+                        {r.bestPct != null ? `${r.bestPct}%` : "—"}
                       </td>
                       <td className="px-3 py-2 text-center">
                         {r.streakCurrent > 0
@@ -385,6 +371,13 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
             </table>
           </div>
         </div>
+      )}
+
+      {!hasToken && (
+        <p className="mt-4 text-xs text-slate-500">
+          In futuro, effettuando l’accesso potrai vedere anche la tua posizione
+          personale in classifica.
+        </p>
       )}
     </main>
   );

@@ -3,6 +3,7 @@
 
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Link from "next/link"; // 👈 AGGIUNTO
 import { IDS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
@@ -184,6 +185,34 @@ export default async function QuizTopicsPage(
   const base = SEO_BASE[L];
   const certName = slug.replace(/-/g, " ");
 
+  // CTA "Quiz misto" label per lingua
+  const mixedLabel =
+    L === "it"
+      ? "Quiz misto"
+      : L === "en"
+      ? "Mixed quiz"
+      : L === "fr"
+      ? "Quiz mixte"
+      : "Quiz mixto";
+
+  const mixedDesc =
+    L === "it"
+      ? "Domande miste da tutti i topic di questa certificazione."
+      : L === "en"
+      ? "Mixed questions from all topics of this certification."
+      : L === "fr"
+      ? "Questions mixtes de tous les sujets de cette certification."
+      : "Preguntas mixtas de todos los temas de esta certificación.";
+
+  const mixedCta =
+    L === "it"
+      ? "Avvia quiz misto →"
+      : L === "en"
+      ? "Start mixed quiz →"
+      : L === "fr"
+      ? "Lancer le quiz mixte →"
+      : "Iniciar quiz mixto →";
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       {/* Header con badge categoria */}
@@ -206,6 +235,23 @@ export default async function QuizTopicsPage(
           <code>{topics.length}</code>
         </p>
       </header>
+
+      {/* 🔹 BOX QUIZ MISTO */}
+      <section className="mb-8">
+        <div className="flex flex-col gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-base font-semibold">{mixedLabel}</h2>
+            <p className="text-sm text-slate-700">{mixedDesc}</p>
+          </div>
+
+          <Link
+            href={`/${L}/${quizSeg(L)}/${slug}/mixed`}
+            className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
+          >
+            {mixedCta}
+          </Link>
+        </div>
+      </section>
 
       {topics.length === 0 ? (
         <div className="text-gray-700">

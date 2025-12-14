@@ -14,8 +14,14 @@ const API_BASE = API_RAW.replace(/\/+$/, "");
 const langs = ["it", "es", "en", "fr"] as const;
 type Lang = (typeof langs)[number];
 
-// NB: la route fisica è /[lang]/certificazioni → stesso segmento per tutte le lingue
-const LIST_SEGMENT = "certificazioni" as const;
+// Segmento PRETTY per la lista certificazioni per lingua
+// (coerente con le rewrites del tuo next.config.js)
+const CERT_SEGMENT_BY_LANG: Record<Lang, string> = {
+  it: "certificazioni",
+  es: "certificaciones",
+  en: "certifications",
+  fr: "certifications",
+};
 
 const staticPages: Record<Lang, string[]> = {
   it: ["come-funziona", "contatti", "privacy", "termini", "cookie"],
@@ -51,11 +57,11 @@ async function getRemoteCerts(lang: Lang, timeoutMs = 5000) {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  // Fetch paralleli delle certificazioni per lingua
   const perLang = await Promise.all(
     langs.map(async (lang) => {
       const certs = await getRemoteCerts(lang);
       const base = `${SITE}/${lang}`;
+      const listSegment = CERT_SEGMENT_BY_LANG[lang];
 
       const entries: MetadataRoute.Sitemap = [
         // Home lingua
@@ -65,9 +71,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.9,
           lastModified: now,
         },
-        // Lista certificazioni lingua
+        // Lista certificazioni lingua (PRETTY URL)
         {
-          url: `${base}/${LIST_SEGMENT}`,
+          url: `${base}/${listSegment}`,
           changeFrequency: "weekly",
           priority: 0.8,
           lastModified: now,
@@ -79,9 +85,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.6,
           lastModified: now,
         })),
-        // Dettagli certificazioni lingua
+        // Dettagli certificazioni lingua (PRETTY URL)
         ...certs.map((c) => ({
-          url: `${base}/${LIST_SEGMENT}/${c.slug}`,
+          url: `${base}/${listSegment}/${c.slug}`,
           changeFrequency: "weekly" as const,
           priority: 0.8,
           lastModified: now,
@@ -92,6 +98,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   );
 
-  // Flatten
   return perLang.flat();
 }

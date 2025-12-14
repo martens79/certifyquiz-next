@@ -122,7 +122,8 @@ export default function Header({ lang }: { lang: Locale }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
+    // 🔄 Ogni volta che cambia la route ricalcoliamo lo stato utente
     const token = getToken();
     const logged = !!token;
     setHasToken(logged);
@@ -157,7 +158,8 @@ export default function Header({ lang }: { lang: Locale }) {
     } else {
       setUserInitials("U");
     }
-  }, []);
+  }, [pathname]); // 👈 dipende da pathname
+
 
   // consideriamo autenticato anche chi è già su /profile
   const isAuthenticated = hasToken || isProfile;
@@ -181,103 +183,99 @@ export default function Header({ lang }: { lang: Locale }) {
     : withLang(lang, `/login?redirect=${encodeURIComponent(pathname)}`);
 
   const quickBase = useMemo<QuickItem[]>(() => {
-    const base: QuickItem[] = [
-      {
-        href: withLang(lang, "/"),
-        label: ui.home,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
-            />
-          </svg>
-        ),
-      },
-      {
-        href: withLang(lang, "/quiz"),
-        label: ui.quiz,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
-            />
-          </svg>
-        ),
-      },
-      {
-        href: withLang(lang, "/suggeriti"),
-        label: ui.suggested,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 6v6l4 2"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 3a9 9 0 1 0 9 9"
-            />
-          </svg>
-        ),
-      },
-    ];
+  const quizHomeHref = withLang(lang, "/quiz-home");
+  const suggestedHref = withLang(lang, "/quiz-suggeriti");
 
-    if (isAuthenticated) {
-      base.push({
-        href: profileHref,
-        label: ui.profile,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
-            />
-          </svg>
-        ),
-      });
-    }
+  const base: QuickItem[] = [
+    {
+      href: withLang(lang, "/"),
+      label: ui.home,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: quizHomeHref,
+      label: ui.quiz,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: suggestedHref,
+      label: ui.suggested,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6v6l4 2"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 3a9 9 0 1 0 9 9"
+          />
+        </svg>
+      ),
+    },
+  ];
 
-    return base;
-  }, [
-    lang,
-    ui.home,
-    ui.quiz,
-    ui.suggested,
-    ui.profile,
-    profileHref,
-    isAuthenticated,
-  ]);
+  if (isAuthenticated) {
+    base.push({
+      href: profileHref,
+      label: ui.profile,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
+          />
+        </svg>
+      ),
+    });
+  }
+
+  return base;
+}, [lang, ui.home, ui.quiz, ui.suggested, ui.profile, profileHref, isAuthenticated]);
+
 
   const quick = useMemo(
     () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
