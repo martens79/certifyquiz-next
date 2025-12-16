@@ -196,6 +196,56 @@ const LBL = {
     fr: "Évolution des scores",
     es: "Evolución de los puntajes",
   },
+
+  avgNote: {
+  it: "Media basata solo su quiz completati",
+  en: "Average based only on completed quizzes",
+  fr: "Moyenne basée uniquement sur les quiz terminés",
+  es: "Media basada solo en cuestionarios completados",
+},
+testAttemptsExcluded: {
+  it: "• {n} tentativi di prova esclusi",
+  en: "• {n} test attempts excluded",
+  fr: "• {n} tentatives de test exclues",
+  es: "• {n} intentos de prueba excluidos",
+},
+showMore: {
+  it: "Mostra di più",
+  en: "Show more",
+  fr: "Afficher plus",
+  es: "Mostrar más",
+},
+showLess: {
+  it: "Mostra meno",
+  en: "Show less",
+  fr: "Afficher moins",
+  es: "Mostrar menos",
+},
+badgeUnlocked: {
+  it: "Sbloccato",
+  en: "Unlocked",
+  fr: "Débloqué",
+  es: "Desbloqueado",
+},
+badgeLocked: {
+  it: "Bloccato",
+  en: "Locked",
+  fr: "Verrouillé",
+  es: "Bloqueado",
+},
+badgeNotEarned: {
+  it: "Non ancora ottenuto",
+  en: "Not earned yet",
+  fr: "Pas encore obtenu",
+  es: "Aún no obtenido",
+},
+badgeLockedHint: {
+  it: "Bloccato — completa quiz per sbloccarlo",
+  en: "Locked — complete quizzes to unlock it",
+  fr: "Verrouillé — terminez des quiz pour le débloquer",
+  es: "Bloqueado — completa cuestionarios para desbloquearlo",
+},
+
 };
 
 // ---------- helper fetch JSON (mai throw)
@@ -520,39 +570,41 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
     };
   }, []);
 
-  // —— Badge
-  const [badges, setBadges] = useState<any[]>([]);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const rows = (await tryJson<any[]>("/user/user-badges")) || [];
-      if (alive) setBadges(Array.isArray(rows) ? rows : []);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+  // —— Badge (catalogo completo + stato utente)
+const [badges, setBadges] = useState<any[]>([]);
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const rows = (await tryJson<any[]>("/user/user-badges")) || [];
+    if (alive) setBadges(Array.isArray(rows) ? rows : []);
+  })();
+  return () => {
+    alive = false;
+  };
+}, []);
 
-  // —— Storico quiz (senza /exam-history, che è 404)
-  const [history, setHistory] = useState<QuizHistoryRow[]>([]);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const data =
-        (await tryJsonMulti<any>([
-          "/user/user-history",
-          "/quiz-results",
-          "/api/backend/user-history",
-          "/api/backend/quiz-results",
-        ])) ?? [];
 
-      const rows = normalizeHistory(data);
-      if (alive) setHistory(rows);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+// —— Storico quiz (senza /exam-history, che è 404)
+const [history, setHistory] = useState<QuizHistoryRow[]>([]);
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const data =
+      (await tryJsonMulti<any>([
+        "/user/user-history",
+        "/quiz-results",
+        "/api/backend/user-history",
+        "/api/backend/quiz-results",
+      ])) ?? [];
+
+    const rows = normalizeHistory(data);
+    if (alive) setHistory(rows);
+  })();
+  return () => {
+    alive = false;
+  };
+}, []);
+
 
   // —— Certificazioni + filtro + stats
   const [certs, setCerts] = useState<CertRow[]>([]);
@@ -588,6 +640,25 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
     [history, selectedCertNumeric]
   );
 
+// ✅ definizione quiz "valido" (esclude simulazioni tecniche / abbandonate)
+const COMPLETION_THRESHOLD = 0.6; // 60%
+
+const validHistory = useMemo(() => {
+  return filteredHistory.filter((row) => {
+    const total = row.total_questions ?? 0;
+    const correct = row.correct_answers ?? 0;
+
+    if (!total) return false;
+
+    // quiz considerato valido se è stato completato almeno al 60%
+    return correct / total >= COMPLETION_THRESHOLD;
+  });
+}, [filteredHistory]);
+
+const testAttemptsCount =
+  filteredHistory.length - validHistory.length;
+
+
   // 🔢 calcolo delle stats per la cert selezionata (o globali se "tutte")
   useEffect(() => {
     let alive = true;
@@ -601,7 +672,7 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
       if (!selectedCertNumeric) {
         const statsFromHistory = normalizeCertStats(
           null,
-          filteredHistory
+          validHistory
         );
         if (alive) setCertStats(statsFromHistory);
         return;
@@ -613,13 +684,13 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
         `/api/user-certification-stats/${user.id}/${selectedCertNumeric}`,
       ]);
 
-      const stats = normalizeCertStats(raw, filteredHistory);
+      const stats = normalizeCertStats(raw, validHistory);
       if (alive) setCertStats(stats);
     })();
     return () => {
       alive = false;
     };
-  }, [user?.id, selectedCertNumeric, filteredHistory]);
+  }, [user?.id, selectedCertNumeric, validHistory]);
 
   // —— Progresso per categoria
   const [categoryProgress, setCategoryProgress] = useState<
@@ -703,15 +774,19 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
 
   // —— Media generale (sempre su TUTTO lo storico, non filtrata)
   const overallAverage = useMemo(() => {
-    const valid = history
-      .map((ex) => {
-        const pct = computePercent(ex);
-        return pct == null ? NaN : pct;
-      })
-      .filter((n) => Number.isFinite(n));
-    if (!valid.length) return null;
-    return (valid.reduce((s, n) => s + n, 0) / valid.length).toFixed(1);
-  }, [history]);
+  if (!validHistory.length) return null;
+
+  const values = validHistory
+    .map((ex) => computePercent(ex))
+    .filter((n): n is number => n != null);
+
+  if (!values.length) return null;
+
+  return (
+    values.reduce((s, n) => s + n, 0) / values.length
+  ).toFixed(1);
+}, [validHistory]);
+
 
   const earnedBadges = badges.filter(
     (b) =>
@@ -727,6 +802,29 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
       b?.status === "obtained" ||
       b?.mine === true
   );
+// ✅ Set degli ID dei badge ottenuti (per match rapido)
+const earnedIds = useMemo(() => {
+  return new Set(
+    earnedBadges.map((b) => String(b?.badge_id ?? b?.id ?? ""))
+  );
+}, [earnedBadges]);
+
+// ✅ Catalogo completo già pronto dal backend
+const allBadges = badges;
+
+
+
+
+// 4. stato Mostra di più / meno
+const BADGES_COLLAPSED = 8;
+const [showAllBadges, setShowAllBadges] = useState(false);
+
+// 5. visibleBadges  ⬅️ DOPO
+const visibleBadges = useMemo(() => {
+  return showAllBadges
+    ? allBadges
+    : allBadges.slice(0, BADGES_COLLAPSED);
+}, [allBadges, showAllBadges]);
 
   // —— Render: loader SSR-safe
   if (!isHydrated || hasToken === null || loadingUser) {
@@ -907,10 +1005,26 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
                 : "days"
             }`}
           />
-          <StatCard
-            label={getLabel(LBL.average, lang)}
-            value={overallAverage ? `${overallAverage}%` : "—"}
-          />
+         <div>
+  <StatCard
+    label={getLabel(LBL.average, lang)}
+    value={overallAverage ? `${overallAverage}%` : "—"}
+  />
+  <p className="mt-1 text-[11px] leading-tight text-slate-500">
+    {getLabel(LBL.avgNote, lang)}
+    {testAttemptsCount > 0 && (
+      <>
+        {" "}
+        {getLabel(LBL.testAttemptsExcluded, lang).replace(
+          "{n}",
+          String(testAttemptsCount)
+        )}
+      </>
+    )}
+  </p>
+</div>
+
+
           <StatCard
             label={getLabel(LBL.badges, lang)}
             value={earnedBadges.length}
@@ -918,35 +1032,76 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
         </div>
 
         {/* Badge */}
-        <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
-          <h3 className="text-lg font-semibold mb-2">
-            {getLabel(LBL.earnedBadges, lang)}{" "}
-            <span className="ml-2 text-sm font-normal text-slate-500">
-              ({earnedBadges.length}/{badges.length})
-            </span>
-          </h3>
-          {!earnedBadges.length ? (
-            <p className="text-sm text-slate-600">
-              {getLabel(LBL.earnHint, lang)}
-            </p>
-          ) : (
-            <ul className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-3">
-              {earnedBadges.slice(0, 8).map((b, i) => (
-                <li
-                  key={b?.badge_id ?? b?.id ?? i}
-                  className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3"
-                >
-                  <div className="size-12 rounded-lg grid place-items-center bg-white ring-1 ring-black/5 text-slate-500">
-                    🏅
-                  </div>
-                  <span className="text-sm font-medium leading-tight line-clamp-2">
-                    {b?.title || b?.name || "Badge"}
-                  </span>
-                </li>
-              ))}
-            </ul>
+<div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
+  <div className="flex items-center justify-between gap-3">
+    <h3 className="text-lg font-semibold mb-2">
+      {getLabel(LBL.earnedBadges, lang)}{" "}
+      <span className="ml-2 text-sm font-normal text-slate-500">
+        ({earnedBadges.length}/{allBadges.length})
+      </span>
+    </h3>
+
+    {allBadges.length > BADGES_COLLAPSED && (
+      <button
+        type="button"
+        onClick={() => setShowAllBadges((v) => !v)}
+        className="text-sm font-semibold text-slate-700 hover:text-slate-900 underline underline-offset-4"
+      >
+        {showAllBadges
+          ? getLabel(LBL.showLess, lang)
+          : getLabel(LBL.showMore, lang)}
+      </button>
+    )}
+  </div>
+
+  {!earnedBadges.length ? (
+    <p className="text-sm text-slate-600">
+      {getLabel(LBL.earnHint, lang)}
+    </p>
+  ) : null}
+
+  <ul className="grid [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))] gap-3 mt-2">
+    {visibleBadges.map((b, i) => (
+      <li
+        key={`badge-${b.id ?? "x"}-${i}`}
+
+        className={[
+          "flex items-center gap-3 rounded-xl border p-3 transition",
+          b.earned
+            ? "border-slate-200 bg-slate-50/70"
+            : "border-slate-200 bg-white opacity-70 grayscale",
+        ].join(" ")}
+        title={
+          b.earned
+            ? getLabel(LBL.badgeUnlocked, lang)
+            : getLabel(LBL.badgeLockedHint, lang)
+        }
+      >
+        <div
+          className={[
+            "size-12 rounded-lg grid place-items-center ring-1 ring-black/5",
+            b.earned ? "bg-white text-slate-500" : "bg-slate-100 text-slate-400",
+          ].join(" ")}
+        >
+          {b.earned ? "🏅" : "🔒"}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <span className="text-sm font-medium leading-tight line-clamp-2">
+            {b.title}
+          </span>
+
+          {!b.earned && (
+            <div className="mt-0.5 text-xs text-slate-500">
+              {getLabel(LBL.badgeNotEarned, lang)}
+            </div>
           )}
         </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
 
                 {/* Storico + Filtri/Stats + Categorie + Grafico */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -972,7 +1127,7 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
             {/* Grafico andamento punteggi per la selezione corrente */}
             <PerformanceChart
               lang={lang}
-              rows={filteredHistory}
+              rows={validHistory}
               dtf={dtf}
             />
           </div>
@@ -1094,32 +1249,26 @@ const PerformanceChart: FC<{
   const title = getLabel(LBL.trendTitle, lang);
 
   return (
-    <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
-      <h3 className="text-lg font-semibold mb-2">📈 {title}</h3>
-      <div className="h-52">
+  <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
+    <h3 className="text-lg font-semibold mb-2">📈 {title}</h3>
+
+    {Array.isArray(data) && data.length > 1 ? (
+      <div className="h-52 min-h-[220px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 10 }}
-              interval="preserveStartEnd"
-            />
+            <XAxis dataKey="label" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
             <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
             <Tooltip />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke="#2563eb"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
-            />
+            <Line type="monotone" dataKey="value" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
-    </div>
-  );
+    ) : (
+      <p className="text-sm text-slate-500">—</p>
+    )}
+  </div>
+);
 };
 
 const FiltersAndStats: FC<{
