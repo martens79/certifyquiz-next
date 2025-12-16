@@ -760,7 +760,8 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
         <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-5">
-          <div className="flex items-start gap-4 justify-between flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:justify-between">
+
 
           {/* Colonna sinistra: avatar + dati profilo */}
 <div className="flex items-start gap-6 group">
@@ -820,17 +821,21 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
   </div>
 
   {/* Testo profilo */}
-  <div className="flex flex-col justify-center">
-    <h1 className="text-3xl font-extrabold leading-snug">
-      {getLabel(LBL.profile, lang)}: {displayName}
-    </h1>
-
+  <div className="min-w-0 flex-1 flex flex-col justify-center">
+  <h1 className="text-2xl sm:text-3xl font-extrabold leading-snug break-words">
+    {getLabel(LBL.profile, lang)}: <span className="break-words">{displayName}</span>
+  </h1>
+  
     {/* 🔧 Dati del profilo */}
     <div className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
-      {/* Email */}
-      <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200">
-        📧 <span className="font-medium">{email}</span>
-      </div>
+     {/* Email */}
+<div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200 max-w-full min-w-0">
+  📧
+  <span className="font-medium min-w-0 flex-1 truncate">
+    {email}
+  </span>
+</div>
+
 
       {/* ID + ruolo */}
       {(user?.id || user?.role) && (
