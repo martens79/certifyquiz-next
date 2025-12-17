@@ -142,13 +142,13 @@ const CompTIAAPlus = {
   // rotte localizzate per pulsante/indietro
   quizRoute: {
     it: "/it/quiz/comptia-a-plus",
-    en: "/en/quiz/comptia-a-plus",
+    en: "/quiz/comptia-a-plus",
     fr: "/fr/quiz/comptia-a-plus",
     es: "/es/quiz/comptia-a-plus",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

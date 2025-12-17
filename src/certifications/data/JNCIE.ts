@@ -217,7 +217,7 @@ const JNCIE = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/jncie",
-    en: "/en/quiz/jncie",
+    en: "/quiz/jncie",
     fr: "/fr/quiz/jncie",
     es: "/es/quiz/jncie",
   },
@@ -225,7 +225,7 @@ const JNCIE = {
   // Rotta “indietro”: lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

@@ -147,7 +147,7 @@ const MicrosoftSQLServer = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/sql-server",
-    en: "/en/quiz/sql-server",
+    en: "/quiz/sql-server",
     fr: "/fr/quiz/sql-server",
     es: "/es/quiz/sql-server",
   },
@@ -155,7 +155,7 @@ const MicrosoftSQLServer = {
   // Rotta “indietro” alla categoria Database localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

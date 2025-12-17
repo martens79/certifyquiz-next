@@ -136,7 +136,7 @@ const JavaSE = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/java",
-    en: "/en/quiz/java",
+    en: "/quiz/java",
     fr: "/fr/quiz/java",
     es: "/es/quiz/java",
   },
@@ -144,7 +144,7 @@ const JavaSE = {
   // Rotta “indietro”: lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

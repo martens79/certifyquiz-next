@@ -135,7 +135,7 @@ const MongoDBDeveloper = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/mongodb-developer",
-    en: "/en/quiz/mongodb-developer",
+    en: "/quiz/mongodb-developer",
     fr: "/fr/quiz/mongodb-developer",
     es: "/es/quiz/mongodb-developer",
   },
@@ -143,7 +143,7 @@ const MongoDBDeveloper = {
   // Rotta “indietro” (lista certificazioni) localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

@@ -204,13 +204,13 @@ const CCST = {
 
   quizRoute: {
     it: "/it/quiz/cisco-ccst",
-    en: "/en/quiz/cisco-ccst",
+    en: "/quiz/cisco-ccst",
     fr: "/fr/quiz/cisco-ccst",
     es: "/es/quiz/cisco-ccst",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

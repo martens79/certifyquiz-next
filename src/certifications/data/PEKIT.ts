@@ -142,7 +142,7 @@ const PEKIT = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/pekit",
-    en: "/en/quiz/pekit",
+    en: "/quiz/pekit",
     fr: "/fr/quiz/pekit",
     es: "/es/quiz/pekit",
   },
@@ -150,7 +150,7 @@ const PEKIT = {
   // Rotta “indietro” localizzata (verso lista certificazioni)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

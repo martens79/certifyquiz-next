@@ -170,7 +170,7 @@ const MicrosoftAzureFundamentals = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/azure-fundamentals",
-    en: "/en/quiz/azure-fundamentals",
+    en: "/quiz/azure-fundamentals",
     fr: "/fr/quiz/azure-fundamentals",
     es: "/es/quiz/azure-fundamentals",
   },
@@ -178,7 +178,7 @@ const MicrosoftAzureFundamentals = {
   // Rotta “indietro” alla lista certificazioni
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

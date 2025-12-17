@@ -206,13 +206,13 @@ const CEH = {
 
   quizRoute: {
     it: "/it/quiz/ceh",
-    en: "/en/quiz/ceh",
+    en: "/quiz/ceh",
     fr: "/fr/quiz/ceh",
     es: "/es/quiz/ceh",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

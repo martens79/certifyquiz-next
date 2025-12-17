@@ -135,7 +135,7 @@ const SecurityPlus = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/security-plus",
-    en: "/en/quiz/security-plus",
+    en: "/quiz/security-plus",
     fr: "/fr/quiz/security-plus",
     es: "/es/quiz/security-plus",
   },
@@ -143,7 +143,7 @@ const SecurityPlus = {
   // Rotta “indietro” localizzata (lista certificazioni o categoria)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(__dirname),
   turbopack: { root: __dirname },
   experimental: {},
-  // trailingSlash: false,
 
   async redirects() {
     return [
@@ -21,37 +20,42 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // 1) root → /it (x-default fallback)
-      { source: "/", destination: "/it", permanent: true },
+      // ✅ NIENTE redirect "/" → "/it"
+      // (root = EN globale)
 
-      // 2) legacy senza lingua → nuove rotte localizzate
+      // 1) legacy senza lingua → nuove rotte localizzate
       // liste
       { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
-      { source: "/certifications", destination: "/en/certifications", permanent: true },
       { source: "/certificaciones", destination: "/es/certificaciones", permanent: true },
+
       // detail
       { source: "/certificazioni/:slug", destination: "/it/certificazioni/:slug", permanent: true },
-      { source: "/certifications/:slug", destination: "/en/certifications/:slug", permanent: true },
       { source: "/certificaciones/:slug", destination: "/es/certificaciones/:slug", permanent: true },
 
-      // 3) vecchie rotte IT non localizzate (ulteriore hardening)
+      // 2) hardening: vecchie rotte IT non localizzate
       { source: "/it/certifications", destination: "/it/certificazioni", permanent: true },
       { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug", permanent: true },
+
+      // 3) hardening: eventuali vecchie rotte EN con prefisso "/en" (se arrivano link vecchi)
+      // 👉 le riportiamo al nuovo EN root (senza /en)
+      { source: "/en/certifications", destination: "/certifications", permanent: true },
+      { source: "/en/certifications/:slug", destination: "/certifications/:slug", permanent: true },
+      { source: "/en/privacy", destination: "/privacy", permanent: true },
+      { source: "/en/terms", destination: "/terms", permanent: true },
+      { source: "/en/cookies", destination: "/cookies", permanent: true },
+      { source: "/en/contact", destination: "/contact", permanent: true },
     ];
   },
 
   async rewrites() {
     return [
-      // Liste (URL pubblici “belli” → route fisica)
+      // ✅ Alias pubblici “belli” → route fisica (se la tua route fisica è /[lang]/certificazioni)
+      // IT: /it/certifications → /it/certificazioni
       { source: "/it/certifications", destination: "/it/certificazioni" },
-      { source: "/en/certifications", destination: "/en/certificazioni" },
-      { source: "/fr/certifications", destination: "/fr/certificazioni" },
-      { source: "/es/certificaciones", destination: "/es/certificazioni" },
-
-      // Detail
       { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug" },
-      { source: "/en/certifications/:slug", destination: "/en/certificazioni/:slug" },
-      { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
+
+      // ES: /es/certificaciones → /es/certificazioni (route fisica unica)
+      { source: "/es/certificaciones", destination: "/es/certificazioni" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
     ];
   },

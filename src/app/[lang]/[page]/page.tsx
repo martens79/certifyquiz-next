@@ -87,12 +87,13 @@ export async function generateMetadata(
   const canonical = `${siteUrl}/${lang}/${page}`;
 
   const languages: NonNullable<Metadata["alternates"]>["languages"] = {
-    "it-IT": `${siteUrl}/it/${PAGES[key].it}`,
-    "en-US": `${siteUrl}/en/${PAGES[key].en}`,
-    "fr-FR": `${siteUrl}/fr/${PAGES[key].fr}`,
-    "es-ES": `${siteUrl}/es/${PAGES[key].es}`,
-    "x-default": `${siteUrl}/it/${PAGES[key].it}`,
-  };
+  "en-US": `${siteUrl}/${PAGES[key].en}`,   // 👈 ROOT = inglese
+  "it-IT": `${siteUrl}/it/${PAGES[key].it}`,
+  "es-ES": `${siteUrl}/es/${PAGES[key].es}`,
+  "fr-FR": `${siteUrl}/fr/${PAGES[key].fr}`,
+  "x-default": `${siteUrl}/${PAGES[key].en}`, // 👈 default = EN
+};
+
 
   return {
     title: meta?.title ?? "CertifyQuiz",

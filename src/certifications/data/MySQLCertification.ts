@@ -147,7 +147,7 @@ const MySQLCertification = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/mysql-certification",
-    en: "/en/quiz/mysql-certification",
+    en: "/quiz/mysql-certification",
     fr: "/fr/quiz/mysql-certification",
     es: "/es/quiz/mysql-certification",
   },
@@ -155,7 +155,7 @@ const MySQLCertification = {
   // Rotta “indietro” (lista certificazioni) localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

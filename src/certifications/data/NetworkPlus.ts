@@ -131,7 +131,7 @@ const NetworkPlus = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/network-plus",
-    en: "/en/quiz/network-plus",
+    en: "/quiz/network-plus",
     fr: "/fr/quiz/network-plus",
     es: "/es/quiz/network-plus",
   },
@@ -139,7 +139,7 @@ const NetworkPlus = {
   // Rotta “indietro” (lista certificazioni) localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

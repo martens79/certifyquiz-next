@@ -141,7 +141,7 @@ const JavaScriptDeveloper = {
   // Rotte quiz localizzate (coerenti con gli altri data/*.ts)
   quizRoute: {
     it: "/it/quiz/javascript",
-    en: "/en/quiz/javascript",
+    en: "/quiz/javascript",
     fr: "/fr/quiz/javascript",
     es: "/es/quiz/javascript",
   },
@@ -149,7 +149,7 @@ const JavaScriptDeveloper = {
   // Rotta “indietro”: lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

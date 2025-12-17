@@ -151,7 +151,7 @@ const MicrosoftVirtualization = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/microsoft-virtualization",
-    en: "/en/quiz/microsoft-virtualization",
+    en: "/quiz/microsoft-virtualization",
     fr: "/fr/quiz/microsoft-virtualization",
     es: "/es/quiz/microsoft-virtualization",
   },
@@ -159,7 +159,7 @@ const MicrosoftVirtualization = {
   // Rotta “indietro” (categoria Virtualizzazione) localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

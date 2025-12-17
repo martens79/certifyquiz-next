@@ -156,7 +156,7 @@ const ECDL_ICDL = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/ecdl",
-    en: "/en/quiz/ecdl",
+    en: "/quiz/ecdl",
     fr: "/fr/quiz/ecdl",
     es: "/es/quiz/ecdl",
   },
@@ -164,7 +164,7 @@ const ECDL_ICDL = {
   // Rotta “indietro”: lista certificazioni per lingua (coerente con gli altri data/*.ts)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

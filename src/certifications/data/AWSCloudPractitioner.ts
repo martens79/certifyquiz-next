@@ -147,13 +147,13 @@ const AWS_CLOUD_PRACTITIONER = {
 
   quizRoute: {
     it: "/it/quiz/aws-cloud-practitioner",
-    en: "/en/quiz/aws-cloud-practitioner",
+    en: "/quiz/aws-cloud-practitioner",
     fr: "/fr/quiz/aws-cloud-practitioner",
     es: "/es/quiz/aws-cloud-practitioner",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

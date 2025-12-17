@@ -170,7 +170,7 @@ const MicrosoftAIFundamentals = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/ai-fundamentals",
-    en: "/en/quiz/ai-fundamentals",
+    en: "/quiz/ai-fundamentals",
     fr: "/fr/quiz/ai-fundamentals",
     es: "/es/quiz/ai-fundamentals",
   },
@@ -178,7 +178,7 @@ const MicrosoftAIFundamentals = {
   // Rotta “indietro” alla lista certificazioni
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

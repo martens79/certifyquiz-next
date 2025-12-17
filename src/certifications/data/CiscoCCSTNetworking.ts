@@ -153,13 +153,13 @@ const CISCO_CCST_NETWORKING = {
   // rotte localizzate per i pulsanti
   quizRoute: {
     it: "/it/quiz/cisco-ccst-networking",
-    en: "/en/quiz/cisco-ccst-networking",
+    en: "/quiz/cisco-ccst-networking",
     fr: "/fr/quiz/cisco-ccst-networking",
     es: "/es/quiz/cisco-ccst-networking",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

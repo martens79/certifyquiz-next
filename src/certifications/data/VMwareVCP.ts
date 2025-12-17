@@ -147,7 +147,7 @@ const VMwareVCP = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/vmware",
-    en: "/en/quiz/vmware",
+    en: "/quiz/vmware",
     fr: "/fr/quiz/vmware",
     es: "/es/quiz/vmware",
   },
@@ -155,7 +155,7 @@ const VMwareVCP = {
   // Rotta “indietro” localizzata (categoria/indice certificazioni)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

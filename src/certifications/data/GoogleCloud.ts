@@ -145,7 +145,7 @@ const GoogleCloud = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/google-cloud",
-    en: "/en/quiz/google-cloud",
+    en: "/quiz/google-cloud",
     fr: "/fr/quiz/google-cloud",
     es: "/es/quiz/google-cloud",
   },
@@ -153,7 +153,7 @@ const GoogleCloud = {
   // Rotta “indietro”: lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

@@ -108,7 +108,7 @@ const CompTIACloudPlus = {
   // Rotte quiz localizzate (coerenti con i tuoi path attuali)
   quizRoute: {
     it: "/it/quiz/comptia-cloud-plus",
-    en: "/en/quiz/comptia-cloud-plus",
+    en: "/quiz/comptia-cloud-plus",
     fr: "/fr/quiz/comptia-cloud-plus",
     es: "/es/quiz/comptia-cloud-plus",
   },
@@ -116,7 +116,7 @@ const CompTIACloudPlus = {
   // Rotta “indietro” generica verso lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

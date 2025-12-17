@@ -142,7 +142,7 @@ const PythonDeveloper = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/python",
-    en: "/en/quiz/python",
+    en: "/quiz/python",
     fr: "/fr/quiz/python",
     es: "/es/quiz/python",
   },
@@ -150,7 +150,7 @@ const PythonDeveloper = {
   // Rotta “indietro” localizzata (lista certificazioni)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

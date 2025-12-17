@@ -148,13 +148,13 @@ const AWS_SOLUTIONS_ARCHITECT = {
   // Nel legacy puntavi a `/${lang}/quiz/aws-cloud`
   quizRoute: {
     it: "/it/quiz/aws-cloud",
-    en: "/en/quiz/aws-cloud",
+    en: "/quiz/aws-cloud",
     fr: "/fr/quiz/aws-cloud",
     es: "/es/quiz/aws-cloud",
   },
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },

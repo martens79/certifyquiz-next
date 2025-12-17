@@ -132,7 +132,7 @@ const OracleDatabaseSQL = {
   // Rotte quiz localizzate (coerenti con il router Next/SPA)
   quizRoute: {
     it: "/it/quiz/oracle-sql",
-    en: "/en/quiz/oracle-sql",
+    en: "/quiz/oracle-sql",
     fr: "/fr/quiz/oracle-sql",
     es: "/es/quiz/oracle-sql",
   },
@@ -140,7 +140,7 @@ const OracleDatabaseSQL = {
   // Rotta “indietro” (lista certificazioni) localizzata
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },

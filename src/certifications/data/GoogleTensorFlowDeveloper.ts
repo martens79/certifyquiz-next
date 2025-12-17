@@ -122,7 +122,7 @@ const GoogleTensorFlowDeveloper = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/tensorflow",
-    en: "/en/quiz/tensorflow",
+    en: "/quiz/tensorflow",
     fr: "/fr/quiz/tensorflow",
     es: "/es/quiz/tensorflow",
   },
@@ -130,7 +130,7 @@ const GoogleTensorFlowDeveloper = {
   // Rotta “indietro”: lista certificazioni per lingua (coerente con gli altri data/*.ts)
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   },
