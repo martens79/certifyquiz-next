@@ -18,22 +18,30 @@ const RAW_SITE_URL =
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
 // ------------------------- PATH PER LINGUA -------------------------
+// Nota strategia SEO:
+// - EN ufficiale = root (senza /en) → /certifications
+// - /en/* resta route tecnica ma non deve indicizzarsi (noindex + canonical verso root)
 const listPathByLang: Record<Locale, string> = {
   it: "/it/certificazioni",
-  en: "/en/certifications",
-  fr: "/fr/certifications",
+  en: "/en/certificazioni", // route tecnica (non indicizzare)
+  fr: "/fr/certificazioni",
   es: "/es/certificaciones",
 };
+
+// 🔥 EN ufficiale (root)
+const EN_ROOT_LIST_PATH = "/certifications";
 
 const detailPath = (lang: Locale, slug: string) =>
   `${listPathByLang[lang]}/${slug}`;
 
+// Path ufficiale EN per detail (root)
+const enRootDetailPath = (slug: string) => `/certifications/${slug}`;
+
 // ------------------------- LIVELLI (per filtri) -------------------------
-type LevelKey = "base" | "intermediate" | "advanced" ;
+type LevelKey = "base" | "intermediate" | "advanced";
 
 // Mappa slug -> livello logico usata dai filtri
 const LEVEL_BY_SLUG: Record<string, LevelKey> = {
-  
   // Base
   "comptia-itf-plus": "base",
   "aws-cloud-practitioner": "base",
@@ -164,6 +172,7 @@ export async function generateMetadata({
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
   const { title, description } = SEO[L];
 
+  // hreflang map
   const languages: Record<string, string> = {};
   for (const l of locales as readonly Locale[]) {
     const hreflang =
@@ -174,16 +183,34 @@ export async function generateMetadata({
         : l === "fr"
         ? "fr-FR"
         : "es-ES";
-    languages[hreflang] = canonicalUrl(listPathByLang[l]);
-  }
-  languages["x-default"] = canonicalUrl(listPathByLang.it);
 
-  const canonical = canonicalUrl(listPathByLang[L]);
+    // 🔥 EN punta SEMPRE al root ufficiale
+    languages[hreflang] =
+      l === "en"
+        ? canonicalUrl(EN_ROOT_LIST_PATH)
+        : canonicalUrl(listPathByLang[l]);
+  }
+
+  // x-default = EN root
+  languages["x-default"] = canonicalUrl(EN_ROOT_LIST_PATH);
+
+  // canonical: EN → root, altre → loro lista
+  const canonical =
+    L === "en"
+      ? canonicalUrl(EN_ROOT_LIST_PATH)
+      : canonicalUrl(listPathByLang[L]);
 
   return {
     title,
     description,
     alternates: { canonical, languages },
+
+    // 🔥 anti-duplicati: /en/* non indicizzabile
+    robots:
+      L === "en"
+        ? { index: false, follow: true }
+        : { index: true, follow: true },
+
     openGraph: {
       title,
       description,
@@ -228,16 +255,10 @@ export default async function Page({
         ? c.title
         : c.title ?? c.name ?? slug;
 
-    const imageUrl =
-      c.imageUrl ??
-      c.image_url ??
-      ICON_BY_SLUG[slug] ??
-      null;
+    const imageUrl = c.imageUrl ?? c.image_url ?? ICON_BY_SLUG[slug] ?? null;
 
     const level =
-      c.level && typeof c.level === "object"
-        ? c.level
-        : c.level ?? null;
+      c.level && typeof c.level === "object" ? c.level : c.level ?? null;
 
     const description =
       c.description && typeof c.description === "object"
@@ -257,12 +278,8 @@ export default async function Page({
     const base = certs[ccstIndex];
     certs.splice(ccstIndex, 1); // rimuove la generica
 
-    const hasNetworking = certs.some(
-      (c) => c.slug === "cisco-ccst-networking",
-    );
-    const hasSecurity = certs.some(
-      (c) => c.slug === "cisco-ccst-security",
-    );
+    const hasNetworking = certs.some((c) => c.slug === "cisco-ccst-networking");
+    const hasSecurity = certs.some((c) => c.slug === "cisco-ccst-security");
 
     const networkingTitle =
       typeof base.title === "string"
@@ -321,13 +338,17 @@ export default async function Page({
     name: SEO[L].title,
     itemListElement: visible.map((c, i) => {
       const titleText =
-        typeof c.title === "string"
-          ? c.title
-          : c.title?.[L] ?? c.title?.it ?? c.slug;
+        typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
+
+      // 🔥 URL nel JSON-LD:
+      // - EN → root /certifications/:slug
+      // - altre → loro path localizzato
+      const urlPath = L === "en" ? enRootDetailPath(c.slug) : detailPath(L, c.slug);
+
       return {
         "@type": "ListItem",
         position: i + 1,
-        url: new URL(detailPath(L, c.slug), SITE_URL).toString(),
+        url: new URL(urlPath, SITE_URL).toString(),
         name: titleText,
       };
     }),
@@ -336,9 +357,7 @@ export default async function Page({
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {SEO[L].title}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{SEO[L].title}</h1>
         <p className="mt-2 max-w-3xl text-sm text-gray-600 dark:text-neutral-300">
           {SEO[L].description}
         </p>
@@ -348,14 +367,10 @@ export default async function Page({
       <CertificationListClient
         items={visible.map((c) => {
           const titleText =
-            typeof c.title === "string"
-              ? c.title
-              : c.title?.[L] ?? c.title?.it ?? c.slug;
+            typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
 
           const levelText =
-            typeof c.level === "string"
-              ? c.level
-              : c.level?.[L] ?? c.level?.it;
+            typeof c.level === "string" ? c.level : c.level?.[L] ?? c.level?.it;
 
           const descriptionText =
             typeof c.description === "string"
@@ -371,17 +386,14 @@ export default async function Page({
             if (/base/i.test(rawLevelForKey)) levelKey = "base";
             else if (/intermedio|intermediate/i.test(rawLevelForKey))
               levelKey = "intermediate";
-            else if (/avanzat|advanced/i.test(rawLevelForKey))
-              levelKey = "advanced";
-            
+            else if (/avanzat|advanced/i.test(rawLevelForKey)) levelKey = "advanced";
           }
 
-          const categoryLabel =
-            typeof c.category === "string" ? c.category : null;
+          const categoryLabel = typeof c.category === "string" ? c.category : null;
 
           return {
             slug: c.slug,
-            href: detailPath(L, c.slug),
+            href: L === "en" ? enRootDetailPath(c.slug) : detailPath(L, c.slug),
             title: titleText,
             level: levelText ?? undefined,
             description: descriptionText ?? undefined,

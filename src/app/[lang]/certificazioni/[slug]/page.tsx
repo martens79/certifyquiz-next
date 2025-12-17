@@ -1,5 +1,5 @@
 // src/app/[lang]/certificazioni/[slug]/page.tsx
-// Pagina dettaglio certificazione — Next 15 (PPR compatibile), SSG + ISR con fallback al data layer
+// Pagina dettaglio certificazione — Next 15, SSG + ISR, SEO EN-root safe
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -12,7 +12,7 @@ import {
 import CertificationPage from "@/components/CertificationPage";
 import { getAllCertSlugs, getCertBySlug, type Cert } from "@/lib/data";
 
-export const revalidate = 86400; // ISR 24h
+export const revalidate = 86400;
 export const dynamic = "force-static";
 export const dynamicParams = true;
 
@@ -23,32 +23,40 @@ const RAW_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
-// Liste/dettaglio per lingua (per canonical e backRoute)
+// ------------------------- PATH PER LINGUA -------------------------
 const listPathByLang: Record<Lang, string> = {
   it: "/it/certificazioni",
-  en: "/en/certifications",
+  en: "/en/certifications", // route tecnica (NOINDEX)
   fr: "/fr/certifications",
   es: "/es/certificaciones",
 };
 
+// 🔥 EN ufficiale = root
+const EN_ROOT_LIST_PATH = "/certifications";
+const enRootDetailPath = (slug: string) => `${EN_ROOT_LIST_PATH}/${slug}`;
+
+const localizedDetailPath = (l: Lang, slug: string) =>
+  `${listPathByLang[l]}/${slug}`;
+
 const toHreflang = (l: Lang): string =>
   l === "it" ? "it-IT" : l === "en" ? "en-US" : l === "fr" ? "fr-FR" : "es-ES";
 
-/* ----------------------------- generate params ---------------------------- */
+/* ----------------------------- Static params ----------------------------- */
 
 export async function generateStaticParams() {
-  // Unione: registry (CERT_SLUGS già pronte) ∪ data layer LIVE
   const fromRegistry = CERT_SLUGS;
-  const fromData = await getAllCertSlugs("it"); // gli slug sono language-agnostic
+  const fromData = await getAllCertSlugs("it");
   const all = Array.from(new Set([...fromRegistry, ...fromData]));
   return locales.flatMap((lang) => all.map((slug) => ({ lang, slug })));
 }
 
-/* ------------------------------ SEO/Metadata ------------------------------ */
+/* ------------------------------ SEO / Metadata ----------------------------- */
 
-export async function generateMetadata(
-  { params }: { params: Promise<Params> }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
   const { lang, slug } = await params;
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
@@ -59,8 +67,8 @@ export async function generateMetadata(
   let ogImage: string | undefined;
 
   if (reg) {
-    titleBase = reg.title?.[L] ?? reg.title?.it ?? undefined;
-    description = reg.description?.[L] ?? reg.description?.it ?? undefined;
+    titleBase = reg.title?.[L] ?? reg.title?.it;
+    description = reg.description?.[L] ?? reg.description?.it;
     ogImage = reg.imageUrl;
   } else {
     // 2) Fallback data layer
@@ -84,17 +92,25 @@ export async function generateMetadata(
       : "Quizzes & Exam";
 
   const title = `${titleBase} — ${suffix} | CertifyQuiz`;
-  const canonical = new URL(`${listPathByLang[L]}/${slug}`, SITE_URL).toString();
 
+  // 🔥 canonical
+  const canonical =
+    L === "en"
+      ? new URL(enRootDetailPath(slug), SITE_URL).toString()
+      : new URL(localizedDetailPath(L, slug), SITE_URL).toString();
+
+  // hreflang
   const languages: Record<string, string> = {};
   for (const l of locales) {
-    languages[toHreflang(l)] = new URL(
-      `${listPathByLang[l]}/${slug}`,
-      SITE_URL
-    ).toString();
+    languages[toHreflang(l)] =
+      l === "en"
+        ? new URL(enRootDetailPath(slug), SITE_URL).toString()
+        : new URL(localizedDetailPath(l, slug), SITE_URL).toString();
   }
+
+  // x-default → EN root
   languages["x-default"] = new URL(
-    `${listPathByLang.en}/${slug}`,
+    enRootDetailPath(slug),
     SITE_URL
   ).toString();
 
@@ -109,6 +125,13 @@ export async function generateMetadata(
     title,
     description,
     alternates: { canonical, languages },
+
+    // 🔥 anti-duplicati
+    robots:
+      L === "en"
+        ? { index: false, follow: true }
+        : { index: true, follow: true },
+
     openGraph: {
       type: "website",
       title,
@@ -123,14 +146,12 @@ export async function generateMetadata(
 
 /* ------------------------------- Adapter ---------------------------------- */
 
-// Duplica una stringa su tutte le lingue richieste dal tipo
 const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
 
-// Costruisce le route localizzate richieste dal tipo
 const makeQuizRoute = (slug: string) =>
   ({
     it: `/it/quiz/${slug}`,
-    en: `/en/quiz/${slug}`,
+    en: `/quiz/${slug}`, // 🔥 EN root
     fr: `/fr/quiz/${slug}`,
     es: `/es/quiz/${slug}`,
   } as const);
@@ -138,12 +159,11 @@ const makeQuizRoute = (slug: string) =>
 const makeBackRoute = () =>
   ({
     it: listPathByLang.it,
-    en: listPathByLang.en,
+    en: EN_ROOT_LIST_PATH,
     fr: listPathByLang.fr,
     es: listPathByLang.es,
   } as const);
 
-// Adatta "Cert" (data layer) → "CertificationData" (usato da <CertificationPage/>)
 function adaptCertToRegistryShape(cert: Cert): CertificationData {
   const title = cert.title || cert.h1 || "Certification";
   const desc = cert.seoDescription || cert.intro || cert.title || "";
@@ -151,34 +171,34 @@ function adaptCertToRegistryShape(cert: Cert): CertificationData {
 
   return {
     slug: cert.slug,
-    imageUrl: img,            // string obbligatoria
-    officialUrl: "",          // string obbligatoria (se ce l’hai, metti l’URL ufficiale)
+    imageUrl: img,
+    officialUrl: "",
 
     title: allLocales(title),
     level: allLocales(""),
     description: allLocales(desc),
 
-    topics: [] as const,      // ReadonlyArray<LocalizedText>
+    topics: [] as const,
     extraContent: undefined,
 
-    quizRoute: makeQuizRoute(cert.slug), // LocalizedRoute
-    backRoute: makeBackRoute(),          // LocalizedRoute
-
-    // imageSide: "left", // opzionale; il tuo componente ha default "left"
+    quizRoute: makeQuizRoute(cert.slug),
+    backRoute: makeBackRoute(),
   };
 }
 
 /* ---------------------------------- Page ---------------------------------- */
 
-export default async function Page({ params }: { params: Promise<Params> }) {
+export default async function Page({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
   const { lang, slug } = await params;
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
-  // 1) Preferisci i contenuti completi del registry
   const reg = CERTS_BY_SLUG[slug];
   if (reg) return <CertificationPage lang={L} data={reg} />;
 
-  // 2) Fallback: data layer LIVE/MOCK (evita 404 mentre completi il registry)
   const cert = await getCertBySlug(slug, L);
   if (!cert) return notFound();
 
