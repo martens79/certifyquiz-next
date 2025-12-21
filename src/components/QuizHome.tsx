@@ -13,12 +13,13 @@ import {
   Server,
   Cpu,
 } from "lucide-react";
+
 import QuizTitle from "@/components/QuizTitle";
 import CategoryBox from "@/components/CategoryBox";
 import BottomNavbar from "@/components/BottomNavbar";
 
 // Locale + builder dei path certificazioni (client-safe)
-import type { Locale } from "@/lib/paths";
+import type { Locale, CategoryKey } from "@/lib/paths";
 import { certPath } from "@/lib/paths";
 
 /* ---------- i18n helpers ---------- */
@@ -82,7 +83,7 @@ const smartBadgeLabel = (
     const L: Record<Locale, string> = {
       en: "All topics",
       fr: "Tous les sujets",
-      es: "Todos les temas",
+      es: "Todos los temas",
       it: "Tutti i topic",
     };
     return `✓ ${L[lang]}`;
@@ -109,16 +110,6 @@ type CertItem = {
   link: string | null;
   comingSoon?: true;
 };
-
-type CategoryKey =
-  | "base"
-  | "sicurezza"
-  | "reti"
-  | "cloud"
-  | "database"
-  | "programmazione"
-  | "virtualizzazione"
-  | "intelligenza-artificiale";
 
 type CertificationNames = Record<CategoryKey, CertItem[]>;
 
@@ -157,10 +148,7 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       { name: "PEKIT", link: certPath(lang, "pekit") },
       { name: "A+", link: certPath(lang, "comptia-a-plus") },
       { name: "IC3", link: null },
-      {
-        name: "CompTIA Tech+ (ex ITF+)",
-        link: certPath(lang, "comptia-itf-plus"),
-      },
+      { name: "CompTIA Tech+ (ex ITF+)", link: certPath(lang, "comptia-itf-plus") },
     ],
     sicurezza: [
       { name: "Security+", link: certPath(lang, "security-plus") },
@@ -168,43 +156,25 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       { name: "CISSP", link: certPath(lang, "cissp") },
       { name: "CISM", link: null },
       { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
-      {
-        name: "CCST Cybersecurity",
-        link: certPath(lang, "cisco-ccst-security"),
-      },
+      { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
     ],
     reti: [
       { name: "Network+", link: certPath(lang, "network-plus") },
       { name: "CCNA", link: certPath(lang, "ccna") },
       { name: "JNCIE", link: certPath(lang, "jncie") },
-      {
-        name: "CCST Networking",
-        link: certPath(lang, "cisco-ccst-networking"),
-      },
+      { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
       { name: "F5-CTS", link: certPath(lang, "f5") },
     ],
     cloud: [
-      {
-        name: "AWS Cloud Practitioner",
-        link: certPath(lang, "aws-cloud-practitioner"),
-      },
+      { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
       { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
       { name: "Google Cloud", link: certPath(lang, "google-cloud") },
-      {
-        name: "CompTIA Cloud+",
-        link: certPath(lang, "comptia-cloud-plus"),
-      },
+      { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
       { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
-      {
-        name: "AWS Solutions Architect",
-        link: certPath(lang, "aws-solutions-architect"),
-      },
+      { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },
     ],
     database: [
-      {
-        name: "Microsoft SQL Server",
-        link: certPath(lang, "microsoft-sql-server"),
-      },
+      { name: "Microsoft SQL Server", link: certPath(lang, "microsoft-sql-server") },
       { name: "Oracle", link: certPath(lang, "oracle-database-sql") },
       { name: "MySQL", link: certPath(lang, "mysql") },
       { name: "MongoDB", link: certPath(lang, "mongodb-developer") },
@@ -213,10 +183,7 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       { name: "Java SE", link: certPath(lang, "java-se") },
       { name: "Python", link: certPath(lang, "python-developer") },
       { name: "JavaScript", link: certPath(lang, "javascript-developer") },
-      {
-        name: "C#",
-        link: certPath(lang, "csharp"),
-      }, // (nota: in futuro potrai migrare a /azure-developer)
+      { name: "C#", link: certPath(lang, "csharp") },
       { name: "TypeScript", link: null, comingSoon: true },
       { name: "Kotlin", link: null, comingSoon: true },
       { name: "Go", link: null, comingSoon: true },
@@ -226,22 +193,13 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     virtualizzazione: [
       { name: "VMware VCP", link: certPath(lang, "vmware-vcp") },
       { name: "Hyper-V", link: null },
-      {
-        name: "Microsoft Virtualization",
-        link: certPath(lang, "microsoft-virtualization"),
-      },
+      { name: "Microsoft Virtualization", link: certPath(lang, "microsoft-virtualization") },
     ],
     "intelligenza-artificiale": [
-      {
-        name: "Google TensorFlow Developer",
-        link: certPath(lang, "tensorflow"),
-      },
+      { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
       { name: "PyTorch", link: null },
       { name: "OpenAI", link: null },
-      {
-        name: "Microsoft AI Fundamentals",
-        link: certPath(lang, "microsoft-ai-fundamentals"),
-      },
+      { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai-fundamentals") },
     ],
   };
 
@@ -259,14 +217,19 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       : [];
 
   /* ---------- UI ---------- */
-  const quizCategories = [
+  const quizCategories: Array<{
+    key: CategoryKey;
+    categoryKey: CategoryKey;
+    name: string;
+    description: string;
+    color: "red" | "rose" | "green" | "purple" | "yellow" | "indigo" | "orange" | "cyan" | "blue" | "teal";
+    icon: React.ReactNode;
+    certifications: CertItem[];
+  }> = [
     {
       key: "base",
-      route: "/base",
-      name: getLabel(
-        { it: "Base", en: "Fundamentals", es: "Básico", fr: "Base" },
-        lang
-      ),
+      categoryKey: "base",
+      name: getLabel({ it: "Base", en: "Fundamentals", es: "Básico", fr: "Base" }, lang),
       description: getLabel(
         {
           it: "Concetti base di informatica e hardware.",
@@ -282,11 +245,8 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "sicurezza",
-      route: "/sicurezza",
-      name: getLabel(
-        { it: "Sicurezza", en: "Security", es: "Seguridad", fr: "Sécurité" },
-        lang
-      ),
+      categoryKey: "sicurezza",
+      name: getLabel({ it: "Sicurezza", en: "Security", es: "Seguridad", fr: "Sécurité" }, lang),
       description: getLabel(
         {
           it: "Fondamenti di sicurezza informatica.",
@@ -302,11 +262,8 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "reti",
-      route: "/reti",
-      name: getLabel(
-        { it: "Reti", en: "Networking", es: "Redes", fr: "Réseaux" },
-        lang
-      ),
+      categoryKey: "reti",
+      name: getLabel({ it: "Reti", en: "Networking", es: "Redes", fr: "Réseaux" }, lang),
       description: getLabel(
         {
           it: "Protocolli e infrastrutture di rete.",
@@ -322,11 +279,8 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "cloud",
-      route: "/cloud",
-      name: getLabel(
-        { it: "Cloud", en: "Cloud", es: "Nube", fr: "Cloud" },
-        lang
-      ),
+      categoryKey: "cloud",
+      name: getLabel({ it: "Cloud", en: "Cloud", es: "Nube", fr: "Cloud" }, lang),
       description: getLabel(
         {
           it: "Servizi e architetture cloud.",
@@ -342,16 +296,8 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "database",
-      route: "/database",
-      name: getLabel(
-        {
-          it: "Database",
-          en: "Database",
-          es: "Base de datos",
-          fr: "Base de données",
-        },
-        lang
-      ),
+      categoryKey: "database",
+      name: getLabel({ it: "Database", en: "Database", es: "Base de datos", fr: "Base de données" }, lang),
       description: getLabel(
         {
           it: "Progettazione e gestione dei database.",
@@ -367,14 +313,9 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "programmazione",
-      route: "/programmazione",
+      categoryKey: "programmazione",
       name: getLabel(
-        {
-          it: "Programmazione",
-          en: "Programming",
-          es: "Programación",
-          fr: "Programmation",
-        },
+        { it: "Programmazione", en: "Programming", es: "Programación", fr: "Programmation" },
         lang
       ),
       description: getLabel(
@@ -392,14 +333,9 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "virtualizzazione",
-      route: "/virtualizzazione",
+      categoryKey: "virtualizzazione",
       name: getLabel(
-        {
-          it: "Virtualizzazione",
-          en: "Virtualization",
-          es: "Virtualización",
-          fr: "Virtualisation",
-        },
+        { it: "Virtualizzazione", en: "Virtualization", es: "Virtualización", fr: "Virtualisation" },
         lang
       ),
       description: getLabel(
@@ -417,14 +353,9 @@ export default function QuizHome({ lang }: { lang: Locale }) {
     },
     {
       key: "intelligenza-artificiale",
-      route: "/intelligenza-artificiale",
+      categoryKey: "intelligenza-artificiale",
       name: getLabel(
-        {
-          it: "Intelligenza Artificiale",
-          en: "Artificial Intelligence",
-          es: "Inteligencia Artificial",
-          fr: "Intelligence Artificielle",
-        },
+        { it: "Intelligenza Artificiale", en: "Artificial Intelligence", es: "Inteligencia Artificial", fr: "Intelligence Artificielle" },
         lang
       ),
       description: getLabel(
@@ -440,12 +371,11 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       icon: <Cpu size={30} />,
       certifications: certificationNames["intelligenza-artificiale"],
     },
-  ] as const;
+  ];
 
   return (
     <div className="min-h-[100svh] bg-gray-100 text-gray-900 flex flex-col">
       <main className="flex-1 overflow-y-auto px-3 pt-2 pb-[62px]">
-
         <QuizTitle />
 
         {lang !== "it" && translatedCertsForLang.length > 0 && (
@@ -456,10 +386,10 @@ export default function QuizHome({ lang }: { lang: Locale }) {
                   {AVAILABLE_TXT[lang]?.title || "Available topics"}
                 </div>
                 <div className="opacity-80">
-                  {AVAILABLE_TXT[lang]?.lead ||
-                    "Already translated in this language:"}
+                  {AVAILABLE_TXT[lang]?.lead || "Already translated in this language:"}
                 </div>
               </div>
+
               <div className="flex flex-wrap gap-2">
                 {translatedCertsForLang.map((c) => {
                   const label = smartBadgeLabel(availability, c.link, lang);
@@ -495,28 +425,28 @@ export default function QuizHome({ lang }: { lang: Locale }) {
 
         {/* Griglia categorie: box compatti + id per anchor (#base, #sicurezza, ...) */}
         <div
-  className="
-    mx-auto max-w-[1380px]
-    grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4
-    gap-3 mt-1
-  "
->
-  {quizCategories.map((cat) => (
-    <section key={cat.key} id={cat.key} className="h-[220px]">
-      <CategoryBox
-        title={cat.name}
-        icon={cat.icon}
-        description={cat.description}
-        route={cat.route}
-        color={cat.color}
-        certifications={cat.certifications}
-        compact
-        className="h-full"
-      />
-    </section>
-  ))}
-</div>
-
+          className="
+            mx-auto max-w-[1380px]
+            grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4
+            gap-3 mt-1
+          "
+        >
+          {quizCategories.map((cat) => (
+            <section key={cat.key} id={cat.key} className="h-[220px]">
+              <CategoryBox
+                title={cat.name}
+                icon={cat.icon}
+                description={cat.description}
+                categoryKey={cat.categoryKey}
+                lang={lang}
+                color={cat.color}
+                certifications={cat.certifications}
+                compact
+                className="h-full"
+              />
+            </section>
+          ))}
+        </div>
       </main>
 
       <BottomNavbar />

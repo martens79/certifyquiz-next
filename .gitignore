@@ -49,3 +49,10 @@ migrazione/           # PDF e checkpoint locali
 
 app.bak/
 migrazione/
+
+# local tools / scripts (NON committare)
+uploader/
+
+# file temporanei creati da Windows/VSCode
+Nuovo Documento di testo.txt
+**/Nuovo Documento di testo.txt

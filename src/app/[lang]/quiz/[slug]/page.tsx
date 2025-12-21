@@ -3,7 +3,7 @@
 
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import Link from "next/link"; // 👈 AGGIUNTO
+import Link from "next/link";
 import { IDS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
@@ -63,8 +63,51 @@ async function fetchTopics(certId: number): Promise<TopicRow[]> {
 }
 
 // Segmento per /quiz (se un giorno cambi per EN, tocchi solo qui)
-function quizSeg(lang: Locale) {
+function quizSeg(_lang: Locale) {
   return "quiz";
+}
+
+/**
+ * ✅ FIX DEFINITIVO:
+ * In questa sezione (/[lang]/quiz/...) la lingua è SEMPRE prefissata, anche per EN.
+ * Quindi:
+ *  - /en/quiz/ceh
+ *  - /it/quiz/ceh
+ *  - /en/quiz/topic/74
+ *
+ * Se vuoi EN root per i quiz, allora NON dovrebbe esistere /en/quiz/... (ma oggi esiste e funziona così).
+ */
+function langPrefix(lang: Locale) {
+  return `/${lang}`;
+}
+
+// ✅ builder URL pagina quiz topics per cert
+function quizCertPath(lang: Locale, slug: string) {
+  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}`;
+}
+
+// ✅ builder URL quiz mixed
+function quizMixedPath(lang: Locale, slug: string) {
+  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mixed`;
+}
+
+// ✅ builder URL quiz topic (per ID topic)
+function quizTopicPath(lang: Locale, topicId: number) {
+  return `${langPrefix(lang)}/quiz/topic/${topicId}`;
+}
+
+// ✅ localizzazione topic: preferisci lingua corrente, fallback su base/it
+function pickTopicField(t: TopicRow, lang: Locale, field: "title" | "description") {
+  switch (lang) {
+    case "en":
+      return (t as any)[`${field}_en`] || (t as any)[field] || (t as any)[`${field}_it`] || "";
+    case "fr":
+      return (t as any)[`${field}_fr`] || (t as any)[field] || (t as any)[`${field}_it`] || "";
+    case "es":
+      return (t as any)[`${field}_es`] || (t as any)[field] || (t as any)[`${field}_it`] || "";
+    default:
+      return (t as any)[`${field}_it`] || (t as any)[field] || "";
+  }
 }
 
 // Testi base per SEO pagina topics per cert
@@ -88,37 +131,34 @@ const SEO_BASE: Record<Locale, { quizLabel: string; desc: string }> = {
 };
 
 const ogLocale = (lang: Locale) =>
-  lang === "it" ? "it-IT" :
-  lang === "en" ? "en-US" :
-  lang === "fr" ? "fr-FR" : "es-ES";
+  lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
 
 // ─────────────────── Metadata ───────────────────
-export async function generateMetadata(
-  { params }: { params: Promise<{ lang: string; slug: string }> }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}): Promise<Metadata> {
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const base = SEO_BASE[L];
-
   const certName = slug.replace(/-/g, " ");
   const title = `${base.quizLabel} — ${certName}`;
   const description = base.desc;
 
-  const canonicalPath = `/${L}/${quizSeg(L)}/${slug}`;
+  // ✅ canonical coerente con /[lang]/quiz/... (EN incluso)
+  const canonicalPath = quizCertPath(L, slug);
   const canonical = `${SITE}${canonicalPath}`;
 
-  // hreflang per tutte le lingue, stesso slug
+  // ✅ hreflang coerente (EN incluso su /en)
   const languages: Record<string, string> = {};
   for (const loc of locales as readonly Locale[]) {
     const localeKey =
-      loc === "it" ? "it-IT" :
-      loc === "en" ? "en-US" :
-      loc === "fr" ? "fr-FR" : "es-ES";
-
-    languages[localeKey] = `${SITE}/${loc}/${quizSeg(loc as Locale)}/${slug}`;
+      loc === "it" ? "it-IT" : loc === "en" ? "en-US" : loc === "fr" ? "fr-FR" : "es-ES";
+    languages[localeKey] = `${SITE}${quizCertPath(loc as Locale, slug)}`;
   }
-  languages["x-default"] = `${SITE}/it/${quizSeg("it")}/${slug}`;
+  languages["x-default"] = `${SITE}${quizCertPath("en", slug)}`;
 
   return {
     title,
@@ -145,9 +185,11 @@ export async function generateMetadata(
 }
 
 // ─────────────────── Pagina ───────────────────
-export default async function QuizTopicsPage(
-  { params }: { params: Promise<{ lang: string; slug: string }> }
-) {
+export default async function QuizTopicsPage({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}) {
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
   const certId = IDS_BY_SLUG[slug];
@@ -167,7 +209,9 @@ export default async function QuizTopicsPage(
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {list.map((s) => (
             <li key={s} className="text-sm">
-              <a className="text-blue-700 underline" href={`/${L}/${quizSeg(L)}/${s}`}>{s}</a>
+              <a className="text-blue-700 underline" href={quizCertPath(L, s)}>
+                {s}
+              </a>
             </li>
           ))}
         </ul>
@@ -187,13 +231,7 @@ export default async function QuizTopicsPage(
 
   // CTA "Quiz misto" label per lingua
   const mixedLabel =
-    L === "it"
-      ? "Quiz misto"
-      : L === "en"
-      ? "Mixed quiz"
-      : L === "fr"
-      ? "Quiz mixte"
-      : "Quiz mixto";
+    L === "it" ? "Quiz misto" : L === "en" ? "Mixed quiz" : L === "fr" ? "Quiz mixte" : "Quiz mixto";
 
   const mixedDesc =
     L === "it"
@@ -229,10 +267,10 @@ export default async function QuizTopicsPage(
             {categoryName}
           </span>
         </div>
+
         {/* Debug info — puoi rimuoverla quando vuoi */}
         <p className="text-xs md:text-sm opacity-70">
-          Lang: <code>{L}</code> · certId: <code>{certId}</code> · topics:{" "}
-          <code>{topics.length}</code>
+          Lang: <code>{L}</code> · certId: <code>{certId}</code> · topics: <code>{topics.length}</code>
         </p>
       </header>
 
@@ -245,7 +283,7 @@ export default async function QuizTopicsPage(
           </div>
 
           <Link
-            href={`/${L}/${quizSeg(L)}/${slug}/mixed`}
+            href={quizMixedPath(L, slug)}
             className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
           >
             {mixedCta}
@@ -261,30 +299,15 @@ export default async function QuizTopicsPage(
           <p className="text-sm">
             Endpoint chiamato:&nbsp;
             <code className="bg-gray-100 px-2 py-1 rounded">
-              {API_BASE_URL
-                ? `${API_BASE_URL}/topics/${certId}`
-                : `/api/backend/topics/${certId}`}
+              {API_BASE_URL ? `${API_BASE_URL}/topics/${certId}` : `/api/backend/topics/${certId}`}
             </code>
           </p>
         </div>
       ) : (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {topics.map((t) => {
-            const title =
-              t.title_it ||
-              t.title ||
-              t.title_en ||
-              t.title_fr ||
-              t.title_es ||
-              `Topic ${t.id}`;
-
-            const desc =
-              t.description_it ||
-              t.description ||
-              t.description_en ||
-              t.description_fr ||
-              t.description_es ||
-              "";
+            const title = pickTopicField(t, L, "title") || `Topic ${t.id}`;
+            const desc = pickTopicField(t, L, "description") || "";
 
             const ctaLabel =
               L === "it"
@@ -301,15 +324,16 @@ export default async function QuizTopicsPage(
                 className={`rounded-2xl p-4 md:p-5 bg-white shadow-sm transition ${css.wrapper}`}
               >
                 <div className="font-semibold">{title}</div>
-                {desc && (
-                  <div className="text-sm opacity-80 mt-1">{desc}</div>
-                )}
-                <a
-                  href={`/${L}/quiz/topic/${t.id}`}
+
+                {desc && <div className="text-sm opacity-80 mt-1">{desc}</div>}
+
+                {/* ✅ FIX: usa Link e path con prefisso lingua sempre */}
+                <Link
+                  href={quizTopicPath(L, t.id)}
                   className="inline-block mt-3 text-blue-700 underline"
                 >
                   {ctaLabel}
-                </a>
+                </Link>
               </li>
             );
           })}

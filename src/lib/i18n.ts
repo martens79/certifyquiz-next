@@ -9,11 +9,26 @@ export function isLocale(x: string): x is Locale {
   return (locales as readonly string[]).includes(x);
 }
 
-/** Aggiunge il prefisso lingua a un path relativo ("/" incluso). */
-export function withLang(lang: Locale, path: string) {
+/** Aggiunge il prefisso lingua a un path relativo ("/" incluso).
+ *  EN = root (NO /en)
+ *  Robusto: accetta anche lang undefined / sporco
+ */
+export function withLang(lang: unknown, path: string) {
   const clean = path.startsWith('/') ? path : `/${path}`;
-  return `/${lang}${clean === '/index' ? '' : clean}`;
+
+  const safeLang: Locale =
+    lang === 'it' || lang === 'en' || lang === 'fr' || lang === 'es'
+      ? lang
+      : 'en';
+
+  // EN = root
+  if (safeLang === 'en') {
+    return clean === '/index' ? '/' : clean;
+  }
+
+  return `/${safeLang}${clean === '/index' ? '' : clean}`;
 }
+
 
 /** Estrae la lingua dal pathname (es. "/it/certificazioni") */
 export function langFromPathname(pathname: string | null | undefined): Locale {
@@ -270,7 +285,7 @@ export function getDict(lang: Locale) {
 // === Mappe path “di sistema” (coerenti col progetto) ===
 export const LIST_BY_LANG: Record<Locale, string> = {
   it: '/it/certificazioni',
-  en: '/en/certifications',
+  en: '/certifications',
   fr: '/fr/certifications',
   es: '/es/certificaciones',
 };
@@ -280,8 +295,9 @@ export function routeCertList(lang: Locale) {
 }
 
 export function routeCertDetail(lang: Locale, slug: string) {
-  return `/${lang}/certificazioni/${slug}`; // in EN/FR/ES le route sono mappate via App Router
+  return withLang(lang, `/certificazioni/${slug}`);
 }
+
 
 export function routeBlog(lang: Locale) {
   return `/${lang}/blog`;

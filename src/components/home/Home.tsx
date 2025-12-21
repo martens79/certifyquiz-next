@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { type Locale, withLang } from "@/lib/i18n";
+import React from "react";
+
+import { withLang } from "@/lib/i18n";
+import { categoryPath, type CategoryKey, type Locale } from "@/lib/paths";
+
 import BlogTeaser from "@/components/BlogTeaser";
 import logo from "@/../public/images/logo-certifyquiz.png";
 
@@ -22,58 +26,99 @@ import {
 } from "lucide-react";
 
 /* Helpers */
-function L(o: { it: string; en: string; fr: string; es: string }, lang: Locale) {
+function L(
+  o: { it: string; en: string; fr: string; es: string },
+  lang: Locale
+) {
   return o[lang] ?? o.it;
 }
 
-const segByLang: Record<Locale, string> = {
-  it: "categorie",
-  en: "categories",
-  fr: "categories",
-  es: "categorias",
-};
-const catHref = (lang: Locale, key: string) => `/${segByLang[lang]}/${key}`;
-
-/* Colori coerenti con CATEGORY_STYLES */
-/* Colori coerenti con la palette “originale” (tutti diversi) */
-const CATEGORY_UI = {
-  base:             { bg: "bg-blue-50",    border: "border-blue-200" },     // blu
-  sicurezza:        { bg: "bg-red-50",     border: "border-red-200" },      // rosa/rosso chiaro
-  reti:             { bg: "bg-green-50",   border: "border-green-200" },    // verde
-  cloud:            { bg: "bg-purple-50",  border: "border-purple-200" },   // lilla
-  database:         { bg: "bg-yellow-50",  border: "border-yellow-200" },   // giallo
-  programmazione:   { bg: "bg-indigo-50",  border: "border-indigo-200" },   // indaco/lilla-blu
-  virtualizzazione: { bg: "bg-orange-50",  border: "border-orange-200" },   // arancio
-  ai:               { bg: "bg-cyan-50",    border: "border-cyan-200" },     // ciano (NON viola)
+/* Colori coerenti (statici, no classi dinamiche Tailwind) */
+const CATEGORY_UI: Record<
+  Exclude<CategoryKey, "default">,
+  { bg: string; border: string; ring: string }
+> = {
+  base: {
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    ring: "hover:ring-2 hover:ring-blue-200/60",
+  },
+  sicurezza: {
+    bg: "bg-red-50",
+    border: "border-red-200",
+    ring: "hover:ring-2 hover:ring-red-200/60",
+  },
+  reti: {
+    bg: "bg-green-50",
+    border: "border-green-200",
+    ring: "hover:ring-2 hover:ring-green-200/60",
+  },
+  cloud: {
+    bg: "bg-purple-50",
+    border: "border-purple-200",
+    ring: "hover:ring-2 hover:ring-purple-200/60",
+  },
+  database: {
+    bg: "bg-yellow-50",
+    border: "border-yellow-200",
+    ring: "hover:ring-2 hover:ring-yellow-200/60",
+  },
+  programmazione: {
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    ring: "hover:ring-2 hover:ring-indigo-200/60",
+  },
+  virtualizzazione: {
+    bg: "bg-orange-50",
+    border: "border-orange-200",
+    ring: "hover:ring-2 hover:ring-orange-200/60",
+  },
+  ai: {
+    bg: "bg-cyan-50",
+    border: "border-cyan-200",
+    ring: "hover:ring-2 hover:ring-cyan-200/60",
+  },
 } as const;
 
-
-export default function Home({
-  lang,
-  isLoggedIn = false,
-}: {
-  lang: Locale;
+type Props = {
+  lang?: Locale; // ✅ runtime-safe
   isLoggedIn?: boolean;
-}) {
-  const allCategories = [
+};
+
+export default function Home({ lang, isLoggedIn = false }: Props) {
+  // ✅ fallback sicuro: se per un render arriva undefined, non crasha
+  const safeLang: Locale =
+    lang === "it" || lang === "en" || lang === "fr" || lang === "es"
+      ? lang
+      : "en";
+
+  const allCategories: Array<{
+    key: Exclude<CategoryKey, "default">;
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+  }> = [
     {
       key: "base",
       icon: <BrainCircuit size={20} aria-hidden="true" />,
-      title: L({ it: "Base", en: "Basic", fr: "Bases", es: "Básico" }, lang),
+      title: L({ it: "Base", en: "Basic", fr: "Bases", es: "Básico" }, safeLang),
       desc: L(
         {
           it: "Competenze digitali di base e alfabetizzazione informatica.",
           en: "Basic digital and computer literacy skills.",
           fr: "Compétences numériques de base et culture informatique.",
-          es: "Competencias digitales básicas y alfabetización informática.",
+          es: "Competencias digitales básicas y alfabetización informatica.",
         },
-        lang
+        safeLang
       ),
     },
     {
       key: "sicurezza",
       icon: <LockKeyhole size={20} aria-hidden="true" />,
-      title: L({ it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" }, lang),
+      title: L(
+        { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
+        safeLang
+      ),
       desc: L(
         {
           it: "Protezione dei dati, minacce informatiche e prevenzione.",
@@ -81,13 +126,16 @@ export default function Home({
           fr: "Protection des données, menaces et prévention.",
           es: "Protección de datos, amenazas cibernéticas y prevención.",
         },
-        lang
+        safeLang
       ),
     },
     {
       key: "reti",
       icon: <Network size={20} aria-hidden="true" />,
-      title: L({ it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" }, lang),
+      title: L(
+        { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" },
+        safeLang
+      ),
       desc: L(
         {
           it: "Fondamenti di reti, protocolli e infrastrutture.",
@@ -95,7 +143,7 @@ export default function Home({
           fr: "Bases des réseaux, protocoles et infrastructures.",
           es: "Fundamentos de redes, protocolos e infraestructuras.",
         },
-        lang
+        safeLang
       ),
     },
     {
@@ -108,7 +156,7 @@ export default function Home({
           fr: "Intelligence Artificielle",
           es: "Inteligencia Artificial",
         },
-        lang
+        safeLang
       ),
       desc: L(
         {
@@ -117,7 +165,7 @@ export default function Home({
           fr: "Bases de l'IA, apprentissage automatique et applications.",
           es: "Conceptos básicos de IA, aprendizaje automático y aplicaciones.",
         },
-        lang
+        safeLang
       ),
     },
     {
@@ -131,7 +179,7 @@ export default function Home({
           fr: "Services cloud, modèles de déploiement et sécurité.",
           es: "Servicios en la nube, modelos de implementación y seguridad.",
         },
-        lang
+        safeLang
       ),
     },
     {
@@ -145,15 +193,20 @@ export default function Home({
           fr: "Modélisation, requêtes et gestion des données.",
           es: "Modelado, consultas y gestión de datos.",
         },
-        lang
+        safeLang
       ),
     },
     {
       key: "programmazione",
       icon: <Code size={20} aria-hidden="true" />,
       title: L(
-        { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
-        lang
+        {
+          it: "Programmazione",
+          en: "Programming",
+          fr: "Programmation",
+          es: "Programación",
+        },
+        safeLang
       ),
       desc: L(
         {
@@ -162,15 +215,20 @@ export default function Home({
           fr: "Logique de programmation et langages modernes.",
           es: "Lógica de programación y lenguajes modernos.",
         },
-        lang
+        safeLang
       ),
     },
     {
       key: "virtualizzazione",
       icon: <Layers size={20} aria-hidden="true" />,
       title: L(
-        { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
-        lang
+        {
+          it: "Virtualizzazione",
+          en: "Virtualization",
+          fr: "Virtualisation",
+          es: "Virtualización",
+        },
+        safeLang
       ),
       desc: L(
         {
@@ -179,7 +237,7 @@ export default function Home({
           fr: "Technologies de virtualisation et environnements cloud-native.",
           es: "Tecnologías de virtualización y entornos cloud-native.",
         },
-        lang
+        safeLang
       ),
     },
   ];
@@ -189,64 +247,44 @@ export default function Home({
       icon: <BadgeCheck size={24} className="text-blue-600" aria-hidden="true" />,
       title: L(
         { it: "Quiz ufficiali", en: "Official quizzes", fr: "Quiz officiels", es: "Cuestionarios oficiales" },
-        lang
+        safeLang
       ),
       text: L(
-        {
-          it: "Contenuti sempre aggiornati e realistici.",
-          en: "Always up-to-date and realistic content.",
-          fr: "Contenu toujours à jour et réaliste.",
-          es: "Contenido siempre actualizado y realista.",
-        },
-        lang
+        { it: "Contenuti sempre aggiornati e realistici.", en: "Always up-to-date and realistic content.", fr: "Contenu toujours à jour et réaliste.", es: "Contenido siempre actualizado y realista." },
+        safeLang
       ),
     },
     {
       icon: <BarChart3 size={24} className="text-purple-600" aria-hidden="true" />,
       title: L(
         { it: "Progresso tracciato", en: "Progress tracking", fr: "Suivi des progrès", es: "Seguimiento del progreso" },
-        lang
+        safeLang
       ),
       text: L(
-        {
-          it: "Visualizza l'avanzamento per ogni categoria.",
-          en: "Track your progress in each category.",
-          fr: "Suivez vos progrès par catégorie.",
-          es: "Consulta tu progreso por categoría.",
-        },
-        lang
+        { it: "Visualizza l'avanzamento per ogni categoria.", en: "Track your progress in each category.", fr: "Suivez vos progrès par catégorie.", es: "Consulta tu progreso por categoría." },
+        safeLang
       ),
     },
     {
       icon: <Sparkles size={24} className="text-yellow-500" aria-hidden="true" />,
       title: L(
         { it: "Badge ufficiali", en: "Official badges", fr: "Badges officiels", es: "Insignias oficiales" },
-        lang
+        safeLang
       ),
       text: L(
-        {
-          it: "Raggiungi traguardi e condividili.",
-          en: "Achieve and share milestones.",
-          fr: "Atteignez et partagez vos objectifs.",
-          es: "Alcanza y comparte tus logros.",
-        },
-        lang
+        { it: "Raggiungi traguardi e condividili.", en: "Achieve and share milestones.", fr: "Atteignez et partagez vos objectifs.", es: "Alcanza y comparte tus logros." },
+        safeLang
       ),
     },
     {
       icon: <Lock size={24} className="text-red-500" aria-hidden="true" />,
       title: L(
         { it: "3 argomenti inclusi", en: "3 topics included", fr: "3 sujets inclus", es: "3 temas incluidos" },
-        lang
+        safeLang
       ),
       text: L(
-        {
-          it: "Ogni certificazione inizia con 3 argomenti sbloccati.",
-          en: "Each certification starts with 3 unlocked topics.",
-          fr: "Chaque certification commence avec 3 sujets débloqués.",
-          es: "Cada certificación empieza con 3 temas desbloqueados.",
-        },
-        lang
+        { it: "Ogni certificazione inizia con 3 argomenti sbloccati.", en: "Each certification starts with 3 unlocked topics.", fr: "Chaque certification commence avec 3 sujets débloqués.", es: "Cada certificación empieza con 3 temas desbloqueados." },
+        safeLang
       ),
     },
   ];
@@ -270,39 +308,35 @@ export default function Home({
         {/* CTA */}
         <div className="mt-6 mb-8 flex justify-center gap-4">
           <Link
-            href={withLang(lang, "/quiz-home")}
+            href={withLang(safeLang as any, "/quiz-home")}
             className="inline-block bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-105"
           >
-            {L(
-              { it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" },
-              lang
-            )}
+            {L({ it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" }, safeLang)}
           </Link>
 
           {!isLoggedIn && (
             <Link
-              href={withLang(lang, "/login")}
+              href={withLang(safeLang as any, "/login")}
               className="inline-flex items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
-              {L({ it: "Accedi", en: "Login", fr: "Se connecter", es: "Iniciar sesión" }, lang)}
+              {L({ it: "Accedi", en: "Login", fr: "Se connecter", es: "Iniciar sesión" }, safeLang)}
             </Link>
           )}
         </div>
       </header>
 
-      {/* Blog teaser */}
-      <BlogTeaser lang={lang} variant="inline" className="mb-4" />
+      <BlogTeaser lang={safeLang as any} variant="inline" className="mb-4" />
 
       {/* Categorie */}
       <main className="space-y-6">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 justify-center">
           {allCategories.map((cat) => {
-            const color = CATEGORY_UI[cat.key as keyof typeof CATEGORY_UI];
+            const ui = CATEGORY_UI[cat.key];
             return (
               <Link
                 key={cat.key}
-                href={withLang(lang, catHref(lang, cat.key))}
-                className={`transition p-3 rounded-xl shadow border ${color.bg} ${color.border} hover:ring-2 hover:ring-${color.border.split("-")[1]}-200/60 text-left text-sm`}
+                href={categoryPath(safeLang, cat.key)}
+                className={`transition p-3 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left text-sm`}
               >
                 <div className="flex items-center gap-2 text-slate-800 font-bold mb-1">
                   {cat.icon}
@@ -316,26 +350,18 @@ export default function Home({
 
         {/* Link suggeriti */}
         <div className="text-center">
-          <Link
-            href={withLang(lang, "/quiz-suggeriti")}
-            className="text-blue-600 font-medium hover:underline text-sm"
-          >
+          <Link href={withLang(safeLang as any, "/quiz-suggeriti")} className="text-blue-600 font-medium hover:underline text-sm">
             ⭐{" "}
-            {L(
-              {
-                it: "Prova i nostri migliori quiz →",
-                en: "Try our best quizzes →",
-                fr: "Essayez nos meilleurs quiz →",
-                es: "Prueba nuestros mejores quizzes →",
-              },
-              lang
-            )}
+            {L({ it: "Prova i nostri migliori quiz →", en: "Try our best quizzes →", fr: "Essayez nos meilleurs quiz →", es: "Prueba nuestros mejores quizzes →" }, safeLang)}
           </Link>
         </div>
       </main>
 
       {/* Info boxes */}
-      <section className="mt-6" aria-label={L({ it: "Perché scegliere CertifyQuiz", en: "Why choose CertifyQuiz", fr: "Pourquoi choisir CertifyQuiz", es: "Por qué elegir CertifyQuiz" }, lang)}>
+      <section
+        className="mt-6"
+        aria-label={L({ it: "Perché scegliere CertifyQuiz", en: "Why choose CertifyQuiz", fr: "Pourquoi choisir CertifyQuiz", es: "Por qué elegir CertifyQuiz" }, safeLang)}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
           {infoBoxes.map((box, i) => (
             <div key={i} className="bg-white border rounded-xl p-4 shadow-sm text-left flex items-start gap-3">
