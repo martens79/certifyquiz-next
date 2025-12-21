@@ -141,67 +141,81 @@ export default function QuizHome({ lang }: { lang: Locale }) {
   }, [lang]);
 
   /* ---------- SLUG ufficiali (tutti con certPath) ---------- */
-  const certificationNames: CertificationNames = {
-    base: [
-      { name: "EIPASS", link: certPath(lang, "eipass") },
-      { name: "ECDL", link: certPath(lang, "ecdl") },
-      { name: "PEKIT", link: certPath(lang, "pekit") },
-      { name: "A+", link: certPath(lang, "comptia-a-plus") },
-      { name: "IC3", link: null },
-      { name: "CompTIA Tech+ (ex ITF+)", link: certPath(lang, "comptia-itf-plus") },
-    ],
-    sicurezza: [
-      { name: "Security+", link: certPath(lang, "security-plus") },
-      { name: "CEH", link: certPath(lang, "ceh") },
-      { name: "CISSP", link: certPath(lang, "cissp") },
-      { name: "CISM", link: null },
-      { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
-      { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
-    ],
-    reti: [
-      { name: "Network+", link: certPath(lang, "network-plus") },
-      { name: "CCNA", link: certPath(lang, "ccna") },
-      { name: "JNCIE", link: certPath(lang, "jncie") },
-      { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
-      { name: "F5-CTS", link: certPath(lang, "f5") },
-    ],
-    cloud: [
-      { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
-      { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
-      { name: "Google Cloud", link: certPath(lang, "google-cloud") },
-      { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
-      { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
-      { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },
-    ],
-    database: [
-      { name: "Microsoft SQL Server", link: certPath(lang, "microsoft-sql-server") },
-      { name: "Oracle", link: certPath(lang, "oracle-database-sql") },
-      { name: "MySQL", link: certPath(lang, "mysql") },
-      { name: "MongoDB", link: certPath(lang, "mongodb-developer") },
-    ],
-    programmazione: [
-      { name: "Java SE", link: certPath(lang, "java-se") },
-      { name: "Python", link: certPath(lang, "python-developer") },
-      { name: "JavaScript", link: certPath(lang, "javascript-developer") },
-      { name: "C#", link: certPath(lang, "csharp") },
-      { name: "TypeScript", link: null, comingSoon: true },
-      { name: "Kotlin", link: null, comingSoon: true },
-      { name: "Go", link: null, comingSoon: true },
-      { name: "Rust", link: null, comingSoon: true },
-      { name: "Swift", link: null, comingSoon: true },
-    ],
-    virtualizzazione: [
-      { name: "VMware VCP", link: certPath(lang, "vmware-vcp") },
-      { name: "Hyper-V", link: null },
-      { name: "Microsoft Virtualization", link: certPath(lang, "microsoft-virtualization") },
-    ],
-    "intelligenza-artificiale": [
-      { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
-      { name: "PyTorch", link: null },
-      { name: "OpenAI", link: null },
-      { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai-fundamentals") },
-    ],
-  };
+
+// ✅ base condivisa anche come fallback "default"
+const baseCerts = [
+  { name: "EIPASS", link: certPath(lang, "eipass") },
+  { name: "ECDL", link: certPath(lang, "ecdl") },
+  { name: "PEKIT", link: certPath(lang, "pekit") },
+  { name: "A+", link: certPath(lang, "comptia-a-plus") },
+  { name: "IC3", link: null },
+  { name: "CompTIA Tech+ (ex ITF+)", link: certPath(lang, "comptia-itf-plus") },
+]; // ✅ niente "as const"
+
+const certificationNames: CertificationNames = {
+  // ✅ richiesto perché CategoryKey include "default"
+  default: baseCerts,
+
+  base: baseCerts,
+
+  sicurezza: [
+    { name: "Security+", link: certPath(lang, "security-plus") },
+    { name: "CEH", link: certPath(lang, "ceh") },
+    { name: "CISSP", link: certPath(lang, "cissp") },
+    { name: "CISM", link: null },
+    { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
+    { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
+  ],
+
+  reti: [
+    { name: "Network+", link: certPath(lang, "network-plus") },
+    { name: "CCNA", link: certPath(lang, "ccna") },
+    { name: "JNCIE", link: certPath(lang, "jncie") },
+    { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
+    { name: "F5-CTS", link: certPath(lang, "f5") },
+  ],
+
+  cloud: [
+    { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
+    { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
+    { name: "Google Cloud", link: certPath(lang, "google-cloud") },
+    { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
+    { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
+    { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },
+  ],
+
+  database: [
+    { name: "Microsoft SQL Server", link: certPath(lang, "microsoft-sql-server") },
+    { name: "Oracle", link: certPath(lang, "oracle-database-sql") },
+    { name: "MySQL", link: certPath(lang, "mysql") },
+    { name: "MongoDB", link: certPath(lang, "mongodb-developer") },
+  ],
+
+  programmazione: [
+    { name: "Java SE", link: certPath(lang, "java-se") },
+    { name: "Python", link: certPath(lang, "python-developer") },
+    { name: "JavaScript", link: certPath(lang, "javascript-developer") },
+    { name: "C#", link: certPath(lang, "csharp") },
+    { name: "TypeScript", link: null, comingSoon: true },
+    { name: "Kotlin", link: null, comingSoon: true },
+    { name: "Go", link: null, comingSoon: true },
+    { name: "Rust", link: null, comingSoon: true },
+    { name: "Swift", link: null, comingSoon: true },
+  ],
+
+  virtualizzazione: [
+    { name: "VMware VCP", link: certPath(lang, "vmware-vcp") },
+    { name: "Hyper-V", link: null },
+    { name: "Microsoft Virtualization", link: certPath(lang, "microsoft-virtualization") },
+  ],
+
+  ai: [
+    { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
+    { name: "PyTorch", link: null },
+    { name: "OpenAI", link: null },
+    { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai-fundamentals") },
+  ],
+};
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();
 
@@ -352,12 +366,18 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       certifications: certificationNames.virtualizzazione,
     },
     {
-      key: "intelligenza-artificiale",
-      categoryKey: "intelligenza-artificiale",
-      name: getLabel(
-        { it: "Intelligenza Artificiale", en: "Artificial Intelligence", es: "Inteligencia Artificial", fr: "Intelligence Artificielle" },
-        lang
-      ),
+      key: "ai",
+categoryKey: "ai",
+name: getLabel(
+  {
+    it: "Intelligenza Artificiale",
+    en: "Artificial Intelligence",
+    es: "Inteligencia Artificial",
+    fr: "Intelligence Artificielle",
+  },
+  lang
+),
+
       description: getLabel(
         {
           it: "Machine learning e AI applicata.",
@@ -369,17 +389,18 @@ export default function QuizHome({ lang }: { lang: Locale }) {
       ),
       color: "cyan",
       icon: <Cpu size={30} />,
-      certifications: certificationNames["intelligenza-artificiale"],
+      certifications: certificationNames.ai,
     },
   ];
 
   return (
-    <div className="min-h-[100svh] bg-gray-100 text-gray-900 flex flex-col">
-      <main className="flex-1 overflow-y-auto px-3 pt-2 pb-[62px]">
+    <div className="min-h-svh
+ bg-gray-100 text-gray-900 flex flex-col">
+      <main className="flex-1 overflow-y-auto px-3 pt-2 pb-15.5">
         <QuizTitle />
 
         {lang !== "it" && translatedCertsForLang.length > 0 && (
-          <div className="mx-auto max-w-[1380px] mb-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-900 p-3">
+          <div className="mx-auto max-w-345 mb-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-900 p-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="text-sm">
                 <div className="font-semibold">
@@ -426,13 +447,13 @@ export default function QuizHome({ lang }: { lang: Locale }) {
         {/* Griglia categorie: box compatti + id per anchor (#base, #sicurezza, ...) */}
         <div
           className="
-            mx-auto max-w-[1380px]
+            mx-auto max-w-345
             grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4
             gap-3 mt-1
           "
         >
           {quizCategories.map((cat) => (
-            <section key={cat.key} id={cat.key} className="h-[220px]">
+            <section key={cat.key} id={cat.key} className="h-55">
               <CategoryBox
                 title={cat.name}
                 icon={cat.icon}
