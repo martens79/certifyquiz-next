@@ -308,7 +308,7 @@ export default function Home({ lang, isLoggedIn = false }: Props) {
         {/* CTA */}
         <div className="mt-6 mb-8 flex justify-center gap-4">
           <Link
-            href={withLang(safeLang as any, "/quiz-home")}
+            href={`/${safeLang}/quiz-home`}
             className="inline-block bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-105"
           >
             {L({ it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" }, safeLang)}
