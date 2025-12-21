@@ -219,16 +219,22 @@ const certificationNames: CertificationNames = {
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();
 
+  const allCertsUnique: CertItem[] = Array.from(
+  new Map(allCerts.map((c) => [c.link ?? `name:${c.name}`, c])).values()
+);
+
+
   const translatedCertsForLang: CertItem[] =
-    lang !== "it"
-      ? allCerts
-          .filter((c) => translatedCountForLink(availability, c.link) > 0)
-          .sort((a, b) => {
-            const cb = translatedCountForLink(availability, b.link);
-            const ca = translatedCountForLink(availability, a.link);
-            return cb !== ca ? cb - ca : a.name.localeCompare(b.name);
-          })
-      : [];
+  lang !== "it"
+    ? allCertsUnique
+        .filter((c) => translatedCountForLink(availability, c.link) > 0)
+        .sort((a, b) => {
+          const cb = translatedCountForLink(availability, b.link);
+          const ca = translatedCountForLink(availability, a.link);
+          return cb !== ca ? cb - ca : a.name.localeCompare(b.name);
+        })
+    : [];
+
 
   /* ---------- UI ---------- */
   const quizCategories: Array<{
@@ -417,7 +423,7 @@ name: getLabel(
                   const isDisabled = !c.link;
                   return (
                     <Link
-                      key={c.link ?? c.name}
+                      key={`${c.link ?? "nolink"}::${c.name}`}
                       href={c.link ?? "#"}
                       onClick={(e) => {
                         if (isDisabled) e.preventDefault();
