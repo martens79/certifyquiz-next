@@ -14,20 +14,17 @@ export function isLocale(x: string): x is Locale {
  *  Robusto: accetta anche lang undefined / sporco
  */
 export function withLang(lang: unknown, path: string) {
-  const clean = path.startsWith('/') ? path : `/${path}`;
+  const clean = path.startsWith("/") ? path : `/${path}`;
 
   const safeLang: Locale =
-    lang === 'it' || lang === 'en' || lang === 'fr' || lang === 'es'
+    lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
-      : 'en';
+      : "en";
 
-  // EN = root
-  if (safeLang === 'en') {
-    return clean === '/index' ? '/' : clean;
-  }
-
-  return `/${safeLang}${clean === '/index' ? '' : clean}`;
+  // Sempre prefisso lingua (anche EN) → evita fallback su IT
+  return `/${safeLang}${clean === "/index" ? "" : clean}`.replace(/\/{2,}/g, "/");
 }
+
 
 
 /** Estrae la lingua dal pathname (es. "/it/certificazioni") */
