@@ -15,6 +15,8 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 import { NavLink } from "./NavLink";
 import { getToken, clearToken, getUser } from "@/lib/auth";
+import MobileBottomNav from "./layout/MobileBottomNav"
+
 
 const UI: Record<
   Locale,
@@ -31,6 +33,7 @@ const UI: Record<
     skip: string;
     openMenu: string;
     closeMenu: string;
+    secondaryNav: string;
   }
 > = {
   it: {
@@ -46,6 +49,7 @@ const UI: Record<
     skip: "Salta al contenuto",
     openMenu: "Apri menu",
     closeMenu: "Chiudi menu",
+    secondaryNav: "Menu secondario",
   },
   en: {
     home: "Home",
@@ -60,6 +64,7 @@ const UI: Record<
     skip: "Skip to content",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    secondaryNav: "Secondary menu",
   },
   fr: {
     home: "Accueil",
@@ -74,6 +79,7 @@ const UI: Record<
     skip: "Aller au contenu",
     openMenu: "Ouvrir le menu",
     closeMenu: "Fermer le menu",
+    secondaryNav: "Menu secondaire",
   },
   es: {
     home: "Inicio",
@@ -88,6 +94,7 @@ const UI: Record<
     skip: "Saltar al contenido",
     openMenu: "Abrir menú",
     closeMenu: "Cerrar menú",
+    secondaryNav: "Menú secundario",
   },
 };
 
@@ -122,7 +129,7 @@ export default function Header({ lang }: { lang: Locale }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
     // 🔄 Ogni volta che cambia la route ricalcoliamo lo stato utente
     const token = getToken();
     const logged = !!token;
@@ -139,30 +146,31 @@ export default function Header({ lang }: { lang: Locale }) {
       | null
       | undefined;
 
-    const label =
-      u?.name?.trim() ||
-      u?.username?.trim() ||
-      u?.email?.trim() ||
-      null;
-
+    const label = u?.name?.trim() || u?.username?.trim() || u?.email?.trim() || null;
     setUserLabel(label);
 
     if (label) {
       const parts = label.split(" ");
       const first = parts[0] || "";
       const second = parts[1] || "";
-      const initials =
-        (first[0] || "").toUpperCase() +
-        (second[0] || "").toUpperCase();
-      setUserInitials(initials || label[0]?.toUpperCase() || "U");
+      const initials = (first[0] || "").toUpperCase() + (second[0] || "").toUpperCase();
+      setUserInitials(initialialsFallback(initials, label));
     } else {
       setUserInitials("U");
     }
-  }, [pathname]); // 👈 dipende da pathname
+  }, [pathname]);
 
+  function initialialsFallback(initials: string, label: string) {
+    return initials || label[0]?.toUpperCase() || "U";
+  }
 
   // consideriamo autenticato anche chi è già su /profile
   const isAuthenticated = hasToken || isProfile;
+
+  // Profilo: se non loggato → login con redirect
+  const profileHref = isAuthenticated
+    ? withLang(lang, "/profile")
+    : withLang(lang, `/login?redirect=${encodeURIComponent(pathname)}`);
 
   // ---- nav principale (Certificazioni / Blog / Prezzi) ----
   const nav = useMemo(
@@ -178,104 +186,55 @@ export default function Header({ lang }: { lang: Locale }) {
   // ---- quick nav (Home / Quiz / Suggeriti / Profilo) ----
   type QuickItem = { href: string; label: string; icon: ReactNode };
 
-  const profileHref = isAuthenticated
-    ? withLang(lang, "/profile")
-    : withLang(lang, `/login?redirect=${encodeURIComponent(pathname)}`);
-
   const quickBase = useMemo<QuickItem[]>(() => {
-  const quizHomeHref = withLang(lang, "/quiz-home");
-  const suggestedHref = withLang(lang, "/quiz-suggeriti");
+    const quizHomeHref = withLang(lang, "/quiz-home");
+    const suggestedHref = withLang(lang, "/quiz-suggeriti");
 
-  const base: QuickItem[] = [
-    {
-      href: withLang(lang, "/"),
-      label: ui.home,
-      icon: (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: quizHomeHref,
-      label: ui.quiz,
-      icon: (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: suggestedHref,
-      label: ui.suggested,
-      icon: (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 6v6l4 2"
-          />
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 3a9 9 0 1 0 9 9"
-          />
-        </svg>
-      ),
-    },
-  ];
+    const base: QuickItem[] = [
+      {
+        href: withLang(lang, "/"),
+        label: ui.home,
+        icon: (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z" />
+          </svg>
+        ),
+      },
+      {
+        href: quizHomeHref,
+        label: ui.quiz,
+        icon: (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z" />
+          </svg>
+        ),
+      },
+      {
+        href: suggestedHref,
+        label: ui.suggested,
+        icon: (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 9 9" />
+          </svg>
+        ),
+      },
+    ];
 
-  if (isAuthenticated) {
-    base.push({
-      href: profileHref,
-      label: ui.profile,
-      icon: (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.5}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
-          />
-        </svg>
-      ),
-    });
-  }
+    if (isAuthenticated) {
+      base.push({
+        href: profileHref,
+        label: ui.profile,
+        icon: (
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+          </svg>
+        ),
+      });
+    }
 
-  return base;
-}, [lang, ui.home, ui.quiz, ui.suggested, ui.profile, profileHref, isAuthenticated]);
-
+    return base;
+  }, [lang, ui.home, ui.quiz, ui.suggested, ui.profile, profileHref, isAuthenticated]);
 
   const quick = useMemo(
     () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
@@ -309,11 +268,7 @@ export default function Header({ lang }: { lang: Locale }) {
         setOpenDrawer(false);
       }
 
-      if (
-        userMenuOpen &&
-        userMenuRef.current &&
-        !userMenuRef.current.contains(target)
-      ) {
+      if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
       }
     }
@@ -342,225 +297,214 @@ export default function Header({ lang }: { lang: Locale }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60">
-      {/* Skip link */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-gray-900 focus:px-3 focus:py-2 focus:text-white"
-      >
-        {ui.skip}
-      </a>
-
-      <div className="mx-auto max-w-6xl px-4">
-        {/* RIGA PRINCIPALE */}
-        <div className="flex h-14 items-center justify-between">
-          {/* LOGO */}
-          <div className="flex items-center gap-3">
-            <Link
-              href={withLang(lang, "/")}
-              className="flex items-center gap-2"
-              aria-label="CertifyQuiz – Home"
-            >
-              <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">
-                CQ
-              </div>
-              <span className="font-semibold">CertifyQuiz</span>
-            </Link>
-          </div>
-
-          {/* NAV DESKTOP: nascosta su /profile, /quiz..., /certificazioni/[slug] */}
-          {!isProfile && !isQuizFlow && !isCertDetail && (
-            <nav
-              className="hidden items-center gap-1 md:flex"
-              aria-label={ui.mainNav}
-            >
-              {nav.map((n) => (
-                <NavLink key={n.href} href={n.href}>
-                  {n.label}
-                </NavLink>
-              ))}
-            </nav>
-          )}
-
-          {/* DESTRA DESKTOP */}
-          <div className="hidden items-center gap-3 md:flex">
-            <Suspense fallback={null}>
-              <LocaleSwitcher current={lang} />
-            </Suspense>
-
-            {!isAuthenticated ? (
-              <>
-                <Link
-                  href={withLang(lang, "/login")}
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-                >
-                  {ui.login}
-                </Link>
-                <Link
-                  href={withLang(lang, "/inizia")}
-                  className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
-                >
-                  {ui.start} 🚀
-                </Link>
-              </>
-            ) : (
-              <div ref={userMenuRef} className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 py-1.5 text-sm hover:bg-gray-50"
-                  aria-haspopup="menu"
-                  aria-expanded={userMenuOpen}
-                >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
-                    {userInitials}
-                  </div>
-                  <span className="max-w-[140px] truncate text-xs md:text-sm">
-                    {userLabel || "Account"}
-                  </span>
-                  <span aria-hidden className="text-xs">▾</span>
-                </button>
-
-                {userMenuOpen && (
-                  <div
-                    role="menu"
-                    className="absolute right-0 top-10 w-44 rounded-md border bg-white shadow-lg"
-                  >
-                    {!isProfile && (
-                      <Link
-                        href={withLang(lang, "/profile")}
-                        className="block px-3 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        {ui.profile}
-                      </Link>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <span>{ui.logout}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* TOGGLE MOBILE */}
-          <button
-            ref={btnRef}
-            className="inline-flex items-center justify-center rounded-md border px-2.5 py-2 md:hidden"
-            onClick={() => setOpenDrawer((v) => !v)}
-            aria-label={openDrawer ? ui.closeMenu : ui.openMenu}
-            aria-expanded={openDrawer}
-            aria-controls="mobile-drawer"
-          >
-            <span aria-hidden>{openDrawer ? "✕" : "☰"}</span>
-          </button>
-        </div>
-
-        {/* AZIONI RAPIDE (desktop) */}
-        <div className="hidden items-center justify-between py-1.5 text-sm text-gray-800 md:flex">
-          <nav className="flex items-center gap-4" aria-label={ui.quick}>
-            {quick.map((q) => {
-              const active = pathNoQuery === q.href;
-              return (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className={`flex items-center gap-1 ${
-                    active
-                      ? "underline underline-offset-4"
-                      : "hover:opacity-80"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {q.icon}
-                  <span>{q.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* DRAWER MOBILE */}
-        <div
-          id="mobile-drawer"
-          ref={drawerRef}
-          className={`md:hidden overflow-hidden transition-[max-height] duration-200 ease-in-out ${
-            openDrawer ? "max-h-[70vh] border-t" : "max-h-0"
-          }`}
-          aria-hidden={!openDrawer}
+    <>
+      <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60">
+        {/* Skip link */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-gray-900 focus:px-3 focus:py-2 focus:text-white"
         >
-          <div className="py-3">
-            {/* Nav principale mobile: nascosta su /profile, /quiz..., /certificazioni/[slug] */}
-            {!isProfile && !isQuizFlow && !isCertDetail && (
-              <nav className="flex flex-col gap-1" aria-label={ui.mainNav}>
-                {nav.map((n) => (
-                  <Link
-                    key={n.href}
-                    href={n.href}
-                    className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => setOpenDrawer(false)}
-                  >
-                    {n.label}
-                  </Link>
-                ))}
-              </nav>
-            )}
+          {ui.skip}
+        </a>
 
-            {/* Azioni rapide (mobile) */}
-            <div className="mt-3 border-t pt-3">
-              <nav className="flex flex-col gap-1" aria-label={ui.quick}>
-                {quick.map((q) => (
-                  <Link
-                    key={q.href}
-                    href={q.href}
-                    className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => setOpenDrawer(false)}
-                  >
-                    {q.icon}
-                    <span>{q.label}</span>
-                  </Link>
-                ))}
-              </nav>
+        <div className="mx-auto max-w-6xl px-4">
+          {/* RIGA PRINCIPALE */}
+          <div className="flex h-14 items-center justify-between">
+            {/* LOGO */}
+            <div className="flex items-center gap-3">
+              <Link href={withLang(lang, "/")} className="flex items-center gap-2" aria-label="CertifyQuiz – Home">
+                <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">
+                  CQ
+                </div>
+                <span className="font-semibold">CertifyQuiz</span>
+              </Link>
             </div>
 
-            {/* Azioni + lingua (mobile) */}
-            <div className="mt-3 flex items-center gap-2">
+            {/* NAV DESKTOP: nascosta su /profile, /quiz..., /certificazioni/[slug] */}
+            {!isProfile && !isQuizFlow && !isCertDetail && (
+              <nav className="hidden items-center gap-1 md:flex" aria-label={ui.mainNav}>
+                {nav.map((n) => (
+                  <NavLink key={n.href} href={n.href}>
+                    {n.label}
+                  </NavLink>
+                ))}
+              </nav>
+            )}
+
+            {/* DESTRA DESKTOP */}
+            <div className="hidden items-center gap-3 md:flex">
               <Suspense fallback={null}>
                 <LocaleSwitcher current={lang} />
               </Suspense>
+
               {!isAuthenticated ? (
                 <>
                   <Link
                     href={withLang(lang, "/login")}
                     className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => setOpenDrawer(false)}
                   >
                     {ui.login}
                   </Link>
                   <Link
                     href={withLang(lang, "/inizia")}
                     className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
-                    onClick={() => setOpenDrawer(false)}
                   >
                     {ui.start} 🚀
                   </Link>
                 </>
               ) : (
-                <>
-                  {!isProfile && (
+                <div ref={userMenuRef} className="relative flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 py-1.5 text-sm hover:bg-gray-50"
+                    aria-haspopup="menu"
+                    aria-expanded={userMenuOpen}
+                  >
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
+                      {userInitials}
+                    </div>
+                    <span className="max-w-[140px] truncate text-xs md:text-sm">{userLabel || "Account"}</span>
+                    <span aria-hidden className="text-xs">
+                      ▾
+                    </span>
+                  </button>
+
+                  {userMenuOpen && (
+                    <div role="menu" className="absolute right-0 top-10 w-44 rounded-md border bg-white shadow-lg">
+                      {!isProfile && (
+                        <Link
+                          href={withLang(lang, "/profile")}
+                          className="block px-3 py-2 text-sm hover:bg-gray-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          {ui.profile}
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <span>{ui.logout}</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* DESTRA MOBILE (A): lingua + profilo sempre visibili + hamburger secondario */}
+            <div className="flex items-center gap-2 md:hidden">
+              <Suspense fallback={null}>
+                <LocaleSwitcher current={lang} />
+              </Suspense>
+
+              <Link
+                href={profileHref}
+                aria-label={isAuthenticated ? ui.profile : ui.login}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-sm hover:bg-gray-50"
+                onClick={() => {
+                  setOpenDrawer(false);
+                  setUserMenuOpen(false);
+                }}
+              >
+                {isAuthenticated ? <span className="font-semibold">{userInitials}</span> : <span aria-hidden>👤</span>}
+              </Link>
+
+              {/* Hamburger = SOLO menu secondario (blog/prezzi, logout, ecc.) */}
+              <button
+                ref={btnRef}
+                className="inline-flex items-center justify-center rounded-md border px-2.5 py-2"
+                onClick={() => setOpenDrawer((v) => !v)}
+                aria-label={openDrawer ? ui.closeMenu : ui.openMenu}
+                aria-expanded={openDrawer}
+                aria-controls="mobile-drawer"
+              >
+                <span aria-hidden>{openDrawer ? "✕" : "☰"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* AZIONI RAPIDE (desktop) */}
+          <div className="hidden items-center justify-between py-1.5 text-sm text-gray-800 md:flex">
+            <nav className="flex items-center gap-4" aria-label={ui.quick}>
+              {quick.map((q) => {
+                const active = pathNoQuery === q.href;
+                return (
+                  <Link
+                    key={q.href}
+                    href={q.href}
+                    className={`flex items-center gap-1 ${active ? "underline underline-offset-4" : "hover:opacity-80"}`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {q.icon}
+                    <span>{q.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* DRAWER MOBILE: SOLO SECONDARIE + AUTH (NO lingua, NO quick) */}
+          <div
+            id="mobile-drawer"
+            ref={drawerRef}
+            className={`md:hidden overflow-hidden transition-[max-height] duration-200 ease-in-out ${
+              openDrawer ? "max-h-[70vh] border-t" : "max-h-0"
+            }`}
+            aria-hidden={!openDrawer}
+          >
+            <div className="py-3">
+              {/* Menu secondario */}
+              <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
+                <Link
+                  href={withLang(lang, "/blog")}
+                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => setOpenDrawer(false)}
+                >
+                  {t.blog}
+                </Link>
+
+                <Link
+                  href={withLang(lang, "/prezzi")}
+                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => setOpenDrawer(false)}
+                >
+                  {t.pricing}
+                </Link>
+
+                {/* Se vuoi tenere anche certificazioni nel menu secondario, scommenta:
+                <Link
+                  href={withLang(lang, "/certificazioni")}
+                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => setOpenDrawer(false)}
+                >
+                  {t.certifications}
+                </Link>
+                */}
+              </nav>
+
+              {/* Auth actions */}
+              <div className="mt-3 border-t pt-3 flex items-center gap-2 px-3">
+                {!isAuthenticated ? (
+                  <>
                     <Link
-                      href={withLang(lang, "/profile")}
+                      href={withLang(lang, "/login")}
                       className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
                       onClick={() => setOpenDrawer(false)}
                     >
-                      {ui.profile}
+                      {ui.login}
                     </Link>
-                  )}
+                    <Link
+                      href={withLang(lang, "/inizia")}
+                      className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
+                      onClick={() => setOpenDrawer(false)}
+                    >
+                      {ui.start} 🚀
+                    </Link>
+                  </>
+                ) : (
                   <button
                     type="button"
                     onClick={() => {
@@ -571,12 +515,15 @@ export default function Header({ lang }: { lang: Locale }) {
                   >
                     {ui.logout}
                   </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* BOTTOM NAV MOBILE (A) */}
+      <MobileBottomNav lang={lang} isAuthenticated={isAuthenticated} />
+    </>
   );
 }

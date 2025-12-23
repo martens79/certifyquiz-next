@@ -302,8 +302,17 @@ export default function Home({ lang, isLoggedIn = false }: Props) {
           <span className="font-medium text-slate-600">Competence makes the difference</span>
         </p>
         <p className="text-xs md:text-sm font-semibold text-slate-600 mb-6">
-          CompTIA ITF+, A+, Network+, Security+, CEH, CISSP, CCNA, Azure, AWS, EIPASS, ECDL, PEKIT e molte altre.
-        </p>
+  {L(
+    {
+      it: "Quiz di allenamento per certificazioni IT (AWS, CCNA, Security+, CompTIA e altre). Allenati, mettiti alla prova e monitora i progressi.",
+      en: "Practice quizzes for IT certifications (AWS, CCNA, Security+, CompTIA and more). Train, test yourself and track your progress.",
+      fr: "Quiz d’entraînement pour des certifications IT (AWS, CCNA, Security+, CompTIA et plus). Entraîne-toi, teste-toi et suis tes progrès.",
+      es: "Cuestionarios de práctica para certificaciones IT (AWS, CCNA, Security+, CompTIA y más). Entrena, ponte a prueba y sigue tu progreso."
+    },
+    safeLang
+  )}
+</p>
+
 
         {/* CTA */}
         <div className="mt-6 mb-8 flex justify-center gap-4">
