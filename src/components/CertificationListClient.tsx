@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { Locale } from "@/lib/i18n";
 import { CertificationCard } from "./CertificationCard";
 
 type LevelKey = "base" | "intermediate" | "advanced" | null;
@@ -16,11 +17,74 @@ type CertListClientItem = {
   category?: string | null;
 };
 
+const UI = {
+  it: {
+    empty: "Nessuna certificazione disponibile.",
+    searchPlaceholder: "Cerca certificazione…",
+    levelLabel: "Livello:",
+    levels: {
+      all: "Tutti",
+      base: "Base",
+      intermediate: "Intermedio",
+      advanced: "Avanzato",
+    },
+    categoryLabel: "Categoria:",
+    allCategories: "Tutte",
+    notFound: (q: string) => `Nessuna certificazione trovata per “${q}”.`,
+  },
+  en: {
+    empty: "No certifications available.",
+    searchPlaceholder: "Search certification…",
+    levelLabel: "Level:",
+    levels: {
+      all: "All",
+      base: "Beginner",
+      intermediate: "Intermediate",
+      advanced: "Advanced",
+    },
+    categoryLabel: "Category:",
+    allCategories: "All",
+    notFound: (q: string) => `No certifications found for “${q}”.`,
+  },
+  fr: {
+    empty: "Aucune certification disponible.",
+    searchPlaceholder: "Rechercher une certification…",
+    levelLabel: "Niveau :",
+    levels: {
+      all: "Tous",
+      base: "Débutant",
+      intermediate: "Intermédiaire",
+      advanced: "Avancé",
+    },
+    categoryLabel: "Catégorie :",
+    allCategories: "Toutes",
+    notFound: (q: string) => `Aucune certification trouvée pour “${q}”.`,
+  },
+  es: {
+    empty: "No hay certificaciones disponibles.",
+    searchPlaceholder: "Buscar certificación…",
+    levelLabel: "Nivel:",
+    levels: {
+      all: "Todas",
+      base: "Básico",
+      intermediate: "Intermedio",
+      advanced: "Avanzado",
+    },
+    categoryLabel: "Categoría:",
+    allCategories: "Todas",
+    notFound: (q: string) => `No se encontraron certificaciones para “${q}”.`,
+  },
+} as const;
+
 export function CertificationListClient({
   items,
+  lang,
 }: {
   items: CertListClientItem[];
+  lang: Locale;
 }) {
+  const t = UI[lang] ?? UI.it;
+
   const [query, setQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<LevelKey | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<string | "all">("all");
@@ -28,9 +92,7 @@ export function CertificationListClient({
   const categories = useMemo(() => {
     const set = new Set<string>();
     for (const c of items) {
-      if (c.category && c.category.trim().length > 0) {
-        set.add(c.category);
-      }
+      if (c.category && c.category.trim().length > 0) set.add(c.category);
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [items]);
@@ -69,10 +131,17 @@ export function CertificationListClient({
   if (!items.length) {
     return (
       <div className="rounded-xl border border-dashed p-6 text-sm text-gray-500 dark:text-neutral-400">
-        Nessuna certificazione disponibile.
+        {t.empty}
       </div>
     );
   }
+
+  const levelOptions = [
+    { key: "all" as const, label: t.levels.all },
+    { key: "base" as const, label: t.levels.base },
+    { key: "intermediate" as const, label: t.levels.intermediate },
+    { key: "advanced" as const, label: t.levels.advanced },
+  ];
 
   return (
     <div className="space-y-4">
@@ -82,7 +151,7 @@ export function CertificationListClient({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Cerca certificazione…"
+          placeholder={t.searchPlaceholder}
           className="w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm
                      shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200
                      dark:border-neutral-700 dark:bg-neutral-900 dark:text-white"
@@ -94,14 +163,9 @@ export function CertificationListClient({
         {/* Livello */}
         <div className="flex items-center gap-1">
           <span className="mr-1 font-medium text-gray-600 dark:text-neutral-300">
-            Livello:
+            {t.levelLabel}
           </span>
-          {[
-            { key: "all" as const, label: "Tutti" },
-            { key: "base" as const, label: "Base" },
-            { key: "intermediate" as const, label: "Intermedio" },
-            { key: "advanced" as const, label: "Avanzato" },
-          ].map((opt) => (
+          {levelOptions.map((opt) => (
             <button
               key={opt.key}
               type="button"
@@ -123,8 +187,9 @@ export function CertificationListClient({
         {categories.length > 0 && (
           <div className="flex flex-wrap items-center gap-1">
             <span className="mr-1 font-medium text-gray-600 dark:text-neutral-300">
-              Categoria:
+              {t.categoryLabel}
             </span>
+
             <button
               type="button"
               onClick={() => setCategoryFilter("all")}
@@ -134,8 +199,9 @@ export function CertificationListClient({
                   : "border-gray-300 bg-white text-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-200"
               }`}
             >
-              Tutte
+              {t.allCategories}
             </button>
+
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -169,7 +235,7 @@ export function CertificationListClient({
           ))
         ) : (
           <div className="col-span-full rounded-xl border border-dashed p-6 text-sm text-gray-500 dark:text-neutral-400">
-            Nessuna certificazione trovata per “{query}”.
+            {t.notFound(query.trim())}
           </div>
         )}
       </section>

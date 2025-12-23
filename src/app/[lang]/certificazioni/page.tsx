@@ -4,7 +4,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 
-import { locales, type Locale, isLocale } from "@/lib/i18n";
+import { locales, type Locale, isLocale, withLang } from "@/lib/i18n";
+
 import { canonicalUrl } from "@/lib/seo";
 
 import { getCertificationsListRSC } from "@/lib/server/certs";
@@ -365,44 +366,44 @@ export default async function Page({
 
       {/* Lista certificazioni con search + filtri */}
       <CertificationListClient
-        items={visible.map((c) => {
-          const titleText =
-            typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
+  lang={L}
+  items={visible.map((c) => {
+    const titleText =
+      typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
 
-          const levelText =
-            typeof c.level === "string" ? c.level : c.level?.[L] ?? c.level?.it;
+    const levelText =
+      typeof c.level === "string" ? c.level : c.level?.[L] ?? c.level?.it;
 
-          const descriptionText =
-            typeof c.description === "string"
-              ? c.description
-              : c.description?.[L] ?? c.description?.it;
+    const descriptionText =
+      typeof c.description === "string"
+        ? c.description
+        : c.description?.[L] ?? c.description?.it;
 
-          // 1) livello logico da mappa slug -> LevelKey
-          let levelKey: LevelKey | null = LEVEL_BY_SLUG[c.slug] ?? null;
+    // 1) livello logico da mappa slug -> LevelKey
+    let levelKey: LevelKey | null = LEVEL_BY_SLUG[c.slug] ?? null;
 
-          // 2) fallback: usiamo l'eventuale testo level
-          if (!levelKey) {
-            const rawLevelForKey = levelText ?? "";
-            if (/base/i.test(rawLevelForKey)) levelKey = "base";
-            else if (/intermedio|intermediate/i.test(rawLevelForKey))
-              levelKey = "intermediate";
-            else if (/avanzat|advanced/i.test(rawLevelForKey)) levelKey = "advanced";
-          }
+    // 2) fallback: usiamo l'eventuale testo level
+    if (!levelKey) {
+      const rawLevelForKey = levelText ?? "";
+      if (/base/i.test(rawLevelForKey)) levelKey = "base";
+      else if (/intermedio|intermediate/i.test(rawLevelForKey)) levelKey = "intermediate";
+      else if (/avanzat|advanced/i.test(rawLevelForKey)) levelKey = "advanced";
+    }
 
-          const categoryLabel = typeof c.category === "string" ? c.category : null;
+    return {
+  slug: c.slug,
+  href: withLang(L, `/certificazioni/${c.slug}`),
+  title: titleText,
+  level: levelText,
+  description: descriptionText,
+  imageUrl: c.imageUrl,
+  levelKey,
+  category: c.category ?? null,
+};
 
-          return {
-            slug: c.slug,
-            href: L === "en" ? enRootDetailPath(c.slug) : detailPath(L, c.slug),
-            title: titleText,
-            level: levelText ?? undefined,
-            description: descriptionText ?? undefined,
-            imageUrl: c.imageUrl ?? undefined,
-            levelKey: levelKey ?? undefined,
-            category: categoryLabel,
-          };
-        })}
-      />
+  })}
+/>
+
 
       <Script
         id="certifyquiz-cert-list-jsonld"
