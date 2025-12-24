@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Inter, Manrope } from "next/font/google";
+import LayoutShellClient from "@/components/layout/LayoutShellClient";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,30 +28,30 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@CertifyQuiz", // aggiorna se/quando avrai l'handle
+    site: "@CertifyQuiz",
   },
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
-  // fallback assoluto (x-default) — le pagine per-lingua aggiungeranno le proprie alternates
   alternates: {
     languages: {
-      "x-default": "/it",
+      "x-default": "/",
     },
   },
   other: {
-    // Evita il “tel autodetect” su iOS per numeri
     "format-detection": "telephone=no",
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // Forziamo lang coerente e sopprimiamo micro-differenze in dev
-    <html lang="it-IT" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${manrope.variable}`}>
-        {children}
+        {/* EN root passa SEMPRE da LayoutShellClient */}
+        <LayoutShellClient lang="en">
+          {children}
+        </LayoutShellClient>
       </body>
     </html>
   );

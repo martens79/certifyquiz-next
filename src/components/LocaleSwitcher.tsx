@@ -4,31 +4,34 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { locales, type Locale, isLocale } from "@/lib/i18n";
 
-const LANG_RE = /^\/(it|en|fr|es)(?=\/|$)/i;
+// Match lingua SOLO per le lingue prefissate (EN è root, quindi non deve mai comparire come /en)
+const LANG_RE = /^\/(it|fr|es)(?=\/|$)/i;
 
 export default function LocaleSwitcher({ current }: { current: Locale }) {
   const router = useRouter();
   const pathname = usePathname() || "/";
   const search = useSearchParams();
 
-  const switchTo = (lang: string) => {
-    if (!isLocale(lang)) return;
-    if (lang === current) return;
+  const switchTo = (nextLangRaw: string) => {
+    if (!isLocale(nextLangRaw)) return;
+    const nextLang = nextLangRaw as Locale;
+    if (nextLang === current) return;
 
-    let base = pathname;
+    // 1) togli eventuale prefisso lingua (it/fr/es) se presente
+    //    (se sei su EN root, non c’è prefisso e non cambia nulla)
+    const stripped = pathname.replace(LANG_RE, "") || "/";
 
-    // sostituisci solo il primo segmento se è una lingua; altrimenti preponi
-    if (LANG_RE.test(base)) {
-      base = base.replace(LANG_RE, `/${lang}`);
-    } else {
-      base = `/${lang}${base.startsWith("/") ? "" : "/"}${base}`;
+    // 2) ricostruisci path secondo la regola:
+    //    EN = root (nessun /en)
+    //    IT/FR/ES = prefisso /{lang}
+    let nextPath = stripped;
+    if (nextLang !== "en") {
+      nextPath = `/${nextLang}${stripped === "/" ? "" : stripped}`;
     }
 
-    // preserva querystring se presente
+    // 3) preserva querystring
     const qs = search?.toString();
-    const next = qs ? `${base}?${qs}` : base;
-
-    router.push(next);
+    router.push(qs ? `${nextPath}?${qs}` : nextPath);
   };
 
   return (

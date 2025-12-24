@@ -15,8 +15,7 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 import { NavLink } from "./NavLink";
 import { getToken, clearToken, getUser } from "@/lib/auth";
-import MobileBottomNav from "./layout/MobileBottomNav"
-
+import type { MinimalUser } from "@/lib/auth";
 
 const UI: Record<
   Locale,
@@ -98,22 +97,36 @@ const UI: Record<
   },
 };
 
-export default function Header({ lang }: { lang: Locale }) {
+type Props = {
+  lang: Locale;
+  user?: MinimalUser | null;
+};
+
+export default function Header({ lang, user }: Props) {
   const t = dict[lang];
   const ui = UI[lang];
 
-  const pathname = usePathname() || withLang(lang, "/");
+  /**
+   * ✅ Helper: EN = root (nessun /en)
+   * IT/FR/ES = prefisso tramite withLang
+   */
+  const H = useMemo(() => {
+    return (path: string) => (lang === "en" ? path : withLang(lang, path));
+  }, [lang]);
+
+  // pathname "safe": in EN vogliamo "/" come fallback, non "/en"
+  const pathname = usePathname() || H("/");
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
 
-  const profilePath = withLang(lang, "/profile");
+  const profilePath = H("/profile");
   const isProfile = pathNoQuery === profilePath;
 
-  // flusso quiz: /it/quiz, /it/quiz/eipass, /it/quiz/topic/123, ecc.
-  const quizRoot = withLang(lang, "/quiz");
+  // flusso quiz: in EN /quiz/... (non /en/quiz)
+  const quizRoot = lang === "en" ? "/quiz" : withLang(lang, "/quiz");
   const isQuizFlow = pathNoQuery.startsWith(quizRoot);
 
-  // certificazioni
-  const certRoot = withLang(lang, "/certificazioni");
+  // certificazioni: EN /certifications, altri /{lang}/certificazioni
+  const certRoot = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
   const isCertDetail = pathNoQuery.startsWith(certRoot + "/");
 
   const router = useRouter();
@@ -128,6 +141,10 @@ export default function Header({ lang }: { lang: Locale }) {
   const [userInitials, setUserInitials] = useState<string>("U");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  function initialsFallback(initials: string, label: string) {
+    return initials || label[0]?.toUpperCase() || "U";
+  }
 
   useEffect(() => {
     // 🔄 Ogni volta che cambia la route ricalcoliamo lo stato utente
@@ -146,66 +163,130 @@ export default function Header({ lang }: { lang: Locale }) {
       | null
       | undefined;
 
-    const label = u?.name?.trim() || u?.username?.trim() || u?.email?.trim() || null;
+    const label =
+      u?.name?.trim() || u?.username?.trim() || u?.email?.trim() || null;
+
     setUserLabel(label);
 
     if (label) {
       const parts = label.split(" ");
       const first = parts[0] || "";
       const second = parts[1] || "";
-      const initials = (first[0] || "").toUpperCase() + (second[0] || "").toUpperCase();
-      setUserInitials(initialialsFallback(initials, label));
+      const initials =
+        (first[0] || "").toUpperCase() + (second[0] || "").toUpperCase();
+      setUserInitials(initialsFallback(initials, label));
     } else {
       setUserInitials("U");
     }
   }, [pathname]);
-
-  function initialialsFallback(initials: string, label: string) {
-    return initials || label[0]?.toUpperCase() || "U";
-  }
 
   // consideriamo autenticato anche chi è già su /profile
   const isAuthenticated = hasToken || isProfile;
 
   // Profilo: se non loggato → login con redirect
   const profileHref = isAuthenticated
-    ? withLang(lang, "/profile")
-    : withLang(lang, `/login?redirect=${encodeURIComponent(pathname)}`);
+    ? H("/profile")
+    : H(`/login?redirect=${encodeURIComponent(pathname)}`);
+
+    const certsHref = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
 
   // ---- nav principale (Certificazioni / Blog / Prezzi) ----
   const nav = useMemo(
     () =>
       [
-        { href: withLang(lang, "/certificazioni"), label: t.certifications },
-        { href: withLang(lang, "/blog"), label: t.blog },
-        { href: withLang(lang, "/prezzi"), label: t.pricing },
+        {
+          href: lang === "en" ? "/certifications" : H("/certificazioni"),
+          label: t.certifications,
+        },
+        { href: H("/blog"), label: t.blog },
+        { href: H("/prezzi"), label: t.pricing },
       ] as const,
-    [lang, t]
+    [H, lang, t]
   );
 
-  // ---- quick nav (Home / Quiz / Suggeriti / Profilo) ----
+  // ---- quick nav (Home / Certificazioni / Quiz / Suggeriti / Profilo) ----
   type QuickItem = { href: string; label: string; icon: ReactNode };
 
   const quickBase = useMemo<QuickItem[]>(() => {
-    const quizHomeHref = withLang(lang, "/quiz-home");
-    const suggestedHref = withLang(lang, "/quiz-suggeriti");
+    const homeHref = H("/");
+    const quizHomeHref = H("/quiz-home");
+    const suggestedHref = H("/quiz-suggeriti");
+
+
+
+
+    const certsLabel =
+      lang === "it"
+        ? "Certificazioni"
+        : lang === "fr"
+        ? "Certifications"
+        : lang === "es"
+        ? "Certificaciones"
+        : "Certifications";
 
     const base: QuickItem[] = [
       {
-        href: withLang(lang, "/"),
+        href: homeHref,
         label: ui.home,
         icon: (
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
+            />
           </svg>
         ),
       },
+
+      // ✅ Certifications
+      {
+        href: certsHref,
+        label: certsLabel,
+        icon: (
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 12.75 11.25 15 15 9.75"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 2.25c-2.485 0-4.5 2.015-4.5 4.5v.75H6A2.25 2.25 0 0 0 3.75 9.75v9A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25v-9A2.25 2.25 0 0 0 18 7.5h-1.5v-.75c0-2.485-2.015-4.5-4.5-4.5z"
+            />
+          </svg>
+        ),
+      },
+
       {
         href: quizHomeHref,
         label: ui.quiz,
         icon: (
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
+            />
           </svg>
         ),
       },
@@ -213,7 +294,13 @@ export default function Header({ lang }: { lang: Locale }) {
         href: suggestedHref,
         label: ui.suggested,
         icon: (
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 9 9" />
           </svg>
@@ -226,20 +313,31 @@ export default function Header({ lang }: { lang: Locale }) {
         href: profileHref,
         label: ui.profile,
         icon: (
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
+            />
           </svg>
         ),
       });
     }
 
     return base;
-  }, [lang, ui.home, ui.quiz, ui.suggested, ui.profile, profileHref, isAuthenticated]);
+  }, [H, isAuthenticated, lang, profileHref, ui.home, ui.profile, ui.quiz, ui.suggested]);
 
   const quick = useMemo(
     () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
     [isProfile, quickBase, ui.profile]
   );
+
 
   // ---- effetti: cambio route, ESC, click fuori ----
   useEffect(() => {
@@ -312,7 +410,7 @@ export default function Header({ lang }: { lang: Locale }) {
           <div className="flex h-14 items-center justify-between">
             {/* LOGO */}
             <div className="flex items-center gap-3">
-              <Link href={withLang(lang, "/")} className="flex items-center gap-2" aria-label="CertifyQuiz – Home">
+              <Link href={lang === "en" ? "/" : withLang(lang, "/")} className="flex items-center gap-2" aria-label="CertifyQuiz – Home">
                 <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">
                   CQ
                 </div>
@@ -458,6 +556,23 @@ export default function Header({ lang }: { lang: Locale }) {
             <div className="py-3">
               {/* Menu secondario */}
               <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
+
+                {/* Certifications list */}
+<Link
+  href={certsHref}
+  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+  onClick={() => setOpenDrawer(false)}
+>
+  {lang === "it"
+    ? "Certificazioni"
+    : lang === "fr"
+    ? "Certifications"
+    : lang === "es"
+    ? "Certificaciones"
+    : "Certifications"}
+</Link>
+
+
                 <Link
                   href={withLang(lang, "/blog")}
                   className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
@@ -522,8 +637,6 @@ export default function Header({ lang }: { lang: Locale }) {
         </div>
       </header>
 
-      {/* BOTTOM NAV MOBILE (A) */}
-      <MobileBottomNav lang={lang} isAuthenticated={isAuthenticated} />
     </>
   );
 }

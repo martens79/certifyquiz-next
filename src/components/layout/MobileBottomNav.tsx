@@ -6,67 +6,139 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { Locale } from "@/lib/i18n";
 import { withLang } from "@/lib/i18n";
+import type { MinimalUser } from "@/lib/auth";
 
 type Props = {
   lang: Locale;
-  isAuthenticated: boolean;
+  isAuthenticated?: boolean;
+  user?: MinimalUser | null; // (opzionale: per futuro badge/pro)
 };
 
+type ItemKey = "home" | "quiz" | "certs" | "profile";
+
 type Item = {
-  key: "home" | "quiz" | "certs" | "profile";
+  key: ItemKey;
   href: string;
   label: string;
   icon: ReactNode;
   match: (pathNoQuery: string) => boolean;
 };
 
-export default function MobileBottomNav({ lang, isAuthenticated }: Props) {
-  const pathname = usePathname() || withLang(lang, "/");
+function tLabel(lang: Locale, key: ItemKey) {
+  const labels: Record<ItemKey, Record<Locale, string>> = {
+    home: { it: "Home", en: "Home", fr: "Accueil", es: "Inicio" },
+    quiz: { it: "Quiz", en: "Quizzes", fr: "Quiz", es: "Quiz" },
+    certs: { it: "Cert", en: "Certs", fr: "Cert", es: "Cert" },
+    profile: { it: "Profilo", en: "Profile", fr: "Profil", es: "Perfil" },
+  };
+  return labels[key][lang];
+}
+
+/**
+ * EN = root (nessun /en)
+ * IT/FR/ES = prefisso /it /fr /es tramite withLang
+ */
+function publicHref(lang: Locale, pathEnRoot: string, pathLocalized: string) {
+  return lang === "en" ? pathEnRoot : withLang(lang, pathLocalized);
+}
+
+/**
+ * Hide SOLO durante quiz flow vero: /.../quiz/<qualcosa>
+ * Deve RESTARE su /quiz-home e /quiz-suggeriti
+ */
+function isQuizFlow(pathNoQuery: string, lang: Locale) {
+  const prefix = lang === "en" ? "/quiz/" : withLang(lang, "/quiz/");
+  return pathNoQuery.startsWith(prefix);
+}
+
+export default function MobileBottomNav({
+  lang,
+  isAuthenticated = false,
+}: Props) {
+  const pathname = usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
 
-  // Nascondi la bottom nav durante il "quiz flow" (evita tap accidentali in quiz)
-  // Mostriamo invece su /quiz-home e /quiz-suggeriti (che NON sono /quiz/...)
-  const quizRoot = withLang(lang, "/quiz");
-  const isQuizFlow = pathNoQuery.startsWith(quizRoot);
-  if (isQuizFlow) return null;
+  if (isQuizFlow(pathNoQuery, lang)) return null;
+
+  const homeHref = lang === "en" ? "/" : withLang(lang, "/");
+  const quizHomeHref = publicHref(lang, "/quiz-home", "/quiz-home");
+  const suggestedHref = publicHref(lang, "/quiz-suggeriti", "/quiz-suggeriti");
+  const certsHref = publicHref(lang, "/certifications", "/certificazioni");
 
   const profileHref = isAuthenticated
-    ? withLang(lang, "/profile")
-    : withLang(lang, `/login?redirect=${encodeURIComponent(pathname)}`);
+    ? publicHref(lang, "/profile", "/profile")
+    : publicHref(
+        lang,
+        `/login?redirect=${encodeURIComponent(pathname)}`,
+        `/login?redirect=${encodeURIComponent(pathname)}`
+      );
 
   const items: Item[] = [
     {
       key: "home",
-      href: withLang(lang, "/"),
-      label: lang === "it" ? "Home" : lang === "fr" ? "Accueil" : lang === "es" ? "Inicio" : "Home",
-      match: (p) => p === withLang(lang, "/"),
+      href: homeHref,
+      label: tLabel(lang, "home"),
+      match: (p) => p === homeHref,
       icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z" />
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
+          />
         </svg>
       ),
     },
     {
       key: "quiz",
-      href: withLang(lang, "/quiz-home"),
-      label:
-        lang === "it" ? "Quiz" : lang === "fr" ? "Quiz" : lang === "es" ? "Quiz" : "Quizzes",
-      match: (p) => p === withLang(lang, "/quiz-home") || p === withLang(lang, "/quiz-suggeriti"),
+      href: quizHomeHref,
+      label: tLabel(lang, "quiz"),
+      match: (p) => p === quizHomeHref || p === suggestedHref,
       icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z" />
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 8.25h7.5M8.25 12h7.5M8.25 15.75h4.5"
+          />
         </svg>
       ),
     },
     {
       key: "certs",
-      href: withLang(lang, "/certificazioni"),
-      label:
-        lang === "it" ? "Cert" : lang === "fr" ? "Cert" : lang === "es" ? "Cert" : "Certs",
-      match: (p) => p === withLang(lang, "/certificazioni") || p.startsWith(withLang(lang, "/certificazioni") + "/"),
+      href: certsHref,
+      label: tLabel(lang, "certs"),
+      match: (p) => p === certsHref || p.startsWith(certsHref + "/"),
       icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75" />
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 12.75 11.25 15 15 9.75"
+          />
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -78,12 +150,24 @@ export default function MobileBottomNav({ lang, isAuthenticated }: Props) {
     {
       key: "profile",
       href: profileHref,
-      label:
-        lang === "it" ? "Profilo" : lang === "fr" ? "Profil" : lang === "es" ? "Perfil" : "Profile",
-      match: (p) => p === withLang(lang, "/profile") || p.startsWith(withLang(lang, "/login")),
+      label: tLabel(lang, "profile"),
+      match: (p) =>
+        lang === "en"
+          ? p === "/profile" || p.startsWith("/login")
+          : p === withLang(lang, "/profile") || p.startsWith(withLang(lang, "/login")),
       icon: (
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
+          />
         </svg>
       ),
     },
@@ -91,7 +175,7 @@ export default function MobileBottomNav({ lang, isAuthenticated }: Props) {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/70 pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80 pb-[env(safe-area-inset-bottom)]"
       aria-label="Bottom navigation"
     >
       <div className="mx-auto max-w-6xl px-2">
@@ -104,14 +188,17 @@ export default function MobileBottomNav({ lang, isAuthenticated }: Props) {
                 href={it.href}
                 aria-label={it.label}
                 aria-current={active ? "page" : undefined}
-                className={`flex w-full flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs transition ${
-                  active ? "text-gray-900" : "text-gray-500"
-                }`}
+                className={[
+                  "flex w-full flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs transition",
+                  active ? "text-gray-900" : "text-gray-500",
+                ].join(" ")}
               >
                 <span className={active ? "" : "opacity-90"} aria-hidden>
                   {it.icon}
                 </span>
-                <span className={active ? "font-semibold" : "font-medium"}>{it.label}</span>
+                <span className={active ? "font-semibold" : "font-medium"}>
+                  {it.label}
+                </span>
               </Link>
             );
           })}
