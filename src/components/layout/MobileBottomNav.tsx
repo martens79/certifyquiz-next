@@ -21,6 +21,7 @@ type Item = {
   href: string;
   label: string;
   icon: ReactNode;
+  /** true se l'utente è già su quella "sezione": in quel caso NON mostriamo l'icona */
   match: (pathNoQuery: string) => boolean;
 };
 
@@ -37,9 +38,12 @@ function tLabel(lang: Locale, key: ItemKey) {
 /**
  * EN = root (nessun /en)
  * IT/FR/ES = prefisso /it /fr /es tramite withLang
+ *
+ * Nota: per coerenza uso sempre lo stesso path ("/quiz-home", "/profile", ...)
+ * e lascio a withLang la gestione del prefisso quando serve.
  */
-function publicHref(lang: Locale, pathEnRoot: string, pathLocalized: string) {
-  return lang === "en" ? pathEnRoot : withLang(lang, pathLocalized);
+function publicHref(lang: Locale, path: string) {
+  return lang === "en" ? path : withLang(lang, path);
 }
 
 /**
@@ -47,8 +51,8 @@ function publicHref(lang: Locale, pathEnRoot: string, pathLocalized: string) {
  * Deve RESTARE su /quiz-home e /quiz-suggeriti
  */
 function isQuizFlow(pathNoQuery: string, lang: Locale) {
-  const prefix = lang === "en" ? "/quiz/" : withLang(lang, "/quiz/");
-  return pathNoQuery.startsWith(prefix);
+  const quizPrefix = lang === "en" ? "/quiz/" : withLang(lang, "/quiz/");
+  return pathNoQuery.startsWith(quizPrefix);
 }
 
 export default function MobileBottomNav({
@@ -58,21 +62,27 @@ export default function MobileBottomNav({
   const pathname = usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
 
+  // Durante il quiz vero e proprio, nascondi la bottom nav
   if (isQuizFlow(pathNoQuery, lang)) return null;
 
+  // HREF base
   const homeHref = lang === "en" ? "/" : withLang(lang, "/");
-  const quizHomeHref = publicHref(lang, "/quiz-home", "/quiz-home");
-  const suggestedHref = publicHref(lang, "/quiz-suggeriti", "/quiz-suggeriti");
-  const certsHref = publicHref(lang, "/certifications", "/certificazioni");
+  const quizHomeHref = publicHref(lang, "/quiz-home");
+  const suggestedHref = publicHref(lang, "/quiz-suggeriti");
+  const certsHref = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
 
-  const profileHref = isAuthenticated
-    ? publicHref(lang, "/profile", "/profile")
-    : publicHref(
-        lang,
-        `/login?redirect=${encodeURIComponent(pathname)}`,
-        `/login?redirect=${encodeURIComponent(pathname)}`
-      );
+  // Se non loggato → login con redirect all'URL attuale
+  const loginHref = publicHref(
+    lang,
+    `/login?redirect=${encodeURIComponent(pathname)}`
+  );
 
+  const profileHref = publicHref(lang, "/profile");
+
+  /**
+   * Match: serve a capire la "sezione corrente".
+   * Regola UX: NON mostriamo la voce della sezione in cui l'utente si trova già.
+   */
   const items: Item[] = [
     {
       key: "home",
@@ -99,6 +109,7 @@ export default function MobileBottomNav({
       key: "quiz",
       href: quizHomeHref,
       label: tLabel(lang, "quiz"),
+      // consideriamo "sezione quiz" sia quiz-home che quiz-suggeriti
       match: (p) => p === quizHomeHref || p === suggestedHref,
       icon: (
         <svg
@@ -125,6 +136,7 @@ export default function MobileBottomNav({
       key: "certs",
       href: certsHref,
       label: tLabel(lang, "certs"),
+      // lista + dettagli
       match: (p) => p === certsHref || p.startsWith(certsHref + "/"),
       icon: (
         <svg
@@ -151,10 +163,13 @@ export default function MobileBottomNav({
       key: "profile",
       href: profileHref,
       label: tLabel(lang, "profile"),
+      // profile oppure login (quando non autenticato)
       match: (p) =>
-        lang === "en"
-          ? p === "/profile" || p.startsWith("/login")
-          : p === withLang(lang, "/profile") || p.startsWith(withLang(lang, "/login")),
+  lang === "en"
+    ? p === "/profile" || p.startsWith("/profile/")
+    : p === withLang(lang, "/profile") ||
+      p.startsWith(withLang(lang, "/profile/")),
+
       icon: (
         <svg
           className="h-5 w-5"
@@ -173,6 +188,9 @@ export default function MobileBottomNav({
     },
   ];
 
+  // ✅ REGOLA UX: non mostrare la voce della pagina/sezione corrente
+  const visibleItems = items.filter((it) => !it.match(pathNoQuery));
+
   return (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/80 pb-[env(safe-area-inset-bottom)]"
@@ -180,28 +198,19 @@ export default function MobileBottomNav({
     >
       <div className="mx-auto max-w-6xl px-2">
         <div className="flex h-14 items-center justify-around">
-          {items.map((it) => {
-            const active = it.match(pathNoQuery);
-            return (
-              <Link
-                key={it.key}
-                href={it.href}
-                aria-label={it.label}
-                aria-current={active ? "page" : undefined}
-                className={[
-                  "flex w-full flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs transition",
-                  active ? "text-gray-900" : "text-gray-500",
-                ].join(" ")}
-              >
-                <span className={active ? "" : "opacity-90"} aria-hidden>
-                  {it.icon}
-                </span>
-                <span className={active ? "font-semibold" : "font-medium"}>
-                  {it.label}
-                </span>
-              </Link>
-            );
-          })}
+          {visibleItems.map((it) => (
+            <Link
+              key={it.key}
+              href={it.href}
+              aria-label={it.label}
+              className="flex w-full flex-col items-center justify-center gap-1 rounded-lg py-2 text-xs text-gray-500 transition hover:text-gray-900"
+            >
+              <span className="opacity-90" aria-hidden>
+                {it.icon}
+              </span>
+              <span className="font-medium">{it.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

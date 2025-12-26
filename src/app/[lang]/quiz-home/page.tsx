@@ -1,7 +1,6 @@
 // src/app/[lang]/quiz-home/page.tsx
 import type { Metadata } from "next";
-import QuizHome from "@/components/QuizHome";
-import StructuredData from "@/components/StructuredData";
+import QuizHomeView from "./QuizHomeView";
 
 type Locale = "it" | "en" | "fr" | "es";
 
@@ -43,7 +42,9 @@ export async function generateMetadata(props: {
     lang
   );
 
-  const canonical = `${SITE}/${lang}/quiz-home`;
+  // ✅ SEO A: EN canonical = /quiz-home
+  const canonical =
+    lang === "en" ? `${SITE}/quiz-home` : `${SITE}/${lang}/quiz-home`;
 
   return {
     metadataBase: new URL(SITE),
@@ -53,10 +54,10 @@ export async function generateMetadata(props: {
       canonical,
       languages: {
         it: `${SITE}/it/quiz-home`,
-        en: `${SITE}/en/quiz-home`,
+        en: `${SITE}/quiz-home`,          // ✅ EN root
         fr: `${SITE}/fr/quiz-home`,
         es: `${SITE}/es/quiz-home`,
-        "x-default": `${SITE}/en/quiz-home`,
+        "x-default": `${SITE}/quiz-home`, // ✅ x-default su EN root
       },
     },
     openGraph: {
@@ -75,7 +76,8 @@ export async function generateMetadata(props: {
       images: [`${SITE}/og/quiz-home-${lang}.png`],
       site: "@CertifyQuiz",
     },
-    robots: { index: true, follow: true },
+    // ✅ /en/quiz-home è route tecnica: noindex
+    robots: lang === "en" ? { index: false, follow: true } : { index: true, follow: true },
   };
 }
 
@@ -84,71 +86,5 @@ export default async function Page(props: { params: Promise<{ lang: Locale }> })
   const { lang: raw } = await props.params;
   const lang = (["it", "en", "fr", "es"].includes(raw) ? raw : "it") as Locale;
 
-  const catLabel: Record<
-    | "base"
-    | "sicurezza"
-    | "reti"
-    | "cloud"
-    | "database"
-    | "programmazione"
-    | "virtualizzazione"
-    | "intelligenza-artificiale",
-    Record<Locale, string>
-  > = {
-    base: { it: "Base", en: "Fundamentals", fr: "Base", es: "Básico" },
-    sicurezza: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
-    reti: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" },
-    cloud: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Nube" },
-    database: { it: "Database", en: "Database", fr: "Base de données", es: "Base de datos" },
-    programmazione: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
-    virtualizzazione: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
-    "intelligenza-artificiale": {
-      it: "Intelligenza Artificiale",
-      en: "Artificial Intelligence",
-      fr: "Intelligence Artificielle",
-      es: "Inteligencia Artificial",
-    },
-  };
-
-  const categoriesOrder = [
-    "base",
-    "sicurezza",
-    "reti",
-    "cloud",
-    "database",
-    "programmazione",
-    "virtualizzazione",
-    "intelligenza-artificiale",
-  ] as const;
-
-  const breadcrumbLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE}/${lang}` },
-      { "@type": "ListItem", position: 2, name: "Quiz", item: `${SITE}/${lang}/quiz-home` },
-    ],
-  };
-
-  const categoriesItemListLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Quiz categories",
-    itemListOrder: "http://schema.org/ItemListOrderAscending",
-    numberOfItems: categoriesOrder.length,
-    itemListElement: categoriesOrder.map((key, idx) => ({
-      "@type": "ListItem",
-      position: idx + 1,
-      name: catLabel[key][lang] || catLabel[key].it,
-      url: `${SITE}/${lang}/quiz-home#${key}`,
-    })),
-  };
-
-  return (
-    <>
-      <StructuredData id="ld-breadcrumb-quizhome" data={breadcrumbLd} />
-      <StructuredData id="ld-itemlist-quiz-categories" data={categoriesItemListLd} />
-      <QuizHome lang={lang} />
-    </>
-  );
+  return <QuizHomeView lang={lang} />;
 }
