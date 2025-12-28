@@ -1,5 +1,6 @@
 ﻿// src/app/page.tsx
 import type { Metadata } from "next";
+import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import HomeWithAuth from "@/components/home/HomeWithAuth";
 
 const SITE =
@@ -26,8 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     url: `${SITE}/`,
     title: "CertifyQuiz — Prepare for IT Certifications",
-    description:
-      "Quizzes, explanations and badges to pass IT certifications.",
+    description: "Quizzes, explanations and badges to pass IT certifications.",
     siteName: "CertifyQuiz",
     locale: "en_US",
     type: "website",
@@ -37,8 +37,10 @@ export const metadata: Metadata = {
 
 export default function HomeRootEN() {
   return (
-    <main id="main">
-      <HomeWithAuth lang="en" />
-    </main>
+    <LayoutShellClient lang="en">
+      <main id="main">
+        <HomeWithAuth lang="en" />
+      </main>
+    </LayoutShellClient>
   );
 }

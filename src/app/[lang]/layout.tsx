@@ -1,7 +1,6 @@
 ﻿// src/app/[lang]/layout.tsx
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Script from "next/script";
 import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import { dict, locales, type Locale, isLocale } from "@/lib/i18n";
 
@@ -35,22 +34,26 @@ export async function generateMetadata({
       ? "Allenati alle certificazioni IT con quiz reali e spiegazioni passo-passo."
       : "Prepare for IT certifications with realistic quizzes and detailed explanations.");
 
-  const languages = Object.fromEntries(locales.map((l) => [l, `${SITE}/${l}`])) as Record<
-    string,
-    string
-  >;
+  // ✅ EN = root. Quindi:
+  // - alternate en -> /
+  // - canonical per /en -> / (root)
+  const languages = Object.fromEntries(
+    locales.map((l) => [l, l === "en" ? `${SITE}/` : `${SITE}/${l}`])
+  ) as Record<string, string>;
+
+  const canonical = L === "en" ? `${SITE}/` : `${SITE}/${L}`;
 
   return {
     title: defTitle,
     description: defDesc,
     alternates: {
-      canonical: `${SITE}/${L}`,
+      canonical,
       languages: { ...languages, "x-default": `${SITE}/` },
     },
     openGraph: {
       title: defTitle,
       description: defDesc,
-      url: `${SITE}/${L}`,
+      url: canonical,
       siteName: "CertifyQuiz",
       type: "website",
       locale: ogLocale[L],
@@ -74,34 +77,5 @@ export default async function LangLayout({
   const { lang } = await params;
   const L: Locale = isLocale(lang) ? lang : "it";
 
-  // ✅ Vercel env: NEXT_PUBLIC_GA_ID = "G-...."
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-
-  return (
-    <>
-      {/* ================= GOOGLE ANALYTICS 4 ================= */}
-      {GA_ID && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga4-init" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${GA_ID}', {
-                anonymize_ip: true,
-                // niente page_path manuale: con App Router rischi di rompere i page_view
-              });
-            `}
-          </Script>
-        </>
-      )}
-
-      {/* ================= APP SHELL ================= */}
-      <LayoutShellClient lang={L}>{children}</LayoutShellClient>
-    </>
-  );
+  return <LayoutShellClient lang={L}>{children}</LayoutShellClient>;
 }
