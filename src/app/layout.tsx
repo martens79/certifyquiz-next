@@ -23,26 +23,7 @@ export const metadata: Metadata = {
     default: "CertifyQuiz",
     template: "%s | CertifyQuiz",
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@CertifyQuiz",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
-  alternates: {
-    languages: {
-      "x-default": "/",
-    },
-  },
-  other: {
-    "format-detection": "telephone=no",
-  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -50,30 +31,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // ✅ GA4 Measurement ID (must be NEXT_PUBLIC_*)
-  // Example: G-XXXXXXXXXX
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* ✅ Google Analytics 4 (loaded only if GA_ID exists in Vercel env) */}
+      <body className={`${inter.variable} ${manrope.variable}`}>
+        {/* ✅ GOOGLE ANALYTICS 4 — MUST BE IN BODY */}
         {GA_ID && (
           <>
-            {/* Load gtag library */}
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
             />
-
-            {/* Initialize dataLayer + config */}
             <Script id="ga4-init" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){window.dataLayer.push(arguments);}
                 gtag('js', new Date());
-
-                // Basic config (App Router friendly)
                 gtag('config', '${GA_ID}', {
                   anonymize_ip: true,
                   page_path: window.location.pathname
@@ -82,10 +56,8 @@ export default function RootLayout({
             </Script>
           </>
         )}
-      </head>
 
-      <body className={`${inter.variable} ${manrope.variable}`}>
-        {/* EN root passa SEMPRE da LayoutShellClient */}
+        {/* App shell */}
         <LayoutShellClient lang="en">{children}</LayoutShellClient>
       </body>
     </html>
