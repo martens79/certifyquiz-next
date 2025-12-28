@@ -1,65 +1,65 @@
-﻿// src/app/layout.tsx
+﻿// src/app/[lang]/layout.tsx
+
 import type { Metadata } from "next";
-import "@/app/globals.css";
-import { Inter, Manrope } from "next/font/google";
-import LayoutShellClient from "@/components/layout/LayoutShellClient";
-import Script from "next/script";
+import type { ReactNode } from "react";
+import { dict, locales, type Locale, isLocale } from "@/lib/i18n";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
+const SITE = "https://www.certifyquiz.com";
 
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-heading",
-  display: "swap",
-});
-
-export const metadata: Metadata = {
-  metadataBase: new URL("https://www.certifyquiz.com"),
-  title: {
-    default: "CertifyQuiz",
-    template: "%s | CertifyQuiz",
-  },
-  robots: { index: true, follow: true },
+const ogLocale: Record<Locale, string> = {
+  it: "it_IT",
+  en: "en_US",
+  fr: "fr_FR",
+  es: "es_ES",
 };
 
-export default function RootLayout({
+export async function generateMetadata(
+  { params }: { params: Promise<{ lang: string }> }
+): Promise<Metadata> {
+  const { lang } = await params;
+  const L: Locale = isLocale(lang) ? lang : "it";
+  const t = dict[L];
+
+  const defTitle =
+    t.seo?.titles?.["/"] ??
+    (L === "it"
+      ? "CertifyQuiz — Quiz per certificazioni IT"
+      : "CertifyQuiz — IT Certification Practice");
+
+  const defDesc =
+    t.seo?.descriptions?.["/"] ??
+    (L === "it"
+      ? "Allenati alle certificazioni IT con quiz reali e spiegazioni passo-passo."
+      : "Prepare for IT certifications with realistic quizzes and detailed explanations.");
+
+  const languages = Object.fromEntries(
+    locales.map((l) => [l, `${SITE}/${l}`])
+  ) as Record<string, string>;
+
+  return {
+    title: defTitle,
+    description: defDesc,
+    alternates: {
+      canonical: `${SITE}/${L}`,
+      languages: { ...languages, "x-default": `${SITE}/` },
+    },
+    openGraph: {
+      title: defTitle,
+      description: defDesc,
+      url: `${SITE}/${L}`,
+      siteName: "CertifyQuiz",
+      type: "website",
+      locale: ogLocale[L],
+      alternateLocale: locales.filter((l) => l !== L).map((l) => ogLocale[l]),
+    },
+    twitter: { card: "summary_large_image", title: defTitle, description: defDesc },
+  };
+}
+
+export default async function LangLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${manrope.variable}`}>
-        {/* ✅ GOOGLE ANALYTICS 4 — MUST BE IN BODY */}
-        {GA_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){window.dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}', {
-                  anonymize_ip: true,
-                  page_path: window.location.pathname
-                });
-              `}
-            </Script>
-          </>
-        )}
-
-        {/* App shell */}
-        <LayoutShellClient lang="en">{children}</LayoutShellClient>
-      </body>
-    </html>
-  );
+  return children;
 }
