@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import { Inter, Manrope } from "next/font/google";
 import LayoutShellClient from "@/components/layout/LayoutShellClient";
-import Script from "next/script"; // ✅ ADD
+import Script from "next/script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,28 +45,43 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID; // ✅ ADD
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // ✅ GA4 Measurement ID (must be NEXT_PUBLIC_*)
+  // Example: G-XXXXXXXXXX
+  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {GA_ID ? (
+        {/* ✅ Google Analytics 4 (loaded only if GA_ID exists in Vercel env) */}
+        {GA_ID && (
           <>
+            {/* Load gtag library */}
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
             />
-            <Script id="ga4" strategy="afterInteractive">
+
+            {/* Initialize dataLayer + config */}
+            <Script id="ga4-init" strategy="afterInteractive">
               {`
                 window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
+                function gtag(){window.dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_ID}', { anonymize_ip: true });
+
+                // Basic config (App Router friendly)
+                gtag('config', '${GA_ID}', {
+                  anonymize_ip: true,
+                  page_path: window.location.pathname
+                });
               `}
             </Script>
           </>
-        ) : null}
+        )}
       </head>
 
       <body className={`${inter.variable} ${manrope.variable}`}>
