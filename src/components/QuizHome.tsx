@@ -58,23 +58,31 @@ const slugFromLink = (link?: string | null) => {
   );
   return m?.[2] ? m[2].replace(/\/+$/, "") : null;
 };
+const SLUG_ALIASES: Record<string, string> = {
+  "security-plus": "comptia-security-plus", // <-- usa QUI la chiave reale
+};
 
 const translatedCountForLink = (
   availability: AvailabilityMap,
   link?: string | null
 ) => {
-  const slug = slugFromLink(link);
-  if (!slug) return 0;
+  const raw = slugFromLink(link);
+  if (!raw) return 0;
+
+  const slug = SLUG_ALIASES[raw] ?? raw;
   const rec = availability[slug];
   return rec ? Number(rec.translated ?? 0) : 0;
 };
+
 
 const smartBadgeLabel = (
   availability: AvailabilityMap,
   link: string | null | undefined,
   lang: Locale
 ) => {
-  const slug = slugFromLink(link);
+  const raw = slugFromLink(link);
+  const slug = raw ? SLUG_ALIASES[raw] ?? raw : null;
+
   const rec = slug ? availability[slug] : undefined;
   const translated = rec ? Number(rec.translated ?? 0) : 0;
   const total = rec ? Number(rec.total ?? 0) : 0;
@@ -221,6 +229,19 @@ const certificationNames: CertificationNames = {
 
   const allCertsUnique: CertItem[] = Array.from(
   new Map(allCerts.map((c) => [c.link ?? `name:${c.name}`, c])).values()
+);
+console.log("=== DEBUG SECURITY+ ===");
+console.log(
+  "slug from link:",
+  slugFromLink(certPath(lang, "security-plus"))
+);
+console.log(
+  "availability[security-plus]:",
+  availability?.["security-plus"]
+);
+console.log(
+  "availability keys with 'security':",
+  Object.keys(availability || {}).filter(k => k.includes("security"))
 );
 
 
