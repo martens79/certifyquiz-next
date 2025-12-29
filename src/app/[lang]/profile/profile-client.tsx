@@ -816,7 +816,7 @@ const allBadges = badges;
 
 
 // 4. stato Mostra di più / meno
-const BADGES_COLLAPSED = 8;
+const BADGES_COLLAPSED = 4;
 const [showAllBadges, setShowAllBadges] = useState(false);
 
 // 5. visibleBadges  ⬅️ DOPO
@@ -1103,35 +1103,32 @@ const visibleBadges = useMemo(() => {
 </div>
 
 
-                {/* Storico + Filtri/Stats + Categorie + Grafico */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Colonna sinistra: storico + tabella categorie */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Storico filtrato in base alla certificazione selezionata */}
-            <HistoryGrid lang={lang} rows={filteredHistory} dtf={dtf} />
+   {/* Storico + Filtri/Stats + Categorie + Grafico */}
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  {/* Colonna destra: filtro certificazione + grafico (PRIMA in mobile, DESTRA in desktop) */}
+  <div className="order-1 lg:order-2 space-y-6">
+    <FiltersAndStats
+      lang={lang}
+      certs={certs}
+      selectedCertId={selectedCertId}
+      setSelectedCertId={setSelectedCertId}
+      stats={certStats}
+    />
 
-            {/* Progresso per categoria */}
-            <CategoryTable lang={lang} rows={categoryProgress} />
-          </div>
+    {/* Grafico andamento punteggi per la selezione corrente */}
+    <PerformanceChart lang={lang} rows={validHistory} dtf={dtf} />
+  </div>
 
-          {/* Colonna destra: filtro certificazione + grafico andamento */}
-          <div className="space-y-6">
-            <FiltersAndStats
-              lang={lang}
-              certs={certs}
-              selectedCertId={selectedCertId}
-              setSelectedCertId={setSelectedCertId}
-              stats={certStats}
-            />
+  {/* Colonna sinistra: storico + tabella categorie (SECONDA in mobile, SINISTRA in desktop) */}
+  <div className="order-2 lg:order-1 lg:col-span-2 space-y-6">
+    {/* Storico filtrato in base alla certificazione selezionata */}
+    <HistoryGrid lang={lang} rows={filteredHistory} dtf={dtf} />
 
-            {/* Grafico andamento punteggi per la selezione corrente */}
-            <PerformanceChart
-              lang={lang}
-              rows={validHistory}
-              dtf={dtf}
-            />
-          </div>
-        </div>
+    {/* Progresso per categoria */}
+    <CategoryTable lang={lang} rows={categoryProgress} />
+  </div>
+</div>
+
       </div>
     </div>
   );
@@ -1162,22 +1159,45 @@ const HistoryGrid: FC<{
   const tHistory = getLabel(LBL.history, lang);
   const tMixed = getLabel(LBL.mixedQuiz, lang);
 
+  // ✅ Collassa lo storico (default compatto)
+  const HISTORY_COLLAPSED = 6; // metti 4 se vuoi ancora più corto su mobile
+  const [showAllHistory, setShowAllHistory] = useState(false);
+
+  const rowsToShow = useMemo(() => {
+    return showAllHistory ? rows : rows.slice(0, HISTORY_COLLAPSED);
+  }, [rows, showAllHistory]);
+
+  const hasMoreHistory = rows.length > HISTORY_COLLAPSED;
+
   if (!rows.length) {
     return (
       <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
         <h2 className="text-lg font-semibold mb-3">📝 {tHistory}</h2>
-        <p className="italic text-gray-600">
-          {getLabel(LBL.noHistory, lang)}
-        </p>
+        <p className="italic text-gray-600">{getLabel(LBL.noHistory, lang)}</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
-      <h2 className="text-lg font-semibold mb-3">📝 {tHistory}</h2>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="text-lg font-semibold">📝 {tHistory}</h2>
+
+        {hasMoreHistory && (
+          <button
+            type="button"
+            onClick={() => setShowAllHistory((v) => !v)}
+            className="text-sm font-semibold text-slate-700 hover:text-slate-900 underline underline-offset-4"
+          >
+            {showAllHistory
+              ? getLabel(LBL.showLess, lang)
+              : getLabel(LBL.showMore, lang)}
+          </button>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-        {rows.slice(0, 12).map((ex, i) => {
+        {rowsToShow.map((ex, i) => {
           const percent = computePercent(ex);
           const shown = percent == null ? "—" : `${percent}%`;
 
@@ -1218,6 +1238,7 @@ const HistoryGrid: FC<{
     </div>
   );
 };
+
 
 // 📈 Grafico andamento punteggi in base allo storico filtrato
 const PerformanceChart: FC<{

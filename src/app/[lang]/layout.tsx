@@ -77,5 +77,6 @@ export default async function LangLayout({
   const { lang } = await params;
   const L: Locale = isLocale(lang) ? lang : "it";
 
+  // ✅ Shell qui (route prefissate: /it, /fr, /es, /en tecnico)
   return <LayoutShellClient lang={L}>{children}</LayoutShellClient>;
 }
