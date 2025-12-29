@@ -184,159 +184,197 @@ export default function Header({ lang, user }: Props) {
   const isAuthenticated = hasToken || isProfile;
 
   // Profilo: se non loggato → login con redirect
-  const profileHref = isAuthenticated
-    ? H("/profile")
-    : H(`/login?redirect=${encodeURIComponent(pathname)}`);
+ const profileHref = isAuthenticated
+  ? H("/profile")
+  : H(`/login?redirect=${encodeURIComponent(pathname)}`);
 
-    const certsHref = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
+// (resta qui se ti serve altrove; nel quick NON lo useremo più)
+const certsHref =
+  lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
 
-  // ---- nav principale (Certificazioni / Blog / Prezzi) ----
-  const nav = useMemo(
-    () =>
-      [
-        {
-          href: lang === "en" ? "/certifications" : H("/certificazioni"),
-          label: t.certifications,
-        },
-        { href: H("/blog"), label: t.blog },
-        { href: H("/prezzi"), label: t.pricing },
-      ] as const,
-    [H, lang, t]
-  );
-
-  // ---- quick nav (Home / Certificazioni / Quiz / Suggeriti / Profilo) ----
-  type QuickItem = { href: string; label: string; icon: ReactNode };
-
-  const quickBase = useMemo<QuickItem[]>(() => {
-    const homeHref = H("/");
-    const quizHomeHref = H("/quiz-home");
-    const suggestedHref = H("/quiz-suggeriti");
-
-
-
-
-    const certsLabel =
-      lang === "it"
-        ? "Certificazioni"
-        : lang === "fr"
-        ? "Certifications"
-        : lang === "es"
-        ? "Certificaciones"
-        : "Certifications";
-
-    const base: QuickItem[] = [
+// ---- nav principale (Certificazioni / Blog / Prezzi) ----
+// (puoi lasciarlo per ora, ma poi togli il render della nav "alta" nell'header)
+const nav = useMemo(
+  () =>
+    [
       {
-        href: homeHref,
-        label: ui.home,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
-            />
-          </svg>
-        ),
+        href: lang === "en" ? "/certifications" : H("/certificazioni"),
+        label: t.certifications,
       },
+      { href: H("/blog"), label: t.blog },
+      { href: H("/prezzi"), label: t.pricing },
+    ] as const,
+  [H, lang, t]
+);
 
-      // ✅ Certifications
-      {
-        href: certsHref,
-        label: certsLabel,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M9 12.75 11.25 15 15 9.75"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 2.25c-2.485 0-4.5 2.015-4.5 4.5v.75H6A2.25 2.25 0 0 0 3.75 9.75v9A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25v-9A2.25 2.25 0 0 0 18 7.5h-1.5v-.75c0-2.485-2.015-4.5-4.5-4.5z"
-            />
-          </svg>
-        ),
-      },
+// ---- quick nav (Home / Blog / Premium / Quiz / Suggeriti / Profilo) ----
+type QuickItem = { href: string; label: string; icon: ReactNode };
 
-      {
-        href: quizHomeHref,
-        label: ui.quiz,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
-            />
-          </svg>
-        ),
-      },
-      {
-        href: suggestedHref,
-        label: ui.suggested,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 9 9" />
-          </svg>
-        ),
-      },
-    ];
+const quickBase = useMemo<QuickItem[]>(() => {
+  const homeHref = H("/");
+  const quizHomeHref = H("/quiz-home");
 
-    if (isAuthenticated) {
-      base.push({
-        href: profileHref,
-        label: ui.profile,
-        icon: (
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
-            />
-          </svg>
-        ),
-      });
-    }
+  // ✅ EN root (SEO): /suggested
+  // ✅ altre lingue: /it/quiz-suggeriti ecc.
+  const suggestedHref = lang === "en" ? "/suggested" : H("/quiz-suggeriti");
 
-    return base;
-  }, [H, isAuthenticated, lang, profileHref, ui.home, ui.profile, ui.quiz, ui.suggested]);
+  // ✅ Spostiamo Blog + Premium nella barra sotto
+  const blogHref = H("/blog");
 
-  const quick = useMemo(
-    () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
-    [isProfile, quickBase, ui.profile]
-  );
+  // Se hai una route EN dedicata tipo "/pricing", lasciala qui.
+  // Se invece usi sempre /[lang]/prezzi anche in EN, sostituisci con: const pricingHref = H("/prezzi");
+  const pricingHref = lang === "en" ? "/pricing" : H("/prezzi");
+
+  const base: QuickItem[] = [
+    // Home
+    {
+      href: homeHref,
+      label: ui.home,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
+          />
+        </svg>
+      ),
+    },
+
+    // ✅ Blog (spostato qui)
+    {
+      href: blogHref,
+      label: t.blog,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4 6.75A2.25 2.25 0 0 1 6.25 4.5h9.5A4.75 4.75 0 0 1 20.5 9.25v10.25A2.25 2.25 0 0 1 18.25 21H6.25A2.25 2.25 0 0 1 4 18.75V6.75z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 8.5h8M8 12h8M8 15.5h6"
+          />
+        </svg>
+      ),
+    },
+
+    // ✅ Premium / Prezzi (spostato qui)
+    {
+      href: pricingHref,
+      label: t.pricing,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 6v12m0-12c-2.5 0-4.5 1.25-4.5 2.75S9.5 11.5 12 11.5s4.5 1.25 4.5 2.75S14.5 17 12 17m0-11c2.5 0 4.5 1.25 4.5 2.75"
+          />
+        </svg>
+      ),
+    },
+
+    // Quiz
+    {
+      href: quizHomeHref,
+      label: ui.quiz,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16.5 3.75h-9A2.25 2.25 0 0 0 5.25 6v12A2.25 2.25 0 0 0 7.5 20.25h9a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 16.5 3.75z"
+          />
+        </svg>
+      ),
+    },
+
+    // Suggested
+    {
+      href: suggestedHref,
+      label: ui.suggested,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 9 9" />
+        </svg>
+      ),
+    },
+  ];
+
+  if (isAuthenticated) {
+    base.push({
+      href: profileHref,
+      label: ui.profile,
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
+          />
+        </svg>
+      ),
+    });
+  }
+
+  return base;
+}, [
+  H,
+  isAuthenticated,
+  lang,
+  pathname,
+  profileHref,
+  t.blog,
+  t.pricing,
+  ui.home,
+  ui.profile,
+  ui.quiz,
+  ui.suggested,
+]);
+
+const quick = useMemo(
+  () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
+  [isProfile, quickBase, ui.profile]
+);
 
 
   // ---- effetti: cambio route, ESC, click fuori ----
@@ -418,16 +456,9 @@ export default function Header({ lang, user }: Props) {
               </Link>
             </div>
 
-            {/* NAV DESKTOP: nascosta su /profile, /quiz..., /certificazioni/[slug] */}
-            {!isProfile && !isQuizFlow && !isCertDetail && (
-              <nav className="hidden items-center gap-1 md:flex" aria-label={ui.mainNav}>
-                {nav.map((n) => (
-                  <NavLink key={n.href} href={n.href}>
-                    {n.label}
-                  </NavLink>
-                ))}
-              </nav>
-            )}
+           
++ {/* NAV DESKTOP rimossa: teniamo solo la barra “AZIONI RAPIDE” sotto */}
+
 
             {/* DESTRA DESKTOP */}
             <div className="hidden items-center gap-3 md:flex">
