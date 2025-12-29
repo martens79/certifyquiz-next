@@ -192,6 +192,12 @@ export default function Header({ lang, user }: Props) {
 const certsHref =
   lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
 
+  // ✅ EN root (SEO): /suggested
+  // ✅ altre lingue: /it/quiz-suggeriti ecc.
+
+  const suggestedHref =
+  lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
+
 // ---- nav principale (Certificazioni / Blog / Prezzi) ----
 // (puoi lasciarlo per ora, ma poi togli il render della nav "alta" nell'header)
 const nav = useMemo(
@@ -214,9 +220,8 @@ const quickBase = useMemo<QuickItem[]>(() => {
   const homeHref = H("/");
   const quizHomeHref = H("/quiz-home");
 
-  // ✅ EN root (SEO): /suggested
-  // ✅ altre lingue: /it/quiz-suggeriti ecc.
-  const suggestedHref = lang === "en" ? "/suggested" : H("/quiz-suggeriti");
+
+ 
 
   // ✅ Spostiamo Blog + Premium nella barra sotto
   const blogHref = H("/blog");
@@ -587,6 +592,15 @@ const quick = useMemo(
             <div className="py-3">
               {/* Menu secondario */}
               <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
+
+                <Link
+  href={suggestedHref}
+  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+  onClick={() => setOpenDrawer(false)}
+>
+  {ui.suggested}
+</Link>
+
 
                 {/* Certifications list */}
 <Link
