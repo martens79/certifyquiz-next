@@ -1,4 +1,4 @@
-// src/components/layout/Footer.tsx
+// src/components/Footer.tsx
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -11,22 +11,17 @@ export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
 
-  const links = [
-    { href: legalPath(lang, "privacy"), label: t.nav.privacy },
-    { href: legalPath(lang, "terms"), label: t.nav.terms },
-    { href: legalPath(lang, "cookies"), label: t.nav.cookies },
-    { href: legalPath(lang, "contact"), label: t.nav.contact },
-  ] as const;
-
   const [email, setEmail] = useState("");
+  const [hp, setHp] = useState(""); // honeypot
   const [status, setStatus] = useState<Status>("idle");
   const [msg, setMsg] = useState("");
-  const [hp, setHp] = useState(""); // honeypot
+
+  const s = status;
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // honeypot (bot)
+    // Bot trap: se compilato, fingi successo e non fare nulla
     if (hp) {
       setStatus("ok");
       setMsg(t.newsletterOk ?? "Subscribed!");
@@ -35,7 +30,7 @@ export default function Footer({ lang }: { lang: Locale }) {
     }
 
     const cleanEmail = email.trim();
-    if (!cleanEmail || status === "loading") return;
+    if (!cleanEmail || s === "loading") return;
 
     setStatus("loading");
     setMsg("");
@@ -51,24 +46,23 @@ export default function Footer({ lang }: { lang: Locale }) {
       try {
         data = await res.json();
       } catch {
-        // risposta non JSON → ignoriamo
+        // ignore non-JSON
       }
 
       if (res.ok) {
         setStatus("ok");
         setMsg(data.message || t.newsletterOk || "Subscribed!");
         setEmail("");
-      } else {
-        setStatus("err");
-        setMsg(data.message || t.newsletterErr || "Something went wrong. Please try again.");
+        return;
       }
+
+      setStatus("err");
+      setMsg(data.message || t.newsletterErr || "Something went wrong. Please try again.");
     } catch {
       setStatus("err");
       setMsg(t.newsletterErr || "Something went wrong. Please try again.");
     }
   }
-
-  const s: Status = status;
 
   return (
     <footer className="border-t bg-white">
@@ -81,6 +75,7 @@ export default function Footer({ lang }: { lang: Locale }) {
             </div>
             <span className="font-semibold">CertifyQuiz</span>
           </div>
+
           <p className="mt-3 text-sm text-gray-600">
             {lang === "it"
               ? "Quiz realistici, spiegazioni dettagliate e badge per certificazioni IT."
@@ -94,15 +89,28 @@ export default function Footer({ lang }: { lang: Locale }) {
 
         {/* Links */}
         <nav>
-          <h3 className="mb-2 text-sm font-semibold">{t.links ?? "Links"}</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t.links ?? "Useful links"}</h3>
           <ul className="space-y-1">
-            {links.map((l) => (
-              <li key={l.href}>
-                <Link href={l.href} className="text-sm text-gray-700 hover:underline">
-                  {l.label}
-                </Link>
-              </li>
-            ))}
+            <li>
+              <Link href={legalPath(lang, "privacy")} className="text-sm text-gray-700 hover:underline">
+                {t.nav.privacy ?? "Privacy"}
+              </Link>
+            </li>
+            <li>
+              <Link href={legalPath(lang, "terms")} className="text-sm text-gray-700 hover:underline">
+                {t.nav.terms ?? "Terms"}
+              </Link>
+            </li>
+            <li>
+              <Link href={legalPath(lang, "cookies")} className="text-sm text-gray-700 hover:underline">
+                {t.nav.cookies ?? "Cookies"}
+              </Link>
+            </li>
+            <li>
+              <Link href={legalPath(lang, "contact")} className="text-sm text-gray-700 hover:underline">
+                {t.nav.contact ?? "Contact"}
+              </Link>
+            </li>
           </ul>
         </nav>
 
@@ -159,10 +167,10 @@ export default function Footer({ lang }: { lang: Locale }) {
                 </button>
               </form>
 
-              {msg ? (
-                <div className="mt-2 text-sm" aria-live="polite" role="status">
-                  <span className={s === "err" ? "text-red-600" : "text-gray-700"}>{msg}</span>
-                </div>
+              {s === "err" && msg ? (
+                <p className="mt-2 text-sm text-red-600" role="status" aria-live="polite">
+                  {msg}
+                </p>
               ) : null}
             </>
           )}
