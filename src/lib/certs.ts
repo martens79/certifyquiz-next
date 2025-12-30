@@ -127,11 +127,12 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   cissp: "sicurezza",
   cism: "sicurezza",
   "isc2-cc": "sicurezza",
+  "cisco-ccst-cybersecurity": "sicurezza",
+
 
   // Reti
   ccna: "reti",
   "comptia-network-plus": "reti",
-  "cisco-ccst": "reti",
   "cisco-ccst-networking": "reti",
   jncie: "reti",
   f5: "reti",
@@ -203,7 +204,7 @@ export const CERT_SLUG_BY_ID: Record<number, string> = {
   9: "ceh",
   10: "ccna",
   11: "comptia-network-plus",
-  12: "cisco-ccst",
+  12: "cisco-ccst-cybersecurity",
   13: "comptia-cloud-plus",
   14: "ibm-cloud-v5",
   15: "aws-solutions-architect",
