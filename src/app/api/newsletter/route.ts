@@ -16,9 +16,18 @@ export async function POST(req: Request) {
 
     return new NextResponse(text, {
       status: upstream.status,
-      headers: { "Content-Type": contentType },
+      headers: {
+        "Content-Type": contentType,
+        "x-cq-newsletter": "proxy",
+      },
     });
   } catch {
-    return NextResponse.json({ ok: false, message: "Newsletter proxy error" }, { status: 500 });
+    return NextResponse.json(
+      { ok: false, message: "Newsletter proxy error" },
+      {
+        status: 500,
+        headers: { "x-cq-newsletter": "proxy" },
+      }
+    );
   }
 }
