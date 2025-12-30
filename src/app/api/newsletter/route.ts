@@ -2,31 +2,23 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
-    if (!/^\S+@\S+\.\S+$/.test(email ?? "")) {
-      return NextResponse.json({ error: "Email non valida" }, { status: 400 });
-    }
+    const body = await req.json().catch(() => ({}));
 
-    const apiKey = process.env.BREVO_API_KEY!;
-    const listId = Number(process.env.BREVO_LIST_ID);
-    if (!apiKey || !listId) {
-      return NextResponse.json({ error: "Config mancante" }, { status: 500 });
-    }
-
-    const r = await fetch("https://api.brevo.com/v3/contacts", {
+    const upstream = await fetch("https://api.certifyquiz.com/api/newsletter/subscribe", {
       method: "POST",
-      headers: {
-        "api-key": apiKey,
-        "content-type": "application/json",
-        accept: "application/json",
-      },
-      body: JSON.stringify({ email, listIds: [listId], updateEnabled: true }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
     });
 
-    if (r.ok) return NextResponse.json({ ok: true, message: "Iscrizione completata" });
-    const data = await r.json().catch(() => ({}));
-    return NextResponse.json({ error: data?.message || "Errore iscrizione" }, { status: 400 });
+    const contentType = upstream.headers.get("content-type") || "application/json";
+    const text = await upstream.text();
+
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: { "Content-Type": contentType },
+    });
   } catch {
-    return NextResponse.json({ error: "Errore inatteso" }, { status: 500 });
+    return NextResponse.json({ ok: false, message: "Newsletter proxy error" }, { status: 500 });
   }
 }
