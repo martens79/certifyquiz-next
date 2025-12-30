@@ -7,11 +7,6 @@ import { dict, type Locale, legalPath } from "@/lib/i18n";
 
 type Status = "idle" | "loading" | "ok" | "err";
 
-type ApiResp = {
-  status?: string;
-  error?: string;
-};
-
 export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
@@ -31,39 +26,41 @@ export default function Footer({ lang }: { lang: Locale }) {
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
+    // honeypot (bot)
     if (hp) {
-      // bot honeypot
       setStatus("ok");
       setMsg(t.newsletterOk ?? "Subscribed!");
       setEmail("");
       return;
     }
-    if (!email || status === "loading") return;
+
+    const cleanEmail = email.trim();
+    if (!cleanEmail || status === "loading") return;
 
     setStatus("loading");
     setMsg("");
 
     try {
-      const res = await fetch("/api/newsletter", {
+      const res = await fetch("/api/backend/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, lang }),
+        body: JSON.stringify({ email: cleanEmail, lang }),
       });
 
-      let data: ApiResp = {};
+      let data: { message?: string } = {};
       try {
-        data = (await res.json()) as ApiResp;
+        data = await res.json();
       } catch {
-        // body non JSON: lascio data = {}
+        // risposta non JSON → ignoriamo
       }
 
       if (res.ok) {
         setStatus("ok");
-        setMsg(t.newsletterOk ?? "Subscribed!");
+        setMsg(data.message || t.newsletterOk || "Subscribed!");
         setEmail("");
       } else {
         setStatus("err");
-        setMsg(data.error || t.newsletterErr || "Something went wrong. Please try again.");
+        setMsg(data.message || t.newsletterErr || "Something went wrong. Please try again.");
       }
     } catch {
       setStatus("err");
@@ -79,7 +76,9 @@ export default function Footer({ lang }: { lang: Locale }) {
         {/* Brand */}
         <div>
           <div className="flex items-center gap-2">
-            <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">CQ</div>
+            <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">
+              CQ
+            </div>
             <span className="font-semibold">CertifyQuiz</span>
           </div>
           <p className="mt-3 text-sm text-gray-600">
@@ -116,7 +115,7 @@ export default function Footer({ lang }: { lang: Locale }) {
 
           {s === "ok" ? (
             <p className="mt-3 text-sm text-emerald-700" role="status" aria-live="polite">
-              {t.newsletterOk ?? "Subscribed!"}
+              {msg || (t.newsletterOk ?? "Subscribed!")}
             </p>
           ) : (
             <>
@@ -135,6 +134,7 @@ export default function Footer({ lang }: { lang: Locale }) {
                 <label htmlFor="newsletter-email" className="sr-only">
                   Email
                 </label>
+
                 <input
                   id="newsletter-email"
                   type="email"
@@ -146,24 +146,24 @@ export default function Footer({ lang }: { lang: Locale }) {
                   className="w-full rounded-md border px-3 py-2 text-sm"
                   autoComplete="email"
                   inputMode="email"
+                  disabled={s === "loading"}
                 />
+
                 <button
                   type="submit"
                   disabled={s === "loading"}
                   className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
                   aria-busy={s === "loading"}
                 >
-                  {s === "loading" ? "…" : t.newsletterCta ?? "Subscribe"}
+                  {s === "loading" ? "…" : (t.newsletterCta ?? "Subscribe")}
                 </button>
               </form>
 
-              <div className="mt-2 text-sm" aria-live="polite" role="status">
-                {msg && (
-                  <span className={s === "err" ? "text-red-600" : "text-gray-700"}>
-                    {msg}
-                  </span>
-                )}
-              </div>
+              {msg ? (
+                <div className="mt-2 text-sm" aria-live="polite" role="status">
+                  <span className={s === "err" ? "text-red-600" : "text-gray-700"}>{msg}</span>
+                </div>
+              ) : null}
             </>
           )}
         </div>
