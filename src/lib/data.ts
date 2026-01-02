@@ -24,7 +24,16 @@ export type Cert = {
 export type Locale = Cert["locale"];
 
 // Usa il proxy Next se non definisci API_BASE_URL (vedi app/api/backend/*)
-const API = "/api/backend";
+const API_REMOTE = process.env.API_BASE_URL || "https://api.certifyquiz.com/api";
+const API_PROXY = "/api/backend";
+
+// build + server → remoto
+// client → proxy
+const API =
+  typeof window === "undefined"
+    ? API_REMOTE
+    : API_PROXY;
+
 
 // ✅ Slug già online/abilitati in staging (lista bianca)
 const LIVE = new Set([
