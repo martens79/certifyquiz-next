@@ -60,21 +60,30 @@ async function proxy(req: Request, path: string[]) {
   return new Response(res.body, { status: res.status, headers: outHeaders });
 }
 
-export async function GET(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+// ✅ Next 15+: params è async
+type Ctx = { params: Promise<{ path: string[] }> };
+
+export async function GET(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }
-export async function POST(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+export async function POST(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }
-export async function PUT(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+export async function PUT(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }
-export async function PATCH(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+export async function PATCH(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }
-export async function DELETE(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+export async function DELETE(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }
-export async function OPTIONS(req: Request, ctx: any) {
-  return proxy(req, ctx.params.path as string[]);
+export async function OPTIONS(req: Request, ctx: Ctx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
 }

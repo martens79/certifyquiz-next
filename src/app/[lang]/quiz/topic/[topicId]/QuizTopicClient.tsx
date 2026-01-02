@@ -155,16 +155,48 @@ export default function QuizTopicClient({
       durationSec={undefined}
       /** Salvataggio best-effort (non blocca la UX) */
       onFinish={async (s: QuizSummary) => {
-        try {
-          await saveResult({
-            topic_id: numericId,
-            certification_id: certificationId,
-            score: (s as any)?.score ?? 0,
-          });
-        } catch {
-          // ignora errori di rete/salvataggio
-        }
-      }}
+  const token = getAccessToken(); // già importato nel file
+
+  const payload = {
+    topicId: numericId,
+    certification_id: certificationId,
+    totalQuestions: s.total ?? 0,
+    correctAnswers: s.correct ?? 0,
+    isExam: true,          // topic quiz = simulazione? metti true. Se è training metti false.
+    quizId: null,          // opzionale, se non ce l’hai lascia null
+  };
+
+  console.log("🟦 save-exam payload", payload);
+
+  try {
+    if (!token) throw new Error("Missing token");
+
+    const res = await fetch("/api/backend/save-exam", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
+    }
+
+    const out = await res.json().catch(() => ({}));
+    console.log("🟩 save-exam OK", out);
+  } catch (e) {
+    console.error("🟥 save-exam FAILED", e);
+    alert("save-exam FAILED — guarda console");
+  }
+}}
+
+
+
+
+
     />
   );
 }

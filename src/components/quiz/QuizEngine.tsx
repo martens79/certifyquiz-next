@@ -289,14 +289,39 @@ async function doFinish(_timeExpired = false) {
 
   setLastSummary(summary);
 
-  // best-effort verso backend
-  try {
-    await onFinish?.(summary);
-  } catch {
-    /* ignore */
-  }
+// ✅ SAVE QUESTIONS SEEN (readiness coverage)
+try {
+  const token = localStorage.getItem("cq:access");
+  const questionIds = questions.map((q) => q.id).filter((id) => id != null);
 
-  clearProgress(storageScope);
+  if (token && questionIds.length > 0) {
+    const res = await fetch("/api/backend/user/questions/seen", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ questionIds }),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.warn("questions/seen failed:", res.status, txt);
+    }
+  }
+} catch (e) {
+  console.warn("questions/seen exception", e);
+}
+
+// best-effort verso backend
+try {
+  await onFinish?.(summary);
+} catch {
+  /* ignore */
+}
+
+clearProgress(storageScope);
+
 }
 
 const restart = () => {

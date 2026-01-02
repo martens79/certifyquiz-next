@@ -67,9 +67,21 @@ export type SaveExamResponse = {
 
 export type SaveResultRequest = {
   topic_id?: number | null;
+  quiz_id?: number | null;
   certification_id?: number | null;
+  category_id?: number | null;
+
+  // score normalizzato 0–1 (come i record storici)
   score: number;
+
+  // 🔽 CAMPI REALI DELLA TABELLA quiz_results
+  percentage?: number;        // 0–100
+  total_questions?: number;
+  correct_answers?: number;
+  is_exam?: number;           // 0 | 1
+  passed?: number;            // 0 | 1
 };
+
 
 export type Badge = {
   id: number;
@@ -241,10 +253,10 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   if (!isForm && body != null && !h.has("content-type")) {
     h.set("content-type", "application/json");
   }
-  if (auth) {
-    const token = getAccessToken();
-    if (token) h.set("authorization", `Bearer ${token}`);
-  }
+ // ✅ Attacca SEMPRE il bearer se presente (molti endpoint lo richiedono)
+const token = getAccessToken();
+if (token) h.set("authorization", `Bearer ${token}`);
+
 
   const init: RequestInit = { method, headers: h, signal };
   if (withCredentials) init.credentials = "include";
