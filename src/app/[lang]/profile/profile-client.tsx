@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, getToken } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
+import ReadinessCard from "@/components/profile/ReadinessCard";
+
 // 📈 Grafico andamento
 import {
   LineChart,
@@ -659,38 +661,21 @@ const testAttemptsCount =
   filteredHistory.length - validHistory.length;
 
 
-  // 🔢 calcolo delle stats per la cert selezionata (o globali se "tutte")
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      if (!user?.id) {
-        if (alive) setCertStats(null);
-        return;
-      }
+  // 🔢 stats calcolate SOLO dalla history (no endpoint fantasma /user-certification-stats)
+useEffect(() => {
+  let alive = true;
 
-      // se nessuna cert è selezionata → non chiamo il backend, ma calcolo dalle history globali
-      if (!selectedCertNumeric) {
-        const statsFromHistory = normalizeCertStats(
-          null,
-          validHistory
-        );
-        if (alive) setCertStats(statsFromHistory);
-        return;
-      }
+  (async () => {
+    // Se non ho history valida → nessuna stats
+    const statsFromHistory = normalizeCertStats(null, validHistory);
+    if (alive) setCertStats(statsFromHistory);
+  })();
 
-      // altrimenti provo l'endpoint dedicato, con fallback sempre su filteredHistory
-      const raw = await tryJsonMulti<any>([
-        `/user-certification-stats/${user.id}/${selectedCertNumeric}`,
-        `/api/user-certification-stats/${user.id}/${selectedCertNumeric}`,
-      ]);
+  return () => {
+    alive = false;
+  };
+}, [validHistory]);
 
-      const stats = normalizeCertStats(raw, validHistory);
-      if (alive) setCertStats(stats);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [user?.id, selectedCertNumeric, validHistory]);
 
   // —— Progresso per categoria
   const [categoryProgress, setCategoryProgress] = useState<
@@ -1115,6 +1100,12 @@ const visibleBadges = useMemo(() => {
       stats={certStats}
     />
 
+   {/* 🎯 Readiness: quanto manca all’esame */}
+  <ReadinessCard
+    certificationId={selectedCertNumeric}
+    title="Quanto manca per l’esame"
+  />
+  
     {/* Grafico andamento punteggi per la selezione corrente */}
     <PerformanceChart lang={lang} rows={validHistory} dtf={dtf} />
   </div>

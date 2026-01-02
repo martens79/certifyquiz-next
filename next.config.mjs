@@ -1,17 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // React più severo (buone warning in dev)
   reactStrictMode: true,
 
-  // 🔓 Sblocca build anche se ESLint trova errori (temporaneo)
   eslint: {
     ignoreDuringBuilds: true,
   },
 
   async rewrites() {
+    const isProd = process.env.NODE_ENV === "production";
+
+    // ✅ DEV: non riscrivere /api/backend → così prende la route app/api/backend/[...path]
+    if (!isProd) return [];
+
+    // ✅ PROD: riscrivi verso Railway come prima
     return [
       {
-        // FE → proxy al backend reale
         source: "/api/backend/:path*",
         destination: "https://api.certifyquiz.com/api/:path*",
       },
