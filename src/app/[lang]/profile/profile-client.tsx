@@ -248,6 +248,20 @@ badgeLockedHint: {
   es: "Bloqueado — completa cuestionarios para desbloquearlo",
 },
 
+
+readinessTitle: {
+  it: "Quanto manca per l’esame",
+  en: "How close are you to the exam?",
+  fr: "À quel point êtes-vous prêt pour l’examen ?",
+  es: "¿Cuánto te falta para el examen?",
+},
+readinessSelectHint: {
+  it: "Seleziona una certificazione per vedere la readiness.",
+  en: "Select a certification to see your readiness.",
+  fr: "Sélectionnez une certification pour voir votre préparation.",
+  es: "Selecciona una certificación para ver tu preparación.",
+},
+
 };
 
 // ---------- helper fetch JSON (mai throw)
@@ -1100,11 +1114,26 @@ const visibleBadges = useMemo(() => {
       stats={certStats}
     />
 
-   {/* 🎯 Readiness: quanto manca all’esame */}
+  {/* 🎯 Readiness: quanto manca all’esame */}
+{selectedCertNumeric ? (
   <ReadinessCard
     certificationId={selectedCertNumeric}
-    title="Quanto manca per l’esame"
+    title={getLabel(LBL.readinessTitle, lang)}
+    lang={lang}
   />
+) : (
+  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="text-sm font-semibold text-slate-900">
+      {getLabel(LBL.readinessTitle, lang)}
+    </div>
+    <div className="mt-2 text-sm text-slate-600">
+      {getLabel(LBL.readinessSelectHint, lang)}
+    </div>
+  </div>
+)}
+
+
+
   
     {/* Grafico andamento punteggi per la selezione corrente */}
     <PerformanceChart lang={lang} rows={validHistory} dtf={dtf} />
