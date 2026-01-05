@@ -10,6 +10,9 @@ import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import MobileBottomNav from "./MobileBottomNav";
 
+// ✅ Promo popup (tutto gratis tempo limitato)
+import FreeLimitedTimePopup from "@/components/promo/FreeLimitedTimePopup";
+
 import { getToken, onTokenChange, getUser, onUserChange } from "@/lib/auth";
 import type { MinimalUser } from "@/lib/auth";
 
@@ -38,12 +41,33 @@ function shouldHideBottomNav(pathname: string, lang: Locale) {
   return false;
 }
 
+function shouldHidePromoPopup(pathname: string, lang: Locale) {
+  const p = stripQueryHash(pathname);
+
+  // Durante quiz: non interrompere l'esperienza
+  const quizPrefix = lang === "en" ? "/quiz/" : `/${lang}/quiz/`;
+  if (p.startsWith(quizPrefix)) return true;
+
+  // In auth pages: evita distrazioni
+  const prefix = lang === "en" ? "" : `/${lang}`;
+  if (p.startsWith(`${prefix}/login`)) return true;
+  if (p.startsWith(`${prefix}/register`)) return true;
+  if (p.startsWith(`${prefix}/forgot-password`)) return true;
+
+  return false;
+}
+
 export default function LayoutShellClient({ lang, children }: Props) {
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw || (lang === "en" ? "/" : `/${lang}`);
 
   const hideBottomNav = useMemo(
     () => shouldHideBottomNav(pathname, lang),
+    [pathname, lang]
+  );
+
+  const hidePromoPopup = useMemo(
+    () => shouldHidePromoPopup(pathname, lang),
     [pathname, lang]
   );
 
@@ -82,6 +106,9 @@ export default function LayoutShellClient({ lang, children }: Props) {
       {/* user solo dopo mount (evita mismatch su label/initials) */}
       <Header lang={lang} user={mounted ? user : null} />
 
+      {/* ✅ Popup promo: client-only, max 1 volta al giorno, NON al primo ingresso assoluto */}
+      {mounted && !hidePromoPopup && <FreeLimitedTimePopup lang={lang} />}
+
       {/* ✅ padding per non finire sotto la bottom nav */}
       <main id="main" className="flex-1 pb-16">
         {children}
@@ -91,7 +118,11 @@ export default function LayoutShellClient({ lang, children }: Props) {
       <CookieBanner />
 
       {mounted && !hideBottomNav && (
-        <MobileBottomNav lang={lang} isAuthenticated={isAuthenticated} user={user} />
+        <MobileBottomNav
+          lang={lang}
+          isAuthenticated={isAuthenticated}
+          user={user}
+        />
       )}
     </div>
   );
