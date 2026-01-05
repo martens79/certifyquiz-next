@@ -1,138 +1,173 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
-import { BookOpen, ArrowRight, CalendarDays } from "lucide-react";
-import { withLang, type Locale } from "@/lib/i18n";
+import { useEffect, useMemo, useState } from "react";
+import type { Locale } from "@/lib/i18n";
 
-type Post = {
-  slug: string;           // es. "come-funziona-certifyquiz"
-  date: string;           // ISO "2025-08-29"
-  titles: Record<Locale, string>;
-  excerpt?: Partial<Record<Locale, string>>;
+type Variant = "inline" | "grid";
+
+type Article = {
+  slug: string;
+  title: string;
+  excerpt?: string;
+  publishedAt?: string;
+  coverUrl?: string;
 };
 
-function t<T extends string>(lang: Locale, map: Record<Locale, T> | Partial<Record<Locale, T>>, fallbackIt?: T) {
-  return (map[lang] as T) ?? (map.it as T) ?? (fallbackIt ?? "");
+const BLOG_SEGMENT_BY_LANG: Record<Locale, string> = {
+  it: "blog",
+  en: "blog",
+  fr: "blog",
+  es: "blog",
+};
+
+const LBL_FROM_BLOG: Record<Locale, string> = {
+  it: "Dal blog",
+  en: "From the blog",
+  fr: "Du blog",
+  es: "Del blog",
+};
+
+const LBL_READ: Record<Locale, string> = {
+  it: "Leggi",
+  en: "Read",
+  fr: "Lire",
+  es: "Leer",
+};
+
+function cx(...parts: Array<string | undefined | false | null>) {
+  return parts.filter(Boolean).join(" ");
 }
 
-function formatDate(iso: string, lang: Locale) {
+function formatDate(lang: Locale, iso?: string) {
+  if (!iso) return "";
   try {
-    const loc = lang === "en" ? "en-GB" : lang === "fr" ? "fr-FR" : lang === "es" ? "es-ES" : "it-IT";
-    return new Date(iso).toLocaleDateString(loc, { year: "numeric", month: "short", day: "2-digit" });
+    const locale = lang === "en" ? "en-US" : lang;
+    return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "2-digit" });
   } catch {
-    return iso;
+    return "";
   }
 }
-
-// ⚠️ Metti qui SOLO post esistenti davvero nel tuo blog
-const DEFAULT_POSTS: Post[] = [
-  {
-    slug: "come-funziona-certifyquiz", // -> /it/blog/come-funziona-certifyquiz
-    date: "2025-08-29",
-    titles: {
-      it: "Come funziona CertifyQuiz",
-      en: "How CertifyQuiz works",
-      fr: "Comment fonctionne CertifyQuiz",
-      es: "Cómo funciona CertifyQuiz",
-    },
-    excerpt: {
-      it: "Quiz online, spiegazioni e simulazioni d’esame: come funziona CertifyQuiz.",
-      en: "Online quizzes, explanations and mock exams: how CertifyQuiz works.",
-      fr: "Quiz en ligne, explications et examens blancs : fonctionnement de CertifyQuiz.",
-      es: "Cuestionarios, explicaciones y simulacros: cómo funciona CertifyQuiz.",
-    },
-  },
-];
 
 export default function BlogTeaser({
   lang,
-  variant = "inline",           // "inline" | "cards"
-  limit = 1,
-  posts = DEFAULT_POSTS,
-  className = "",
+  variant = "inline",
+  className,
 }: {
-  lang: Locale;                  // 👈 passiamo la lingua dal parent (niente window)
-  variant?: "inline" | "cards";
-  limit?: number;
-  posts?: Post[];
+  lang: Locale;
+  variant?: Variant;
   className?: string;
 }) {
-  const items = useMemo(() => posts.slice(0, limit), [posts, limit]);
-  if (!items.length) return null;
+  const [article, setArticle] = useState<Article | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
-  const base = withLang(lang, "/blog");
+  useEffect(() => {
+    let cancelled = false;
 
-  if (variant === "inline") {
-    const p = items[0];
-    return (
-      <div
-        className={
-          "max-w-3xl mx-auto flex items-center justify-between rounded-xl border bg-white/70 px-3 py-2 text-sm " +
-          className
-        }
-      >
-        <div className="flex items-center gap-2 min-w-0">
-          <BookOpen className="w-4 h-4 text-blue-600 shrink-0" />
-          <span className="text-slate-700 shrink-0">
-            {t(lang, { it: "Dal blog", en: "From the blog", fr: "Du blog", es: "Del blog" })}
-            {": "}
-          </span>
-          <Link
-            href={`${base}/${p.slug}`}
-            className="font-medium text-blue-700 hover:underline truncate"
-            title={t(lang, p.titles)}
-          >
-            {t(lang, p.titles)}
-          </Link>
-        </div>
-        <Link
-          href={base}
-          className="hidden sm:inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 shrink-0"
-        >
-          {t(lang, { it: "Vedi tutti", en: "See all", fr: "Tout voir", es: "Ver todos" })}
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    );
+    (async () => {
+      try {
+        const res = await fetch(`/api/blog/latest?lang=${lang}`, { cache: "no-store" });
+        const data = await res.json();
+        if (!cancelled) setArticle(data.article ?? null);
+      } catch {
+        if (!cancelled) setArticle(null);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
+
+  // Regola: se non c'è articolo per la lingua → NASCONDI
+  if (!loaded) return null;
+  if (!article?.slug) return null;
+
+  const base = `/${lang}/${BLOG_SEGMENT_BY_LANG[lang]}`;
+  const href = `${base}/${article.slug}`;
+  const dateLabel = formatDate(lang, article.publishedAt);
+
+  const excerpt = useMemo(() => {
+    // ripulisce eventuali newline finali da Sanity
+    return (article.excerpt ?? "").trim();
+  }, [article.excerpt]);
+
+  // Per ora supporto solo "inline" (come usi in home). Grid lo aggiungiamo quando vuoi.
+  if (variant !== "inline") {
+    // fallback semplice: rendi comunque inline
   }
 
-  // cards
   return (
-    <section className={className}>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <BookOpen className="w-5 h-5" />
-          {t(lang, { it: "Dal blog", en: "From the blog", fr: "Du blog", es: "Del blog" })}
-        </h2>
-        <Link href={base} className="text-xs inline-flex items-center gap-1 hover:underline">
-          {t(lang, {
-            it: "Vedi tutti gli articoli",
-            en: "See all posts",
-            fr: "Voir tous les articles",
-            es: "Ver todos los artículos",
-          })}
-          <ArrowRight className="w-3 h-3" />
+    <section
+      className={cx(
+        "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm",
+        "transition hover:border-zinc-300 hover:shadow-md",
+        className
+      )}
+    >
+      {/* Cover */}
+      {article.coverUrl ? (
+        <Link href={href} className="block">
+          <div className="relative h-36 w-full bg-zinc-100">
+            <img
+              src={article.coverUrl}
+              alt={article.title}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            {/* overlay soft */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
+          </div>
         </Link>
-      </div>
+      ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((p) => (
-          <Link key={p.slug} href={`${base}/${p.slug}`} className="block rounded-xl border p-3 hover:shadow-md transition bg-white">
-            <div className="text-[11px] text-gray-500 flex items-center gap-1">
-              <CalendarDays className="w-3.5 h-3.5" />
-              <time dateTime={p.date}>{formatDate(p.date, lang)}</time>
-            </div>
-            <h3 className="mt-1 text-base font-semibold leading-snug">{t(lang, p.titles)}</h3>
-            {p.excerpt?.[lang] && (
-              <p className="mt-1 text-sm text-gray-600 line-clamp-2">{p.excerpt[lang]}</p>
-            )}
-            <span className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600">
-              {t(lang, { it: "Leggi", en: "Read", fr: "Lire", es: "Leer" })}
-              <ArrowRight className="w-4 h-4" />
+      <div className="p-4">
+        {/* Top meta */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-zinc-500">{LBL_FROM_BLOG[lang]}</p>
+
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
+              {lang.toUpperCase()}
             </span>
+            {dateLabel ? (
+              <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600">
+                {dateLabel}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="mt-2 text-lg font-semibold leading-snug text-zinc-900">
+          <Link className="hover:underline" href={href}>
+            {article.title}
           </Link>
-        ))}
+        </h3>
+
+        {/* Excerpt */}
+        {excerpt ? (
+          <p className="mt-2 line-clamp-3 text-sm text-zinc-600">{excerpt}</p>
+        ) : null}
+
+        {/* CTA */}
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <Link
+            href={href}
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+          >
+            {LBL_READ[lang]} <span aria-hidden>→</span>
+          </Link>
+
+          <Link
+            href={base}
+            className="text-sm font-medium text-zinc-700 hover:underline"
+          >
+            {lang === "it" ? "Tutti gli articoli" : "All posts"}
+          </Link>
+        </div>
       </div>
     </section>
   );
