@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 
-type Variant = "inline" | "grid";
-
 type Article = {
   slug: string;
   title: string;
@@ -36,10 +34,10 @@ const LBL_READ: Record<Locale, string> = {
 };
 
 const LBL_ALL_POSTS: Record<Locale, string> = {
-  it: "Tutti gli articoli",
-  en: "All posts",
-  fr: "Tous les articles",
-  es: "Todos los artículos",
+  it: "Tutti",
+  en: "All",
+  fr: "Tous",
+  es: "Todos",
 };
 
 function cx(...parts: Array<string | undefined | false | null>) {
@@ -51,9 +49,9 @@ function formatDate(lang: Locale, iso?: string) {
   try {
     const locale = lang === "en" ? "en-US" : lang;
     return new Date(iso).toLocaleDateString(locale, {
-      year: "numeric",
       month: "short",
       day: "2-digit",
+      year: "numeric",
     });
   } catch {
     return "";
@@ -62,11 +60,9 @@ function formatDate(lang: Locale, iso?: string) {
 
 export default function BlogTeaser({
   lang,
-  variant = "inline",
   className,
 }: {
   lang: Locale;
-  variant?: Variant;
   className?: string;
 }) {
   const [article, setArticle] = useState<Article | null>(null);
@@ -101,75 +97,71 @@ export default function BlogTeaser({
   const dateLabel = formatDate(lang, article.publishedAt);
   const excerpt = (article.excerpt ?? "").trim();
 
-  // per ora usiamo lo stesso layout anche se un domani vuoi "grid"
-  void variant;
-
   return (
     <section
       className={cx(
-        "overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm",
+        "rounded-2xl border border-zinc-200 bg-white shadow-sm",
         "transition hover:border-zinc-300 hover:shadow-md",
-        "md:flex md:items-stretch",
         className
       )}
     >
-      {/* Cover: compatta, non dominante (home-friendly) */}
-      {article.coverUrl ? (
-        <Link href={href} className="block md:w-1/3">
-          <div className="relative h-20 w-full bg-zinc-100 md:h-full">
-            <img
-              src={article.coverUrl}
-              alt={article.title}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 via-black/0 to-black/0" />
-          </div>
-        </Link>
-      ) : null}
-
-      <div className="flex-1 p-3 md:p-4">
-        {/* Meta */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-zinc-500">{LBL_FROM_BLOG[lang]}</p>
-
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700">
-              {lang.toUpperCase()}
-            </span>
-            {dateLabel ? (
-              <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs text-zinc-600">
-                {dateLabel}
-              </span>
+      <div className="flex items-center gap-3 p-3 md:p-4">
+        {/* Thumbnail (piccola!) */}
+        <Link href={href} className="shrink-0">
+          <div className="h-16 w-16 overflow-hidden rounded-xl bg-zinc-100 md:h-20 md:w-20">
+            {article.coverUrl ? (
+              <img
+                src={article.coverUrl}
+                alt={article.title}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
             ) : null}
           </div>
+        </Link>
+
+        {/* Content */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-zinc-500">
+              {LBL_FROM_BLOG[lang]}
+              {dateLabel ? <span className="ml-2 text-zinc-400">· {dateLabel}</span> : null}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <span className="hidden rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-700 sm:inline">
+                {lang.toUpperCase()}
+              </span>
+              <Link
+                href={base}
+                className="text-xs font-medium text-zinc-600 hover:underline"
+                title={lang === "it" ? "Tutti gli articoli" : "All posts"}
+              >
+                {LBL_ALL_POSTS[lang]}
+              </Link>
+            </div>
+          </div>
+
+          <h3 className="mt-0.5 truncate text-sm font-semibold text-zinc-900 md:text-base">
+            <Link href={href} className="hover:underline">
+              {article.title}
+            </Link>
+          </h3>
+
+          {excerpt ? (
+            <p className="mt-1 line-clamp-1 text-xs text-zinc-600 md:line-clamp-2 md:text-sm">
+              {excerpt}
+            </p>
+          ) : null}
         </div>
 
-        {/* Title */}
-        <h3 className="mt-2 text-base font-semibold leading-snug text-zinc-900 md:text-lg">
-          <Link className="hover:underline" href={href}>
-            {article.title}
-          </Link>
-        </h3>
-
-        {/* Excerpt (più corto in home) */}
-        {excerpt ? (
-          <p className="mt-1 line-clamp-2 text-sm text-zinc-600 md:mt-2 md:line-clamp-3">
-            {excerpt}
-          </p>
-        ) : null}
-
         {/* CTA */}
-        <div className="mt-3 flex items-center justify-between gap-3 md:mt-4">
+        <div className="shrink-0">
           <Link
             href={href}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 md:text-sm"
           >
             {LBL_READ[lang]} <span aria-hidden>→</span>
-          </Link>
-
-          <Link href={base} className="text-sm font-medium text-zinc-700 hover:underline">
-            {LBL_ALL_POSTS[lang]}
           </Link>
         </div>
       </div>

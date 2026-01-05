@@ -334,7 +334,7 @@ export default function Home({ lang, isLoggedIn = false }: Props) {
         </div>
       </header>
 
-      <BlogTeaser lang={safeLang as any} variant="inline" className="mb-4" />
+      <BlogTeaser lang={safeLang as any}  className="mb-4" />
 
       {/* Categorie */}
       <main className="space-y-6">
