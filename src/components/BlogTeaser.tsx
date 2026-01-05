@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 
 type Variant = "inline" | "grid";
@@ -43,7 +43,11 @@ function formatDate(lang: Locale, iso?: string) {
   if (!iso) return "";
   try {
     const locale = lang === "en" ? "en-US" : lang;
-    return new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "2-digit" });
+    return new Date(iso).toLocaleDateString(locale, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
   } catch {
     return "";
   }
@@ -81,23 +85,15 @@ export default function BlogTeaser({
     };
   }, [lang]);
 
+  // ✅ Ora possiamo calcolare tutto SENZA hooks extra
+  const base = `/${lang}/${BLOG_SEGMENT_BY_LANG[lang]}`;
+  const href = article?.slug ? `${base}/${article.slug}` : "";
+  const dateLabel = formatDate(lang, article?.publishedAt);
+  const excerpt = (article?.excerpt ?? "").trim();
+
   // Regola: se non c'è articolo per la lingua → NASCONDI
   if (!loaded) return null;
   if (!article?.slug) return null;
-
-  const base = `/${lang}/${BLOG_SEGMENT_BY_LANG[lang]}`;
-  const href = `${base}/${article.slug}`;
-  const dateLabel = formatDate(lang, article.publishedAt);
-
-  const excerpt = useMemo(() => {
-    // ripulisce eventuali newline finali da Sanity
-    return (article.excerpt ?? "").trim();
-  }, [article.excerpt]);
-
-  // Per ora supporto solo "inline" (come usi in home). Grid lo aggiungiamo quando vuoi.
-  if (variant !== "inline") {
-    // fallback semplice: rendi comunque inline
-  }
 
   return (
     <section
@@ -117,14 +113,12 @@ export default function BlogTeaser({
               className="h-full w-full object-cover"
               loading="lazy"
             />
-            {/* overlay soft */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-black/0 to-black/0" />
           </div>
         </Link>
       ) : null}
 
       <div className="p-4">
-        {/* Top meta */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-zinc-500">{LBL_FROM_BLOG[lang]}</p>
 
@@ -140,19 +134,14 @@ export default function BlogTeaser({
           </div>
         </div>
 
-        {/* Title */}
         <h3 className="mt-2 text-lg font-semibold leading-snug text-zinc-900">
           <Link className="hover:underline" href={href}>
             {article.title}
           </Link>
         </h3>
 
-        {/* Excerpt */}
-        {excerpt ? (
-          <p className="mt-2 line-clamp-3 text-sm text-zinc-600">{excerpt}</p>
-        ) : null}
+        {excerpt ? <p className="mt-2 line-clamp-3 text-sm text-zinc-600">{excerpt}</p> : null}
 
-        {/* CTA */}
         <div className="mt-4 flex items-center justify-between gap-3">
           <Link
             href={href}
@@ -161,10 +150,7 @@ export default function BlogTeaser({
             {LBL_READ[lang]} <span aria-hidden>→</span>
           </Link>
 
-          <Link
-            href={base}
-            className="text-sm font-medium text-zinc-700 hover:underline"
-          >
+          <Link href={base} className="text-sm font-medium text-zinc-700 hover:underline">
             {lang === "it" ? "Tutti gli articoli" : "All posts"}
           </Link>
         </div>
