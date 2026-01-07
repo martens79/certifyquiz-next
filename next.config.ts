@@ -58,7 +58,10 @@ const nextConfig: NextConfig = {
       { source: "/es/certificaciones", destination: "/es/certificazioni" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
 
-       
+       // ✅ quiz EN-root (senza /en) → route fisica /en/...
+    { source: "/quiz/:slug/mixed", destination: "/en/quiz/:slug/mixed" },
+    { source: "/quiz/:slug", destination: "/en/quiz/:slug" },
+    { source: "/quiz/topic/:topicId", destination: "/en/quiz/topic/:topicId" },
 
     ];
   },

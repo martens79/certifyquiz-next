@@ -4,7 +4,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CERT_SLUGS } from "@/certifications/data";
-import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "../data";
+import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "@/lib/primary-cert-by-category";
+
 
 
 import {
