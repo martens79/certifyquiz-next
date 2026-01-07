@@ -1,31 +1,23 @@
 // src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import QuizEngine from "@/components/quiz/QuizEngine";
 
-// Tipi UI richiesti dal tuo engine
-import type {
-  Question as UiQuestion,
-  Locale,
-  QuizSummary,
-} from "@/lib/quiz-types";
+import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-types";
 
-// API backend
 import {
   getQuestionsByTopic,
-  saveResult,
   type Question as ApiQuestion,
   getAccessToken,
   getTopicMetaById,
 } from "@/lib/apiClient";
 
-// Helper per mappare certification_id → slug certificazione
 import { getCertSlugById } from "@/lib/certs";
+import { getExamSpecForCert } from "@/lib/exam-specs";
 
-/* ─────────────────────────  Normalizzazione domanda  ───────────────────────── */
-
+/** Normalizza la domanda API → formato UI atteso dal QuizEngine */
 function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: q.id,
@@ -38,8 +30,6 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
     })),
   } as UiQuestion;
 }
-
-/* ─────────────────────────  Component client  ───────────────────────── */
 
 export default function QuizTopicClient({
   lang,
@@ -54,13 +44,15 @@ export default function QuizTopicClient({
 
   const [blocked, setBlocked] = useState(false);
 
-  // Info per salvataggio + bottone "Torna ai quiz"
+  // Serve per:
+  // - salvare risultato su cert corretta
+  // - costruire backToHref
+  // - applicare examSpec (domande+tempo)
   const [certificationId, setCertificationId] = useState<number | null>(null);
   const [backToHref, setBackToHref] = useState<string>(`/${L}/quiz-home`);
 
-  /* ─────────────────────────  Redirect base  ───────────────────────── */
+  /* -------------------- Redirect base -------------------- */
 
-  // redirect se topicId non valido
   useEffect(() => {
     if (Number.isNaN(numericId)) {
       router.replace(`/${L}/quiz-home`);
@@ -68,7 +60,6 @@ export default function QuizTopicClient({
     }
   }, [numericId, router, L]);
 
-  // redirect immediato se non loggato
   useEffect(() => {
     const tok = getAccessToken();
     if (!tok) {
@@ -77,8 +68,7 @@ export default function QuizTopicClient({
     }
   }, [L, numericId, router]);
 
-  /* ─────────────────────────  Meta topic → backToHref  ───────────────────────── */
-
+  /* -------------------- Meta topic → certId + back link -------------------- */
   useEffect(() => {
     if (Number.isNaN(numericId)) return;
 
@@ -86,29 +76,19 @@ export default function QuizTopicClient({
 
     (async () => {
       try {
-        // Usa l'endpoint /topics/meta/by-topic/:id
         const meta = await getTopicMetaById(numericId);
-
         const certId = meta?.topic?.certification_id;
 
         if (!cancelled && typeof certId === "number" && !Number.isNaN(certId)) {
           setCertificationId(certId);
 
           const slug = getCertSlugById(certId);
-          if (slug) {
-            // Es: /it/quiz/aws-cloud-practitioner
-            setBackToHref(`/${L}/quiz/${slug}`);
-          } else {
-            // se manca la mappatura → fallback sicuro
-            setBackToHref(`/${L}/quiz-home`);
-          }
+          setBackToHref(slug ? `/${L}/quiz/${slug}` : `/${L}/quiz-home`);
         } else if (!cancelled) {
           setBackToHref(`/${L}/quiz-home`);
         }
       } catch {
-        if (!cancelled) {
-          setBackToHref(`/${L}/quiz-home`);
-        }
+        if (!cancelled) setBackToHref(`/${L}/quiz-home`);
       }
     })();
 
@@ -117,25 +97,36 @@ export default function QuizTopicClient({
     };
   }, [numericId, L]);
 
-  // se sto per fare redirect, non mostro ancora il quiz
-  if (blocked || Number.isNaN(numericId)) {
-    return null;
-  }
+  if (blocked || Number.isNaN(numericId)) return null;
 
-  // placeholder per colore categoria (in futuro: mappare topic→categoria)
   const categoryColor = "from-blue-900 to-blue-700";
+
+  /**
+   * EXAM SPEC:
+   * - training: puoi caricare anche 200/500 domande (pool grande)
+   * - exam: deve rispettare numero domande + tempo ufficiale della cert
+   */
+  const examSpec = useMemo(() => {
+    // Il poolSize reale lo conoscerà l’engine dopo fetch,
+    // qui passiamo un fallback “safe” (usato solo se certId non mappata).
+    return getExamSpecForCert(certificationId, 90);
+  }, [certificationId]);
 
   return (
     <QuizEngine
       lang={L}
       storageScope={`topic:${numericId}:${L}`}
       categoryColor={categoryColor}
-      // URL per il bottone "Torna ai quiz" (certificazione corretta)
       backToHref={backToHref}
-      /** Fetch + normalizzazione; se 401 → redirect al login */
+      /**
+       * Fetch pool grande:
+       * - limit 500 (cap backend)
+       * - shuffle=0: eviti ORDER BY RAND() lato DB (più veloce), lo shuffle lo fa l’engine.
+       */
       fetchQuestions={async (): Promise<UiQuestion[]> => {
         try {
-          const res = await getQuestionsByTopic(numericId, L);
+          const res = await getQuestionsByTopic(numericId, L, { limit: 500, shuffle: false });
+
           const raw: ApiQuestion[] = Array.isArray(res)
             ? res
             : (res as any).questions;
@@ -143,60 +134,69 @@ export default function QuizTopicClient({
           return (raw ?? []).map(normalizeQuestion);
         } catch (e: any) {
           if (e?.status === 401) {
-            router.replace(
-              `/${L}/login?redirect=/${L}/quiz/topic/${numericId}`
-            );
+            router.replace(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`);
             return [];
           }
           throw e;
         }
       }}
-      /** undefined ⇒ 60s per domanda (default engine) */
-      durationSec={undefined}
-      /** Salvataggio best-effort (non blocca la UX) */
-      onFinish={async (s: QuizSummary) => {
-  const token = getAccessToken(); // già importato nel file
+      /**
+       * ✅ Regole:
+       * - training: no timer (null) oppure undefined (60s * domande). Qui mettiamo null.
+       * - exam: durata ufficiale (es. Security+ 90 min)
+       */
+      durationsByMode={{
+        training: null,
+        exam: examSpec.durationSec,
+      }}
+      /**
+       * ✅ Regole:
+       * - training: fai vedere tante domande (pool grande)
+       * - exam: solo quelle dell’esame ufficiale
+       */
+      limitsByMode={{
+        training: 500,
+        exam: examSpec.questions,
+      }}
+      /**
+       * Salvataggio best-effort:
+       * - salva SOLO quando finisce, con total/correct reali della sessione.
+       */
+      onFinish={async (s: QuizSummary & { mode: "training" | "exam" }) => {
+        // Salviamo solo se ha senso (di solito solo exam)
+        // Se vuoi salvarlo anche in training, togli questo if.
+        if (s.mode !== "exam") return;
 
-  const payload = {
-    topicId: numericId,
-    certification_id: certificationId,
-    totalQuestions: s.total ?? 0,
-    correctAnswers: s.correct ?? 0,
-    isExam: true,          // topic quiz = simulazione? metti true. Se è training metti false.
-    quizId: null,          // opzionale, se non ce l’hai lascia null
-  };
+        const token = getAccessToken();
+        if (!token) return;
 
-  console.log("🟦 save-exam payload", payload);
+        const payload = {
+          topicId: numericId,
+          certification_id: certificationId,
+          totalQuestions: s.total ?? 0,
+          correctAnswers: s.correct ?? 0,
+          isExam: true,
+          quizId: null,
+        };
 
-  try {
-    if (!token) throw new Error("Missing token");
+        try {
+          const res = await fetch("/api/backend/save-exam", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
 
-    const res = await fetch("/api/backend/save-exam", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
-    }
-
-    const out = await res.json().catch(() => ({}));
-    console.log("🟩 save-exam OK", out);
-  } catch (e) {
-    console.error("🟥 save-exam FAILED", e);
-    alert("save-exam FAILED — guarda console");
-  }
-}}
-
-
-
-
-
+          if (!res.ok) {
+            const txt = await res.text().catch(() => "");
+            throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
+          }
+        } catch (e) {
+          console.error("🟥 save-exam FAILED", e);
+        }
+      }}
     />
   );
 }

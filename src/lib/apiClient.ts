@@ -373,10 +373,107 @@ export const getTopicMetaById = (topicId: number | string) =>
   apiGet<TopicMeta>(`/topics/meta/by-topic/${topicId}`);
 
 /*─────────────────────────────── QUESTIONS ───────────────────────────────*/
-export const getQuestionsByTopic = (topicId: number | string, lang: Locale = "it") =>
-  apiGet<QuestionsResponse>(`/questions/${topicId}?lang=${lang}`, true);
-export const getMixedQuestions = (id: number | string, lang: Locale = "it") =>
-  apiGet<{ questions: Question[] }>(`/questions-mixed/${id}?lang=${lang}`, true);
+/**
+ * Recupera le domande di un TOPIC con supporto a:
+ * - lingua (lang)
+ * - limit (numero massimo di domande)
+ * - shuffle (ordine casuale o deterministico)
+ * - strict (se true: NO fallback IT → ritorna solo contenuti nella lingua richiesta)
+ *
+ * ⚠️ NOTA STORICA:
+ * In origine il backend restituiva SEMPRE 30 domande random.
+ * Ora possiamo chiedere pool più grandi (es. 100–500).
+ *
+ * strict:
+ * - strict=false (default) → backend fa fallback su italiano se manca la traduzione
+ * - strict=true  → backend NON fallbacka (utile per EXAM in EN/FR/ES senza mix IT)
+ */
+/*─────────────────────────────── QUESTIONS ───────────────────────────────*/
+/**
+ * Recupera le domande di un TOPIC con supporto a:
+ * - lingua (lang)
+ * - limit (numero massimo di domande)
+ * - shuffle (ordine casuale o deterministico)
+ * - strict (evita fallback IT → solo lingua richiesta)
+ *
+ * ⚠️ Storicamente il backend restituiva SEMPRE 30 domande.
+ * Ora possiamo chiedere pool più grandi (es. 100–500).
+ */
+export const getQuestionsByTopic = (
+  topicId: number | string,
+  lang: Locale = "it",
+  opts?: {
+    limit?: number;
+    shuffle?: boolean;
+    strict?: boolean;
+  }
+) => {
+  // ✅ params ESISTE
+  const params = new URLSearchParams({ lang });
+
+  // ───────────────────────── LIMIT ─────────────────────────
+  // default: 30 | cap: 500
+  const limit = Math.max(1, Math.min(opts?.limit ?? 30, 500));
+  params.set("limit", String(limit));
+
+  // ───────────────────────── SHUFFLE ─────────────────────────
+  // default: true
+  params.set("shuffle", (opts?.shuffle ?? true) ? "1" : "0");
+
+  // ───────────────────────── STRICT ─────────────────────────
+  // strict=1 → niente fallback IT (solo question_en, ecc.)
+  if (opts?.strict) {
+    params.set("strict", "1");
+  }
+
+  /**
+   * Esempi URL finali:
+   * /questions/65?lang=en&limit=200&shuffle=1
+   * /questions/65?lang=en&limit=100&shuffle=0&strict=1
+   */
+  return apiGet<QuestionsResponse>(
+    `/questions/${topicId}?${params.toString()}`,
+    true // auth required
+  );
+};
+
+
+
+/**
+ * Recupera quiz MISTI (per certificazione o categoria)
+ *
+ * @param id    certification_id oppure category_id
+ * @param lang  lingua richiesta (it | en | fr | es)
+ * @param opts  opzioni extra (limit, shuffle)
+ *
+ * NOTE:
+ * - limit: numero massimo di domande (default backend)
+ * - shuffle: true = ordine casuale, false = ordine stabile
+ */
+export const getMixedQuestions = (
+  id: number | string,
+  lang: Locale = "it",
+  opts?: {
+    limit?: number;
+    shuffle?: boolean;
+  }
+) => {
+  // Costruiamo querystring in modo sicuro
+  const params = new URLSearchParams({ lang });
+
+  if (opts?.limit != null) {
+    params.set("limit", String(opts.limit));
+  }
+
+  if (opts?.shuffle != null) {
+    params.set("shuffle", opts.shuffle ? "1" : "0");
+  }
+
+  return apiGet<{ questions: Question[] }>(
+    `/questions-mixed/${id}?${params.toString()}`,
+    true
+  );
+};
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
 export const saveExam = (payload: SaveExamRequest) => apiPost<SaveExamResponse>("/save-exam", payload, true);

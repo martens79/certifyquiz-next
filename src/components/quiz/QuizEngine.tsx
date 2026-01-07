@@ -7,21 +7,57 @@ import type { Answer, Question, QuizSummary, Locale } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang } from '@/lib/i18n';
 
+type Mode = 'training' | 'exam';
+
 type Props = {
   lang: Locale;
-  // carica le domande
+
+  /**
+   * Carica IL POOL di domande (idealmente tutte o molte, es. 500 max).
+   * Poi l’engine decide quante usarne in training/exam.
+   */
   fetchQuestions: () => Promise<Question[]>;
-  // chiave unica per l’autosave locale (es. "topic:17:it" o "mixed:2:it")
+
+  /**
+   * Chiave base per autosave locale.
+   * Nota: internamente l’engine separa training vs exam usando storageScope + ":" + mode
+   * così non si “sporcano” a vicenda.
+   */
   storageScope: string;
+
   // UI
   categoryColor?: string;
-  initialMode?: 'training' | 'exam';
-  // TIMER: se null → nessun timer; se undefined → 60s * numero domande
+  initialMode?: Mode;
+
+  /**
+   * TIMER (legacy):
+   * - se usi solo questo: comportamento vecchio (durationSec totale o qs.length * 60)
+   * - se invece passi durationsByMode, quello vince.
+   */
   durationSec?: number | null;
-  // callback di salvataggio su backend quando si chiude l’esame
-  onFinish?: (summary: QuizSummary) => Promise<void> | void;
-  // URL a cui tornare col bottone "Torna ai quiz" (es. /it/quiz/java-se)
+
+  /**
+   * ✅ Nuovo: timer diverso per training vs exam
+   * - exam: di solito durata ufficiale (es. 90 min)
+   * - training: puoi mettere null (no timer) o undefined (60s * domande)
+   */
+  durationsByMode?: Partial<Record<Mode, number | null>>;
+
+  /**
+   * ✅ Nuovo: numero domande diverso per training vs exam
+   * - exam: numero ufficiale (es. 90)
+   * - training: 200 / 500 / tutto il pool
+   */
+  limitsByMode?: Partial<Record<Mode, number>>;
+
+  /** callback best-effort quando finisce (di solito salva risultato su backend) */
+  onFinish?: (summary: QuizSummary & { mode: Mode }) => Promise<void> | void;
+
+  /** URL per tornare indietro */
   backToHref?: string;
+
+  /** opzionale: notifica quando cambia modalità */
+  onModeChange?: (mode: Mode) => void;
 };
 
 export default function QuizEngine({
@@ -31,63 +67,137 @@ export default function QuizEngine({
   categoryColor = 'from-blue-900 to-blue-700',
   initialMode = 'training',
   durationSec,
+  durationsByMode,
+  limitsByMode,
   onFinish,
   backToHref,
+  onModeChange,
 }: Props) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [idx, setIdx] = useState(0);
-  const [mode, setMode] = useState<'training' | 'exam'>(initialMode);
-  const [reviewMode, setReviewMode] = useState(false);
 
+  /** Pool completo (training vede tutto, exam ne pesca un sottoinsieme) */
+  const [pool, setPool] = useState<Question[]>([]);
+
+  /** Modalità corrente */
+  const [mode, setMode] = useState<Mode>(initialMode);
+
+  /** Domande ATTIVE (dipendono da mode: training=pool, exam=subset) */
+  const [questions, setQuestions] = useState<Question[]>([]);
+
+  /** Indice domanda corrente */
+  const [idx, setIdx] = useState(0);
+
+  const [reviewMode, setReviewMode] = useState(false);
 
   // q.id -> answer.id | null
   const [marked, setMarked] = useState<Record<string | number, string | number | null>>({});
   const [reviewLater, setReviewLater] = useState<Set<string | number>>(new Set());
 
   const [finished, setFinished] = useState(false);
-  const [lastSummary, setLastSummary] = useState<QuizSummary | null>(null);
+  const [lastSummary, setLastSummary] = useState<(QuizSummary & { mode: Mode }) | null>(null);
 
   // timer
   const [remaining, setRemaining] = useState<number | null>(null);
   const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
 
-  /* -------------------- LOAD DOMANDE + RIPRISTINO -------------------- */
+  /**
+   * Storage scope separato per modalità:
+   * - topic:65:en:training
+   * - topic:65:en:exam
+   */
+  const scopedKey = `${storageScope}:${mode}`;
+
+  /* -------------------- helpers: limit + duration -------------------- */
+
+  const effectiveLimit = useMemo(() => {
+    const lim = limitsByMode?.[mode];
+    if (!lim) return undefined;
+    return Math.max(1, lim);
+  }, [limitsByMode, mode]);
+
+  const effectiveDuration = useMemo(() => {
+    // 1) se hai durationsByMode → usa quello
+    if (durationsByMode && durationsByMode[mode] !== undefined) {
+      return durationsByMode[mode] as number | null;
+    }
+    // 2) fallback legacy
+    return durationSec;
+  }, [durationsByMode, durationSec, mode]);
+
+  /** Pesca subset per EXAM: shuffle del pool e slice a limit */
+  function buildActiveQuestions(p: Question[], m: Mode): Question[] {
+    if (!p?.length) return [];
+
+    if (m === 'training') {
+      // training: usa tutto il pool (o un limite se lo vuoi)
+      if (!limitsByMode?.training) return p;
+      return p.slice(0, Math.min(p.length, limitsByMode.training));
+    }
+
+    // exam: subset con limit
+    const target = effectiveLimit ?? p.length;
+    const n = Math.min(p.length, target);
+
+    // shuffle in memoria (non mutare il pool)
+    const copy = [...p];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, n);
+  }
+
+  /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
     let alive = true;
-    setLoading(true);
-    setErr(null);
 
     (async () => {
+      setLoading(true);
+      setErr(null);
+
       try {
         const qs = await fetchQuestions();
         if (!alive) return;
 
-        setQuestions(qs ?? []);
+        const poolQ = qs ?? [];
+        setPool(poolQ);
 
-        // durata totale
-        const total = durationSec === null ? null : durationSec ?? qs.length * 60;
+        // Domande attive in base alla modalità
+        const active = buildActiveQuestions(poolQ, mode);
+        setQuestions(active);
 
-        // tenta ripristino locale
-        const persisted = loadProgress(storageScope);
-        if (persisted && arraysEqual(persisted.qIds, qs.map((q) => q.id))) {
-          setMode(persisted.mode);
+        // Durata totale per la modalità corrente
+        const total =
+          effectiveDuration === null
+            ? null
+            : effectiveDuration ?? active.length * 60;
+
+        // Ripristino locale (SE le qIds combaciano con l’attivo)
+        const persisted = loadProgress(scopedKey);
+        if (persisted && arraysEqual(persisted.qIds, active.map((q) => q.id))) {
           setMarked(persisted.marked);
           setReviewLater(new Set(persisted.reviewLater));
+          setIdx(Math.min(persisted.idx ?? 0, Math.max(0, active.length - 1)));
           setRemaining(total == null ? null : Math.min(total, persisted.remainingSec ?? total));
           startedAtRef.current = persisted.startedAt ?? null;
         } else {
-          setMode(initialMode);
+          // reset pulito
           setMarked({});
           setReviewLater(new Set());
+          setIdx(0);
           setRemaining(total);
           startedAtRef.current = null;
-          clearProgress(storageScope);
+          clearProgress(scopedKey);
         }
+
+        // reset schermate
+        setFinished(false);
+        setLastSummary(null);
+        setReviewMode(false);
       } catch (e: any) {
         if (!alive) return;
         setErr(e?.message || 'Load error');
@@ -100,7 +210,21 @@ export default function QuizEngine({
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, storageScope]);
+  }, [fetchQuestions, scopedKey, mode, effectiveDuration, effectiveLimit]);
+
+  /* -------------------- MODE SWITCH (notifica + rebuild subset exam) -------------------- */
+  const setModeSafe = (m: Mode) => {
+    if (m === mode) return;
+
+    // quando cambi modalità: azzera timer/progress della modalità “nuova” se vuoi
+    setMode(m);
+    onModeChange?.(m);
+
+    // reset indice immediato (evita flash su idx vecchio)
+    setIdx(0);
+    setReviewMode(false);
+    startedAtRef.current = null;
+  };
 
   /* --------------------------- TICK TIMER ----------------------------- */
   useEffect(() => {
@@ -112,7 +236,12 @@ export default function QuizEngine({
 
     if (startedAtRef.current == null) startedAtRef.current = Date.now();
 
-    const total = durationSec ?? questions.length * 60;
+    const total =
+      effectiveDuration === null
+        ? null
+        : effectiveDuration ?? questions.length * 60;
+
+    if (total == null) return;
 
     const loop = () => {
       tickRef.current = requestAnimationFrame(loop);
@@ -125,6 +254,7 @@ export default function QuizEngine({
         doFinish(true);
       }
     };
+
     loop();
 
     return () => {
@@ -132,7 +262,7 @@ export default function QuizEngine({
       tickRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, remaining, finished, durationSec, questions.length]);
+  }, [mode, remaining, finished, effectiveDuration, questions.length]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
@@ -143,10 +273,11 @@ export default function QuizEngine({
       mode,
       remainingSec: remaining,
       startedAt: startedAtRef.current,
+      idx,
     };
-    const id = requestAnimationFrame(() => saveProgress(storageScope, payload));
+    const id = requestAnimationFrame(() => saveProgress(scopedKey, payload));
     return () => cancelAnimationFrame(id);
-  }, [questions, marked, reviewLater, mode, remaining, storageScope]);
+  }, [questions, marked, reviewLater, mode, remaining, idx, scopedKey]);
 
   /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
@@ -159,14 +290,12 @@ export default function QuizEngine({
     [questions, marked]
   );
 
-  // Indici (posizioni) delle domande non risposte
   const unansweredPositions = useMemo(() => {
     return questions
       .map((q, i) => ((marked[q.id] === undefined || marked[q.id] === null) ? i : -1))
       .filter((i) => i >= 0);
   }, [questions, marked]);
 
-  // Indici (posizioni) delle domande ★ e non risposte
   const reviewUnansweredPositions = useMemo(() => {
     return questions
       .map((q, i) => {
@@ -176,17 +305,11 @@ export default function QuizEngine({
       .filter((i) => i >= 0);
   }, [questions, marked, reviewLater]);
 
-  // Indici (posizioni) delle domande ★ (anche se già risposte)
-const reviewPositions = useMemo(() => {
-  return questions
-    .map((q, i) => (reviewLater.has(q.id) ? i : -1))
-    .filter((i) => i >= 0);
-}, [questions, reviewLater]);
-
-const hasReview = reviewPositions.length > 0;
-
-
-  const hasReviewUnanswered = reviewUnansweredPositions.length > 0;
+  const reviewPositions = useMemo(() => {
+    return questions
+      .map((q, i) => (reviewLater.has(q.id) ? i : -1))
+      .filter((i) => i >= 0);
+  }, [questions, reviewLater]);
 
   const scorePct = useMemo(() => {
     if (!questions.length) return 0;
@@ -200,145 +323,107 @@ const hasReview = reviewPositions.length > 0;
   }, [marked, questions]);
 
   /* ----------------------------- HANDLER ------------------------------ */
-const choose = (q: Question, a: Answer) => {
-  setMarked((m) => ({ ...m, [q.id]: a.id }));
-};
-
-/**
- * NEXT (fix):
- * - Sempre lineare.
- * - Solo se sei all’ultima domanda, in ALLENAMENTO, e ci sono ★ non risolte,
- *   allora "Avanti" salta alla prima ★ non risolta.
- */
-const next = () => {
-  // 🔁 MODALITÀ REVISIONE ★
-  if (reviewMode) {
-    const currentPos = reviewPositions.indexOf(idx);
-    const nextPos = reviewPositions[currentPos + 1];
-
-    if (nextPos !== undefined) {
-      setIdx(nextPos);
-    } else {
-      // finite le ★ → esci dalla review
-      setReviewMode(false);
-    }
-    return;
-  }
-
-  // ▶️ FLUSSO NORMALE
-  if (idx < questions.length - 1) {
-    setIdx((i) => i + 1);
-    return;
-  }
-
-  // ⭐ ARRIVATO ALLA FINE → entra in reviewMode
-  if (mode === 'training' && reviewPositions.length > 0) {
-    setReviewMode(true);
-    setIdx(reviewPositions[0]);
-  }
-};
-
-
-
-const prev = () => setIdx((i) => Math.max(i - 1, 0));
-
-const toggleReviewLater = (qId: Question['id']) => {
-  setReviewLater((old) => {
-    const n = new Set(old);
-    if (n.has(qId)) n.delete(qId);
-    else n.add(qId);
-    return n;
-  });
-
-  // 🔴 IMPORTANTISSIMO: se stai rivedendo le ★, esci dalla review
-  setReviewMode(false);
-};
-
-
-/**
- * Vai alla prima non risolta:
- * 1) priorità: ★ non risolte
- * 2) fallback: prima non risolta normale
- */
-const goToFirstUnanswered = () => {
-  if (reviewUnansweredPositions.length > 0) {
-    setIdx(reviewUnansweredPositions[0]);
-    return;
-  }
-  if (unansweredPositions.length > 0) {
-    setIdx(unansweredPositions[0]);
-  }
-};
-
-async function doFinish(_timeExpired = false) {
-  setFinished(true);
-  const total = questions.length;
-  const correct = Math.round((scorePct / 100) * total);
-  const elapsedSec =
-    startedAtRef.current != null
-      ? Math.floor((Date.now() - startedAtRef.current) / 1000)
-      : 0;
-
-  const summary: QuizSummary = {
-    total,
-    correct,
-    scorePct,
-    marked,
-    durationSec: elapsedSec,
+  const choose = (q: Question, a: Answer) => {
+    setMarked((m) => ({ ...m, [q.id]: a.id }));
   };
 
-  setLastSummary(summary);
+  const next = () => {
+    if (reviewMode) {
+      const currentPos = reviewPositions.indexOf(idx);
+      const nextPos = reviewPositions[currentPos + 1];
 
-// ✅ SAVE QUESTIONS SEEN (readiness coverage)
-try {
-  const token = localStorage.getItem("cq:access");
-  const questionIds = questions.map((q) => q.id).filter((id) => id != null);
-
-  if (token && questionIds.length > 0) {
-    const res = await fetch("/api/backend/user/questions/seen", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ questionIds }),
-    });
-
-    if (!res.ok) {
-      const txt = await res.text().catch(() => "");
-      console.warn("questions/seen failed:", res.status, txt);
+      if (nextPos !== undefined) {
+        setIdx(nextPos);
+      } else {
+        setReviewMode(false);
+      }
+      return;
     }
+
+    if (idx < questions.length - 1) {
+      setIdx((i) => i + 1);
+      return;
+    }
+
+    if (mode === 'training' && reviewPositions.length > 0) {
+      setReviewMode(true);
+      setIdx(reviewPositions[0]);
+    }
+  };
+
+  const prev = () => setIdx((i) => Math.max(i - 1, 0));
+
+  const toggleReviewLater = (qId: Question['id']) => {
+    setReviewLater((old) => {
+      const n = new Set(old);
+      if (n.has(qId)) n.delete(qId);
+      else n.add(qId);
+      return n;
+    });
+    setReviewMode(false);
+  };
+
+  const goToFirstUnanswered = () => {
+    if (reviewUnansweredPositions.length > 0) {
+      setIdx(reviewUnansweredPositions[0]);
+      return;
+    }
+    if (unansweredPositions.length > 0) {
+      setIdx(unansweredPositions[0]);
+    }
+  };
+
+  async function doFinish(_timeExpired = false) {
+    setFinished(true);
+    const total = questions.length;
+    const correct = Math.round((scorePct / 100) * total);
+    const elapsedSec =
+      startedAtRef.current != null
+        ? Math.floor((Date.now() - startedAtRef.current) / 1000)
+        : 0;
+
+    const summary: QuizSummary & { mode: Mode } = {
+      total,
+      correct,
+      scorePct,
+      marked,
+      durationSec: elapsedSec,
+      mode,
+    };
+
+    setLastSummary(summary);
+
+    // best-effort verso backend
+    try {
+      await onFinish?.(summary);
+    } catch {
+      /* ignore */
+    }
+
+    clearProgress(scopedKey);
   }
-} catch (e) {
-  console.warn("questions/seen exception", e);
-}
 
-// best-effort verso backend
-try {
-  await onFinish?.(summary);
-} catch {
-  /* ignore */
-}
+  const restart = () => {
+    // restart = nuovo tentativo: in exam rigenera subset (perché reload effect ricrea domande)
+    clearProgress(scopedKey);
+    setIdx(0);
+    setMarked({});
+    setReviewLater(new Set());
+    setFinished(false);
+    setLastSummary(null);
+    startedAtRef.current = null;
+    setReviewMode(false);
 
-clearProgress(storageScope);
+    // 🔁 forza rebuild delle domande attive (specie per exam)
+    const active = buildActiveQuestions(pool, mode);
+    setQuestions(active);
 
-}
-
-const restart = () => {
-  setIdx(0);
-  setMarked({});
-  setReviewLater(new Set());
-  setFinished(false);
-  setLastSummary(null);
-  startedAtRef.current = null;
-  setMode('training');
-  const total = durationSec === null ? null : durationSec ?? questions.length * 60;
-  setRemaining(total);
-  clearProgress(storageScope);
-  setReviewMode(false);
-
-};
-
+    const total =
+      effectiveDuration === null
+        ? null
+        : effectiveDuration ?? active.length * 60;
+    setRemaining(total);
+  };
 
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
@@ -359,7 +444,6 @@ const restart = () => {
 
     const backUrl = backToHref || withLang(lang, '/quiz-home');
 
-    // elenco domande sbagliate
     const markedMap = lastSummary?.marked ?? marked;
     const wrongDetails = questions
       .map((q, index) => {
@@ -421,7 +505,6 @@ const restart = () => {
               </div>
             </div>
 
-            {/* Riepilogo errori */}
             {!!wrongDetails.length && (
               <div className="mt-4 border-t pt-4">
                 <h2 className="text-sm font-semibold text-gray-800 mb-2">
@@ -450,7 +533,6 @@ const restart = () => {
               </div>
             )}
 
-            {/* Azioni finali */}
             <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-2 text-sm">
                 <button
@@ -494,14 +576,12 @@ const restart = () => {
   const q = questions[idx];
   const isExam = mode === 'exam';
   const chosen = marked[q.id];
+
   const reviewTotal = reviewPositions.length;
   const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
 
-
-  // ✅ Abilita "Avanti" anche all'ultima se in training ci sono ★ non risolte
   const canGoNext =
-  idx < questions.length - 1 || (mode === 'training' && reviewPositions.length > 0);
-
+    idx < questions.length - 1 || (mode === 'training' && reviewPositions.length > 0);
 
   return (
     <div className={`min-h-screen ${gradient}`}>
@@ -509,36 +589,35 @@ const restart = () => {
         {/* header */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div className="text-sm opacity-90">
-  {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
-  {label('answered', lang)} {answeredCount}
+            {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+            {label('answered', lang)} {answeredCount}
 
-  {/* ★ Review indicator */}
-  {reviewMode && reviewTotal > 0 && (
-    <>
-      {' '}
-      ·{' '}
-      <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-        ★ Review {reviewIndex}/{reviewTotal}
-      </span>
-    </>
-  )}
+            {reviewMode && reviewTotal > 0 && (
+              <>
+                {' '}
+                ·{' '}
+                <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                  ★ Review {reviewIndex}/{reviewTotal}
+                </span>
+              </>
+            )}
 
-  {isExam && (
-    <>
-      {' '}
-      · {label('score', lang)} {scorePct}%{' '}
-      {remaining != null && <> · ⏱ {fmt(remaining)}</>}
-    </>
-  )}
-</div>
+            {isExam && (
+              <>
+                {' '}
+                · {label('score', lang)} {scorePct}%{' '}
+                {remaining != null && <> · ⏱ {fmt(remaining)}</>}
+              </>
+            )}
+          </div>
 
-
+          {/* ✅ Toggle mode: usa setModeSafe così scatena la logica nuova */}
           <div className="flex items-center gap-2">
             <button
               className={`px-3 py-1.5 rounded-full text-sm ${
                 !isExam ? 'bg-emerald-500' : 'bg-white/10'
               }`}
-              onClick={() => setMode('training')}
+              onClick={() => setModeSafe('training')}
             >
               {label('training', lang)}
             </button>
@@ -546,7 +625,7 @@ const restart = () => {
               className={`px-3 py-1.5 rounded-full text-sm ${
                 isExam ? 'bg-emerald-500' : 'bg-white/10'
               }`}
-              onClick={() => setMode('exam')}
+              onClick={() => setModeSafe('exam')}
             >
               {label('exam', lang)}
             </button>
@@ -569,21 +648,17 @@ const restart = () => {
               'bg-white text-gray-900 border border-white/20 hover:bg-white/90';
 
             if (isExam) {
-              // ESAME: solo evidenzia la risposta scelta in verde
               if (isChosen) {
                 btnClasses =
                   'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
               }
             } else {
-              // ALLENAMENTO
               if (!showFeedback) {
-                // prima di dare feedback: come in esame
                 if (isChosen) {
                   btnClasses =
                     'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
                 }
               } else {
-                // feedback attivo: verde giusto, rosso sbagliato scelto
                 if (isRight) {
                   btnClasses =
                     'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]';
@@ -648,6 +723,7 @@ const restart = () => {
             >
               {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
             </button>
+
             <button
               type="button"
               className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -656,6 +732,7 @@ const restart = () => {
             >
               {label('gotoUn', lang)}
             </button>
+
             {isExam ? (
               <button
                 type="button"
@@ -716,72 +793,20 @@ const L = {
   },
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
 
-  // Riepilogo
   summaryTitle: {
     it: 'Risultato esame',
     en: 'Exam summary',
     fr: 'Résumé de l’examen',
     es: 'Resumen del examen',
   },
-  questionsLabel: {
-    it: 'domande',
-    en: 'questions',
-    fr: 'questions',
-    es: 'preguntas',
-  },
-  correctLabel: {
-    it: 'Corrette',
-    en: 'Correct',
-    fr: 'Correctes',
-    es: 'Correctas',
-  },
-  wrongLabel: {
-    it: 'Errate',
-    en: 'Wrong',
-    fr: 'Fausses',
-    es: 'Incorrectas',
-  },
-  durationLabel: {
-    it: 'Durata',
-    en: 'Duration',
-    fr: 'Durée',
-    es: 'Duración',
-  },
-  backToQuizHome: {
-    it: 'Torna ai quiz',
-    en: 'Back to quizzes',
-    fr: 'Retour aux quiz',
-    es: 'Volver a los cuestionarios',
-  },
-  seeProfile: {
-    it: 'Vai al profilo',
-    en: 'Go to profile',
-    fr: 'Aller au profil',
-    es: 'Ir al perfil',
-  },
-  seePremium: {
-    it: 'Scopri Premium',
-    en: 'See Premium',
-    fr: 'Découvrir Premium',
-    es: 'Descubrir Premium',
-  },
-  // riepilogo errori
-  wrongSummaryTitle: {
-    it: 'Domande da rivedere',
-    en: 'Questions to review',
-    fr: 'Questions à revoir',
-    es: 'Preguntas para revisar',
-  },
-  yourAnswer: {
-    it: 'Tua risposta:',
-    en: 'Your answer:',
-    fr: 'Votre réponse :',
-    es: 'Tu respuesta:',
-  },
-  correctAnswer: {
-    it: 'Risposta corretta:',
-    en: 'Correct answer:',
-    fr: 'Bonne réponse :',
-    es: 'Respuesta correcta:',
-  },
+  questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
+  correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
+  wrongLabel: { it: 'Errate', en: 'Wrong', fr: 'Fausses', es: 'Incorrectas' },
+  durationLabel: { it: 'Durata', en: 'Duration', fr: 'Durée', es: 'Duración' },
+  backToQuizHome: { it: 'Torna ai quiz', en: 'Back to quizzes', fr: 'Retour aux quiz', es: 'Volver a los cuestionarios' },
+  seeProfile: { it: 'Vai al profilo', en: 'Go to profile', fr: 'Aller au profil', es: 'Ir al perfil' },
+  seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
+  wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
+  yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
+  correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
 };
