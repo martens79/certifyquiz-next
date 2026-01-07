@@ -25,11 +25,14 @@ export const EXAM_CONFIG_BY_CERT_ID: Record<number, ExamConfig> = {
 };
 
 // helper con fallback safe
+// helper con fallback safe
 export function getExamConfig(certificationId?: number | null): ExamConfig {
-  return (
-    (certificationId && EXAM_CONFIG_BY_CERT_ID[certificationId]) ?? {
-      questions: 30,
-      durationMin: 30,
-    }
-  );
+  if (certificationId == null) {
+    return { questions: 30, durationMin: 30 };
+  }
+
+  return EXAM_CONFIG_BY_CERT_ID[certificationId] ?? { questions: 30, durationMin: 30 };
+  
 }
+
+
