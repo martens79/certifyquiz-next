@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CERT_SLUGS } from "@/certifications/data";
 import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "../data";
 
+
 import {
   getCategoryStyle,
   CERT_CATEGORY_BY_SLUG,
@@ -350,15 +351,13 @@ function localizedCertPath(lang: Locale, certSlug: string) {
 // quiz mixed per categoria (usa key interna stabile)
 // quiz mixed → certificazione principale della categoria
 function mixedQuizPath(lang: Locale, key: CategoryKey) {
-  const certSlug = PRIMARY_CERT_SLUG_BY_CATEGORY[key];
-
-  // fallback di sicurezza (non dovrebbe mai succedere)
-  if (!certSlug) {
-    return localizedCertListPath(lang);
-  }
+  const certSlug =
+    PRIMARY_CERT_SLUG_BY_CATEGORY[key] ??
+    PRIMARY_CERT_SLUG_BY_CATEGORY.default;
 
   return `${langPrefix(lang)}/quiz/${certSlug}/mixed`;
 }
+
 
 
 /* ------------------------------------------------------------------------ */
