@@ -57,6 +57,20 @@ const nextConfig: NextConfig = {
       // ES: /es/certificaciones → /es/certificazioni (route fisica unica)
       { source: "/es/certificaciones", destination: "/es/certificazioni" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
+
+            // 4) legacy: vecchi mixed quiz URL → nuovo formato
+      {
+        source: "/:lang/quiz-mixed/:slug",
+        destination: "/:lang/quiz/:slug/mixed",
+        permanent: true,
+      },
+      // (opzionale) se esistevano link senza lingua
+      {
+        source: "/quiz-mixed/:slug",
+        destination: "/quiz/:slug/mixed",
+        permanent: true,
+      },
+
     ];
   },
 };
