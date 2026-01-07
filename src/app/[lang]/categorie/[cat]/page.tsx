@@ -347,7 +347,8 @@ function localizedCertPath(lang: Locale, certSlug: string) {
 
 // quiz mixed per categoria (usa key interna stabile)
 function mixedQuizPath(lang: Locale, key: CategoryKey) {
-  return `${langPrefix(lang)}/quiz-mixed/${key}`;
+  return `${langPrefix(lang)}/certificazioni`;
+
 }
 
 /* ------------------------------------------------------------------------ */
