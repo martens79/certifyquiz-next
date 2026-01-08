@@ -1,11 +1,13 @@
 // src/lib/paths.ts
 // SINGLE SOURCE OF TRUTH FOR URL PATHS
-// Regola: TUTTE le rotte sono /[lang]/... (EN incluso)
+// Regola:
+// - SEO pages → EN senza /en
+// - QUIZ → sempre /{lang}
 
 export type Locale = "it" | "en" | "fr" | "es";
 
 /* ------------------------------------------------------------------ */
-/* INTERNAL HELPERS                                                    */
+/* LOCALE HELPERS                                                      */
 /* ------------------------------------------------------------------ */
 
 export const isLocale = (v: unknown): v is Locale =>
@@ -14,20 +16,31 @@ export const isLocale = (v: unknown): v is Locale =>
 export const toLocale = (v: unknown, fallback: Locale = "en"): Locale =>
   isLocale(v) ? v : fallback;
 
+/* ------------------------------------------------------------------ */
+/* PREFIXES                                                            */
+/* ------------------------------------------------------------------ */
+
 /**
- * ✅ Prefisso lingua CANONICO
- * SEMPRE presente, anche per EN
+ * ✅ SEO prefix
+ * EN  → ""
+ * ALT → /it /fr /es
  */
-export const langPrefix = (lang: Locale): string => `/${lang}`;
+export const seoPrefix = (lang: Locale): string =>
+  lang === "en" ? "" : `/${lang}`;
+
+/**
+ * ✅ QUIZ prefix
+ * SEMPRE /{lang}
+ */
+export const quizPrefix = (lang: Locale): string => `/${lang}`;
 
 /* ------------------------------------------------------------------ */
-/* CERTIFICATIONS                                                      */
+/* CERTIFICATIONS (SEO)                                                 */
 /* ------------------------------------------------------------------ */
 
 /**
- * ✅ Path certificazione (CANONICO)
+ * /certifications/...
  * /it/certificazioni/...
- * /en/certifications/...
  * /fr/certifications/...
  * /es/certificaciones/...
  */
@@ -36,23 +49,35 @@ export const certPath = (lang: Locale, slug: string): string => {
     case "it":
       return `/it/certificazioni/${slug}`;
     case "en":
-      return `/en/certifications/${slug}`;
+      return `/certifications/${slug}`;
     case "fr":
       return `/fr/certifications/${slug}`;
     case "es":
       return `/es/certificaciones/${slug}`;
     default:
-      return `/en/certifications/${slug}`;
+      return `/certifications/${slug}`;
+  }
+};
+
+export const certificationsPath = (lang: Locale): string => {
+  switch (lang) {
+    case "it":
+      return `/it/certificazioni`;
+    case "en":
+      return `/certifications`;
+    case "fr":
+      return `/fr/certifications`;
+    case "es":
+      return `/es/certificaciones`;
+    default:
+      return `/certifications`;
   }
 };
 
 /* ------------------------------------------------------------------ */
-/* CATEGORIES                                                          */
+/* CATEGORIES (SEO)                                                     */
 /* ------------------------------------------------------------------ */
 
-/**
- * ✅ CategoryKey = chiave interna stabile
- */
 export type CategoryKey =
   | "default"
   | "base"
@@ -64,9 +89,6 @@ export type CategoryKey =
   | "virtualizzazione"
   | "ai";
 
-/**
- * ✅ key → slug canonico per lingua
- */
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
     default: "base",
@@ -114,9 +136,6 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   },
 };
 
-/**
- * ✅ slug → key interna
- */
 export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   it: {
     base: "base",
@@ -160,10 +179,6 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   },
 };
 
-/* ------------------------------------------------------------------ */
-/* CATEGORY PATH HELPERS                                               */
-/* ------------------------------------------------------------------ */
-
 const categorySection = (lang: Locale): string =>
   lang === "it"
     ? "categorie"
@@ -172,20 +187,20 @@ const categorySection = (lang: Locale): string =>
     : "categories";
 
 /**
- * ✅ Path categoria CANONICO
- * Accetta lang sporco ma RESTITUISCE SEMPRE /[lang]/...
+ * /categories/security
+ * /it/categorie/sicurezza
+ * /fr/categories/securite
+ * /es/categorias/seguridad
  */
 export const categoryPath = (lang: unknown, key: CategoryKey): string => {
   const safeLang = toLocale(lang, "en");
-  return `${langPrefix(safeLang)}/${categorySection(
-    safeLang
-  )}/${CAT_KEY_TO_SLUG[safeLang][key]}`;
+  const base = seoPrefix(safeLang);
+  const section = categorySection(safeLang);
+  const slug = CAT_KEY_TO_SLUG[safeLang][key];
+
+  return base ? `${base}/${section}/${slug}` : `/${section}/${slug}`;
 };
 
-/**
- * ✅ slug URL → key interna
- * fallback: "default"
- */
 export const categoryKeyFromSlug = (
   lang: unknown,
   slug: string
@@ -193,3 +208,23 @@ export const categoryKeyFromSlug = (
   const safeLang = toLocale(lang, "en");
   return CAT_SLUG_TO_KEY[safeLang][slug] ?? "default";
 };
+
+/* ------------------------------------------------------------------ */
+/* QUIZ                                                                */
+/* ------------------------------------------------------------------ */
+
+export const quizHomePath = (lang: Locale): string =>
+  `${quizPrefix(lang)}/quiz-home`;
+
+export const quizTopicPath = (
+  lang: Locale,
+  certSlug: string,
+  topicId: number
+): string =>
+  `${quizPrefix(lang)}/quiz/${certSlug}/topic/${topicId}`;
+
+export const mixedQuizPath = (
+  lang: Locale,
+  certSlug: string
+): string =>
+  `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;

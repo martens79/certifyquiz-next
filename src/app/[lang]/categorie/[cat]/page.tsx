@@ -1,12 +1,14 @@
 // Category page — slug mapping per lingua + SEO hreflang/canonical coerenti
-// Quiz SEMPRE con /[lang] (EN incluso)
+// Regole:
+// - SEO pages: EN senza /en, altre lingue con /{lang}
+// - Quiz: SEMPRE con /{lang} (EN incluso)
 
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CERT_SLUGS } from "@/certifications/data";
 import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "@/lib/primary-cert-by-category";
-import { langPrefix } from "@/lib/paths";
+import { seoPrefix, quizPrefix } from "@/lib/paths";
 
 import {
   getCategoryStyle,
@@ -40,12 +42,7 @@ const CATEGORY_META: Record<
   default: {
     key: "default",
     emoji: "📚",
-    title: {
-      it: "Categorie",
-      en: "Categories",
-      fr: "Catégories",
-      es: "Categorías",
-    },
+    title: { it: "Categorie", en: "Categories", fr: "Catégories", es: "Categorías" },
     subtitle: {
       it: "Scegli una categoria per iniziare.",
       en: "Pick a category to get started.",
@@ -105,12 +102,7 @@ const CATEGORY_META: Record<
   database: {
     key: "database",
     emoji: "🗄️",
-    title: {
-      it: "Database",
-      en: "Databases",
-      fr: "Bases de données",
-      es: "Bases de datos",
-    },
+    title: { it: "Database", en: "Databases", fr: "Bases de données", es: "Bases de datos" },
     subtitle: {
       it: "Modellazione, interrogazione e gestione dei dati.",
       en: "Data modeling, querying and management.",
@@ -122,12 +114,7 @@ const CATEGORY_META: Record<
   programmazione: {
     key: "programmazione",
     emoji: "⌨️",
-    title: {
-      it: "Programmazione",
-      en: "Programming",
-      fr: "Programmation",
-      es: "Programación",
-    },
+    title: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
     subtitle: {
       it: "Linguaggi moderni e logica di programmazione.",
       en: "Modern languages and programming logic.",
@@ -139,12 +126,7 @@ const CATEGORY_META: Record<
   virtualizzazione: {
     key: "virtualizzazione",
     emoji: "🖥️",
-    title: {
-      it: "Virtualizzazione",
-      en: "Virtualization",
-      fr: "Virtualisation",
-      es: "Virtualización",
-    },
+    title: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
     subtitle: {
       it: "Tecnologie di virtualizzazione e ambienti cloud-native.",
       en: "Virtualization technologies and cloud-native environments.",
@@ -156,12 +138,7 @@ const CATEGORY_META: Record<
   ai: {
     key: "ai",
     emoji: "🧠",
-    title: {
-      it: "Intelligenza Artificiale",
-      en: "Artificial Intelligence",
-      fr: "Intelligence Artificielle",
-      es: "Inteligencia Artificial",
-    },
+    title: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" },
     subtitle: {
       it: "Concetti base di AI e machine learning.",
       en: "Basic concepts of AI and machine learning.",
@@ -279,31 +256,29 @@ function resolveInternalKey(lang: Locale, slug: string): CategoryKey | null {
 /* ------------------------------------------------------------------------ */
 
 function segForCategories(lang: Locale) {
-  return lang === "it"
-    ? "categorie"
-    : lang === "es"
-    ? "categorias"
-    : "categories";
+  return lang === "it" ? "categorie" : lang === "es" ? "categorias" : "categories";
 }
 
 function segForCertifications(lang: Locale) {
-  return lang === "it"
-    ? "certificazioni"
-    : lang === "es"
-    ? "certificaciones"
-    : "certifications";
+  return lang === "it" ? "certificazioni" : lang === "es" ? "certificaciones" : "certifications";
+}
+
+/** SEO path builder: EN no prefix, others /{lang} */
+function seoPath(lang: Locale, pathname: string) {
+  const base = seoPrefix(lang); // "" | "/it" | "/fr" | "/es"
+  return base ? `${base}${pathname}` : pathname;
 }
 
 function localizedCategoryPath(lang: Locale, key: CategoryKey) {
-  return `${langPrefix(lang)}/${segForCategories(lang)}/${CAT_KEY_TO_SLUG[lang][key]}`;
+  return seoPath(lang, `/${segForCategories(lang)}/${CAT_KEY_TO_SLUG[lang][key]}`);
 }
 
 function localizedCertListPath(lang: Locale) {
-  return `${langPrefix(lang)}/${segForCertifications(lang)}`;
+  return seoPath(lang, `/${segForCertifications(lang)}`);
 }
 
 function localizedCertPath(lang: Locale, certSlug: string) {
-  return `${langPrefix(lang)}/${segForCertifications(lang)}/${certSlug}`;
+  return seoPath(lang, `/${segForCertifications(lang)}/${certSlug}`);
 }
 
 function mixedQuizPath(lang: Locale, key: CategoryKey) {
@@ -311,7 +286,7 @@ function mixedQuizPath(lang: Locale, key: CategoryKey) {
     PRIMARY_CERT_SLUG_BY_CATEGORY[key] ??
     PRIMARY_CERT_SLUG_BY_CATEGORY.default;
 
-  return `${langPrefix(lang)}/quiz/${certSlug}/mixed`;
+  return `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -319,22 +294,14 @@ function mixedQuizPath(lang: Locale, key: CategoryKey) {
 /* ------------------------------------------------------------------------ */
 
 const ogLocale = (lang: Locale) =>
-  lang === "it"
-    ? "it-IT"
-    : lang === "en"
-    ? "en-US"
-    : lang === "fr"
-    ? "fr-FR"
-    : "es-ES";
+  lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
 
 function hreflangMap(key: CategoryKey) {
   const out: Record<string, string> = {};
   for (const l of LOCALES) {
-    out[ogLocale(l)] =
-      `${SITE_URL}${localizedCategoryPath(l, key)}`;
+    out[ogLocale(l)] = `${SITE_URL}${localizedCategoryPath(l, key)}`;
   }
-  out["x-default"] =
-    `${SITE_URL}${localizedCategoryPath("en", key)}`;
+  out["x-default"] = `${SITE_URL}${localizedCategoryPath("en", key)}`;
   return out;
 }
 
@@ -355,8 +322,7 @@ export async function generateMetadata({
   const key = resolveInternalKey(lang, cat);
 
   if (!key) {
-    const canonical =
-      `${SITE_URL}${langPrefix(lang)}/${segForCategories(lang)}/${cat}`;
+    const canonical = `${SITE_URL}${seoPath(lang, `/${segForCategories(lang)}/${cat}`)}`;
 
     return {
       title: "Categoria non trovata",
@@ -370,8 +336,7 @@ export async function generateMetadata({
   const title = meta.title[lang] ?? meta.title.it;
   const desc = meta.subtitle[lang] ?? meta.subtitle.it;
 
-  const canonical =
-    `${SITE_URL}${localizedCategoryPath(lang, key)}`;
+  const canonical = `${SITE_URL}${localizedCategoryPath(lang, key)}`;
 
   return {
     title: `${title} — CertifyQuiz`,
