@@ -22,7 +22,14 @@ const nextConfig: NextConfig = {
 
       // ✅ NIENTE redirect "/" → "/it"
       // (root = EN globale)
+      // ✅ alias EN “pretty” → route fisica ITA (cartella)
+// /en/certifications/... → /en/certificazioni/...
+{ source: "/en/certifications", destination: "/en/certificazioni" },
+{ source: "/en/certifications/:slug", destination: "/en/certificazioni/:slug" },
 
+// /en/categories/... → /en/categorie/...
+{ source: "/en/categories", destination: "/en/categorie" },
+{ source: "/en/categories/:cat", destination: "/en/categorie/:cat" },
       // 1) legacy senza lingua → nuove rotte localizzate
       // liste
       { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
