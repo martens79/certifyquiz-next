@@ -4,10 +4,7 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: false },
   outputFileTracingRoot: path.resolve(__dirname),
-  turbopack: { root: __dirname },
 
   async redirects() {
     return [
@@ -19,58 +16,54 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // 1) Legacy senza lingua → IT/ES (come avevi)
-      { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
-      { source: "/certificazioni/:slug", destination: "/it/certificazioni/:slug", permanent: true },
+      // 1) QUIZ EN: vecchi link senza /en → metti /en
+      // (così i quiz "ufficiali" EN stanno sempre sotto /en/quiz)
+      { source: "/quiz/:slug/mixed", destination: "/en/quiz/:slug/mixed", permanent: true },
+      { source: "/quiz/:slug", destination: "/en/quiz/:slug", permanent: true },
+      { source: "/quiz/topic/:topicId", destination: "/en/quiz/topic/:topicId", permanent: true },
 
-      { source: "/certificaciones", destination: "/es/certificaciones", permanent: true },
-      { source: "/certificaciones/:slug", destination: "/es/certificaciones/:slug", permanent: true },
-
-      // 2) Hardening IT alias
-      { source: "/it/certifications", destination: "/it/certificazioni", permanent: true },
-      { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug", permanent: true },
-
-      // 3) ✅ LEGACY EN con /en/* → EN root (senza /en)
+      // 2) Legacy EN pages con /en/... → root (perché EN pages le vuoi senza /en)
       { source: "/en/certifications", destination: "/certifications", permanent: true },
       { source: "/en/certifications/:slug", destination: "/certifications/:slug", permanent: true },
-
       { source: "/en/categories", destination: "/categories", permanent: true },
       { source: "/en/categories/:cat", destination: "/categories/:cat", permanent: true },
 
-      { source: "/en/quiz/:slug/mixed", destination: "/quiz/:slug/mixed", permanent: true },
-      { source: "/en/quiz/:slug", destination: "/quiz/:slug", permanent: true },
-      { source: "/en/quiz/topic/:topicId", destination: "/quiz/topic/:topicId", permanent: true },
-
-      { source: "/en/privacy", destination: "/privacy", permanent: true },
-      { source: "/en/terms", destination: "/terms", permanent: true },
-      { source: "/en/cookies", destination: "/cookies", permanent: true },
-      { source: "/en/contact", destination: "/contact", permanent: true },
+      // 3) Legacy IT/ES senza prefisso → con prefisso
+      { source: "/certificazioni", destination: "/it/certificazioni", permanent: true },
+      { source: "/certificazioni/:slug", destination: "/it/certificazioni/:slug", permanent: true },
+      { source: "/certificaciones", destination: "/es/certificaciones", permanent: true },
+      { source: "/certificaciones/:slug", destination: "/es/certificaciones/:slug", permanent: true },
     ];
   },
 
   async rewrites() {
     return [
       // =========================
-      // EN ROOT (pretty) → route fisica /en/...
+      // EN PAGES ROOT (NO /en) → route fisica /en/...
       // =========================
+
+      // certifications
       { source: "/certifications", destination: "/en/certificazioni" },
       { source: "/certifications/:slug", destination: "/en/certificazioni/:slug" },
 
+      // categories
       { source: "/categories", destination: "/en/categorie" },
       { source: "/categories/:cat", destination: "/en/categorie/:cat" },
 
-      { source: "/quiz/:slug/mixed", destination: "/en/quiz/:slug/mixed" },
-      { source: "/quiz/:slug", destination: "/en/quiz/:slug" },
-      { source: "/quiz/topic/:topicId", destination: "/en/quiz/topic/:topicId" },
+      // (QUIZ: NIENTE rewrite qui, perché li vuoi con /en visibile)
+      // quindi devono essere linkati come /en/quiz/...
 
       // =========================
-      // Alias prefissati (FR/ES) → route fisica (cartelle IT)
+      // FR pretty → cartelle fisiche
       // =========================
       { source: "/fr/certifications", destination: "/fr/certificazioni" },
       { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
       { source: "/fr/categories", destination: "/fr/categorie" },
       { source: "/fr/categories/:cat", destination: "/fr/categorie/:cat" },
 
+      // =========================
+      // ES pretty → cartelle fisiche
+      // =========================
       { source: "/es/certificaciones", destination: "/es/certificazioni" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
       { source: "/es/categorias", destination: "/es/categorie" },
