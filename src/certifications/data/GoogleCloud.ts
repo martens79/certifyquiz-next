@@ -145,7 +145,7 @@ const GoogleCloud = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/google-cloud",
-    en: "/quiz/google-cloud",
+    en: "/en/quiz/google-cloud",
     fr: "/fr/quiz/google-cloud",
     es: "/es/quiz/google-cloud",
   },

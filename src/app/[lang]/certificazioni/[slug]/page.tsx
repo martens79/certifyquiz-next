@@ -151,10 +151,11 @@ const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
 const makeQuizRoute = (slug: string) =>
   ({
     it: `/it/quiz/${slug}`,
-    en: `/quiz/${slug}`, // 🔥 EN root
+    en: `/en/quiz/${slug}`, // ✅ FIX
     fr: `/fr/quiz/${slug}`,
     es: `/es/quiz/${slug}`,
   } as const);
+
 
 const makeBackRoute = () =>
   ({

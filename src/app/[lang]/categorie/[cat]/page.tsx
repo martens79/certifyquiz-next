@@ -1,12 +1,12 @@
-// src/app/[lang]/categorie/[cat]/page.tsx
-// Category page — EN root + slug mapping per lingua + SEO hreflang/canonical coerenti
+// Category page — slug mapping per lingua + SEO hreflang/canonical coerenti
+// Quiz SEMPRE con /[lang] (EN incluso)
 
 import type { Metadata } from "next";
 import Link from "next/link";
+
 import { CERT_SLUGS } from "@/certifications/data";
 import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "@/lib/primary-cert-by-category";
-
-
+import { langPrefix } from "@/lib/paths";
 
 import {
   getCategoryStyle,
@@ -25,10 +25,9 @@ const SITE_URL =
   );
 
 /* ------------------------------------------------------------------------ */
-/*                       CATEGORY META — MULTILINGUA                       */
+/*                       CATEGORY META — MULTILINGUA                         */
 /* ------------------------------------------------------------------------ */
 
-// ✅ Le chiavi interne DEVONO coincidere con CategoryKey (da "@/lib/certs")
 const CATEGORY_META: Record<
   CategoryKey,
   {
@@ -54,6 +53,7 @@ const CATEGORY_META: Record<
       es: "Elige una categoría para empezar.",
     },
   },
+
   base: {
     key: "base",
     emoji: "🧮",
@@ -153,31 +153,28 @@ const CATEGORY_META: Record<
     },
   },
 
-  // ✅ Niente più "ai": la key canonica è "intelligenza-artificiale"
   ai: {
-  key: "ai",
-  emoji: "🧠",
-  title: {
-    it: "Intelligenza Artificiale",
-    en: "Artificial Intelligence",
-    fr: "Intelligence Artificielle",
-    es: "Inteligencia Artificial",
+    key: "ai",
+    emoji: "🧠",
+    title: {
+      it: "Intelligenza Artificiale",
+      en: "Artificial Intelligence",
+      fr: "Intelligence Artificielle",
+      es: "Inteligencia Artificial",
+    },
+    subtitle: {
+      it: "Concetti base di AI e machine learning.",
+      en: "Basic concepts of AI and machine learning.",
+      fr: "Concepts de base de l'IA et du machine learning.",
+      es: "Conceptos básicos de IA y aprendizaje automático.",
+    },
   },
-  subtitle: {
-    it: "Concetti base di AI e machine learning.",
-    en: "Basic concepts of AI and machine learning.",
-    fr: "Concepts de base de l'IA et du machine learning.",
-    es: "Conceptos básicos de IA y aprendizaje automático.",
-  },
-},
-
 };
 
 /* ------------------------------------------------------------------------ */
-/*                           Slug mapping (URL → key)                       */
+/*                           Slug mapping                                   */
 /* ------------------------------------------------------------------------ */
 
-// URL slug -> internal key (per lingua)
 const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   it: {
     base: "base",
@@ -187,7 +184,7 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     database: "database",
     programmazione: "programmazione",
     virtualizzazione: "virtualizzazione",
-    "intelligenza-artificiale": "ai", // ✅ slug IT -> key interna
+    "intelligenza-artificiale": "ai",
   },
   en: {
     fundamentals: "base",
@@ -198,42 +195,35 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     databases: "database",
     programming: "programmazione",
     virtualization: "virtualizzazione",
-    "artificial-intelligence": "ai", // ✅ slug EN -> key interna
+    "artificial-intelligence": "ai",
   },
   fr: {
     fondamentaux: "base",
     bases: "base",
     securite: "sicurezza",
-    "sécurité": "sicurezza",
     reseaux: "reti",
-    "réseaux": "reti",
     cloud: "cloud",
     "bases-de-donnees": "database",
-    "bases-de-données": "database",
     programmation: "programmazione",
     virtualisation: "virtualizzazione",
-    "intelligence-artificielle": "ai", // ✅ slug FR -> key interna
+    "intelligence-artificielle": "ai",
   },
   es: {
     fundamentos: "base",
     basico: "base",
-    "básico": "base",
     seguridad: "sicurezza",
     redes: "reti",
     cloud: "cloud",
     "bases-de-datos": "database",
     programacion: "programmazione",
-    "programación": "programmazione",
     virtualizacion: "virtualizzazione",
-    "virtualización": "virtualizzazione",
-    "inteligencia-artificial": "ai", // ✅ slug ES -> key interna
+    "inteligencia-artificial": "ai",
   },
 };
 
-// internal key -> slug URL per lingua (canonical, link, hreflang)
 const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
-    default: "base", // oppure "base" / "categorie" (scegli uno slug valido)
+    default: "base",
     base: "base",
     sicurezza: "sicurezza",
     reti: "reti",
@@ -278,44 +268,55 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   },
 };
 
-
-function resolveInternalKey(lang: Locale, catSlug: string): CategoryKey | null {
-  const normalized = (catSlug || "").trim();
-
-  // ✅ se arriva già una key interna (es. "base", "sicurezza", "ai"), accettala
-  if (normalized in CAT_KEY_TO_SLUG[lang]) {
-    return normalized as CategoryKey;
-  }
-
-  return CAT_SLUG_TO_KEY[lang][normalized] ?? null;
+function resolveInternalKey(lang: Locale, slug: string): CategoryKey | null {
+  const s = (slug || "").trim();
+  if (s in CAT_KEY_TO_SLUG[lang]) return s as CategoryKey;
+  return CAT_SLUG_TO_KEY[lang][s] ?? null;
 }
 
-
-
 /* ------------------------------------------------------------------------ */
-/*                           Helpers (paths, hreflang)                      */
+/*                              Path helpers                                */
 /* ------------------------------------------------------------------------ */
-
-function segForCertifications(lang: Locale) {
-  return lang === "it"
-    ? "certificazioni"
-    : lang === "es"
-    ? "certificaciones"
-    : "certifications"; // en/fr
-}
 
 function segForCategories(lang: Locale) {
   return lang === "it"
     ? "categorie"
     : lang === "es"
     ? "categorias"
-    : "categories"; // en/fr
+    : "categories";
 }
 
-// ✅ EN root
-function langPrefix(lang: Locale) {
-  return lang === "en" ? "" : `/${lang}`;
+function segForCertifications(lang: Locale) {
+  return lang === "it"
+    ? "certificazioni"
+    : lang === "es"
+    ? "certificaciones"
+    : "certifications";
 }
+
+function localizedCategoryPath(lang: Locale, key: CategoryKey) {
+  return `${langPrefix(lang)}/${segForCategories(lang)}/${CAT_KEY_TO_SLUG[lang][key]}`;
+}
+
+function localizedCertListPath(lang: Locale) {
+  return `${langPrefix(lang)}/${segForCertifications(lang)}`;
+}
+
+function localizedCertPath(lang: Locale, certSlug: string) {
+  return `${langPrefix(lang)}/${segForCertifications(lang)}/${certSlug}`;
+}
+
+function mixedQuizPath(lang: Locale, key: CategoryKey) {
+  const certSlug =
+    PRIMARY_CERT_SLUG_BY_CATEGORY[key] ??
+    PRIMARY_CERT_SLUG_BY_CATEGORY.default;
+
+  return `${langPrefix(lang)}/quiz/${certSlug}/mixed`;
+}
+
+/* ------------------------------------------------------------------------ */
+/*                                SEO helpers                               */
+/* ------------------------------------------------------------------------ */
 
 const ogLocale = (lang: Locale) =>
   lang === "it"
@@ -326,43 +327,19 @@ const ogLocale = (lang: Locale) =>
     ? "fr-FR"
     : "es-ES";
 
-// canonical path categoria per lingua usando key
-function localizedCategoryPath(lang: Locale, key: CategoryKey) {
-  const slug = CAT_KEY_TO_SLUG[lang][key];
-  return `${langPrefix(lang)}/${segForCategories(lang)}/${slug}`;
-}
-
 function hreflangMap(key: CategoryKey) {
   const out: Record<string, string> = {};
-  for (const l of LOCALES) out[ogLocale(l)] = `${SITE_URL}${localizedCategoryPath(l, key)}`;
-  out["x-default"] = `${SITE_URL}${localizedCategoryPath("en", key)}`;
+  for (const l of LOCALES) {
+    out[ogLocale(l)] =
+      `${SITE_URL}${localizedCategoryPath(l, key)}`;
+  }
+  out["x-default"] =
+    `${SITE_URL}${localizedCategoryPath("en", key)}`;
   return out;
 }
 
-// link lista certificazioni (breadcrumb)
-function localizedCertListPath(lang: Locale) {
-  return `${langPrefix(lang)}/${segForCertifications(lang)}`;
-}
-
-// link dettaglio certificazione
-function localizedCertPath(lang: Locale, certSlug: string) {
-  return `${langPrefix(lang)}/${segForCertifications(lang)}/${certSlug}`;
-}
-
-// quiz mixed per categoria (usa key interna stabile)
-// quiz mixed → certificazione principale della categoria
-function mixedQuizPath(lang: Locale, key: CategoryKey) {
-  const certSlug =
-    PRIMARY_CERT_SLUG_BY_CATEGORY[key] ??
-    PRIMARY_CERT_SLUG_BY_CATEGORY.default;
-
-  return `${langPrefix(lang)}/quiz/${certSlug}/mixed`;
-}
-
-
-
 /* ------------------------------------------------------------------------ */
-/*                                 Metadata                                */
+/*                                Metadata                                  */
 /* ------------------------------------------------------------------------ */
 
 export const revalidate = 60;
@@ -375,10 +352,12 @@ export async function generateMetadata({
   params: Promise<{ lang: Locale; cat: string }>;
 }): Promise<Metadata> {
   const { lang, cat } = await params;
-
   const key = resolveInternalKey(lang, cat);
+
   if (!key) {
-    const canonical = `${SITE_URL}${langPrefix(lang)}/${segForCategories(lang)}/${cat}`;
+    const canonical =
+      `${SITE_URL}${langPrefix(lang)}/${segForCategories(lang)}/${cat}`;
+
     return {
       title: "Categoria non trovata",
       description: "Categoria non valida.",
@@ -388,28 +367,22 @@ export async function generateMetadata({
   }
 
   const meta = CATEGORY_META[key];
-  const tTitle = meta.title[lang] ?? meta.title.it;
-  const tSubtitle = meta.subtitle[lang] ?? meta.subtitle.it;
+  const title = meta.title[lang] ?? meta.title.it;
+  const desc = meta.subtitle[lang] ?? meta.subtitle.it;
 
-  const canonical = `${SITE_URL}${localizedCategoryPath(lang, key)}`;
-
-  const label =
-    lang === "it"
-      ? "Certificazioni"
-      : lang === "es"
-      ? "Certificaciones"
-      : "Certifications";
+  const canonical =
+    `${SITE_URL}${localizedCategoryPath(lang, key)}`;
 
   return {
-    title: `${tTitle} — ${label}`,
-    description: tSubtitle,
+    title: `${title} — CertifyQuiz`,
+    description: desc,
     alternates: {
       canonical,
       languages: hreflangMap(key),
     },
     openGraph: {
-      title: `${tTitle} — ${label}`,
-      description: tSubtitle,
+      title,
+      description: desc,
       url: canonical,
       siteName: "CertifyQuiz",
       locale: ogLocale(lang),
@@ -417,15 +390,15 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${tTitle} — ${label}`,
-      description: tSubtitle,
+      title,
+      description: desc,
     },
     robots: { index: true, follow: true },
   };
 }
 
 /* ------------------------------------------------------------------------ */
-/*                                  PAGE                                   */
+/*                                   PAGE                                   */
 /* ------------------------------------------------------------------------ */
 
 export default async function CategoryPage({
@@ -434,18 +407,18 @@ export default async function CategoryPage({
   params: Promise<{ lang: Locale; cat: string }>;
 }) {
   const { lang, cat } = await params;
-
   const key = resolveInternalKey(lang, cat);
+
   if (!key) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-2xl font-bold mb-2">
           {lang === "it"
             ? "Categoria non trovata"
-            : lang === "es"
-            ? "Categoría no encontrada"
             : lang === "fr"
             ? "Catégorie introuvable"
+            : lang === "es"
+            ? "Categoría no encontrada"
             : "Category not found"}
         </h1>
         <p className="text-sm text-gray-600">
@@ -456,13 +429,12 @@ export default async function CategoryPage({
   }
 
   const meta = CATEGORY_META[key];
-  const css = getCategoryStyle(meta.key);
+  const css = getCategoryStyle(key);
 
   const certSlugs = CERT_SLUGS.filter(
-    (s) => (CERT_CATEGORY_BY_SLUG[s] ?? "") === meta.key
+    (s) => CERT_CATEGORY_BY_SLUG[s] === key
   );
 
-  /* ---------------------- JSON-LD Breadcrumb ---------------------- */
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -490,29 +462,11 @@ export default async function CategoryPage({
   const ctaCert =
     lang === "it"
       ? "Vai alla pagina certificazione →"
-      : lang === "en"
-      ? "Go to certification page →"
       : lang === "fr"
       ? "Voir la certification →"
-      : "Ir a la certificación →";
-
-  const mixedTitle =
-    lang === "it"
-      ? `Quiz misti — ${meta.title.it}`
-      : lang === "en"
-      ? `Mixed quiz — ${meta.title.en}`
-      : lang === "fr"
-      ? `Quiz mixtes — ${meta.title.fr}`
-      : `Quiz mixtos — ${meta.title.es}`;
-
-  const mixedDesc =
-    lang === "it"
-      ? "Tutti gli argomenti della categoria in un solo test."
-      : lang === "en"
-      ? "All category topics in a single test."
-      : lang === "fr"
-      ? "Tous les sujets de la catégorie dans un seul test."
-      : "Todos los temas de la categoría en una sola prueba.";
+      : lang === "es"
+      ? "Ir a la certificación →"
+      : "Go to certification page →";
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -524,9 +478,9 @@ export default async function CategoryPage({
 
       <header className={`rounded-2xl p-6 shadow-sm mb-8 ${css.header}`}>
         <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <span>{meta.emoji}</span> {meta.title[lang] ?? meta.title.it}
+          <span>{meta.emoji}</span> {meta.title[lang]}
         </h1>
-        <p className="mt-1 opacity-80">{meta.subtitle[lang] ?? meta.subtitle.it}</p>
+        <p className="mt-1 opacity-80">{meta.subtitle[lang]}</p>
       </header>
 
       {certSlugs.length === 0 ? (
@@ -560,8 +514,16 @@ export default async function CategoryPage({
             href={mixedQuizPath(lang, key)}
             className={`rounded-2xl p-5 font-semibold shadow-sm transition ${css.wrapper}`}
           >
-            <div className="text-xl mb-1">🎯 {mixedTitle}</div>
-            <p className="text-sm opacity-80">{mixedDesc}</p>
+            <div className="text-xl mb-1">🎯 Mixed quiz</div>
+            <p className="text-sm opacity-80">
+              {lang === "it"
+                ? "Tutti gli argomenti della categoria in un solo test."
+                : lang === "fr"
+                ? "Tous les sujets de la catégorie dans un seul test."
+                : lang === "es"
+                ? "Todos los temas de la categoría en una sola prueba."
+                : "All category topics in a single test."}
+            </p>
           </Link>
         </div>
       )}

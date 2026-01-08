@@ -142,7 +142,7 @@ const PythonDeveloper = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/python",
-    en: "/quiz/python",
+    en: "/en/quiz/python",
     fr: "/fr/quiz/python",
     es: "/es/quiz/python",
   },

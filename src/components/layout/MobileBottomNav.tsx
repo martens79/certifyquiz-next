@@ -11,7 +11,7 @@ import type { MinimalUser } from "@/lib/auth";
 type Props = {
   lang: Locale;
   isAuthenticated?: boolean;
-  user?: MinimalUser | null; // (opzionale: per futuro badge/pro)
+  user?: MinimalUser | null;
 };
 
 type ItemKey = "home" | "quiz" | "certs" | "profile";
@@ -21,7 +21,6 @@ type Item = {
   href: string;
   label: string;
   icon: ReactNode;
-  /** true se l'utente è già su quella "sezione": in quel caso NON mostriamo l'icona */
   match: (pathNoQuery: string) => boolean;
 };
 
@@ -36,22 +35,19 @@ function tLabel(lang: Locale, key: ItemKey) {
 }
 
 /**
- * EN = root (nessun /en)
- * IT/FR/ES = prefisso /it /fr /es tramite withLang
- *
- * Nota: per coerenza uso sempre lo stesso path ("/quiz-home", "/profile", ...)
- * e lascio a withLang la gestione del prefisso quando serve.
+ * ✅ Standard: tutte le pagine pubbliche sono sotto /{lang}/...
+ * (EN incluso)
  */
 function publicHref(lang: Locale, path: string) {
-  return lang === "en" ? path : withLang(lang, path);
+  return withLang(lang, path);
 }
 
 /**
- * Hide SOLO durante quiz flow vero: /.../quiz/<qualcosa>
- * Deve RESTARE su /quiz-home e /quiz-suggeriti
+ * Hide SOLO durante quiz flow vero: /{lang}/quiz/<qualcosa>
+ * Deve RESTARE visibile su /{lang}/quiz-home e /{lang}/quiz-suggeriti
  */
 function isQuizFlow(pathNoQuery: string, lang: Locale) {
-  const quizPrefix = lang === "en" ? "/quiz/" : withLang(lang, "/quiz/");
+  const quizPrefix = `/${lang}/quiz/`;
   return pathNoQuery.startsWith(quizPrefix);
 }
 
@@ -59,17 +55,25 @@ export default function MobileBottomNav({
   lang,
   isAuthenticated = false,
 }: Props) {
-  const pathname = usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
+  const pathname = usePathname() || `/${lang}`;
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
 
   // Durante il quiz vero e proprio, nascondi la bottom nav
   if (isQuizFlow(pathNoQuery, lang)) return null;
 
   // HREF base
-  const homeHref = lang === "en" ? "/" : withLang(lang, "/");
+  const homeHref = publicHref(lang, "/");
   const quizHomeHref = publicHref(lang, "/quiz-home");
   const suggestedHref = publicHref(lang, "/quiz-suggeriti");
-  const certsHref = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
+
+  // Cert list: ora standardizzata con /{lang}/... (EN incluso)
+  // (Se in futuro vuoi EN-root /certifications, lo fai con rewrite/canonical, non qui)
+  const certsHref =
+    lang === "it"
+      ? publicHref(lang, "/certificazioni")
+      : lang === "es"
+      ? publicHref(lang, "/certificaciones")
+      : publicHref(lang, "/certifications"); // en/fr
 
   // Se non loggato → login con redirect all'URL attuale
   const loginHref = publicHref(
@@ -79,10 +83,6 @@ export default function MobileBottomNav({
 
   const profileHref = publicHref(lang, "/profile");
 
-  /**
-   * Match: serve a capire la "sezione corrente".
-   * Regola UX: NON mostriamo la voce della sezione in cui l'utente si trova già.
-   */
   const items: Item[] = [
     {
       key: "home",
@@ -109,7 +109,6 @@ export default function MobileBottomNav({
       key: "quiz",
       href: quizHomeHref,
       label: tLabel(lang, "quiz"),
-      // consideriamo "sezione quiz" sia quiz-home che quiz-suggeriti
       match: (p) => p === quizHomeHref || p === suggestedHref,
       icon: (
         <svg
@@ -136,7 +135,6 @@ export default function MobileBottomNav({
       key: "certs",
       href: certsHref,
       label: tLabel(lang, "certs"),
-      // lista + dettagli
       match: (p) => p === certsHref || p.startsWith(certsHref + "/"),
       icon: (
         <svg
@@ -161,15 +159,12 @@ export default function MobileBottomNav({
     },
     {
       key: "profile",
-      href: profileHref,
+      href: isAuthenticated ? profileHref : loginHref,
       label: tLabel(lang, "profile"),
-      // profile oppure login (quando non autenticato)
       match: (p) =>
-  lang === "en"
-    ? p === "/profile" || p.startsWith("/profile/")
-    : p === withLang(lang, "/profile") ||
-      p.startsWith(withLang(lang, "/profile/")),
-
+        p === profileHref ||
+        p.startsWith(profileHref + "/") ||
+        p.startsWith(publicHref(lang, "/login")),
       icon: (
         <svg
           className="h-5 w-5"

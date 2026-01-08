@@ -189,7 +189,7 @@ const CSharpAzureDeveloper = {
 
   quizRoute: {
     it: "/it/quiz/csharp",
-    en: "/quiz/csharp",
+    en: "/en/quiz/csharp",
     fr: "/fr/quiz/csharp",
     es: "/es/quiz/csharp",
   },

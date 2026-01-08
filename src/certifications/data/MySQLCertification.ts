@@ -147,7 +147,7 @@ const MySQLCertification = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/mysql-certification",
-    en: "/quiz/mysql-certification",
+    en: "/en/quiz/mysql-certification",
     fr: "/fr/quiz/mysql-certification",
     es: "/es/quiz/mysql-certification",
   },

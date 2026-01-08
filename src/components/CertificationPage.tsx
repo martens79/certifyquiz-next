@@ -78,7 +78,7 @@ export default function CertificationPage({
   // (Dev) avvisa se il quizRoute definito nel file non combacia con lo slug
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
-    if (anyQ && !anyQ.endsWith(`/quiz/${data.slug}`)) {
+    if (anyQ && !anyQ.includes(`/quiz/${data.slug}`)) {
       // eslint-disable-next-line no-console
       console.warn(`[CertificationPage] quizRoute mismatch for "${data.slug}" → "${anyQ}"`);
     }

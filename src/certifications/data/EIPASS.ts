@@ -139,7 +139,7 @@ const EIPASS = {
   // Rotte quiz localizzate (notare slug quiz = eipass-basic)
   quizRoute: {
     it: "/it/quiz/eipass-basic",
-    en: "/quiz/eipass-basic",
+    en: "/en/quiz/eipass-basic",
     fr: "/fr/quiz/eipass-basic",
     es: "/es/quiz/eipass-basic",
   },

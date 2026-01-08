@@ -151,7 +151,7 @@ const MicrosoftVirtualization = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/microsoft-virtualization",
-    en: "/quiz/microsoft-virtualization",
+    en: "/en/quiz/microsoft-virtualization",
     fr: "/fr/quiz/microsoft-virtualization",
     es: "/es/quiz/microsoft-virtualization",
   },

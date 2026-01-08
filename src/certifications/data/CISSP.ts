@@ -125,7 +125,7 @@ const CISSP = {
   // rotte localizzate per i pulsanti/indietro
   quizRoute: {
     it: "/it/quiz/cissp",
-    en: "/quiz/cissp",
+    en: "/en/quiz/cissp",
     fr: "/fr/quiz/cissp",
     es: "/es/quiz/cissp",
   },

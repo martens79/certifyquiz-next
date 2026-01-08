@@ -121,7 +121,7 @@ const ISC2CC = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/isc2-cc",
-    en: "/quiz/isc2-cc",
+    en: "/en/quiz/isc2-cc",
     fr: "/fr/quiz/isc2-cc",
     es: "/es/quiz/isc2-cc",
   },

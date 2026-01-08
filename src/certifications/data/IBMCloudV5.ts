@@ -130,7 +130,7 @@ const IBMCloudV5 = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/ibm-cloud",
-    en: "/quiz/ibm-cloud",
+    en: "/en/quiz/ibm-cloud",
     fr: "/fr/quiz/ibm-cloud",
     es: "/es/quiz/ibm-cloud",
   },

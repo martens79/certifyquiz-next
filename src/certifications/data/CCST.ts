@@ -204,7 +204,7 @@ const CCST = {
 
   quizRoute: {
     it: "/it/quiz/cisco-ccst",
-    en: "/quiz/cisco-ccst",
+    en: "/en/quiz/cisco-ccst",
     fr: "/fr/quiz/cisco-ccst",
     es: "/es/quiz/cisco-ccst",
   },

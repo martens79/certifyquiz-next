@@ -143,7 +143,7 @@ const ITFPlus = {
   // Rotte localizzate (manteniamo slug/quiz esistenti su itfplus)
   quizRoute: {
     it: "/it/quiz/itfplus",
-    en: "/quiz/itfplus",
+    en: "/en/quiz/itfplus",
     fr: "/fr/quiz/itfplus",
     es: "/es/quiz/itfplus",
   },

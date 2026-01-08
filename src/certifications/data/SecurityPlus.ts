@@ -135,7 +135,7 @@ const SecurityPlus = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/security-plus",
-    en: "/quiz/security-plus",
+    en: "/en/quiz/security-plus",
     fr: "/fr/quiz/security-plus",
     es: "/es/quiz/security-plus",
   },

@@ -126,7 +126,7 @@ const F5Certification = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/f5",
-    en: "/quiz/f5",
+    en: "/en/quiz/f5",
     fr: "/fr/quiz/f5",
     es: "/es/quiz/f5",
   },

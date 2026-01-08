@@ -217,7 +217,7 @@ const JNCIE = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/jncie",
-    en: "/quiz/jncie",
+    en: "/en/quiz/jncie",
     fr: "/fr/quiz/jncie",
     es: "/es/quiz/jncie",
   },

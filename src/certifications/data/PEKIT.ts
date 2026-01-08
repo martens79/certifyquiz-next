@@ -142,7 +142,7 @@ const PEKIT = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/pekit",
-    en: "/quiz/pekit",
+    en: "/en/quiz/pekit",
     fr: "/fr/quiz/pekit",
     es: "/es/quiz/pekit",
   },

@@ -206,7 +206,7 @@ const CEH = {
 
   quizRoute: {
     it: "/it/quiz/ceh",
-    en: "/quiz/ceh",
+    en: "/en/quiz/ceh",
     fr: "/fr/quiz/ceh",
     es: "/es/quiz/ceh",
   },

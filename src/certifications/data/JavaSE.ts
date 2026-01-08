@@ -136,7 +136,7 @@ const JavaSE = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/java",
-    en: "/quiz/java",
+    en: "/en/quiz/java",
     fr: "/fr/quiz/java",
     es: "/es/quiz/java",
   },

@@ -170,7 +170,7 @@ const MicrosoftAIFundamentals = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/ai-fundamentals",
-    en: "/quiz/ai-fundamentals",
+    en: "/en/quiz/ai-fundamentals",
     fr: "/fr/quiz/ai-fundamentals",
     es: "/es/quiz/ai-fundamentals",
   },

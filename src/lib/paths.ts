@@ -1,33 +1,48 @@
 // src/lib/paths.ts
+// SINGLE SOURCE OF TRUTH FOR URL PATHS
+// Regola: TUTTE le rotte sono /[lang]/... (EN incluso)
+
 export type Locale = "it" | "en" | "fr" | "es";
 
 /* ------------------------------------------------------------------ */
 /* INTERNAL HELPERS                                                    */
 /* ------------------------------------------------------------------ */
 
-const isLocale = (v: unknown): v is Locale =>
+export const isLocale = (v: unknown): v is Locale =>
   v === "it" || v === "en" || v === "fr" || v === "es";
 
-const toLocale = (v: unknown, fallback: Locale = "en"): Locale =>
+export const toLocale = (v: unknown, fallback: Locale = "en"): Locale =>
   isLocale(v) ? v : fallback;
+
+/**
+ * ✅ Prefisso lingua CANONICO
+ * SEMPRE presente, anche per EN
+ */
+export const langPrefix = (lang: Locale): string => `/${lang}`;
 
 /* ------------------------------------------------------------------ */
 /* CERTIFICATIONS                                                      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * ✅ Path certificazione (CANONICO)
+ * /it/certificazioni/...
+ * /en/certifications/...
+ * /fr/certifications/...
+ * /es/certificaciones/...
+ */
 export const certPath = (lang: Locale, slug: string): string => {
   switch (lang) {
     case "it":
       return `/it/certificazioni/${slug}`;
     case "en":
-      // ✅ EN = root (NO /en)
-      return `/certifications/${slug}`;
+      return `/en/certifications/${slug}`;
     case "fr":
       return `/fr/certifications/${slug}`;
     case "es":
       return `/es/certificaciones/${slug}`;
     default:
-      return `/it/certificazioni/${slug}`;
+      return `/en/certifications/${slug}`;
   }
 };
 
@@ -36,8 +51,7 @@ export const certPath = (lang: Locale, slug: string): string => {
 /* ------------------------------------------------------------------ */
 
 /**
- * ✅ CategoryKey = chiave interna stabile (NON slug, NON tradotta)
- * "default" serve per fallback safe quando lo slug non è mappato.
+ * ✅ CategoryKey = chiave interna stabile
  */
 export type CategoryKey =
   | "default"
@@ -50,7 +64,9 @@ export type CategoryKey =
   | "virtualizzazione"
   | "ai";
 
-/** ✅ key → slug canonico per lingua (SEO) */
+/**
+ * ✅ key → slug canonico per lingua
+ */
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
     default: "base",
@@ -98,7 +114,9 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   },
 };
 
-/** ✅ slug → key (reverse mapping) */
+/**
+ * ✅ slug → key interna
+ */
 export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   it: {
     base: "base",
@@ -142,25 +160,36 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   },
 };
 
-/** ✅ sezione URL per lingua */
+/* ------------------------------------------------------------------ */
+/* CATEGORY PATH HELPERS                                               */
+/* ------------------------------------------------------------------ */
+
 const categorySection = (lang: Locale): string =>
-  lang === "it" ? "categorie" : lang === "es" ? "categorias" : "categories";
+  lang === "it"
+    ? "categorie"
+    : lang === "es"
+    ? "categorias"
+    : "categories";
 
 /**
- * ✅ path builder categorie (ROBUSTO)
- * Accetta anche lang "sporco" / undefined in runtime e fa fallback a EN.
+ * ✅ Path categoria CANONICO
+ * Accetta lang sporco ma RESTITUISCE SEMPRE /[lang]/...
  */
 export const categoryPath = (lang: unknown, key: CategoryKey): string => {
   const safeLang = toLocale(lang, "en");
-  const prefix = safeLang === "en" ? "" : `/${safeLang}`;
-  return `${prefix}/${categorySection(safeLang)}/${CAT_KEY_TO_SLUG[safeLang][key]}`;
+  return `${langPrefix(safeLang)}/${categorySection(
+    safeLang
+  )}/${CAT_KEY_TO_SLUG[safeLang][key]}`;
 };
 
 /**
- * ✅ utile per wrapper dinamici: slug URL → key interna (ROBUSTO)
- * Se non trova lo slug, torna "default".
+ * ✅ slug URL → key interna
+ * fallback: "default"
  */
-export const categoryKeyFromSlug = (lang: unknown, slug: string): CategoryKey => {
+export const categoryKeyFromSlug = (
+  lang: unknown,
+  slug: string
+): CategoryKey => {
   const safeLang = toLocale(lang, "en");
   return CAT_SLUG_TO_KEY[safeLang][slug] ?? "default";
 };

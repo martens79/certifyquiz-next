@@ -121,7 +121,8 @@ export default function Header({ lang, user }: Props) {
   const profilePath = H("/profile");
   const isProfile = pathNoQuery === profilePath;
 
-  // flusso quiz: in EN /quiz/... (non /en/quiz)
+  // flusso quiz: sempre /{lang}/quiz/... (EN incluso)
+
   const quizRoot = lang === "en" ? "/quiz" : withLang(lang, "/quiz");
   const isQuizFlow = pathNoQuery.startsWith(quizRoot);
 

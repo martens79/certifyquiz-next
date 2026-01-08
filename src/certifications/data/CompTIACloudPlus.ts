@@ -108,7 +108,7 @@ const CompTIACloudPlus = {
   // Rotte quiz localizzate (coerenti con i tuoi path attuali)
   quizRoute: {
     it: "/it/quiz/comptia-cloud-plus",
-    en: "/quiz/comptia-cloud-plus",
+    en: "/en/quiz/comptia-cloud-plus",
     fr: "/fr/quiz/comptia-cloud-plus",
     es: "/es/quiz/comptia-cloud-plus",
   },

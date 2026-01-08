@@ -147,7 +147,7 @@ const VMwareVCP = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/vmware",
-    en: "/quiz/vmware",
+    en: "/en/quiz/vmware",
     fr: "/fr/quiz/vmware",
     es: "/es/quiz/vmware",
   },

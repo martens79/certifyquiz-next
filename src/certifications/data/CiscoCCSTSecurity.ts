@@ -144,7 +144,7 @@ const CISCO_CCST_CYBERSECURITY = {
   // rotte localizzate per i pulsanti
   quizRoute: {
     it: "/it/quiz/cisco-ccst-cybersecurity",
-    en: "/quiz/cisco-ccst-cybersecurity",
+    en: "/en/quiz/cisco-ccst-cybersecurity",
     fr: "/fr/quiz/cisco-ccst-cybersecurity",
     es: "/es/quiz/cisco-ccst-cybersecurity",
   },

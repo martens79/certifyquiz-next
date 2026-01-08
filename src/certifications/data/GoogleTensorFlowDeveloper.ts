@@ -122,7 +122,7 @@ const GoogleTensorFlowDeveloper = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/tensorflow",
-    en: "/quiz/tensorflow",
+    en: "/en/quiz/tensorflow",
     fr: "/fr/quiz/tensorflow",
     es: "/es/quiz/tensorflow",
   },

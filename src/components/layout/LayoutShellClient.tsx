@@ -28,12 +28,12 @@ function stripQueryHash(p: string) {
 function shouldHideBottomNav(pathname: string, lang: Locale) {
   const p = stripQueryHash(pathname);
 
-  // ✅ hide SOLO durante quiz flow vero: /quiz/... (EN) oppure /{lang}/quiz/... (altre)
-  const quizPrefix = lang === "en" ? "/quiz/" : `/${lang}/quiz/`;
+  // ✅ hide SOLO durante quiz flow vero: /{lang}/quiz/...
+  const quizPrefix = `/${lang}/quiz/`;
   if (p.startsWith(quizPrefix)) return true;
 
-  // auth pages (EN root, altre con prefisso)
-  const prefix = lang === "en" ? "" : `/${lang}`;
+  // ✅ auth pages: sempre /{lang}/...
+  const prefix = `/${lang}`;
   if (p.startsWith(`${prefix}/login`)) return true;
   if (p.startsWith(`${prefix}/register`)) return true;
   if (p.startsWith(`${prefix}/forgot-password`)) return true;
@@ -45,11 +45,11 @@ function shouldHidePromoPopup(pathname: string, lang: Locale) {
   const p = stripQueryHash(pathname);
 
   // Durante quiz: non interrompere l'esperienza
-  const quizPrefix = lang === "en" ? "/quiz/" : `/${lang}/quiz/`;
+  const quizPrefix = `/${lang}/quiz/`;
   if (p.startsWith(quizPrefix)) return true;
 
   // In auth pages: evita distrazioni
-  const prefix = lang === "en" ? "" : `/${lang}`;
+  const prefix = `/${lang}`;
   if (p.startsWith(`${prefix}/login`)) return true;
   if (p.startsWith(`${prefix}/register`)) return true;
   if (p.startsWith(`${prefix}/forgot-password`)) return true;
@@ -59,7 +59,7 @@ function shouldHidePromoPopup(pathname: string, lang: Locale) {
 
 export default function LayoutShellClient({ lang, children }: Props) {
   const pathnameRaw = usePathname();
-  const pathname = pathnameRaw || (lang === "en" ? "/" : `/${lang}`);
+  const pathname = pathnameRaw || `/${lang}`;
 
   const hideBottomNav = useMemo(
     () => shouldHideBottomNav(pathname, lang),

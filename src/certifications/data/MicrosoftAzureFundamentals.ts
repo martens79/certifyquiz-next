@@ -170,7 +170,7 @@ const MicrosoftAzureFundamentals = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/azure-fundamentals",
-    en: "/quiz/azure-fundamentals",
+    en: "/en/quiz/azure-fundamentals",
     fr: "/fr/quiz/azure-fundamentals",
     es: "/es/quiz/azure-fundamentals",
   },

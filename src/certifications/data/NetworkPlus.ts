@@ -131,7 +131,7 @@ const NetworkPlus = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/network-plus",
-    en: "/quiz/network-plus",
+    en: "/en/quiz/network-plus",
     fr: "/fr/quiz/network-plus",
     es: "/es/quiz/network-plus",
   },

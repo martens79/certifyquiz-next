@@ -141,7 +141,7 @@ const JavaScriptDeveloper = {
   // Rotte quiz localizzate (coerenti con gli altri data/*.ts)
   quizRoute: {
     it: "/it/quiz/javascript",
-    en: "/quiz/javascript",
+    en: "/en/quiz/javascript",
     fr: "/fr/quiz/javascript",
     es: "/es/quiz/javascript",
   },

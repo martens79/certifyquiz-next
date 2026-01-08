@@ -147,7 +147,7 @@ const MicrosoftSQLServer = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/sql-server",
-    en: "/quiz/sql-server",
+    en: "/en/quiz/sql-server",
     fr: "/fr/quiz/sql-server",
     es: "/es/quiz/sql-server",
   },

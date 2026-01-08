@@ -187,7 +187,7 @@ const CCNA = {
 
   quizRoute: {
     it: "/it/quiz/cisco-ccna",
-    en: "/quiz/cisco-ccna",
+    en: "/en/quiz/cisco-ccna",
     fr: "/fr/quiz/cisco-ccna",
     es: "/es/quiz/cisco-ccna",
   },

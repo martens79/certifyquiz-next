@@ -156,7 +156,7 @@ const ECDL_ICDL = {
   // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/ecdl",
-    en: "/quiz/ecdl",
+    en: "/en/quiz/ecdl",
     fr: "/fr/quiz/ecdl",
     es: "/es/quiz/ecdl",
   },
