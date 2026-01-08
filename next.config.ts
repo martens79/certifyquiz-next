@@ -48,23 +48,50 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    return [
-      // ✅ Alias pubblici “belli” → route fisica (se la tua route fisica è /[lang]/certificazioni)
-      // IT: /it/certifications → /it/certificazioni
-      { source: "/it/certifications", destination: "/it/certificazioni" },
-      { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug" },
+  return [
+    // =========================
+    // EN ROOT (pretty) → /en/...
+    // =========================
 
-      // ES: /es/certificaciones → /es/certificazioni (route fisica unica)
-      { source: "/es/certificaciones", destination: "/es/certificazioni" },
-      { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
+    // ✅ EN root certifications → route fisica /en/certificazioni
+    { source: "/certifications", destination: "/en/certificazioni" },
+    { source: "/certifications/:slug", destination: "/en/certificazioni/:slug" },
 
-       // ✅ quiz EN-root (senza /en) → route fisica /en/...
+    // ✅ EN root categories → route fisica /en/categorie
+    { source: "/categories", destination: "/en/categorie" },
+    { source: "/categories/:cat", destination: "/en/categorie/:cat" },
+
+    // ✅ quiz EN-root (senza /en) → route fisica /en/...
     { source: "/quiz/:slug/mixed", destination: "/en/quiz/:slug/mixed" },
     { source: "/quiz/:slug", destination: "/en/quiz/:slug" },
     { source: "/quiz/topic/:topicId", destination: "/en/quiz/topic/:topicId" },
 
-    ];
-  },
+    // =========================
+    // PRETTY (prefissati) → route fisica (cartelle IT)
+    // =========================
+
+    // FR: /fr/certifications → /fr/certificazioni
+    { source: "/fr/certifications", destination: "/fr/certificazioni" },
+    { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
+
+    // FR: /fr/categories → /fr/categorie
+    { source: "/fr/categories", destination: "/fr/categorie" },
+    { source: "/fr/categories/:cat", destination: "/fr/categorie/:cat" },
+
+    // ES: /es/certificaciones → /es/certificazioni (come già avevi)
+    { source: "/es/certificaciones", destination: "/es/certificazioni" },
+    { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
+
+    // ES: /es/categorias → /es/categorie
+    { source: "/es/categorias", destination: "/es/categorie" },
+    { source: "/es/categorias/:cat", destination: "/es/categorie/:cat" },
+
+    // IT hardening (se ti serve ancora)
+    { source: "/it/certifications", destination: "/it/certificazioni" },
+    { source: "/it/certifications/:slug", destination: "/it/certificazioni/:slug" },
+  ];
+}
+
 };
 
 export default nextConfig;
