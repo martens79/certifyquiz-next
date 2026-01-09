@@ -16,6 +16,9 @@ import LocaleSwitcher from "./LocaleSwitcher";
 import { NavLink } from "./NavLink";
 import { getToken, clearToken, getUser } from "@/lib/auth";
 import type { MinimalUser } from "@/lib/auth";
+import { certificationsPath } from "@/lib/paths";
+import { switchLangPathname } from "@/lib/paths";
+
 
 const UI: Record<
   Locale,
@@ -127,10 +130,13 @@ export default function Header({ lang, user }: Props) {
   const isQuizFlow = pathNoQuery.startsWith(quizRoot);
 
   // certificazioni: EN /certifications, altri /{lang}/certificazioni
-  const certRoot = lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
-  const isCertDetail = pathNoQuery.startsWith(certRoot + "/");
+  const certsHref = certificationsPath(lang);
+const certRoot = certsHref; // se ti serve per startsWith
+const isCertDetail = pathNoQuery.startsWith(certsHref + "/");
 
   const router = useRouter();
+ 
+
 
   const [openDrawer, setOpenDrawer] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -189,9 +195,7 @@ export default function Header({ lang, user }: Props) {
   ? H("/profile")
   : H(`/login?redirect=${encodeURIComponent(pathname)}`);
 
-// (resta qui se ti serve altrove; nel quick NON lo useremo più)
-const certsHref =
-  lang === "en" ? "/certifications" : withLang(lang, "/certificazioni");
+
 
   // ✅ EN root (SEO): /suggested
   // ✅ altre lingue: /it/quiz-suggeriti ecc.
@@ -205,9 +209,12 @@ const nav = useMemo(
   () =>
     [
       {
-        href: lang === "en" ? "/certifications" : H("/certificazioni"),
-        label: t.certifications,
-      },
+  href: certificationsPath(lang),
+  label: t.certifications,
+
+
+},
+
       { href: H("/blog"), label: t.blog },
       { href: H("/prezzi"), label: t.pricing },
     ] as const,
@@ -220,7 +227,7 @@ type QuickItem = { href: string; label: string; icon: ReactNode };
 const quickBase = useMemo<QuickItem[]>(() => {
   const homeHref = H("/");
   const quizHomeHref = H("/quiz-home");
-
+  const certsHref = certificationsPath(lang);
 
  
 
@@ -248,6 +255,31 @@ const quickBase = useMemo<QuickItem[]>(() => {
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M3 9.75L12 4l9 5.75v8.25A2.25 2.25 0 0 1 18.75 21H5.25A2.25 2.25 0 0 1 3 18V9.75z"
+          />
+        </svg>
+      ),
+    },
+        // Certifications (SEO)
+    {
+      href: certsHref,
+      label: t.certifications, // oppure ui.certifications se è lì la label
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M4 6.75A2.25 2.25 0 0 1 6.25 4.5h11.5A2.25 2.25 0 0 1 20 6.75v10.5A2.25 2.25 0 0 1 17.75 19.5H6.25A2.25 2.25 0 0 1 4 17.25V6.75z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8 8h8M8 12h8M8 16h5"
           />
         </svg>
       ),
@@ -369,8 +401,10 @@ const quickBase = useMemo<QuickItem[]>(() => {
   lang,
   pathname,
   profileHref,
+  suggestedHref,        // ✅ aggiungi anche questo (lo usi)
   t.blog,
   t.pricing,
+  t.certifications,     // ✅ ADD
   ui.home,
   ui.profile,
   ui.quiz,

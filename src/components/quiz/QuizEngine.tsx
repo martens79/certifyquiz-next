@@ -215,6 +215,9 @@ export default function QuizEngine({
   /* -------------------- MODE SWITCH (notifica + rebuild subset exam) -------------------- */
   const setModeSafe = (m: Mode) => {
     if (m === mode) return;
+    if (Object.keys(marked).length > 0) return;
+
+  clearProgress(storageScope);
 
     // quando cambi modalità: azzera timer/progress della modalità “nuova” se vuoi
     setMode(m);

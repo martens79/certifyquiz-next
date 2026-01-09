@@ -228,3 +228,36 @@ export const mixedQuizPath = (
   certSlug: string
 ): string =>
   `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;
+/* ------------------------------------------------------------------ */
+/* LANGUAGE SWITCH — URL SAFE (SEO + QUIZ)                             */
+/* ------------------------------------------------------------------ */
+/**
+ * Usare SOLO per il cambio lingua dal menu header.
+ * NON usare per costruire link.
+ */
+
+const LOCALES = ["it", "en", "fr", "es"] as const;
+
+export function switchLangPathname(
+  pathname: string,
+  nextLang: Locale   // ⬅ usa il Locale già esistente
+): string {
+  // Pulizia query e hash
+  const cleanPath = pathname.split("?")[0].split("#")[0];
+
+  /* ----------------------------- QUIZ ----------------------------- */
+  // /{lang}/quiz/... → sostituiamo SOLO la lingua
+  const quizRegex = new RegExp(`^/(${LOCALES.join("|")})/quiz/`);
+  if (quizRegex.test(cleanPath)) {
+    return cleanPath.replace(quizRegex, `/${nextLang}/quiz/`);
+  }
+
+  /* ------------------------------ SEO ------------------------------ */
+  // EN senza prefisso, altre lingue con /{lang}
+  const seoRegex = new RegExp(`^/(${LOCALES.join("|")})(/|$)`);
+  const pathWithoutLang = cleanPath.replace(seoRegex, "/");
+
+  return nextLang === "en"
+    ? pathWithoutLang
+    : `/${nextLang}${pathWithoutLang}`;
+}
