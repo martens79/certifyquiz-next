@@ -1,11 +1,11 @@
 // src/app/[lang]/certificazioni/page.tsx
 // Lista certificazioni — Next 15, ISR, SEO + JSON-LD
+// Pattern: View (props sync) + Page (await params Promise)
 
 import type { Metadata } from "next";
 import Script from "next/script";
 
 import { locales, type Locale, isLocale, withLang } from "@/lib/i18n";
-
 import { canonicalUrl } from "@/lib/seo";
 
 import { getCertificationsListRSC } from "@/lib/server/certs";
@@ -163,13 +163,18 @@ const SEO = {
   },
 } satisfies Record<Locale, { title: string; description: string }>;
 
-/* ------------------------------- Metadata -------------------------------- */
+/* ------------------------------------------------------------------------ */
+/*                                METADATA                                  */
+/* ------------------------------------------------------------------------ */
+
+type LangParams = { lang: string };
+
 export async function generateMetadata({
   params,
 }: {
-  params: { lang: string };
+  params: Promise<LangParams>;
 }): Promise<Metadata> {
-  const { lang } = params;
+  const { lang } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
   const { title, description } = SEO[L];
 
@@ -236,14 +241,14 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
-/* --------------------------------- PAGE ---------------------------------- */
-export default async function Page({
-  params,
-}: {
-  params: { lang: string };
-}) {
-  const { lang } = params;
-  const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
+/* ------------------------------------------------------------------------ */
+/*                         VIEW (riusabile nei wrapper)                      */
+/* ------------------------------------------------------------------------ */
+
+type ViewProps = { lang: Locale };
+
+export async function CertificationsListView({ lang }: ViewProps) {
+  const L = lang;
 
   const raw = await getCertificationsListRSC();
 
@@ -339,7 +344,9 @@ export default async function Page({
     name: SEO[L].title,
     itemListElement: visible.map((c, i) => {
       const titleText =
-        typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
+        typeof c.title === "string"
+          ? c.title
+          : c.title?.[L] ?? c.title?.it ?? c.slug;
 
       // 🔥 URL nel JSON-LD:
       // - EN → root /certifications/:slug
@@ -366,44 +373,46 @@ export default async function Page({
 
       {/* Lista certificazioni con search + filtri */}
       <CertificationListClient
-  lang={L}
-  items={visible.map((c) => {
-    const titleText =
-      typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
+        lang={L}
+        items={visible.map((c) => {
+          const titleText =
+            typeof c.title === "string" ? c.title : c.title?.[L] ?? c.title?.it ?? c.slug;
 
-    const levelText =
-      typeof c.level === "string" ? c.level : c.level?.[L] ?? c.level?.it;
+          const levelText =
+            typeof c.level === "string" ? c.level : c.level?.[L] ?? c.level?.it;
 
-    const descriptionText =
-      typeof c.description === "string"
-        ? c.description
-        : c.description?.[L] ?? c.description?.it;
+          const descriptionText =
+            typeof c.description === "string"
+              ? c.description
+              : c.description?.[L] ?? c.description?.it;
 
-    // 1) livello logico da mappa slug -> LevelKey
-    let levelKey: LevelKey | null = LEVEL_BY_SLUG[c.slug] ?? null;
+          // 1) livello logico da mappa slug -> LevelKey
+          let levelKey: LevelKey | null = LEVEL_BY_SLUG[c.slug] ?? null;
 
-    // 2) fallback: usiamo l'eventuale testo level
-    if (!levelKey) {
-      const rawLevelForKey = levelText ?? "";
-      if (/base/i.test(rawLevelForKey)) levelKey = "base";
-      else if (/intermedio|intermediate/i.test(rawLevelForKey)) levelKey = "intermediate";
-      else if (/avanzat|advanced/i.test(rawLevelForKey)) levelKey = "advanced";
-    }
+          // 2) fallback: usiamo l'eventuale testo level
+          if (!levelKey) {
+            const rawLevelForKey = levelText ?? "";
+            if (/base/i.test(rawLevelForKey)) levelKey = "base";
+            else if (/intermedio|intermediate/i.test(rawLevelForKey)) levelKey = "intermediate";
+            else if (/avanzat|advanced/i.test(rawLevelForKey)) levelKey = "advanced";
+          }
 
-    return {
-  slug: c.slug,
-  href: withLang(L, `/certificazioni/${c.slug}`),
-  title: titleText,
-  level: levelText,
-  description: descriptionText,
-  imageUrl: c.imageUrl,
-  levelKey,
-  category: c.category ?? null,
-};
+          // 🔥 href: in EN puntiamo all'URL ufficiale root (non /en/...)
+          const href =
+            L === "en" ? enRootDetailPath(c.slug) : withLang(L, `/certificazioni/${c.slug}`);
 
-  })}
-/>
-
+          return {
+            slug: c.slug,
+            href,
+            title: titleText,
+            level: levelText,
+            description: descriptionText,
+            imageUrl: c.imageUrl,
+            levelKey,
+            category: c.category ?? null,
+          };
+        })}
+      />
 
       <Script
         id="certifyquiz-cert-list-jsonld"
@@ -412,4 +421,18 @@ export default async function Page({
       />
     </main>
   );
+}
+
+/* ------------------------------------------------------------------------ */
+/*                          PAGE (solo Next: await params)                   */
+/* ------------------------------------------------------------------------ */
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<LangParams>;
+}) {
+  const { lang } = await params;
+  const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
+  return <CertificationsListView lang={L} />;
 }

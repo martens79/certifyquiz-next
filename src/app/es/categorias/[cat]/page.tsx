@@ -1,3 +1,4 @@
+// src/app/es/categorias/[cat]/page.tsx
 import LangCategoryPage from "@/app/[lang]/categorie/[cat]/page";
 
 type Props = {
@@ -5,7 +6,11 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const { cat } = await params; // ✅ Next 15: await params
-  return <LangCategoryPage params={{ lang: "es", cat }} />; // ✅ TS: params sync
-}
+  const { cat } = await params;
 
+  return (
+    <LangCategoryPage
+      params={Promise.resolve({ lang: "es", cat })}
+    />
+  );
+}

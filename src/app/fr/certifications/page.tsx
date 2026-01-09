@@ -1,5 +1,5 @@
-import LangList from "@/app/[lang]/certificazioni/page";
+import { CertificationsListView } from "@/app/[lang]/certificazioni/page";
 
 export default function Page() {
-  return <LangList params={{ lang: "fr" }} />;
+  return <CertificationsListView lang="fr" />;
 }

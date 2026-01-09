@@ -1,3 +1,4 @@
+// src/app/[lang]/categorie/[cat]/page.tsx
 // Category page — slug mapping per lingua + SEO hreflang/canonical coerenti
 // Regole:
 // - SEO pages: EN senza /en, altre lingue con /{lang}
@@ -20,11 +21,10 @@ import {
 const LOCALES = ["it", "en", "fr", "es"] as const;
 type Locale = (typeof LOCALES)[number];
 
-const SITE_URL =
-  (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
-    /\/+$/,
-    ""
-  );
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
+  /\/+$/,
+  ""
+);
 
 /* ------------------------------------------------------------------------ */
 /*                       CATEGORY META — MULTILINGUA                         */
@@ -138,7 +138,12 @@ const CATEGORY_META: Record<
   ai: {
     key: "ai",
     emoji: "🧠",
-    title: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" },
+    title: {
+      it: "Intelligenza Artificiale",
+      en: "Artificial Intelligence",
+      fr: "Intelligence Artificielle",
+      es: "Inteligencia Artificial",
+    },
     subtitle: {
       it: "Concetti base di AI e machine learning.",
       en: "Basic concepts of AI and machine learning.",
@@ -260,7 +265,11 @@ function segForCategories(lang: Locale) {
 }
 
 function segForCertifications(lang: Locale) {
-  return lang === "it" ? "certificazioni" : lang === "es" ? "certificaciones" : "certifications";
+  return lang === "it"
+    ? "certificazioni"
+    : lang === "es"
+    ? "certificaciones"
+    : "certifications";
 }
 
 /** SEO path builder: EN no prefix, others /{lang} */
@@ -282,10 +291,7 @@ function localizedCertPath(lang: Locale, certSlug: string) {
 }
 
 function mixedQuizPath(lang: Locale, key: CategoryKey) {
-  const certSlug =
-    PRIMARY_CERT_SLUG_BY_CATEGORY[key] ??
-    PRIMARY_CERT_SLUG_BY_CATEGORY.default;
-
+  const certSlug = PRIMARY_CERT_SLUG_BY_CATEGORY[key] ?? PRIMARY_CERT_SLUG_BY_CATEGORY.default;
   return `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;
 }
 
@@ -313,18 +319,16 @@ export const revalidate = 60;
 export const runtime = "nodejs";
 export const dynamicParams = true;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { lang: Locale; cat: string };
-}): Promise<Metadata> {
-  const { lang, cat } = params;
-  const key = resolveInternalKey(lang, cat);
+type Props = {
+  params: Promise<{ lang: Locale; cat: string }>;
+};
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { lang, cat } = await params;          // ✅ await params
+  const key = resolveInternalKey(lang, cat);
 
   if (!key) {
     const canonical = `${SITE_URL}${seoPath(lang, `/${segForCategories(lang)}/${cat}`)}`;
-
     return {
       title: "Categoria non trovata",
       description: "Categoria non valida.",
@@ -336,16 +340,12 @@ export async function generateMetadata({
   const meta = CATEGORY_META[key];
   const title = meta.title[lang] ?? meta.title.it;
   const desc = meta.subtitle[lang] ?? meta.subtitle.it;
-
   const canonical = `${SITE_URL}${localizedCategoryPath(lang, key)}`;
 
   return {
     title: `${title} — CertifyQuiz`,
     description: desc,
-    alternates: {
-      canonical,
-      languages: hreflangMap(key),
-    },
+    alternates: { canonical, languages: hreflangMap(key) },
     openGraph: {
       title,
       description: desc,
@@ -354,28 +354,14 @@ export async function generateMetadata({
       locale: ogLocale(lang),
       type: "website",
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description: desc,
-    },
+    twitter: { card: "summary_large_image", title, description: desc },
     robots: { index: true, follow: true },
   };
 }
 
-/* ------------------------------------------------------------------------ */
-/*                                   PAGE                                   */
-/* ------------------------------------------------------------------------ */
-
-export default async function CategoryPage({
-  params,
-}: {
-  params: { lang: Locale; cat: string };
-}) {
-  const { lang, cat } = params;
+export default async function CategoryPage({ params }: Props) {
+  const { lang, cat } = await params;          // ✅ await params
   const key = resolveInternalKey(lang, cat);
-
-
   if (!key) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10">
@@ -398,9 +384,7 @@ export default async function CategoryPage({
   const meta = CATEGORY_META[key];
   const css = getCategoryStyle(key);
 
-  const certSlugs = CERT_SLUGS.filter(
-    (s) => CERT_CATEGORY_BY_SLUG[s] === key
-  );
+  const certSlugs = CERT_SLUGS.filter((s) => CERT_CATEGORY_BY_SLUG[s] === key);
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -410,11 +394,7 @@ export default async function CategoryPage({
         "@type": "ListItem",
         position: 1,
         name:
-          lang === "it"
-            ? "Certificazioni"
-            : lang === "es"
-            ? "Certificaciones"
-            : "Certifications",
+          lang === "it" ? "Certificazioni" : lang === "es" ? "Certificaciones" : "Certifications",
         item: `${SITE_URL}${localizedCertListPath(lang)}`,
       },
       {
@@ -469,9 +449,7 @@ export default async function CategoryPage({
               className={`rounded-2xl p-5 shadow-sm transition ${css.wrapper}`}
             >
               <div className="text-lg font-semibold mb-1">
-                {slug
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (c) => c.toUpperCase())}
+                {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
               </div>
               <p className="text-sm opacity-80">{ctaCert}</p>
             </Link>

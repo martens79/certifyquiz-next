@@ -1,14 +1,17 @@
 // src/app/[lang]/certificazioni/[slug]/page.tsx
 // Pagina dettaglio certificazione — Next 15, SSG + ISR, SEO EN-root safe
+// Pattern: View (props sync) + Page (await params Promise)
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
 import { locales, type Locale, isLocale } from "@/lib/i18n";
 import {
   CERTS_BY_SLUG,
   CERT_SLUGS,
   type CertificationData,
 } from "@/certifications/registry";
+
 import CertificationPage from "@/components/CertificationPage";
 import { getAllCertSlugs, getCertBySlug, type Cert } from "@/lib/data";
 
@@ -17,13 +20,15 @@ export const dynamic = "force-static";
 export const dynamicParams = true;
 
 type Lang = Locale;
-type Params = { lang: string; slug: string };
 
 const RAW_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
 // ------------------------- PATH PER LINGUA -------------------------
+// Nota strategia SEO:
+// - EN ufficiale = root (senza /en) → /certifications/:slug
+// - /en/* resta route tecnica ma non deve indicizzarsi (noindex + canonical verso root)
 const listPathByLang: Record<Lang, string> = {
   it: "/it/certificazioni",
   en: "/en/certifications", // route tecnica (NOINDEX)
@@ -52,12 +57,12 @@ export async function generateStaticParams() {
 
 /* ------------------------------ SEO / Metadata ----------------------------- */
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { lang: string; slug: string };
-}): Promise<Metadata> {
-  const { lang, slug } = params;
+type MetaProps = {
+  params: Promise<{ lang: string; slug: string }>;
+};
+
+export async function generateMetadata({ params }: MetaProps): Promise<Metadata> {
+  const { lang, slug } = await params;
 
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
@@ -110,10 +115,7 @@ export async function generateMetadata({
   }
 
   // x-default → EN root
-  languages["x-default"] = new URL(
-    enRootDetailPath(slug),
-    SITE_URL
-  ).toString();
+  languages["x-default"] = new URL(enRootDetailPath(slug), SITE_URL).toString();
 
   const ogAbs =
     ogImage?.startsWith("http")
@@ -127,7 +129,7 @@ export async function generateMetadata({
     description,
     alternates: { canonical, languages },
 
-    // 🔥 anti-duplicati
+    // 🔥 anti-duplicati: /en/* non indicizzabile
     robots:
       L === "en"
         ? { index: false, follow: true }
@@ -152,16 +154,15 @@ const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
 const makeQuizRoute = (slug: string) =>
   ({
     it: `/it/quiz/${slug}`,
-    en: `/en/quiz/${slug}`, // ✅ FIX
+    en: `/en/quiz/${slug}`, // ✅ quiz sempre con /en
     fr: `/fr/quiz/${slug}`,
     es: `/es/quiz/${slug}`,
   } as const);
 
-
 const makeBackRoute = () =>
   ({
     it: listPathByLang.it,
-    en: EN_ROOT_LIST_PATH,
+    en: EN_ROOT_LIST_PATH, // 🔥 torna all’elenco ufficiale EN root
     fr: listPathByLang.fr,
     es: listPathByLang.es,
   } as const);
@@ -188,16 +189,14 @@ function adaptCertToRegistryShape(cert: Cert): CertificationData {
   };
 }
 
-/* ---------------------------------- Page ---------------------------------- */
+/* ------------------------------------------------------------------------ */
+/*                         VIEW (riusabile nei wrapper)                      */
+/* ------------------------------------------------------------------------ */
 
-export default async function Page({
-  params,
-}: {
-  params: { lang: string; slug: string };
-}) {
-  const { lang, slug } = params;
+type ViewProps = { lang: Lang; slug: string };
 
-  const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
+export async function CertificationDetailView({ lang, slug }: ViewProps) {
+  const L = lang;
 
   const reg = CERTS_BY_SLUG[slug];
   if (reg) return <CertificationPage lang={L} data={reg} />;
@@ -209,3 +208,16 @@ export default async function Page({
   return <CertificationPage lang={L} data={data} />;
 }
 
+/* ------------------------------------------------------------------------ */
+/*                          PAGE (solo Next: await params)                   */
+/* ------------------------------------------------------------------------ */
+
+type PageProps = {
+  params: Promise<{ lang: string; slug: string }>;
+};
+
+export default async function Page({ params }: PageProps) {
+  const { lang, slug } = await params;
+  const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
+  return <CertificationDetailView lang={L} slug={slug} />;
+}

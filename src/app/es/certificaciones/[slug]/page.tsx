@@ -1,7 +1,8 @@
-import LangDetail from "@/app/[lang]/certificazioni/[slug]/page";
+import { CertificationDetailView } from "@/app/[lang]/certificazioni/[slug]/page";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
-export default function Page({ params }: Props) {
-  return <LangDetail params={{ lang: "es", slug: params.slug }} />;
+export default async function Page({ params }: Props) {
+  const { slug } = await params;
+  return <CertificationDetailView lang="es" slug={slug} />;
 }
