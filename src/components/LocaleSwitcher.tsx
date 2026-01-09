@@ -1,159 +1,143 @@
-// src/components/layout/LocaleSwitcher.tsx
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { locales, type Locale, isLocale } from "@/lib/i18n";
-
-// ✅ usa la tua mappa categorie -> slug per lingua
-// (se non è in paths.ts, sposta l'import dove sta davvero)
 import { CAT_KEY_TO_SLUG, type CategoryKey } from "@/lib/paths";
 
-/**
- * LOCALE SWITCHER — regole URL CertifyQuiz
- *
- * 1) QUIZ: SEMPRE /{lang}/quiz/... (EN incluso)
- *    Esempio:
- *      /it/quiz/security-plus/mixed  -> EN -> /en/quiz/security-plus/mixed
- *
- * 2) CATEGORIES (SEO):
- *    - EN: /categories/:slug
- *    - FR: /fr/categories/:slug
- *    - ES: /es/categories/:slug
- *    - IT: /it/categorie/:slug  (slug tradotto!)
- *
- * 3) SEO (tutto il resto):
- *    - EN = root (nessun /en)
- *    - IT/FR/ES = prefisso /{lang}
- *
- * 4) Preserva sempre query string (?x=...)
- */
+/* ------------------------------------------------------------------ */
+/* REGEX                                                              */
+/* ------------------------------------------------------------------ */
 
-// Lingue supportate (serve per regex safe)
 const LOCALES = ["it", "en", "fr", "es"] as const;
 
-// Regex per riconoscere un prefisso lingua all’inizio path
-const LANG_PREFIX_RE = new RegExp(`^/(${LOCALES.join("|")})(?=/|$)`, "i");
+const QUIZ_RE = /^\/(it|en|fr|es)\/quiz\//i;
 
-// Regex per riconoscere il flusso quiz: /{lang}/quiz/...
-const QUIZ_PREFIX_RE = new RegExp(`^/(${LOCALES.join("|")})/quiz/`, "i");
+const CAT_LIST_RE =
+  /^\/(?:(it)\/categorie|(fr)\/categories|(es)\/categorias|categories)\/?$/i;
 
-// CATEGORIES: riconosce list e detail
-// - EN: /categories
-// - FR: /fr/categories
-// - ES: /es/categories
-// - IT: /it/categorie
-const CAT_LIST_RE = /^\/(?:(it|fr|es)\/)?(categories|categorie)\/?$/i;
-const CAT_DETAIL_RE = /^\/(?:(it|fr|es)\/)?(categories|categorie)\/([^/?#]+)\/?$/i;
+const CAT_DETAIL_RE =
+  /^\/(?:(it)\/categorie|(fr)\/categories|(es)\/categorias|categories)\/([^/?#]+)\/?$/i;
 
-// Lingua dal prefisso URL (se assente = EN)
-function langFromPathPrefix(prefix?: string | null): Locale {
-  return prefix && isLocale(prefix) ? (prefix as Locale) : "en";
+const CERT_LIST_RE =
+  /^\/(?:(it)\/certificazioni|(fr)\/certifications|(es)\/certificaciones|certifications)\/?$/i;
+
+const CERT_DETAIL_RE =
+  /^\/(?:(it)\/certificazioni|(fr)\/certifications|(es)\/certificaciones|certifications)\/([^/?#]+)\/?$/i;
+
+const LANG_PREFIX_RE = /^\/(it|fr|es)(?=\/|$)/i;
+
+/* ------------------------------------------------------------------ */
+/* HELPERS                                                            */
+/* ------------------------------------------------------------------ */
+
+function qs(path: string, q?: string) {
+  return q ? `${path}?${q}` : path;
 }
 
-// Trova la CategoryKey dato lo slug nella lingua corrente
+function categoriesRoot(lang: Locale) {
+  if (lang === "en") return "/categories";
+  if (lang === "it") return "/it/categorie";
+  if (lang === "fr") return "/fr/categories";
+  return "/es/categorias";
+}
+
+function certificationsRoot(lang: Locale) {
+  if (lang === "en") return "/certifications";
+  if (lang === "it") return "/it/certificazioni";
+  if (lang === "fr") return "/fr/certifications";
+  return "/es/certificaciones";
+}
+
 function categoryKeyFromSlug(lang: Locale, slug: string): CategoryKey | null {
   const map = CAT_KEY_TO_SLUG[lang] as Record<string, string>;
-  const entry = Object.entries(map).find(([, s]) => s === slug);
-  return (entry?.[0] as CategoryKey) ?? null;
+  const found = Object.entries(map).find(([, s]) => s === slug);
+  return (found?.[0] as CategoryKey) ?? null;
 }
 
-// Costruisce /categories root a seconda della lingua (regola attuale del tuo progetto)
-function categoriesListPath(lang: Locale): string {
-  if (lang === "it") return "/it/categorie";
-  return lang === "en" ? "/categories" : `/${lang}/categories`;
-}
-
-function categoryDetailPath(lang: Locale, slug: string): string {
-  return `${categoriesListPath(lang)}/${slug}`;
-}
+/* ------------------------------------------------------------------ */
+/* COMPONENT                                                          */
+/* ------------------------------------------------------------------ */
 
 export default function LocaleSwitcher({ current }: { current: Locale }) {
   const router = useRouter();
   const pathname = usePathname() || "/";
   const search = useSearchParams();
+  const query = search?.toString();
 
-  const switchTo = (nextLangRaw: string) => {
-    if (!isLocale(nextLangRaw)) return;
-    const nextLang = nextLangRaw as Locale;
-    if (nextLang === current) return;
+  function switchTo(nextRaw: string) {
+    if (!isLocale(nextRaw)) return;
+    const next = nextRaw as Locale;
+    if (next === current) return;
 
-    const cleanPath = pathname || "/";
-    const qs = search?.toString();
-
-    /* -------------------------------------------------------------- */
-    /* 1) QUIZ FLOW                                                    */
-    /* -------------------------------------------------------------- */
-    // /{lang}/quiz/...  ->  /{nextLang}/quiz/...
-    if (QUIZ_PREFIX_RE.test(cleanPath)) {
-      const nextPath = cleanPath.replace(QUIZ_PREFIX_RE, `/${nextLang}/quiz/`);
-      router.push(qs ? `${nextPath}?${qs}` : nextPath);
+    /* ---------------------- QUIZ ---------------------- */
+    if (QUIZ_RE.test(pathname)) {
+      router.push(
+        qs(pathname.replace(QUIZ_RE, `/${next}/quiz/`), query)
+      );
       return;
     }
 
-    /* -------------------------------------------------------------- */
-    /* 2) CATEGORY PAGES (SEO) — traduce anche lo slug                 */
-    /* -------------------------------------------------------------- */
-    // List: /categories | /fr/categories | /es/categories | /it/categorie
-    if (CAT_LIST_RE.test(cleanPath)) {
-      const nextPath = categoriesListPath(nextLang);
-      router.push(qs ? `${nextPath}?${qs}` : nextPath);
+    /* ------------------- CATEGORY LIST ---------------- */
+    if (CAT_LIST_RE.test(pathname)) {
+      router.push(qs(categoriesRoot(next), query));
       return;
     }
 
-    // Detail: /categories/security | /fr/categories/security | /it/categorie/sicurezza
-    const mDetail = cleanPath.match(CAT_DETAIL_RE);
-    if (mDetail?.[3]) {
-      const prefix = mDetail[1]; // it|fr|es oppure undefined (EN)
-      const currentLang = langFromPathPrefix(prefix);
-      const currentSlug = mDetail[3];
+    /* ------------------ CATEGORY DETAIL ---------------- */
+    const catMatch = pathname.match(CAT_DETAIL_RE);
+    if (catMatch) {
+      const fromLang: Locale =
+        catMatch[1] ? "it" : catMatch[2] ? "fr" : catMatch[3] ? "es" : "en";
 
-      const key = categoryKeyFromSlug(currentLang, currentSlug);
+      const slug = catMatch[4];
+      const key = categoryKeyFromSlug(fromLang, slug);
 
-      // Fallback safe: se non mappa, manda alla lista nella lingua target (meglio che 404)
       if (!key) {
-        const nextPath = categoriesListPath(nextLang);
-        router.push(qs ? `${nextPath}?${qs}` : nextPath);
+        router.push(qs(categoriesRoot(next), query));
         return;
       }
 
-      const nextSlug = CAT_KEY_TO_SLUG[nextLang][key];
-      const nextPath = categoryDetailPath(nextLang, nextSlug);
-      router.push(qs ? `${nextPath}?${qs}` : nextPath);
+      const nextSlug = CAT_KEY_TO_SLUG[next][key];
+      router.push(qs(`${categoriesRoot(next)}/${nextSlug}`, query));
       return;
     }
 
-    /* -------------------------------------------------------------- */
-    /* 3) SEO FLOW (fallback)                                         */
-    /* -------------------------------------------------------------- */
-    // Per tutto il resto: togli prefisso lingua se presente e riapplica regola
-    const stripped = cleanPath.replace(LANG_PREFIX_RE, "") || "/";
-
-    // EN = root (no /en)
-    if (nextLang === "en") {
-      router.push(qs ? `${stripped}?${qs}` : stripped);
+    /* ---------------- CERTIFICATIONS LIST -------------- */
+    if (CERT_LIST_RE.test(pathname)) {
+      router.push(qs(certificationsRoot(next), query));
       return;
     }
 
-    // IT/FR/ES = /{lang} + resto
-    const nextPath = `/${nextLang}${stripped === "/" ? "" : stripped}`;
-    router.push(qs ? `${nextPath}?${qs}` : nextPath);
-  };
+    /* --------------- CERTIFICATION DETAIL -------------- */
+    const certMatch = pathname.match(CERT_DETAIL_RE);
+    if (certMatch) {
+      const slug = certMatch[4];
+      router.push(qs(`${certificationsRoot(next)}/${slug}`, query));
+      return;
+    }
+
+    /* ------------------- SEO FALLBACK ------------------ */
+    const stripped = pathname.replace(LANG_PREFIX_RE, "") || "/";
+
+    if (next === "en") {
+      router.push(qs(stripped, query));
+    } else {
+      router.push(qs(`/${next}${stripped}`, query));
+    }
+  }
 
   return (
-    <label className="inline-flex items-center gap-2 text-sm">
-      <span className="sr-only">Language</span>
-      <select
-        aria-label="Language"
-        className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
-        value={current}
-        onChange={(e) => switchTo(e.target.value)}
-      >
-        {locales.map((l) => (
-          <option value={l} key={l}>
-            {l.toUpperCase()}
-          </option>
-        ))}
-      </select>
-    </label>
+    <select
+      value={current}
+      onChange={(e) => switchTo(e.target.value)}
+      className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+      aria-label="Language"
+    >
+      {locales.map((l) => (
+        <option key={l} value={l}>
+          {l.toUpperCase()}
+        </option>
+      ))}
+    </select>
   );
 }

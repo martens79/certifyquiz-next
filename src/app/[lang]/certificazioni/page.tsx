@@ -167,9 +167,9 @@ const SEO = {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ lang: string }>;
+  params: { lang: string };
 }): Promise<Metadata> {
-  const { lang } = await params;
+  const { lang } = params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
   const { title, description } = SEO[L];
 
@@ -240,9 +240,9 @@ export async function generateStaticParams() {
 export default async function Page({
   params,
 }: {
-  params: Promise<{ lang: string }>;
+  params: { lang: string };
 }) {
-  const { lang } = await params;
+  const { lang } = params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const raw = await getCertificationsListRSC();

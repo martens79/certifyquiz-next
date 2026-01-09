@@ -1,7 +1,6 @@
 import LangCategoryPage from "@/app/[lang]/categorie/[cat]/page";
-
-type Props = { params: { slug: string } };
+type Props = { params: { cat: string } };
 
 export default function Page({ params }: Props) {
-  return <LangCategoryPage params={{ lang: "en", cat: params.slug }} />;
+  return <LangCategoryPage params={{ lang: "it", cat: params.cat }} />;
 }

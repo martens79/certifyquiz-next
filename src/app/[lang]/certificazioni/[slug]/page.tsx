@@ -55,9 +55,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<Params>;
+  params: { lang: string; slug: string };
 }): Promise<Metadata> {
-  const { lang, slug } = await params;
+  const { lang, slug } = params;
+
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
   // 1) Registry
@@ -192,9 +193,10 @@ function adaptCertToRegistryShape(cert: Cert): CertificationData {
 export default async function Page({
   params,
 }: {
-  params: Promise<Params>;
+  params: { lang: string; slug: string };
 }) {
-  const { lang, slug } = await params;
+  const { lang, slug } = params;
+
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
   const reg = CERTS_BY_SLUG[slug];
@@ -206,3 +208,4 @@ export default async function Page({
   const data = adaptCertToRegistryShape(cert);
   return <CertificationPage lang={L} data={data} />;
 }
+

@@ -316,10 +316,11 @@ export const dynamicParams = true;
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ lang: Locale; cat: string }>;
+  params: { lang: Locale; cat: string };
 }): Promise<Metadata> {
-  const { lang, cat } = await params;
+  const { lang, cat } = params;
   const key = resolveInternalKey(lang, cat);
+
 
   if (!key) {
     const canonical = `${SITE_URL}${seoPath(lang, `/${segForCategories(lang)}/${cat}`)}`;
@@ -369,10 +370,11 @@ export async function generateMetadata({
 export default async function CategoryPage({
   params,
 }: {
-  params: Promise<{ lang: Locale; cat: string }>;
+  params: { lang: Locale; cat: string };
 }) {
-  const { lang, cat } = await params;
+  const { lang, cat } = params;
   const key = resolveInternalKey(lang, cat);
+
 
   if (!key) {
     return (
