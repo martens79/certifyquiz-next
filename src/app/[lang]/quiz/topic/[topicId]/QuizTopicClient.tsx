@@ -17,18 +17,23 @@ import {
 import { getCertSlugById } from "@/lib/certs";
 import { getExamSpecForCert } from "@/lib/exam-specs";
 
-/** Normalizza la domanda API → formato UI atteso dal QuizEngine */
+/* ─────────────────────────────────────────────────────────────
+   NORMALIZZAZIONE DATI
+   API → formato atteso dal QuizEngine
+   (serve per isolare il backend da eventuali cambi futuri)
+───────────────────────────────────────────────────────────── */
 function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: q.id,
     question: q.question ?? "",
+    // explanation può essere undefined → training la mostra solo se presente
     explanation: q.explanation ?? undefined,
     answers: (q.answers ?? []).map((a) => ({
       id: a.id,
       text: (a as any).text ?? "",
       isCorrect: a.is_correct === true || a.is_correct === 1,
     })),
-  } as UiQuestion;
+  };
 }
 
 export default function QuizTopicClient({
@@ -42,33 +47,50 @@ export default function QuizTopicClient({
   const L = lang;
   const numericId = topicId;
 
+  /* ─────────────────────────────────────────────────────────────
+     STATE
+  ───────────────────────────────────────────────────────────── */
+
+  // blocco solo per parametri invalidi (NON per auth)
   const [blocked, setBlocked] = useState(false);
 
-  // Serve per:
-  // - salvare risultato su cert corretta
-  // - costruire backToHref
-  // - applicare examSpec (domande+tempo)
+  // usato SOLO se l’endpoint domande risponde 401
+  // (finché il backend non è pubblico)
+  const [needsLoginForQuestions, setNeedsLoginForQuestions] = useState(false);
+
+  // servono per:
+  // - salvare risultati sulla certificazione corretta
+  // - costruire link "torna ai quiz"
+  // - applicare exam spec ufficiale
   const [certificationId, setCertificationId] = useState<number | null>(null);
   const [backToHref, setBackToHref] = useState<string>(`/${L}/quiz-home`);
 
-  /* -------------------- Redirect base -------------------- */
-
+  /* ─────────────────────────────────────────────────────────────
+     VALIDAZIONE PARAMETRI BASE
+     (QUI sì redirect: topicId invalido)
+  ───────────────────────────────────────────────────────────── */
   useEffect(() => {
     if (Number.isNaN(numericId)) {
-      router.replace(`/${L}/quiz-home`);
       setBlocked(true);
+      router.replace(`/${L}/quiz-home`);
     }
   }, [numericId, router, L]);
 
+  /* ─────────────────────────────────────────────────────────────
+     🔥 DECISIONE DI PRODOTTO
+     QUIZ PUBBLICO → NIENTE REDIRECT LOGIN
+     Il login verrà richiesto SOLO:
+     - per salvare risultati
+     - per premium / spiegazioni complete
+  ───────────────────────────────────────────────────────────── */
   useEffect(() => {
-    const tok = getAccessToken();
-    if (!tok) {
-      setBlocked(true);
-      router.replace(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`);
-    }
-  }, [L, numericId, router]);
+    // niente auth check qui
+    setBlocked(false);
+  }, []);
 
-  /* -------------------- Meta topic → certId + back link -------------------- */
+  /* ─────────────────────────────────────────────────────────────
+     METADATA TOPIC → certificazione + link "indietro"
+  ───────────────────────────────────────────────────────────── */
   useEffect(() => {
     if (Number.isNaN(numericId)) return;
 
@@ -79,13 +101,11 @@ export default function QuizTopicClient({
         const meta = await getTopicMetaById(numericId);
         const certId = meta?.topic?.certification_id;
 
-        if (!cancelled && typeof certId === "number" && !Number.isNaN(certId)) {
+        if (!cancelled && typeof certId === "number") {
           setCertificationId(certId);
 
           const slug = getCertSlugById(certId);
           setBackToHref(slug ? `/${L}/quiz/${slug}` : `/${L}/quiz-home`);
-        } else if (!cancelled) {
-          setBackToHref(`/${L}/quiz-home`);
         }
       } catch {
         if (!cancelled) setBackToHref(`/${L}/quiz-home`);
@@ -97,35 +117,74 @@ export default function QuizTopicClient({
     };
   }, [numericId, L]);
 
+  /* ─────────────────────────────────────────────────────────────
+     SE BLOCCATO (parametri rotti) → niente render
+  ───────────────────────────────────────────────────────────── */
   if (blocked || Number.isNaN(numericId)) return null;
 
-  const categoryColor = "from-blue-900 to-blue-700";
-
-  /**
-   * EXAM SPEC:
-   * - training: puoi caricare anche 200/500 domande (pool grande)
-   * - exam: deve rispettare numero domande + tempo ufficiale della cert
-   */
+  /* ─────────────────────────────────────────────────────────────
+     EXAM SPEC UFFICIALE
+     - training: pool grande
+     - exam: numero + tempo ufficiale certificazione
+  ───────────────────────────────────────────────────────────── */
   const examSpec = useMemo(() => {
-    // Il poolSize reale lo conoscerà l’engine dopo fetch,
-    // qui passiamo un fallback “safe” (usato solo se certId non mappata).
+    // fallback safe: 90 domande se cert non mappata
     return getExamSpecForCert(certificationId, 90);
   }, [certificationId]);
 
+  /* ─────────────────────────────────────────────────────────────
+     UI SOFT LOGIN
+     (temporanea, finché /questions non è pubblico)
+  ───────────────────────────────────────────────────────────── */
+  if (needsLoginForQuestions) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-10">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <h1 className="text-lg font-semibold mb-2">
+            {L === "it" ? "Accedi per continuare" : "Sign in to continue"}
+          </h1>
+
+          <p className="text-sm text-slate-700">
+            {L === "it"
+              ? "Questo quiz sarà pubblico. Per ora, su questo dispositivo non sei loggato."
+              : "This quiz will be public. For now, you are not signed in on this device."}
+          </p>
+
+          <button
+            className="mt-4 inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+            onClick={() =>
+              router.push(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`)
+            }
+          >
+            {L === "it" ? "Accedi" : "Sign in"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     QUIZ ENGINE
+  ───────────────────────────────────────────────────────────── */
   return (
     <QuizEngine
       lang={L}
       storageScope={`topic:${numericId}:${L}`}
-      categoryColor={categoryColor}
+      categoryColor="from-blue-900 to-blue-700"
       backToHref={backToHref}
-      /**
-       * Fetch pool grande:
-       * - limit 500 (cap backend)
-       * - shuffle=0: eviti ORDER BY RAND() lato DB (più veloce), lo shuffle lo fa l’engine.
-       */
+
+      /* ───────────── FETCH DOMANDE (ANTI-CRASH) ───────────── */
       fetchQuestions={async (): Promise<UiQuestion[]> => {
         try {
-          const res = await getQuestionsByTopic(numericId, L, { limit: 500, shuffle: false });
+          /**
+           * QUIZ PUBBLICO:
+           * - idealmente endpoint NO AUTH
+           * - se oggi risponde 401 → MAI crash, MAI redirect
+           */
+          const res = await getQuestionsByTopic(numericId, L, {
+            limit: 500,
+            shuffle: false,
+          });
 
           const raw: ApiQuestion[] = Array.isArray(res)
             ? res
@@ -133,42 +192,37 @@ export default function QuizTopicClient({
 
           return (raw ?? []).map(normalizeQuestion);
         } catch (e: any) {
+          // 🔒 backend ancora protetto → UI soft login
           if (e?.status === 401) {
-            router.replace(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`);
+            setNeedsLoginForQuestions(true);
             return [];
           }
-          throw e;
+
+          // 🛡️ altri errori: non rilanciare MAI
+          console.error("🟥 getQuestionsByTopic FAILED", e);
+          return [];
         }
       }}
-      /**
-       * ✅ Regole:
-       * - training: no timer (null) oppure undefined (60s * domande). Qui mettiamo null.
-       * - exam: durata ufficiale (es. Security+ 90 min)
-       */
+
+      /* ───────────── TIMER PER MODALITÀ ───────────── */
       durationsByMode={{
-        training: null,
+        training: null, // niente timer in training
         exam: examSpec.durationSec,
       }}
-      /**
-       * ✅ Regole:
-       * - training: fai vedere tante domande (pool grande)
-       * - exam: solo quelle dell’esame ufficiale
-       */
+
+      /* ───────────── NUMERO DOMANDE ───────────── */
       limitsByMode={{
-        training: 500,
+        training: 500, // pool grande
         exam: examSpec.questions,
       }}
-      /**
-       * Salvataggio best-effort:
-       * - salva SOLO quando finisce, con total/correct reali della sessione.
-       */
+
+      /* ───────────── SALVATAGGIO RISULTATI ───────────── */
       onFinish={async (s: QuizSummary & { mode: "training" | "exam" }) => {
-        // Salviamo solo se ha senso (di solito solo exam)
-        // Se vuoi salvarlo anche in training, togli questo if.
+        // salviamo solo esame
         if (s.mode !== "exam") return;
 
         const token = getAccessToken();
-        if (!token) return;
+        if (!token) return; // anonimo → niente salvataggio
 
         const payload = {
           topicId: numericId,
@@ -191,7 +245,7 @@ export default function QuizTopicClient({
 
           if (!res.ok) {
             const txt = await res.text().catch(() => "");
-            throw new Error(`HTTP ${res.status} ${res.statusText} ${txt}`);
+            throw new Error(`HTTP ${res.status} ${txt}`);
           }
         } catch (e) {
           console.error("🟥 save-exam FAILED", e);

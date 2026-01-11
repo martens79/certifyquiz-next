@@ -151,7 +151,7 @@ export default function QuizEngine({
     return copy.slice(0, n);
   }
 
-  /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
+    /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
     let alive = true;
 
@@ -163,29 +163,35 @@ export default function QuizEngine({
         const qs = await fetchQuestions();
         if (!alive) return;
 
-        const poolQ = qs ?? [];
+        const poolQ = Array.isArray(qs) ? qs : [];
         setPool(poolQ);
 
-        // Domande attive in base alla modalità
         const active = buildActiveQuestions(poolQ, mode);
         setQuestions(active);
 
-        // Durata totale per la modalità corrente
         const total =
-          effectiveDuration === null
-            ? null
-            : effectiveDuration ?? active.length * 60;
+          effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
 
-        // Ripristino locale (SE le qIds combaciano con l’attivo)
         const persisted = loadProgress(scopedKey);
-        if (persisted && arraysEqual(persisted.qIds, active.map((q) => q.id))) {
-          setMarked(persisted.marked);
-          setReviewLater(new Set(persisted.reviewLater));
-          setIdx(Math.min(persisted.idx ?? 0, Math.max(0, active.length - 1)));
-          setRemaining(total == null ? null : Math.min(total, persisted.remainingSec ?? total));
-          startedAtRef.current = persisted.startedAt ?? null;
+
+        const activeIds = active.map((q) => q.id);
+        const canRestore =
+          persisted &&
+          Array.isArray((persisted as any).qIds) &&
+          arraysEqual((persisted as any).qIds, activeIds);
+
+        if (canRestore) {
+          const p: any = persisted;
+
+          setMarked(p.marked ?? {});
+          setReviewLater(new Set(p.reviewLater ?? []));
+          setIdx(Math.min(p.idx ?? 0, Math.max(0, active.length - 1)));
+
+          if (total == null) setRemaining(null);
+          else setRemaining(Math.min(total, p.remainingSec ?? total));
+
+          startedAtRef.current = p.startedAt ?? null;
         } else {
-          // reset pulito
           setMarked({});
           setReviewLater(new Set());
           setIdx(0);
@@ -194,13 +200,30 @@ export default function QuizEngine({
           clearProgress(scopedKey);
         }
 
-        // reset schermate
         setFinished(false);
         setLastSummary(null);
         setReviewMode(false);
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!alive) return;
-        setErr(e?.message || 'Load error');
+
+        const err: any = e;
+        const status: number | undefined =
+          typeof err?.status === "number" ? err.status : undefined;
+
+        if (status === 401) {
+          setErr(
+            lang === "it"
+              ? "Non sei loggato su questo dispositivo. Accedi per salvare progressi e sbloccare le funzioni premium."
+              : "You are not logged in. Sign in to save progress and unlock premium features."
+          );
+          return;
+        }
+
+        setErr(
+          typeof err?.message === "string" && err.message.trim()
+            ? err.message
+            : "Load error"
+        );
       } finally {
         if (alive) setLoading(false);
       }
@@ -209,6 +232,7 @@ export default function QuizEngine({
     return () => {
       alive = false;
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchQuestions, scopedKey, mode, effectiveDuration, effectiveLimit]);
 
