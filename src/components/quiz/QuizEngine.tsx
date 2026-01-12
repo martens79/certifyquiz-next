@@ -5,7 +5,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Answer, Question, QuizSummary, Locale } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
-import { withLang } from '@/lib/i18n';
+import { withLang, getDict } from '@/lib/i18n';
+
+
 
 type Mode = 'training' | 'exam';
 
@@ -74,6 +76,10 @@ export default function QuizEngine({
   onModeChange,
 }: Props) {
   const router = useRouter();
+
+  // 📘 Dizionario i18n del Quiz (badge modalità, timer, micro-messaggi)
+// Le stringhe sono centralizzate in src/lib/i18n.ts → dict[lang].quiz
+const tQuiz = getDict(lang).quiz;
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -252,44 +258,110 @@ export default function QuizEngine({
     setReviewMode(false);
     startedAtRef.current = null;
   };
+/* -------------------------------------------------------------
+   TIMER EXAM — INIT + TICK (FIX doppio click + effect stabile)
+   -------------------------------------------------------------
+   Problema (prima):
+   - in training `remaining` è null
+   - al primo click su EXAM il timer non partiva perché il tick effect
+     usciva subito (remaining == null)
+   - inoltre il tick effect dipendeva da `remaining` → si ri-attivava
+     continuamente e poteva creare comportamento "a rimbalzo"
 
-  /* --------------------------- TICK TIMER ----------------------------- */
-  useEffect(() => {
-    if (mode !== 'exam' || remaining == null || finished) {
-      if (tickRef.current) cancelAnimationFrame(tickRef.current);
-      tickRef.current = null;
-      return;
-    }
+   Soluzione (ora):
+   1) Quando entri in EXAM:
+      - resettiamo startedAt
+      - inizializziamo remaining con la durata totale (se era null)
+   2) Quando esci da EXAM:
+      - stop del RAF
+      - reset remaining + startedAt
+   3) Tick timer stabile:
+      - NON dipende da `remaining`
+      - un solo loop RAF che aggiorna `remaining` via setState
+------------------------------------------------------------- */
 
-    if (startedAtRef.current == null) startedAtRef.current = Date.now();
+/* ----------------------- INIT / CLEAN ON MODE ------------------------ */
+useEffect(() => {
+  if (mode === "exam") {
+    // Reset start time: l'esame riparte "da zero" al primo ingresso in exam
+    startedAtRef.current = null;
 
+    // Durata totale:
+    // - null => timer disattivato
+    // - numero => secondi totali
     const total =
       effectiveDuration === null
         ? null
-        : effectiveDuration ?? questions.length * 60;
+        : (effectiveDuration ?? questions.length * 60);
 
+    // Se timer disattivato, non inizializziamo nulla
     if (total == null) return;
 
-    const loop = () => {
-      tickRef.current = requestAnimationFrame(loop);
-      const elapsed = Math.floor((Date.now() - (startedAtRef.current || Date.now())) / 1000);
-      const rest = Math.max(0, total - elapsed);
-      setRemaining(rest);
-      if (rest === 0) {
-        if (tickRef.current) cancelAnimationFrame(tickRef.current);
-        tickRef.current = null;
-        doFinish(true);
-      }
-    };
+    // ✅ FIX CHIAVE: se arrivi dal training, remaining è null → lo settiamo ORA
+    setRemaining((prev) => (prev == null ? total : prev));
+    return;
+  }
 
-    loop();
+  // Uscendo da exam → stop loop + pulizia stato timer
+  if (tickRef.current) cancelAnimationFrame(tickRef.current);
+  tickRef.current = null;
+  startedAtRef.current = null;
+  setRemaining(null);
+}, [mode, effectiveDuration, questions.length]);
 
-    return () => {
+/* ------------------------------ TICK --------------------------------- */
+useEffect(() => {
+  // Timer attivo solo in exam e se non abbiamo finito
+  if (mode !== "exam" || finished) {
+    if (tickRef.current) cancelAnimationFrame(tickRef.current);
+    tickRef.current = null;
+    return;
+  }
+
+  // Se remaining è null, significa che:
+  // - stiamo entrando ora e l'init effect deve ancora settarlo
+  // - oppure timer disattivo
+  // In entrambi i casi: non partire.
+  if (remaining == null) return;
+
+  const total =
+    effectiveDuration === null
+      ? null
+      : (effectiveDuration ?? questions.length * 60);
+
+  if (total == null) return;
+
+  // Start time iniziale (solo la prima volta che parte davvero il loop)
+  if (startedAtRef.current == null) startedAtRef.current = Date.now();
+
+  const loop = () => {
+    tickRef.current = requestAnimationFrame(loop);
+
+    const elapsed = Math.floor(
+      (Date.now() - (startedAtRef.current || Date.now())) / 1000
+    );
+
+    const rest = Math.max(0, total - elapsed);
+    setRemaining(rest);
+
+    // Tempo finito → termina esame
+    if (rest === 0) {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, remaining, finished, effectiveDuration, questions.length]);
+      doFinish(true);
+    }
+  };
+
+  loop();
+
+  return () => {
+    if (tickRef.current) cancelAnimationFrame(tickRef.current);
+    tickRef.current = null;
+  };
+  // Nota: NON dipendiamo da `remaining` per "far ripartire" il loop,
+  // ma lo usiamo come guard (se è null, non partiamo).
+}, [mode, finished, effectiveDuration, questions.length, remaining]);
+
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
@@ -614,50 +686,62 @@ export default function QuizEngine({
     <div className={`min-h-screen ${gradient}`}>
       <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
         {/* header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div className="text-sm opacity-90">
-            {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
-            {label('answered', lang)} {answeredCount}
+<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div className="text-sm opacity-90">
+    {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+    {label('answered', lang)} {answeredCount}
 
-            {reviewMode && reviewTotal > 0 && (
-              <>
-                {' '}
-                ·{' '}
-                <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                  ★ Review {reviewIndex}/{reviewTotal}
-                </span>
-              </>
-            )}
+    {/* 🔖 Badge modalità */}
+  <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+    {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+  </span>
 
-            {isExam && (
-              <>
-                {' '}
-                · {label('score', lang)} {scorePct}%{' '}
-                {remaining != null && <> · ⏱ {fmt(remaining)}</>}
-              </>
-            )}
-          </div>
+    {reviewMode && reviewTotal > 0 && (
+      <>
+        {' '}
+        ·{' '}
+        <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+          ★ Review {reviewIndex}/{reviewTotal}
+        </span>
+      </>
+    )}
 
-          {/* ✅ Toggle mode: usa setModeSafe così scatena la logica nuova */}
-          <div className="flex items-center gap-2">
-            <button
-              className={`px-3 py-1.5 rounded-full text-sm ${
-                !isExam ? 'bg-emerald-500' : 'bg-white/10'
-              }`}
-              onClick={() => setModeSafe('training')}
-            >
-              {label('training', lang)}
-            </button>
-            <button
-              className={`px-3 py-1.5 rounded-full text-sm ${
-                isExam ? 'bg-emerald-500' : 'bg-white/10'
-              }`}
-              onClick={() => setModeSafe('exam')}
-            >
-              {label('exam', lang)}
-            </button>
-          </div>
-        </div>
+    {isExam && (
+      <>
+        {' '}
+        · {label('score', lang)} {scorePct}%
+        {remaining != null && (
+          <>
+            {' '}
+            · ⏱ {tQuiz.time}: {fmt(remaining)}
+          </>
+        )}
+      </>
+    )}
+  </div>
+
+  {/* ✅ Toggle mode: usa setModeSafe così scatena la logica nuova */}
+  <div className="flex items-center gap-2">
+    <button
+      className={`px-3 py-1.5 rounded-full text-sm ${
+        !isExam ? 'bg-emerald-500' : 'bg-white/10'
+      }`}
+      onClick={() => setModeSafe('training')}
+    >
+      {label('training', lang)}
+    </button>
+
+    <button
+      className={`px-3 py-1.5 rounded-full text-sm ${
+        isExam ? 'bg-emerald-500' : 'bg-white/10'
+      }`}
+      onClick={() => setModeSafe('exam')}
+    >
+      {label('exam', lang)}
+    </button>
+  </div>
+</div>
+
 
         {/* domanda */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">

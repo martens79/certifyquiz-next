@@ -100,8 +100,21 @@ export type NavGroup = {
     contact: string;
   };
 };
+export type QuizDict = {
+  modeExam: string;
+  modeTraining: string;
+  time: string;
 
-export type LocaleDict = BaseDict & HeaderA11yExtras & FooterExtras & SeoExtras & NavGroup;
+  // opzionale (se fai toast/feedback)
+  examActivated?: string;
+  trainingActivated?: string;
+};
+
+export type LocaleDict =
+  BaseDict & HeaderA11yExtras & FooterExtras & SeoExtras & NavGroup & {
+    quiz: QuizDict;
+  };
+
 
 // === Dizionario localizzato ===
 export const dict: Record<Locale, LocaleDict> = {
@@ -127,6 +140,13 @@ export const dict: Record<Locale, LocaleDict> = {
     newsletterErr: 'Si è verificato un errore. Riprova.',
     links: 'Link utili',
     rights: 'Tutti i diritti riservati.',
+    quiz: {
+      modeExam: 'MODALITÀ ESAME',
+      modeTraining: 'MODALITÀ ALLENAMENTO',
+      time: 'Tempo',
+      examActivated: 'Modalità ESAME attivata',
+      trainingActivated: 'Modalità ALLENAMENTO attivata',
+    },
     seo: {
       titles: {
         '/': 'CertifyQuiz — Quiz per certificazioni IT',
@@ -144,6 +164,7 @@ export const dict: Record<Locale, LocaleDict> = {
     },
     nav: { privacy: 'Privacy', terms: 'Termini', cookies: 'Cookie', contact: 'Contatti' },
   },
+
   en: {
     certifications: 'Certifications',
     blog: 'Blog',
@@ -166,6 +187,13 @@ export const dict: Record<Locale, LocaleDict> = {
     newsletterErr: 'Something went wrong. Please try again.',
     links: 'Useful links',
     rights: 'All rights reserved.',
+    quiz: {
+      modeExam: 'EXAM MODE',
+      modeTraining: 'TRAINING MODE',
+      time: 'Time',
+      examActivated: 'EXAM mode activated',
+      trainingActivated: 'TRAINING mode activated',
+    },
     seo: {
       titles: {
         '/': 'CertifyQuiz — IT Certification Practice Exams',
@@ -181,6 +209,7 @@ export const dict: Record<Locale, LocaleDict> = {
     },
     nav: { privacy: 'Privacy', terms: 'Terms', cookies: 'Cookies', contact: 'Contact' },
   },
+
   fr: {
     certifications: 'Certifications',
     blog: 'Blog',
@@ -204,6 +233,13 @@ export const dict: Record<Locale, LocaleDict> = {
     newsletterErr: 'Une erreur est survenue. Réessayez.',
     links: 'Liens utiles',
     rights: 'Tous droits réservés.',
+    quiz: {
+      modeExam: 'MODE EXAMEN',
+      modeTraining: 'MODE ENTRAÎNEMENT',
+      time: 'Temps',
+      examActivated: 'Mode EXAMEN activé',
+      trainingActivated: 'Mode ENTRAÎNEMENT activé',
+    },
     seo: {
       titles: {
         '/': 'CertifyQuiz — Tests pour certifications IT',
@@ -219,6 +255,7 @@ export const dict: Record<Locale, LocaleDict> = {
     },
     nav: { privacy: 'Confidentialité', terms: 'Conditions', cookies: 'Cookies', contact: 'Contact' },
   },
+
   es: {
     certifications: 'Certificaciones',
     blog: 'Blog',
@@ -242,6 +279,13 @@ export const dict: Record<Locale, LocaleDict> = {
     newsletterErr: 'Ha ocurrido un error. Inténtalo de nuevo.',
     links: 'Enlaces útiles',
     rights: 'Todos los derechos reservados.',
+    quiz: {
+      modeExam: 'MODO EXAMEN',
+      modeTraining: 'MODO ENTRENAMIENTO',
+      time: 'Tiempo',
+      examActivated: 'Modo EXAMEN activado',
+      trainingActivated: 'Modo ENTRENAMIENTO activado',
+    },
     seo: {
       titles: {
         '/': 'CertifyQuiz — Tests de certificaciones IT',
@@ -259,6 +303,7 @@ export const dict: Record<Locale, LocaleDict> = {
     nav: { privacy: 'Privacidad', terms: 'Términos', cookies: 'Cookies', contact: 'Contacto' },
   },
 };
+
 
 // === Slug legal localizzati (link consistenti) ===
 export const LEGAL_PAGES = {
