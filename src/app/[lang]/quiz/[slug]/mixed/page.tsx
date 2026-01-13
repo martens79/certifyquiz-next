@@ -194,7 +194,9 @@ export default function MixedQuizPage() {
   useEffect(() => {
     const tok = getAccessToken();
     if (!tok) {
-      router.replace(`/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`);
+      router.replace(
+        `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
+      );
     }
   }, [currentLang, currentSlug, router]);
 
@@ -222,20 +224,28 @@ export default function MixedQuizPage() {
     };
   }, [certId, currentLang]);
 
-  // Safety cap (coerente col backend)
-  const trainingPoolLimit = useMemo(() => {
-    if (poolTotal == null) return 500;
-    return Math.min(poolTotal, 5000);
+  // ------------------------- pool sizing + caps -------------------------
+  // Pool size (quanto è grande davvero il pool) — per stats + examSpec (safety coerente col backend)
+  const poolSize = useMemo(() => {
+    if (poolTotal == null) return 500; // fallback mentre carica
+    return Math.min(poolTotal, 5000); // safety
   }, [poolTotal]);
 
+  // Training cap (quante domande per sessione training) — NOTA: diverso dal pool
+  const TRAINING_CAP = 40;
+
+  const trainingCap = useMemo(() => {
+    return Math.min(TRAINING_CAP, poolSize);
+  }, [poolSize]);
+
   const examSpec = useMemo(() => {
-    return getExamSpecForCert(certId, trainingPoolLimit);
-  }, [certId, trainingPoolLimit]);
+    return getExamSpecForCert(certId, poolSize);
+  }, [certId, poolSize]);
 
   /* ------------------------- fetch pool for engine ------------------------- */
   const fetchPool = useCallback(async (): Promise<UiQuestion[]> => {
     const effectiveLimit =
-      mode === 'exam' ? Math.max(1, examSpec.questions) : trainingPoolLimit;
+      mode === 'exam' ? Math.max(1, examSpec.questions) : trainingCap;
 
     const res = await getMixedQuestions(certId, currentLang, {
       limit: effectiveLimit,
@@ -248,14 +258,16 @@ export default function MixedQuizPage() {
       : (res as any).questions ?? [];
 
     return raw.map(normalizeMixedQuestion);
-  }, [certId, currentLang, trainingPoolLimit, mode, examSpec.questions]);
+  }, [certId, currentLang, trainingCap, mode, examSpec.questions]);
 
   return (
     <div className="min-h-screen">
       {/* Intro box (SEO + UX) */}
       <div className="mx-auto max-w-5xl px-4 pt-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
-          <h1 className="text-xl md:text-2xl font-semibold">{copy.title(certName)}</h1>
+          <h1 className="text-xl md:text-2xl font-semibold">
+            {copy.title(certName)}
+          </h1>
 
           <p className="mt-2 text-sm md:text-base text-slate-700">
             {copy.introA}{' '}
@@ -271,7 +283,8 @@ export default function MixedQuizPage() {
             </li>
             <li>
               {copy.bullets.b}{' '}
-              <strong>{copy.bullets.k_exam}</strong> + <strong>{copy.bullets.k_timer}</strong>.
+              <strong>{copy.bullets.k_exam}</strong> +{' '}
+              <strong>{copy.bullets.k_timer}</strong>.
             </li>
             <li>
               {copy.bullets.c}{' '}
@@ -292,7 +305,7 @@ export default function MixedQuizPage() {
               {poolTotal == null ? '…' : poolTotal.toLocaleString()}
             </span>{' '}
             · {copy.stats.trainingCap}:{' '}
-            <span className="font-semibold">{trainingPoolLimit.toLocaleString()}</span>{' '}
+            <span className="font-semibold">{trainingCap.toLocaleString()}</span>{' '}
             · {copy.stats.exam}:{' '}
             <span className="font-semibold">
               {examSpec.questions.toLocaleString()} {copy.stats.questions}
@@ -313,7 +326,7 @@ export default function MixedQuizPage() {
           exam: examSpec.durationSec,
         }}
         limitsByMode={{
-          training: trainingPoolLimit,
+          training: trainingCap,
           exam: examSpec.questions,
         }}
         onModeChange={(m) => setMode(m)}
@@ -322,7 +335,9 @@ export default function MixedQuizPage() {
             return await fetchPool();
           } catch (e: any) {
             if (e?.status === 401) {
-              router.replace(`/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`);
+              router.replace(
+                `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
+              );
               return [];
             }
             throw e;
