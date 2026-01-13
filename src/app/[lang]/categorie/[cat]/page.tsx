@@ -455,21 +455,7 @@ export default async function CategoryPage({ params }: Props) {
             </Link>
           ))}
 
-          <Link
-            href={mixedQuizPath(lang, key)}
-            className={`rounded-2xl p-5 font-semibold shadow-sm transition ${css.wrapper}`}
-          >
-            <div className="text-xl mb-1">🎯 Mixed quiz</div>
-            <p className="text-sm opacity-80">
-              {lang === "it"
-                ? "Tutti gli argomenti della categoria in un solo test."
-                : lang === "fr"
-                ? "Tous les sujets de la catégorie dans un seul test."
-                : lang === "es"
-                ? "Todos los temas de la categoría en una sola prueba."
-                : "All category topics in a single test."}
-            </p>
-          </Link>
+          
         </div>
       )}
     </main>

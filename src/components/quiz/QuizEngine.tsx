@@ -7,29 +7,25 @@ import type { Answer, Question, QuizSummary, Locale } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang, getDict } from '@/lib/i18n';
 
-
-
 type Mode = 'training' | 'exam';
 
 type Props = {
   lang: Locale;
 
-  /**
-   * Carica IL POOL di domande (idealmente tutte o molte, es. 500 max).
-   * Poi l’engine decide quante usarne in training/exam.
-   */
+  /** Carica IL POOL di domande (idealmente molte, es. 500 max). */
   fetchQuestions: () => Promise<Question[]>;
 
-  /**
-   * Chiave base per autosave locale.
-   * Nota: internamente l’engine separa training vs exam usando storageScope + ":" + mode
-   * così non si “sporcano” a vicenda.
-   */
+  /** Chiave base per autosave locale (internamente separiamo per mode). */
   storageScope: string;
 
   // UI
   categoryColor?: string;
+
+  /** default interno (usato solo se NON passi mode come prop) */
   initialMode?: Mode;
+
+  /** ✅ Controlled mode: se lo passi, QuizEngine usa SEMPRE questo (niente doppio click) */
+  mode?: Mode;
 
   /**
    * TIMER (legacy):
@@ -38,27 +34,19 @@ type Props = {
    */
   durationSec?: number | null;
 
-  /**
-   * ✅ Nuovo: timer diverso per training vs exam
-   * - exam: di solito durata ufficiale (es. 90 min)
-   * - training: puoi mettere null (no timer) o undefined (60s * domande)
-   */
+  /** Timer per modalità */
   durationsByMode?: Partial<Record<Mode, number | null>>;
 
-  /**
-   * ✅ Nuovo: numero domande diverso per training vs exam
-   * - exam: numero ufficiale (es. 90)
-   * - training: 200 / 500 / tutto il pool
-   */
+  /** Numero domande per modalità */
   limitsByMode?: Partial<Record<Mode, number>>;
 
-  /** callback best-effort quando finisce (di solito salva risultato su backend) */
+  /** callback best-effort quando finisce */
   onFinish?: (summary: QuizSummary & { mode: Mode }) => Promise<void> | void;
 
   /** URL per tornare indietro */
   backToHref?: string;
 
-  /** opzionale: notifica quando cambia modalità */
+  /** notifica quando cambia modalità */
   onModeChange?: (mode: Mode) => void;
 };
 
@@ -68,6 +56,7 @@ export default function QuizEngine({
   storageScope,
   categoryColor = 'from-blue-900 to-blue-700',
   initialMode = 'training',
+  mode: controlledMode,
   durationSec,
   durationsByMode,
   limitsByMode,
@@ -77,20 +66,22 @@ export default function QuizEngine({
 }: Props) {
   const router = useRouter();
 
-  // 📘 Dizionario i18n del Quiz (badge modalità, timer, micro-messaggi)
-// Le stringhe sono centralizzate in src/lib/i18n.ts → dict[lang].quiz
-const tQuiz = getDict(lang).quiz;
+  // i18n quiz microcopy
+  const tQuiz = getDict(lang).quiz;
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
-  /** Pool completo (training vede tutto, exam ne pesca un sottoinsieme) */
+  /** Pool completo */
   const [pool, setPool] = useState<Question[]>([]);
 
-  /** Modalità corrente */
-  const [mode, setMode] = useState<Mode>(initialMode);
+  /** Mode interno (solo se NON controlled) */
+  const [internalMode, setInternalMode] = useState<Mode>(initialMode);
 
-  /** Domande ATTIVE (dipendono da mode: training=pool, exam=subset) */
+  /** ✅ Mode effettivo */
+  const effectiveMode: Mode = controlledMode ?? internalMode;
+
+  /** Domande attive (dipendono da mode) */
   const [questions, setQuestions] = useState<Question[]>([]);
 
   /** Indice domanda corrente */
@@ -111,40 +102,36 @@ const tQuiz = getDict(lang).quiz;
   const startedAtRef = useRef<number | null>(null);
 
   /**
-   * Storage scope separato per modalità:
-   * - topic:65:en:training
-   * - topic:65:en:exam
+   * Storage separato per modalità:
+   * - mixed:security-plus:en:training
+   * - mixed:security-plus:en:exam
    */
-  const scopedKey = `${storageScope}:${mode}`;
+  const scopedKey = `${storageScope}:${effectiveMode}`;
 
   /* -------------------- helpers: limit + duration -------------------- */
 
   const effectiveLimit = useMemo(() => {
-    const lim = limitsByMode?.[mode];
+    const lim = limitsByMode?.[effectiveMode];
     if (!lim) return undefined;
     return Math.max(1, lim);
-  }, [limitsByMode, mode]);
+  }, [limitsByMode, effectiveMode]);
 
   const effectiveDuration = useMemo(() => {
-    // 1) se hai durationsByMode → usa quello
-    if (durationsByMode && durationsByMode[mode] !== undefined) {
-      return durationsByMode[mode] as number | null;
+    if (durationsByMode && durationsByMode[effectiveMode] !== undefined) {
+      return durationsByMode[effectiveMode] as number | null;
     }
-    // 2) fallback legacy
     return durationSec;
-  }, [durationsByMode, durationSec, mode]);
+  }, [durationsByMode, durationSec, effectiveMode]);
 
   /** Pesca subset per EXAM: shuffle del pool e slice a limit */
   function buildActiveQuestions(p: Question[], m: Mode): Question[] {
     if (!p?.length) return [];
 
     if (m === 'training') {
-      // training: usa tutto il pool (o un limite se lo vuoi)
       if (!limitsByMode?.training) return p;
       return p.slice(0, Math.min(p.length, limitsByMode.training));
     }
 
-    // exam: subset con limit
     const target = effectiveLimit ?? p.length;
     const n = Math.min(p.length, target);
 
@@ -157,7 +144,7 @@ const tQuiz = getDict(lang).quiz;
     return copy.slice(0, n);
   }
 
-    /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
+  /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
     let alive = true;
 
@@ -172,7 +159,7 @@ const tQuiz = getDict(lang).quiz;
         const poolQ = Array.isArray(qs) ? qs : [];
         setPool(poolQ);
 
-        const active = buildActiveQuestions(poolQ, mode);
+        const active = buildActiveQuestions(poolQ, effectiveMode);
         setQuestions(active);
 
         const total =
@@ -214,21 +201,21 @@ const tQuiz = getDict(lang).quiz;
 
         const err: any = e;
         const status: number | undefined =
-          typeof err?.status === "number" ? err.status : undefined;
+          typeof err?.status === 'number' ? err.status : undefined;
 
         if (status === 401) {
           setErr(
-            lang === "it"
-              ? "Non sei loggato su questo dispositivo. Accedi per salvare progressi e sbloccare le funzioni premium."
-              : "You are not logged in. Sign in to save progress and unlock premium features."
+            lang === 'it'
+              ? 'Non sei loggato su questo dispositivo. Accedi per salvare progressi e sbloccare le funzioni premium.'
+              : 'You are not logged in. Sign in to save progress and unlock premium features.'
           );
           return;
         }
 
         setErr(
-          typeof err?.message === "string" && err.message.trim()
+          typeof err?.message === 'string' && err.message.trim()
             ? err.message
-            : "Load error"
+            : 'Load error'
         );
       } finally {
         if (alive) setLoading(false);
@@ -238,130 +225,102 @@ const tQuiz = getDict(lang).quiz;
     return () => {
       alive = false;
     };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, scopedKey, mode, effectiveDuration, effectiveLimit]);
+  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit]);
 
-  /* -------------------- MODE SWITCH (notifica + rebuild subset exam) -------------------- */
+  /* -------------------- MODE SWITCH (controlled-friendly) -------------------- */
   const setModeSafe = (m: Mode) => {
-    if (m === mode) return;
+    if (m === effectiveMode) return;
+
+    // se vuoi bloccare switch dopo aver risposto, lascia questa riga.
+    // se ti rompe, commentala.
     if (Object.keys(marked).length > 0) return;
 
-  clearProgress(storageScope);
+    // pulizia completa (evita restore sporchi tra mode)
+    clearProgress(`${storageScope}:training`);
+    clearProgress(`${storageScope}:exam`);
 
-    // quando cambi modalità: azzera timer/progress della modalità “nuova” se vuoi
-    setMode(m);
+    // notifica parent
     onModeChange?.(m);
 
-    // reset indice immediato (evita flash su idx vecchio)
+    // se non è controlled, aggiorna mode interno
+    if (controlledMode == null) setInternalMode(m);
+
+    // reset UI immediato
     setIdx(0);
     setReviewMode(false);
     startedAtRef.current = null;
   };
-/* -------------------------------------------------------------
-   TIMER EXAM — INIT + TICK (FIX doppio click + effect stabile)
-   -------------------------------------------------------------
-   Problema (prima):
-   - in training `remaining` è null
-   - al primo click su EXAM il timer non partiva perché il tick effect
-     usciva subito (remaining == null)
-   - inoltre il tick effect dipendeva da `remaining` → si ri-attivava
-     continuamente e poteva creare comportamento "a rimbalzo"
 
-   Soluzione (ora):
-   1) Quando entri in EXAM:
-      - resettiamo startedAt
-      - inizializziamo remaining con la durata totale (se era null)
-   2) Quando esci da EXAM:
-      - stop del RAF
-      - reset remaining + startedAt
-   3) Tick timer stabile:
-      - NON dipende da `remaining`
-      - un solo loop RAF che aggiorna `remaining` via setState
-------------------------------------------------------------- */
+  /* -------------------------------------------------------------
+     TIMER EXAM — INIT + TICK stabile
+  ------------------------------------------------------------- */
 
-/* ----------------------- INIT / CLEAN ON MODE ------------------------ */
-useEffect(() => {
-  if (mode === "exam") {
-    // Reset start time: l'esame riparte "da zero" al primo ingresso in exam
+  useEffect(() => {
+    if (effectiveMode === 'exam') {
+      startedAtRef.current = null;
+
+      const total =
+        effectiveDuration === null
+          ? null
+          : effectiveDuration ?? questions.length * 60;
+
+      if (total == null) return;
+
+      // ✅ chiave: se arrivi dal training (remaining=null) lo setti subito
+      setRemaining((prev) => (prev == null ? total : prev));
+      return;
+    }
+
+    // uscendo da exam → stop loop + pulizia timer
+    if (tickRef.current) cancelAnimationFrame(tickRef.current);
+    tickRef.current = null;
     startedAtRef.current = null;
+    setRemaining(null);
+  }, [effectiveMode, effectiveDuration, questions.length]);
 
-    // Durata totale:
-    // - null => timer disattivato
-    // - numero => secondi totali
+  useEffect(() => {
+    if (effectiveMode !== 'exam' || finished) {
+      if (tickRef.current) cancelAnimationFrame(tickRef.current);
+      tickRef.current = null;
+      return;
+    }
+
+    if (remaining == null) return;
+
     const total =
       effectiveDuration === null
         ? null
-        : (effectiveDuration ?? questions.length * 60);
+        : effectiveDuration ?? questions.length * 60;
 
-    // Se timer disattivato, non inizializziamo nulla
     if (total == null) return;
 
-    // ✅ FIX CHIAVE: se arrivi dal training, remaining è null → lo settiamo ORA
-    setRemaining((prev) => (prev == null ? total : prev));
-    return;
-  }
+    if (startedAtRef.current == null) startedAtRef.current = Date.now();
 
-  // Uscendo da exam → stop loop + pulizia stato timer
-  if (tickRef.current) cancelAnimationFrame(tickRef.current);
-  tickRef.current = null;
-  startedAtRef.current = null;
-  setRemaining(null);
-}, [mode, effectiveDuration, questions.length]);
+    const loop = () => {
+      tickRef.current = requestAnimationFrame(loop);
 
-/* ------------------------------ TICK --------------------------------- */
-useEffect(() => {
-  // Timer attivo solo in exam e se non abbiamo finito
-  if (mode !== "exam" || finished) {
-    if (tickRef.current) cancelAnimationFrame(tickRef.current);
-    tickRef.current = null;
-    return;
-  }
+      const elapsed = Math.floor(
+        (Date.now() - (startedAtRef.current || Date.now())) / 1000
+      );
 
-  // Se remaining è null, significa che:
-  // - stiamo entrando ora e l'init effect deve ancora settarlo
-  // - oppure timer disattivo
-  // In entrambi i casi: non partire.
-  if (remaining == null) return;
+      const rest = Math.max(0, total - elapsed);
+      setRemaining(rest);
 
-  const total =
-    effectiveDuration === null
-      ? null
-      : (effectiveDuration ?? questions.length * 60);
+      if (rest === 0) {
+        if (tickRef.current) cancelAnimationFrame(tickRef.current);
+        tickRef.current = null;
+        doFinish(true);
+      }
+    };
 
-  if (total == null) return;
+    loop();
 
-  // Start time iniziale (solo la prima volta che parte davvero il loop)
-  if (startedAtRef.current == null) startedAtRef.current = Date.now();
-
-  const loop = () => {
-    tickRef.current = requestAnimationFrame(loop);
-
-    const elapsed = Math.floor(
-      (Date.now() - (startedAtRef.current || Date.now())) / 1000
-    );
-
-    const rest = Math.max(0, total - elapsed);
-    setRemaining(rest);
-
-    // Tempo finito → termina esame
-    if (rest === 0) {
+    return () => {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
-      doFinish(true);
-    }
-  };
-
-  loop();
-
-  return () => {
-    if (tickRef.current) cancelAnimationFrame(tickRef.current);
-    tickRef.current = null;
-  };
-  // Nota: NON dipendiamo da `remaining` per "far ripartire" il loop,
-  // ma lo usiamo come guard (se è null, non partiamo).
-}, [mode, finished, effectiveDuration, questions.length, remaining]);
-
+    };
+  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
@@ -369,14 +328,14 @@ useEffect(() => {
       qIds: questions.map((q) => q.id),
       marked,
       reviewLater: Array.from(reviewLater),
-      mode,
+      mode: effectiveMode,
       remainingSec: remaining,
       startedAt: startedAtRef.current,
       idx,
     };
     const id = requestAnimationFrame(() => saveProgress(scopedKey, payload));
     return () => cancelAnimationFrame(id);
-  }, [questions, marked, reviewLater, mode, remaining, idx, scopedKey]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey]);
 
   /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
@@ -431,11 +390,8 @@ useEffect(() => {
       const currentPos = reviewPositions.indexOf(idx);
       const nextPos = reviewPositions[currentPos + 1];
 
-      if (nextPos !== undefined) {
-        setIdx(nextPos);
-      } else {
-        setReviewMode(false);
-      }
+      if (nextPos !== undefined) setIdx(nextPos);
+      else setReviewMode(false);
       return;
     }
 
@@ -444,7 +400,7 @@ useEffect(() => {
       return;
     }
 
-    if (mode === 'training' && reviewPositions.length > 0) {
+    if (effectiveMode === 'training' && reviewPositions.length > 0) {
       setReviewMode(true);
       setIdx(reviewPositions[0]);
     }
@@ -487,12 +443,11 @@ useEffect(() => {
       scorePct,
       marked,
       durationSec: elapsedSec,
-      mode,
+      mode: effectiveMode,
     };
 
     setLastSummary(summary);
 
-    // best-effort verso backend
     try {
       await onFinish?.(summary);
     } catch {
@@ -503,8 +458,8 @@ useEffect(() => {
   }
 
   const restart = () => {
-    // restart = nuovo tentativo: in exam rigenera subset (perché reload effect ricrea domande)
     clearProgress(scopedKey);
+
     setIdx(0);
     setMarked({});
     setReviewLater(new Set());
@@ -513,14 +468,12 @@ useEffect(() => {
     startedAtRef.current = null;
     setReviewMode(false);
 
-    // 🔁 forza rebuild delle domande attive (specie per exam)
-    const active = buildActiveQuestions(pool, mode);
+    const active = buildActiveQuestions(pool, effectiveMode);
     setQuestions(active);
 
     const total =
-      effectiveDuration === null
-        ? null
-        : effectiveDuration ?? active.length * 60;
+      effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
+
     setRemaining(total);
   };
 
@@ -537,13 +490,12 @@ useEffect(() => {
     const correct = lastSummary?.correct ?? 0;
     const wrong = total - correct;
     const duration =
-      lastSummary && lastSummary.durationSec
-        ? fmt(lastSummary.durationSec)
-        : '--:--';
+      lastSummary && lastSummary.durationSec ? fmt(lastSummary.durationSec) : '--:--';
 
     const backUrl = backToHref || withLang(lang, '/quiz-home');
 
     const markedMap = lastSummary?.marked ?? marked;
+
     const wrongDetails = questions
       .map((q, index) => {
         const chosenId = markedMap?.[q.id];
@@ -611,10 +563,7 @@ useEffect(() => {
                 </h2>
                 <ul className="space-y-3 max-h-72 overflow-auto pr-1">
                   {wrongDetails.map((item, i) => (
-                    <li
-                      key={item.key}
-                      className="bg-slate-50 rounded-xl p-3 text-sm"
-                    >
+                    <li key={item.key} className="bg-slate-50 rounded-xl p-3 text-sm">
                       <p className="font-medium mb-1">
                         {i + 1}. {item.question}
                       </p>
@@ -673,75 +622,74 @@ useEffect(() => {
 
   /* --------------------------- UI QUIZ NORMALE ------------------------ */
   const q = questions[idx];
-  const isExam = mode === 'exam';
+  const isExam = effectiveMode === 'exam';
   const chosen = marked[q.id];
 
   const reviewTotal = reviewPositions.length;
   const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
 
   const canGoNext =
-    idx < questions.length - 1 || (mode === 'training' && reviewPositions.length > 0);
+    idx < questions.length - 1 || (effectiveMode === 'training' && reviewPositions.length > 0);
 
   return (
     <div className={`min-h-screen ${gradient}`}>
       <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
         {/* header */}
-<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-  <div className="text-sm opacity-90">
-    {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
-    {label('answered', lang)} {answeredCount}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="text-sm opacity-90">
+            {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+            {label('answered', lang)} {answeredCount}
 
-    {/* 🔖 Badge modalità */}
-  <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-    {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
-  </span>
+            {/* badge modalità */}
+            <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+              {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+            </span>
 
-    {reviewMode && reviewTotal > 0 && (
-      <>
-        {' '}
-        ·{' '}
-        <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-          ★ Review {reviewIndex}/{reviewTotal}
-        </span>
-      </>
-    )}
+            {reviewMode && reviewTotal > 0 && (
+              <>
+                {' '}
+                ·{' '}
+                <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                  ★ Review {reviewIndex}/{reviewTotal}
+                </span>
+              </>
+            )}
 
-    {isExam && (
-      <>
-        {' '}
-        · {label('score', lang)} {scorePct}%
-        {remaining != null && (
-          <>
-            {' '}
-            · ⏱ {tQuiz.time}: {fmt(remaining)}
-          </>
-        )}
-      </>
-    )}
-  </div>
+            {isExam && (
+              <>
+                {' '}
+                · {label('score', lang)} {scorePct}%
+                {remaining != null && (
+                  <>
+                    {' '}
+                    · ⏱ {tQuiz.time}: {fmt(remaining)}
+                  </>
+                )}
+              </>
+            )}
+          </div>
 
-  {/* ✅ Toggle mode: usa setModeSafe così scatena la logica nuova */}
-  <div className="flex items-center gap-2">
-    <button
-      className={`px-3 py-1.5 rounded-full text-sm ${
-        !isExam ? 'bg-emerald-500' : 'bg-white/10'
-      }`}
-      onClick={() => setModeSafe('training')}
-    >
-      {label('training', lang)}
-    </button>
+          {/* toggle mode */}
+          <div className="flex items-center gap-2">
+            <button
+              className={`px-3 py-1.5 rounded-full text-sm ${
+                !isExam ? 'bg-emerald-500' : 'bg-white/10'
+              }`}
+              onClick={() => setModeSafe('training')}
+            >
+              {label('training', lang)}
+            </button>
 
-    <button
-      className={`px-3 py-1.5 rounded-full text-sm ${
-        isExam ? 'bg-emerald-500' : 'bg-white/10'
-      }`}
-      onClick={() => setModeSafe('exam')}
-    >
-      {label('exam', lang)}
-    </button>
-  </div>
-</div>
-
+            <button
+              className={`px-3 py-1.5 rounded-full text-sm ${
+                isExam ? 'bg-emerald-500' : 'bg-white/10'
+              }`}
+              onClick={() => setModeSafe('exam')}
+            >
+              {label('exam', lang)}
+            </button>
+          </div>
+        </div>
 
         {/* domanda */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">
