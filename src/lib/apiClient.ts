@@ -53,6 +53,11 @@ export type SaveExamRequest = {
   correctAnswers: number;
   isExam?: boolean;
 };
+export type QuestionsCountResponse = {
+  certification_id: number;
+  lang: Locale;
+  total: number;
+};
 
 export type SaveExamResponse = {
   success: boolean;
@@ -456,9 +461,9 @@ export const getMixedQuestions = (
   opts?: {
     limit?: number;
     shuffle?: boolean;
+    strict?: boolean;
   }
 ) => {
-  // Costruiamo querystring in modo sicuro
   const params = new URLSearchParams({ lang });
 
   if (opts?.limit != null) {
@@ -469,7 +474,11 @@ export const getMixedQuestions = (
     params.set("shuffle", opts.shuffle ? "1" : "0");
   }
 
-  return apiGet<{ questions: Question[] }>(
+  if (opts?.strict != null) {
+    params.set("strict", opts.strict ? "1" : "0");
+  }
+
+  return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,
     true
   );

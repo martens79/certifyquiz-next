@@ -1,14 +1,14 @@
 // src/app/[lang]/quiz/[slug]/mixed/MixedQuizPage.tsx
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import QuizEngine from '@/components/quiz/QuizEngine';
-import type { Locale, Question as UiQuestion, QuizSummary } from '@/lib/quiz-types';
+import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
 import { withLang } from '@/lib/i18n';
 
-// slug → certification_id (serve per endpoint mixed)
+// slug → certification_id
 import { IDS_BY_SLUG } from '@/certifications/data';
 
 import {
@@ -18,12 +18,8 @@ import {
   getAccessToken,
 } from '@/lib/apiClient';
 
-// ✅ Exam specs per certId (DB)
 import { getExamSpecForCert } from '@/lib/exam-specs';
 
-/* ──────────────────────────────────────────────────────────────────────────────
-   Normalizzazione domanda API → formato UI richiesto dal QuizEngine
-────────────────────────────────────────────────────────────────────────────── */
 function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: q.id,
@@ -46,25 +42,13 @@ export default function MixedQuizPage() {
 
   const certId = IDS_BY_SLUG[currentSlug];
 
-  // ✅ Modalità locale: ci serve per applicare limit+timer diversi
+  // ✅ modalità gestita dal parent SOLO per:
+  // - initialMode
+  // - salvataggio risultato
   const [mode, setMode] = useState<'training' | 'exam'>('training');
 
-  // ✅ Pool training (massimo)
-  const TRAINING_POOL_LIMIT = 500;
+  const [poolTotal, setPoolTotal] = useState<number | null>(null);
 
-  /* ──────────────────────────────────────────────────────────────────────────
-     Redirect se non loggato
-  ────────────────────────────────────────────────────────────────────────── */
-  useEffect(() => {
-    const tok = getAccessToken();
-    if (!tok) {
-      router.replace(
-        `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
-      );
-    }
-  }, [currentLang, currentSlug, router]);
-
-  // Guard: se manca mappatura slug → id
   if (!certId) {
     return (
       <div className="p-4 text-center text-sm text-red-600">
@@ -73,87 +57,118 @@ export default function MixedQuizPage() {
     );
   }
 
-  /* ──────────────────────────────────────────────────────────────────────────
-     Exam spec per questa certificazione:
-     - Se presente in EXAM_SPECS_BY_CERT_ID → usa quella (es. 90 domande / 90 min)
-     - Se assente → fallback intelligente (60 domande / 60 min, non oltre pool)
-     NOTA: poolSize qui è una stima; per mixed usiamo TRAINING_POOL_LIMIT.
-  ────────────────────────────────────────────────────────────────────────── */
+  // Redirect se non loggato
+  useEffect(() => {
+    const tok = getAccessToken();
+    if (!tok) {
+      router.replace(`/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`);
+    }
+  }, [currentLang, currentSlug, router]);
+
+  // ✅ poolTotal dal backend (chiamata leggera)
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await getMixedQuestions(certId, currentLang, {
+          limit: 1,
+          shuffle: false,
+        });
+
+        const total = (res as any)?.poolTotal;
+        if (!cancelled) setPoolTotal(typeof total === 'number' ? total : null);
+      } catch {
+        if (!cancelled) setPoolTotal(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [certId, currentLang]);
+
+  // training pool limit: cap “anti-suicidio” coerente col backend
+  const trainingPoolLimit = useMemo(() => {
+    if (poolTotal == null) return 500;      // mentre carica
+    return Math.min(poolTotal, 5000);
+  }, [poolTotal]);
+
   const examSpec = useMemo(() => {
-    return getExamSpecForCert(certId, TRAINING_POOL_LIMIT);
-  }, [certId]);
+    return getExamSpecForCert(certId, trainingPoolLimit);
+  }, [certId, trainingPoolLimit]);
 
-  // ✅ Limit dinamico:
-  // - training: pool grande
-  // - exam: esattamente il numero previsto (cap 500 per backend)
-  const effectiveLimit =
-    mode === 'exam'
-      ? Math.max(1, Math.min(examSpec.questions, 500))
-      : TRAINING_POOL_LIMIT;
+  // ✅ IMPORTANTE: fetchQuestions deve SEMPRE caricare un pool grande.
+  // QuizEngine poi fa subset in memoria per exam.
+  const fetchPool = useCallback(async (): Promise<UiQuestion[]> => {
+   const effectiveLimit =
+  mode === "exam"
+    ? Math.max(1, examSpec.questions)
+    : trainingPoolLimit;
 
-  // ✅ Timer dinamico:
-  // - training: undefined ⇒ default QuizEngine (60s * domande)
-  // - exam: durata ufficiale in secondi
-  const effectiveDurationSec = mode === 'exam' ? examSpec.durationSec : undefined;
+const res = await getMixedQuestions(certId, currentLang, {
+  limit: effectiveLimit,
+  shuffle: true,
+  strict: currentLang !== "it", // 🔥 niente fallback se EN/FR/ES
+});
+
+
+
+    const raw: ApiQuestion[] = Array.isArray(res)
+      ? (res as any)
+      : (res as any).questions ?? [];
+
+    return raw.map(normalizeMixedQuestion);
+  }, [certId, currentLang, trainingPoolLimit]);
 
   return (
     <QuizEngine
-      // ✅ Forza reload completo quando cambi mode
-      // (così cambiano limit + timer e non resta “incollato” al vecchio set)
-      key={`${currentSlug}:${currentLang}:${mode}`}
+      // ✅ NON mettere mode nella key → altrimenti smonti/rimonti l’engine e serve doppio click
+      key={`${currentSlug}:${currentLang}`}
       lang={currentLang}
       storageScope={`mixed:${currentSlug}:${currentLang}`}
       categoryColor="from-blue-900 to-blue-700"
 
-      // ✅ notifiche cambio modalità (devi aver aggiunto onModeChange in QuizEngine)
+      // ✅ così l’engine parte nella modalità giusta se arrivi già in exam (o per restore)
+      initialMode={mode}
+
+      // ✅ timer e limiti per modalità (QUI è il posto corretto)
+      durationsByMode={{
+        training: undefined,              // default: questions.length * 60 (o come hai nel QuizEngine)
+        exam: examSpec.durationSec,       // durata ufficiale
+      }}
+      limitsByMode={{
+        training: trainingPoolLimit,      // pool grande
+        exam: examSpec.questions,         // numero ufficiale
+      }}
+
       onModeChange={(m) => setMode(m)}
 
-      /* ──────────────────────────────────────────────────────────────────────
-         Fetch domande MISTE
-         - limit variabile in base alla modalità
-         - shuffle=true (ordine casuale)
-      ────────────────────────────────────────────────────────────────────── */
-      fetchQuestions={async (): Promise<UiQuestion[]> => {
+      fetchQuestions={async () => {
         try {
-          const res = await getMixedQuestions(certId, currentLang, {
-            limit: effectiveLimit,
-            shuffle: true,
-          });
-
-          const raw: ApiQuestion[] = Array.isArray(res)
-            ? (res as any)
-            : (res as any).questions ?? [];
-
-          return (raw ?? []).map(normalizeMixedQuestion);
+          return await fetchPool();
         } catch (e: any) {
           if (e?.status === 401) {
-            router.replace(
-              `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
-            );
+            router.replace(`/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`);
             return [];
           }
           throw e;
         }
       }}
 
-      // ✅ timer coerente con mode
-      durationSec={effectiveDurationSec}
-
-      /* ──────────────────────────────────────────────────────────────────────
-         Salvataggio risultato (best-effort)
-         - isExam true solo se eri in modalità exam
-      ────────────────────────────────────────────────────────────────────── */
-      onFinish={async (s: QuizSummary) => {
+      // ⚠️ se il tuo QuizEngine NON passa mode nel summary, tieni parent mode (come qui)
+      onFinish={async (s: any) => {
         try {
+          const finishedMode: 'training' | 'exam' =
+            (s?.mode === 'exam' || s?.mode === 'training') ? s.mode : mode;
+
           await saveExam({
             certification_id: certId,
             totalQuestions: s.total,
             correctAnswers: s.correct,
-            isExam: mode === 'exam',
+            isExam: finishedMode === 'exam',
           });
-        } catch {
-          // best effort
-        }
+        } catch {}
       }}
 
       backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
