@@ -87,8 +87,9 @@ export default async function BlogArticlePage({
   const coverUrl: string | undefined = article.coverUrl || undefined;
 
   const blogBase = `/${lang}/blog`;
-  const hrefQuizHome = `/${lang}/quiz-home`;
-  const hrefCerts = `/${lang}/certifications`;
+const hrefQuizHome = `/${lang}/quiz-home`;
+const hrefCerts = `/certifications`; // ✅ no lang prefix: route unica
+
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
