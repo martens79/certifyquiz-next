@@ -190,7 +190,8 @@ export default function MixedQuizPage() {
     );
   }
 
-  /* ---------------------------- auth redirect ---------------------------- */
+  /* Tolto questo pezzo per consentire il free login per Seo -----
+   ---------------------------- auth redirect ---------------------------- 
   useEffect(() => {
     const tok = getAccessToken();
     if (!tok) {
@@ -198,7 +199,8 @@ export default function MixedQuizPage() {
         `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
       );
     }
-  }, [currentLang, currentSlug, router]);
+  }, [currentLang, currentSlug, router]);       
+     */
 
   /* --------------------- poolTotal (light call) --------------------- */
   useEffect(() => {
@@ -335,11 +337,11 @@ export default function MixedQuizPage() {
             return await fetchPool();
           } catch (e: any) {
             if (e?.status === 401) {
-              router.replace(
-                `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
-              );
-              return [];
-            }
+  // Non forziamo login: quiz pubblico.
+  // Mostra semplicemente zero domande o un messaggio (meglio: setErr in QuizEngine)
+  return [];
+}
+
             throw e;
           }
         }}

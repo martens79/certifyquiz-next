@@ -466,22 +466,15 @@ export const getMixedQuestions = (
 ) => {
   const params = new URLSearchParams({ lang });
 
-  if (opts?.limit != null) {
-    params.set("limit", String(opts.limit));
-  }
+  if (opts?.limit != null) params.set("limit", String(opts.limit));
+  if (opts?.shuffle != null) params.set("shuffle", opts.shuffle ? "1" : "0");
+  if (opts?.strict != null) params.set("strict", opts.strict ? "1" : "0");
 
-  if (opts?.shuffle != null) {
-    params.set("shuffle", opts.shuffle ? "1" : "0");
-  }
-
-  if (opts?.strict != null) {
-    params.set("strict", opts.strict ? "1" : "0");
-  }
-
-  return apiGet<{ poolTotal?: number; questions: Question[] }>(
-    `/questions-mixed/${id}?${params.toString()}`,
-    true
-  );
+  // ✅ PUBLIC: niente auth richiesta
+ return apiGet<{ poolTotal?: number; questions: Question[] }>(
+  `/questions-mixed/${id}?${params.toString()}`,
+  false
+);
 };
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
