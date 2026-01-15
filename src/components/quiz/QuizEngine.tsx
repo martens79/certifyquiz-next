@@ -123,26 +123,27 @@ export default function QuizEngine({
     return durationSec;
   }, [durationsByMode, durationSec, effectiveMode]);
 
-  /** Pesca subset per EXAM: shuffle del pool e slice a limit */
-  function buildActiveQuestions(p: Question[], m: Mode): Question[] {
-    if (!p?.length) return [];
+ /** Pesca subset per TRAINING/EXAM: shuffle del pool + slice a limit (no mutazione del pool) */
+function buildActiveQuestions(p: Question[], m: Mode): Question[] {
+  if (!p?.length) return [];
 
-    if (m === 'training') {
-      if (!limitsByMode?.training) return p;
-      return p.slice(0, Math.min(p.length, limitsByMode.training));
-    }
+  // ✅ limite per modalità
+  const target =
+    m === 'training'
+      ? (limitsByMode?.training ?? p.length)
+      : (effectiveLimit ?? p.length);
 
-    const target = effectiveLimit ?? p.length;
-    const n = Math.min(p.length, target);
+  const n = Math.max(1, Math.min(p.length, target));
 
-    // shuffle in memoria (non mutare il pool)
-    const copy = [...p];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy.slice(0, n);
+  // ✅ shuffle in memoria (non mutare il pool)
+  const copy = [...p];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
+
+  return copy.slice(0, n);
+}
 
   /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
