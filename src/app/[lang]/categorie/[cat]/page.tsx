@@ -16,6 +16,7 @@ import {
   CERT_CATEGORY_BY_SLUG,
   type CategoryKey,
 } from "@/lib/certs";
+import { getCertCardDesc, type CertDescLocale } from "@/lib/cert-descriptions";
 
 /* -------------------------------- Config -------------------------------- */
 const LOCALES = ["it", "en", "fr", "es"] as const;
@@ -415,6 +416,8 @@ export default async function CategoryPage({ params }: Props) {
       ? "Ir a la certificación →"
       : "Go to certification page →";
 
+      const currentLang = lang as CertDescLocale;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <script
@@ -448,10 +451,18 @@ export default async function CategoryPage({ params }: Props) {
               href={localizedCertPath(lang, slug)}
               className={`rounded-2xl p-5 shadow-sm transition ${css.wrapper}`}
             >
-              <div className="text-lg font-semibold mb-1">
-                {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-              </div>
-              <p className="text-sm opacity-80">{ctaCert}</p>
+              <div className="text-lg font-semibold leading-snug">
+  {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+</div>
+
+<p className="mt-1 text-sm opacity-80 leading-snug">
+  {getCertCardDesc(slug, currentLang)}
+</p>
+
+<p className="mt-3 text-sm underline underline-offset-4 opacity-70">
+  {ctaCert}
+</p>
+
             </Link>
           ))}
 
