@@ -210,6 +210,23 @@ export const categoryKeyFromSlug = (
 };
 
 /* ------------------------------------------------------------------ */
+/* PRICING / PREMIUM (SEO)                                             */
+/* ------------------------------------------------------------------ */
+
+export const PRICING_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "prezzi",
+  en: "pricing",
+  fr: "prix",
+  es: "precios",
+};
+
+export const pricingPath = (lang: Locale): string => {
+  const base = seoPrefix(lang); // EN -> "" ; altri -> "/it|/fr|/es"
+  const slug = PRICING_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+
+/* ------------------------------------------------------------------ */
 /* QUIZ                                                                */
 /* ------------------------------------------------------------------ */
 

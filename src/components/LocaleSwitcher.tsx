@@ -8,8 +8,6 @@ import { CAT_KEY_TO_SLUG, type CategoryKey } from "@/lib/paths";
 /* REGEX                                                              */
 /* ------------------------------------------------------------------ */
 
-const LOCALES = ["it", "en", "fr", "es"] as const;
-
 const QUIZ_RE = /^\/(it|en|fr|es)\/quiz\//i;
 
 const CAT_LIST_RE =
@@ -24,6 +22,11 @@ const CERT_LIST_RE =
 const CERT_DETAIL_RE =
   /^\/(?:(it)\/certificazioni|(fr)\/certifications|(es)\/certificaciones|certifications)\/([^/?#]+)\/?$/i;
 
+/** ✅ Prezzi/Premium — slug tradotti per lingua (SEO) */
+const PRICING_RE =
+  /^\/(?:(it)\/prezzi|(fr)\/prix|(es)\/precios|pricing|prezzi)\/?$/i;
+
+/** EN root senza /en, altre lingue con prefisso */
 const LANG_PREFIX_RE = /^\/(it|fr|es)(?=\/|$)/i;
 
 /* ------------------------------------------------------------------ */
@@ -46,6 +49,14 @@ function certificationsRoot(lang: Locale) {
   if (lang === "it") return "/it/certificazioni";
   if (lang === "fr") return "/fr/certifications";
   return "/es/certificaciones";
+}
+
+/** ✅ Route prezzi per lingua: /pricing (EN root), /it/prezzi, /fr/prix, /es/precios */
+function pricingRoot(lang: Locale) {
+  if (lang === "en") return "/pricing";
+  if (lang === "it") return "/it/prezzi";
+  if (lang === "fr") return "/fr/prix";
+  return "/es/precios";
 }
 
 function categoryKeyFromSlug(lang: Locale, slug: string): CategoryKey | null {
@@ -71,9 +82,7 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
 
     /* ---------------------- QUIZ ---------------------- */
     if (QUIZ_RE.test(pathname)) {
-      router.push(
-        qs(pathname.replace(QUIZ_RE, `/${next}/quiz/`), query)
-      );
+      router.push(qs(pathname.replace(QUIZ_RE, `/${next}/quiz/`), query));
       return;
     }
 
@@ -113,6 +122,13 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     if (certMatch) {
       const slug = certMatch[4];
       router.push(qs(`${certificationsRoot(next)}/${slug}`, query));
+      return;
+    }
+
+    /* ---------------------- PRICING -------------------- */
+    // ✅ Da /it/prezzi → EN /pricing (non /prezzi), e viceversa
+    if (PRICING_RE.test(pathname)) {
+      router.push(qs(pricingRoot(next), query));
       return;
     }
 
