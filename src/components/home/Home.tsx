@@ -19,17 +19,10 @@ import {
   Code,
   Layers,
   Cpu,
-  BadgeCheck,
-  BarChart3,
-  Lock,
-  Sparkles,
 } from "lucide-react";
 
 /* Helpers */
-function L(
-  o: { it: string; en: string; fr: string; es: string },
-  lang: Locale
-) {
+function L(o: { it: string; en: string; fr: string; es: string }, lang: Locale) {
   return o[lang] ?? o.it;
 }
 
@@ -81,12 +74,11 @@ const CATEGORY_UI: Record<
 } as const;
 
 type Props = {
-  lang?: Locale; // ✅ runtime-safe
+  lang?: Locale;
   isLoggedIn?: boolean;
 };
 
 export default function Home({ lang, isLoggedIn = false }: Props) {
-  // ✅ fallback sicuro: se per un render arriva undefined, non crasha
   const safeLang: Locale =
     lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
@@ -242,145 +234,136 @@ export default function Home({ lang, isLoggedIn = false }: Props) {
     },
   ];
 
-  const infoBoxes = [
-    {
-      icon: <BadgeCheck size={24} className="text-blue-600" aria-hidden="true" />,
-      title: L(
-        { it: "Quiz ufficiali", en: "Official quizzes", fr: "Quiz officiels", es: "Cuestionarios oficiales" },
-        safeLang
-      ),
-      text: L(
-        { it: "Contenuti sempre aggiornati e realistici.", en: "Always up-to-date and realistic content.", fr: "Contenu toujours à jour et réaliste.", es: "Contenido siempre actualizado y realista." },
-        safeLang
-      ),
-    },
-    {
-      icon: <BarChart3 size={24} className="text-purple-600" aria-hidden="true" />,
-      title: L(
-        { it: "Progresso tracciato", en: "Progress tracking", fr: "Suivi des progrès", es: "Seguimiento del progreso" },
-        safeLang
-      ),
-      text: L(
-        { it: "Visualizza l'avanzamento per ogni categoria.", en: "Track your progress in each category.", fr: "Suivez vos progrès par catégorie.", es: "Consulta tu progreso por categoría." },
-        safeLang
-      ),
-    },
-    {
-      icon: <Sparkles size={24} className="text-yellow-500" aria-hidden="true" />,
-      title: L(
-        { it: "Badge ufficiali", en: "Official badges", fr: "Badges officiels", es: "Insignias oficiales" },
-        safeLang
-      ),
-      text: L(
-        { it: "Raggiungi traguardi e condividili.", en: "Achieve and share milestones.", fr: "Atteignez et partagez vos objectifs.", es: "Alcanza y comparte tus logros." },
-        safeLang
-      ),
-    },
-    {
-      icon: <Lock size={24} className="text-red-500" aria-hidden="true" />,
-      title: L(
-        { it: "3 argomenti inclusi", en: "3 topics included", fr: "3 sujets inclus", es: "3 temas incluidos" },
-        safeLang
-      ),
-      text: L(
-        { it: "Ogni certificazione inizia con 3 argomenti sbloccati.", en: "Each certification starts with 3 unlocked topics.", fr: "Chaque certification commence avec 3 sujets débloqués.", es: "Cada certificación empieza con 3 temas desbloqueados." },
-        safeLang
-      ),
-    },
-  ];
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 overflow-x-hidden min-h-[100dvh]">
-      {/* Header */}
-      <header className="text-center">
-        <div className="flex justify-center items-center gap-3 mb-2">
-          <Image src={logo} alt="CertifyQuiz" width={40} height={40} className="h-10 w-auto" priority />
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800">CertifyQuiz</h1>
+    <div className="max-w-6xl mx-auto px-4 py-6 md:py-10 overflow-x-hidden min-h-[100dvh]">
+      {/* HERO (centrale, pulita) */}
+      <header className="text-center max-w-3xl mx-auto">
+        <div className="flex justify-center items-center gap-3 mb-3">
+          <Image
+            src={logo}
+            alt="CertifyQuiz"
+            width={44}
+            height={44}
+            className="h-11 w-auto"
+            priority
+          />
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800">
+            CertifyQuiz
+          </h1>
         </div>
 
-        <p className="text-base italic text-slate-500 mb-1">
-          <span className="font-medium text-slate-600">Competence makes the difference</span>
+        <p className="text-sm md:text-base text-slate-600 font-semibold mb-3">
+          {L(
+            {
+              it: "Allenati per le certificazioni IT con quiz realistici e spiegazioni chiare.",
+              en: "Prepare for IT certifications with realistic quizzes and clear explanations.",
+              fr: "Préparez vos certifications IT avec des quiz réalistes et des explications claires.",
+              es: "Prepárate para certificaciones IT con cuestionarios realistas y explicaciones claras.",
+            },
+            safeLang
+          )}
         </p>
-        <p className="text-xs md:text-sm font-semibold text-slate-600 mb-6">
-  {L(
-    {
-      it: "Quiz di allenamento per certificazioni IT (AWS, CCNA, Security+, CompTIA e altre). Allenati, mettiti alla prova e monitora i progressi.",
-      en: "Practice quizzes for IT certifications (AWS, CCNA, Security+, CompTIA and more). Train, test yourself and track your progress.",
-      fr: "Quiz d’entraînement pour des certifications IT (AWS, CCNA, Security+, CompTIA et plus). Entraîne-toi, teste-toi et suis tes progrès.",
-      es: "Cuestionarios de práctica para certificaciones IT (AWS, CCNA, Security+, CompTIA y más). Entrena, ponte a prueba y sigue tu progreso."
-    },
-    safeLang
-  )}
-</p>
 
+        <p className="text-xs md:text-sm text-slate-500 mb-6">
+          {L(
+            {
+              it: "AWS, CCNA, Security+, Azure, CompTIA e altre: scegli una categoria e inizia subito.",
+              en: "AWS, CCNA, Security+, Azure, CompTIA and more: pick a category and start now.",
+              fr: "AWS, CCNA, Security+, Azure, CompTIA et plus : choisissez une catégorie et commencez.",
+              es: "AWS, CCNA, Security+, Azure, CompTIA y más: elige una categoría y empieza ya.",
+            },
+            safeLang
+          )}
+        </p>
 
         {/* CTA */}
-        <div className="mt-6 mb-8 flex justify-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
           <Link
             href={`/${safeLang}/quiz-home`}
-            className="inline-block bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-105"
+            className="inline-flex justify-center bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-[1.02]"
           >
-            {L({ it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" }, safeLang)}
+            {L(
+              { it: "Esplora i quiz", en: "Explore quizzes", fr: "Explorer les quiz", es: "Explorar cuestionarios" },
+              safeLang
+            )}
           </Link>
 
           {!isLoggedIn && (
             <Link
               href={withLang(safeLang as any, "/login")}
-              className="inline-flex items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
+              className="inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
-              {L({ it: "Accedi", en: "Login", fr: "Se connecter", es: "Iniciar sesión" }, safeLang)}
+              {L(
+                { it: "Accedi", en: "Login", fr: "Se connecter", es: "Iniciar sesión" },
+                safeLang
+              )}
             </Link>
           )}
         </div>
+
+        <p className="text-xs text-slate-500 mt-3">
+          {L(
+            {
+              it: "I tuoi progressi vengono salvati nel profilo.",
+              en: "Your progress is saved in your profile.",
+              fr: "Vos progrès sont enregistrés dans votre profil.",
+              es: "Tu progreso se guarda en tu perfil.",
+            },
+            safeLang
+          )}
+        </p>
       </header>
 
-      <BlogTeaser lang={safeLang as any}  className="mb-4" />
-
-      {/* Categorie */}
-      <main className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 justify-center">
+      {/* CATEGORIE (core) */}
+      <section className="mt-8 md:mt-10" aria-label="Categories">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {allCategories.map((cat) => {
             const ui = CATEGORY_UI[cat.key];
             return (
               <Link
                 key={cat.key}
                 href={categoryPath(safeLang, cat.key)}
-                className={`transition p-3 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left text-sm`}
+                className={`transition p-3 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
               >
                 <div className="flex items-center gap-2 text-slate-800 font-bold mb-1">
                   {cat.icon}
                   <span className="text-sm leading-tight">{cat.title}</span>
                 </div>
-                <div className="text-xs text-slate-600 leading-tight line-clamp-2">{cat.desc}</div>
+                <div className="text-xs text-slate-600 leading-tight line-clamp-2">
+                  {cat.desc}
+                </div>
               </Link>
             );
           })}
         </div>
 
         {/* Link suggeriti */}
-        <div className="text-center">
-          <Link href={withLang(safeLang as any, "/quiz-suggeriti")} className="text-blue-600 font-medium hover:underline text-sm">
+        <div className="text-center mt-5">
+          <Link
+            href={withLang(safeLang as any, "/quiz-suggeriti")}
+            className="text-blue-600 font-semibold hover:underline text-sm"
+          >
             ⭐{" "}
-            {L({ it: "Prova i nostri migliori quiz →", en: "Try our best quizzes →", fr: "Essayez nos meilleurs quiz →", es: "Prueba nuestros mejores quizzes →" }, safeLang)}
+            {L(
+              {
+                it: "Prova i nostri migliori quiz →",
+                en: "Try our best quizzes →",
+                fr: "Essayez nos meilleurs quiz →",
+                es: "Prueba nuestros mejores quizzes →",
+              },
+              safeLang
+            )}
           </Link>
         </div>
-      </main>
+      </section>
 
-      {/* Info boxes */}
-      <section
-        className="mt-6"
-        aria-label={L({ it: "Perché scegliere CertifyQuiz", en: "Why choose CertifyQuiz", fr: "Pourquoi choisir CertifyQuiz", es: "Por qué elegir CertifyQuiz" }, safeLang)}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-          {infoBoxes.map((box, i) => (
-            <div key={i} className="bg-white border rounded-xl p-4 shadow-sm text-left flex items-start gap-3">
-              {box.icon}
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm md:text-base mb-1">{box.title}</h3>
-                <p className="text-sm text-slate-600 leading-tight">{box.text}</p>
-              </div>
-            </div>
-          ))}
+      {/* BLOG (sotto, compatto, non invasivo) */}
+      <section className="mt-10 md:mt-12" aria-label="Blog teaser">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-2 text-xs font-semibold text-slate-500 text-left">
+            {L({ it: "Dal blog", en: "From the blog", fr: "Du blog", es: "Del blog" }, safeLang)}
+          </div>
+          <BlogTeaser lang={safeLang as any} variant="compact" />
         </div>
       </section>
     </div>

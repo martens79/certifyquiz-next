@@ -61,9 +61,11 @@ function formatDate(lang: Locale, iso?: string) {
 export default function BlogTeaser({
   lang,
   className,
+  variant = "default",
 }: {
   lang: Locale;
   className?: string;
+  variant?: "default" | "compact";
 }) {
   const [article, setArticle] = useState<Article | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -73,7 +75,9 @@ export default function BlogTeaser({
 
     (async () => {
       try {
-        const res = await fetch(`/api/blog/latest?lang=${lang}`, { cache: "no-store" });
+        const res = await fetch(`/api/blog/latest?lang=${lang}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         if (!cancelled) setArticle(data.article ?? null);
       } catch {
@@ -97,6 +101,8 @@ export default function BlogTeaser({
   const dateLabel = formatDate(lang, article.publishedAt);
   const excerpt = (article.excerpt ?? "").trim();
 
+  const isCompact = variant === "compact";
+
   return (
     <section
       className={cx(
@@ -105,10 +111,20 @@ export default function BlogTeaser({
         className
       )}
     >
-      <div className="flex items-center gap-3 p-3 md:p-4">
-        {/* Thumbnail (piccola!) */}
+      <div
+        className={cx(
+          "flex items-center gap-3",
+          isCompact ? "p-2 md:p-3" : "p-3 md:p-4"
+        )}
+      >
+        {/* Thumbnail */}
         <Link href={href} className="shrink-0">
-          <div className="h-16 w-16 overflow-hidden rounded-xl bg-zinc-100 md:h-20 md:w-20">
+          <div
+            className={cx(
+              "overflow-hidden rounded-xl bg-zinc-100",
+              isCompact ? "h-12 w-12 md:h-14 md:w-14" : "h-16 w-16 md:h-20 md:w-20"
+            )}
+          >
             {article.coverUrl ? (
               <img
                 src={article.coverUrl}
@@ -123,18 +139,28 @@ export default function BlogTeaser({
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-zinc-500">
+            <p className={cx("text-zinc-500", isCompact ? "text-[11px]" : "text-xs")}>
               {LBL_FROM_BLOG[lang]}
-              {dateLabel ? <span className="ml-2 text-zinc-400">· {dateLabel}</span> : null}
+              {dateLabel ? (
+                <span className="ml-2 text-zinc-400">· {dateLabel}</span>
+              ) : null}
             </p>
 
             <div className="flex items-center gap-2">
-              <span className="hidden rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-700 sm:inline">
+              <span
+                className={cx(
+                  "hidden rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-zinc-700 sm:inline",
+                  isCompact ? "text-[10px]" : "text-[11px]"
+                )}
+              >
                 {lang.toUpperCase()}
               </span>
               <Link
                 href={base}
-                className="text-xs font-medium text-zinc-600 hover:underline"
+                className={cx(
+                  "font-medium text-zinc-600 hover:underline",
+                  isCompact ? "text-[11px]" : "text-xs"
+                )}
                 title={lang === "it" ? "Tutti gli articoli" : "All posts"}
               >
                 {LBL_ALL_POSTS[lang]}
@@ -142,14 +168,27 @@ export default function BlogTeaser({
             </div>
           </div>
 
-          <h3 className="mt-0.5 truncate text-sm font-semibold text-zinc-900 md:text-base">
+          <h3
+            className={cx(
+              "mt-0.5 truncate font-semibold text-zinc-900",
+              isCompact ? "text-sm" : "text-sm md:text-base"
+            )}
+          >
             <Link href={href} className="hover:underline">
               {article.title}
             </Link>
           </h3>
 
           {excerpt ? (
-            <p className="mt-1 line-clamp-1 text-xs text-zinc-600 md:line-clamp-2 md:text-sm">
+            <p
+              className={cx(
+                "mt-1 text-zinc-600",
+                // compact: 1 riga, default: 1 su mobile e 2 su desktop
+                isCompact
+                  ? "line-clamp-1 text-xs"
+                  : "line-clamp-1 text-xs md:line-clamp-2 md:text-sm"
+              )}
+            >
               {excerpt}
             </p>
           ) : null}
@@ -159,7 +198,10 @@ export default function BlogTeaser({
         <div className="shrink-0">
           <Link
             href={href}
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 md:text-sm"
+            className={cx(
+              "inline-flex items-center gap-2 rounded-xl bg-blue-600 font-semibold text-white shadow-sm hover:bg-blue-700",
+              isCompact ? "px-3 py-1.5 text-xs" : "px-3 py-2 text-xs md:text-sm"
+            )}
           >
             {LBL_READ[lang]} <span aria-hidden>→</span>
           </Link>
