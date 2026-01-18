@@ -1,7 +1,12 @@
+// src/app/profile/layout.tsx
 import type { ReactNode } from "react";
-import LayoutShellClient from "@/components/layout/LayoutShellClient";
 
-export default function ProfileLayout({ children }: { children: ReactNode }) {
-  // EN root route (/profile)
-  return <LayoutShellClient lang="en">{children}</LayoutShellClient>;
+export default function ProfileLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  // Content-only layout.
+  // Header/Footer are provided by RootShellClient or lang layouts.
+  return <>{children}</>;
 }

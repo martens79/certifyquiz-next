@@ -1,6 +1,5 @@
 ﻿// src/app/page.tsx
 import type { Metadata } from "next";
-import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import HomeWithAuth from "@/components/home/HomeWithAuth";
 
 const SITE =
@@ -37,10 +36,8 @@ export const metadata: Metadata = {
 
 export default function HomeRootEN() {
   return (
-    <LayoutShellClient lang="en">
-      <main id="main">
-        <HomeWithAuth lang="en" />
-      </main>
-    </LayoutShellClient>
+    <main id="main">
+      <HomeWithAuth lang="en" />
+    </main>
   );
 }

@@ -1,16 +1,13 @@
 // src/app/[lang]/(marketing)/_pricing/PricingPage.tsx
-// Shared Pricing page (server component) — reused by /prezzi, /pricing, /prix, /precios
-//
-// ✅ Supports BOTH:
-// 1) inside [lang] routes  -> props.params.lang
-// 2) EN root route /pricing -> props.lang = "en"
-//
-// NOTE: This page is content-only. Header/Footer come from the layout shell.
+// Shared Pricing page (server component)
+// Wrapper pages must pass `lang` explicitly:
+// - /it/prezzi, /fr/prix, /es/precios -> lang={params.lang}
+// - EN root /pricing -> lang="en"
 
 import Link from "next/link";
 import StructuredData from "@/components/StructuredData";
-import type { Locale } from "@/lib/i18n";
-import { withLang } from "@/lib/i18n";
+import type { Locale } from "@/lib/paths";
+import { quizHomePath, seoPrefix } from "@/lib/paths";
 
 /* -------------------------------- Labels -------------------------------- */
 
@@ -34,18 +31,8 @@ const labels = {
     es: "🚧 Versión beta: por ahora el acceso es completamente gratuito. Los precios siguientes son orientativos y podrán cambiar en el lanzamiento.",
   },
 
-  weekly: {
-    it: "Premium settimanale",
-    en: "Weekly Premium",
-    fr: "Premium hebdomadaire",
-    es: "Premium semanal",
-  },
-  weeklyUnit: {
-    it: "settimana",
-    en: "week",
-    fr: "semaine",
-    es: "semana",
-  },
+  weekly: { it: "Premium settimanale", en: "Weekly Premium", fr: "Premium hebdomadaire", es: "Premium semanal" },
+  weeklyUnit: { it: "settimana", en: "week", fr: "semaine", es: "semana" },
   weeklyDesc: {
     it: "Perfetto per un ripasso intensivo prima dell’esame.",
     en: "Perfect for an intensive review right before the exam.",
@@ -61,22 +48,12 @@ const labels = {
   weeklyBullets2: {
     it: "Statistiche di base sui tuoi tentativi.",
     en: "Basic stats on your attempts.",
-    fr: "Statistiques de base sur vos tentatives.",
+    fr: "Statistiques de base sur vos tentatives",
     es: "Estadísticas básicas de tus intentos.",
   },
 
-  monthly: {
-    it: "Premium mensile",
-    en: "Monthly Premium",
-    fr: "Premium mensuel",
-    es: "Premium mensual",
-  },
-  monthlyUnit: {
-    it: "mese",
-    en: "month",
-    fr: "mois",
-    es: "mes",
-  },
+  monthly: { it: "Premium mensile", en: "Monthly Premium", fr: "Premium mensuel", es: "Premium mensual" },
+  monthlyUnit: { it: "mese", en: "month", fr: "mois", es: "mes" },
   monthlyDesc: {
     it: "La scelta ideale se stai preparando più certificazioni.",
     en: "The ideal choice if you're preparing multiple certifications.",
@@ -102,30 +79,15 @@ const labels = {
     es: "Insignias y objetivos para seguir tu progreso.",
   },
 
-  single: {
-    it: "Certificazione singola",
-    en: "Single certification",
-    fr: "Certification à l’unité",
-    es: "Certificación individual",
-  },
-  singleUnit: {
-    it: "una tantum",
-    en: "one-time",
-    fr: "paiement unique",
-    es: "pago único",
-  },
+  single: { it: "Certificazione singola", en: "Single certification", fr: "Certification à l’unité", es: "Certificación individual" },
+  singleUnit: { it: "una tantum", en: "one-time", fr: "paiement unique", es: "pago único" },
   singleDesc: {
     it: "Sblocca per sempre una certificazione o un singolo esame.",
     en: "Unlock a single certification or exam forever.",
     fr: "Débloquez une certification ou un examen unique pour toujours.",
     es: "Desbloquea una certificación o examen único para siempre.",
   },
-  singleBullets1: {
-    it: "Paghi una sola volta, senza abbonamento.",
-    en: "Pay once, no subscription.",
-    fr: "Vous payez une seule fois, sans abonnement.",
-    es: "Pagas una sola vez, sin suscripción.",
-  },
+  singleBullets1: { it: "Paghi una sola volta, senza abbonamento.", en: "Pay once, no subscription.", fr: "Vous payez une seule fois, sans abonnement.", es: "Pagas una sola vez, sin suscripción." },
   singleBullets2: {
     it: "Accesso finché la certificazione resta su CertifyQuiz.",
     en: "Access as long as the certification remains on CertifyQuiz.",
@@ -133,19 +95,9 @@ const labels = {
     es: "Acceso mientras la certificación siga disponible en CertifyQuiz.",
   },
 
-  availableAtLaunch: {
-    it: "Disponibile al lancio",
-    en: "Available at launch",
-    fr: "Disponible au lancement",
-    es: "Disponible en el lanzamiento",
-  },
+  availableAtLaunch: { it: "Disponibile al lancio", en: "Available at launch", fr: "Disponible au lancement", es: "Disponible en el lanzamiento" },
 
-  whichTitle: {
-    it: "Qual è la soluzione giusta per te?",
-    en: "Which option is right for you?",
-    fr: "Quelle option est faite pour vous ?",
-    es: "¿Qué opción es mejor para ti?",
-  },
+  whichTitle: { it: "Qual è la soluzione giusta per te?", en: "Which option is right for you?", fr: "Quelle option est faite pour vous ?", es: "¿Qué opción es mejor para ti?" },
   whichA: {
     it: "Scegli l’abbonamento Premium se stai preparando più certificazioni o vuoi avere sempre nuovi quiz.",
     en: "Choose Premium if you're preparing multiple certifications or want a steady flow of new quizzes.",
@@ -159,47 +111,19 @@ const labels = {
     es: "Elige compra única si solo necesitas una certificación o quieres probar CertifyQuiz con un único examen.",
   },
 
-  faqTitle: {
-    it: "Domande frequenti",
-    en: "Frequently Asked Questions",
-    fr: "Questions fréquentes",
-    es: "Preguntas frecuentes",
-  },
+  faqTitle: { it: "Domande frequenti", en: "Frequently Asked Questions", fr: "Questions fréquentes", es: "Preguntas frecuentes" },
 
-  ctaQuizzes: {
-    it: "Vai ai quiz",
-    en: "Go to quizzes",
-    fr: "Accéder aux quiz",
-    es: "Ir a los cuestionarios",
-  },
-  ctaRegister: {
-    it: "Crea un account gratuito",
-    en: "Create a free account",
-    fr: "Créer un compte gratuit",
-    es: "Crear una cuenta gratuita",
-  },
+  ctaQuizzes: { it: "Vai ai quiz", en: "Go to quizzes", fr: "Accéder aux quiz", es: "Ir a los cuestionarios" },
+  ctaRegister: { it: "Crea un account gratuito", en: "Create a free account", fr: "Créer un compte gratuit", es: "Crear una cuenta gratuita" },
 } as const;
 
 function L(map: Record<Locale, string>, lang: Locale): string {
   return map[lang] ?? map.it;
 }
 
-/* -------------------------------- Types -------------------------------- */
-
-type Props =
-  | { params: Promise<{ lang: Locale }> } // inside /[lang]/...
-  | { lang: Locale }; // EN root /pricing
-
-function getLangFromProps(props: Props): Promise<Locale> | Locale {
-  return "lang" in props ? props.lang : props.params.then((p) => p.lang);
-}
-
 /* -------------------------------- Page -------------------------------- */
 
-export default async function PricingPage(props: Props) {
-  const maybe = getLangFromProps(props);
-  const lang: Locale = typeof maybe === "string" ? maybe : await maybe;
-
+export default function PricingPage({ lang }: { lang: Locale }) {
   const faq =
     lang === "it"
       ? [
@@ -271,17 +195,21 @@ export default async function PricingPage(props: Props) {
     })),
   } as const;
 
+  // ✅ QUIZ must always be prefixed (EN included)
+  const quizzesHref = quizHomePath(lang);
+
+  // ✅ SEO pages: EN root (no /en)
+  const registerHref = `${seoPrefix(lang)}/register`;
+
   return (
     <>
       <StructuredData id="ld-pricing-faq" data={faqLd} />
 
       <main id="main" className="mx-auto max-w-5xl px-4 py-8">
-        {/* Beta banner */}
         <div className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
           {L(labels.betaBanner, lang)}
         </div>
 
-        {/* Page header */}
         <header className="mb-10 text-center">
           <h1 className="text-3xl font-extrabold text-slate-900">
             {L(labels.h1, lang)}
@@ -291,10 +219,8 @@ export default async function PricingPage(props: Props) {
           </p>
         </header>
 
-        {/* Cards */}
         <section className="mb-10">
           <div className="grid gap-4 md:grid-cols-3">
-            {/* Weekly */}
             <article className="flex flex-col rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-700">
                 {L(labels.weekly, lang)}
@@ -320,7 +246,6 @@ export default async function PricingPage(props: Props) {
               </button>
             </article>
 
-            {/* Monthly */}
             <article className="flex flex-col rounded-2xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-violet-700">
                 {L(labels.monthly, lang)}
@@ -347,7 +272,6 @@ export default async function PricingPage(props: Props) {
               </button>
             </article>
 
-            {/* Single */}
             <article className="flex flex-col rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
                 {L(labels.single, lang)}
@@ -375,7 +299,6 @@ export default async function PricingPage(props: Props) {
           </div>
         </section>
 
-        {/* Which one */}
         <section className="mb-10 rounded-2xl border bg-slate-50 p-5">
           <h2 className="mb-2 text-lg font-bold text-slate-900">
             {L(labels.whichTitle, lang)}
@@ -386,7 +309,6 @@ export default async function PricingPage(props: Props) {
           </ul>
         </section>
 
-        {/* FAQ */}
         <section className="mb-10">
           <h2 className="mb-3 text-lg font-bold text-slate-900">
             {L(labels.faqTitle, lang)}
@@ -406,17 +328,16 @@ export default async function PricingPage(props: Props) {
           </div>
         </section>
 
-        {/* Final CTAs */}
         <div className="flex flex-wrap justify-center gap-3">
           <Link
-            href={withLang(lang, "/quiz-home")}
+            href={quizzesHref}
             className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
           >
             {L(labels.ctaQuizzes, lang)}
           </Link>
 
           <Link
-            href={withLang(lang, "/register")}
+            href={registerHref}
             className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
           >
             {L(labels.ctaRegister, lang)}
