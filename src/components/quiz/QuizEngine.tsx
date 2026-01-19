@@ -48,6 +48,10 @@ type Props = {
 
   /** notifica quando cambia modalità */
   onModeChange?: (mode: Mode) => void;
+
+    /** Nasconde il toggle Training / Exam (usato per Mock Exam) */
+  hideModeSwitch?: boolean;
+
 };
 
 export default function QuizEngine({
@@ -63,7 +67,9 @@ export default function QuizEngine({
   onFinish,
   backToHref,
   onModeChange,
+  hideModeSwitch = false, // ✅ AGGIUNGI QUESTO
 }: Props) {
+
   const router = useRouter();
 
   // i18n quiz microcopy
@@ -670,26 +676,29 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             )}
           </div>
 
-          {/* toggle mode */}
-          <div className="flex items-center gap-2">
-            <button
-              className={`px-3 py-1.5 rounded-full text-sm ${
-                !isExam ? 'bg-emerald-500' : 'bg-white/10'
-              }`}
-              onClick={() => setModeSafe('training')}
-            >
-              {label('training', lang)}
-            </button>
+          {/* toggle mode (hidden in mock exam) */}
+{!hideModeSwitch && (
+  <div className="flex items-center gap-2">
+    <button
+      className={`px-3 py-1.5 rounded-full text-sm ${
+        !isExam ? 'bg-emerald-500' : 'bg-white/10'
+      }`}
+      onClick={() => setModeSafe('training')}
+    >
+      {label('training', lang)}
+    </button>
 
-            <button
-              className={`px-3 py-1.5 rounded-full text-sm ${
-                isExam ? 'bg-emerald-500' : 'bg-white/10'
-              }`}
-              onClick={() => setModeSafe('exam')}
-            >
-              {label('exam', lang)}
-            </button>
-          </div>
+    <button
+      className={`px-3 py-1.5 rounded-full text-sm ${
+        isExam ? 'bg-emerald-500' : 'bg-white/10'
+      }`}
+      onClick={() => setModeSafe('exam')}
+    >
+      {label('exam', lang)}
+    </button>
+  </div>
+)}
+
         </div>
 
         {/* domanda */}

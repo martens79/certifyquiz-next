@@ -91,6 +91,11 @@ function quizMixedPath(lang: Locale, slug: string) {
   return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mixed`;
 }
 
+// ✅ builder URL quiz mock exam
+function quizMockExamPath(lang: Locale, slug: string) {
+  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mock-exam`;
+}
+
 // ✅ builder URL quiz topic (per ID topic)
 function quizTopicPath(lang: Locale, topicId: number) {
   return `${langPrefix(lang)}/quiz/topic/${topicId}`;
@@ -251,6 +256,31 @@ export default async function QuizTopicsPage({
       ? "Lancer le quiz mixte →"
       : "Iniciar quiz mixto →";
 
+      // CTA "Mock exam" label per lingua
+const mockLabel =
+  L === "it" ? "Mock exam" :
+  L === "en" ? "Mock exam" :
+  L === "fr" ? "Mock exam" :
+  "Mock exam";
+
+const mockDesc =
+  L === "it"
+    ? "Simulazione d’esame con timer e punteggio finale."
+    : L === "en"
+    ? "Real exam simulation with time limit and final score."
+    : L === "fr"
+    ? "Simulation d’examen avec chronomètre et score final."
+    : "Simulación de examen con temporizador y puntuación final.";
+
+const mockCta =
+  L === "it"
+    ? "Avvia mock exam 🎯 →"
+    : L === "en"
+    ? "Start mock exam 🎯 →"
+    : L === "fr"
+    ? "Démarrer le mock exam 🎯 →"
+    : "Iniciar mock exam 🎯 →";
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       {/* Header con badge categoria */}
@@ -274,22 +304,64 @@ export default async function QuizTopicsPage({
         </p>
       </header>
 
-      {/* 🔹 BOX QUIZ MISTO */}
+           {/* 🔹 BOX QUIZ MISTO + MOCK EXAM (stessa riga) */}
       <section className="mb-8">
-        <div className="flex flex-col gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-base font-semibold">{mixedLabel}</h2>
-            <p className="text-sm text-slate-700">{mixedDesc}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* --- Mixed quiz --- */}
+          <div className="flex flex-col gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold">{mixedLabel}</h2>
+              <p className="text-sm text-slate-700">{mixedDesc}</p>
+            </div>
+
+            <Link
+              href={quizMixedPath(L, slug)}
+              className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
+            >
+              {mixedCta}
+            </Link>
           </div>
 
-          <Link
-            href={quizMixedPath(L, slug)}
-            className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
-          >
-            {mixedCta}
-          </Link>
+          {/* --- Mock exam --- */}
+          <div className="flex flex-col gap-3 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold">
+                {L === "it"
+                  ? "Mock exam"
+                  : L === "en"
+                  ? "Mock exam"
+                  : L === "fr"
+                  ? "Mock exam"
+                  : "Mock exam"}
+              </h2>
+
+              <p className="text-sm text-slate-700">
+                {L === "it"
+                  ? "Simulazione d’esame con timer e punteggio finale."
+                  : L === "en"
+                  ? "Real exam simulation with time limit and final score."
+                  : L === "fr"
+                  ? "Simulation d’examen avec chronomètre et score final."
+                  : "Simulación de examen con temporizador y puntuación final."}
+              </p>
+            </div>
+
+            <Link
+              href={quizMockExamPath(L, slug)}
+              className="inline-flex items-center justify-center rounded-full border border-orange-500 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-100"
+            >
+              {L === "it"
+                ? "Avvia mock exam 🎯 →"
+                : L === "en"
+                ? "Start mock exam 🎯 →"
+                : L === "fr"
+                ? "Démarrer le mock exam 🎯 →"
+                : "Iniciar mock exam 🎯 →"}
+            </Link>
+          </div>
         </div>
       </section>
+
 
       {topics.length === 0 ? (
         <div className="text-gray-700">
