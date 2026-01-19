@@ -72,6 +72,26 @@ export default function QuizEngine({
 
   const router = useRouter();
 
+     // ---------------- Sticky timer (UI-only) ----------------
+  const examDurationSec =
+    (durationsByMode?.exam ?? null) ?? (durationSec ?? null);
+
+  const timeStrFromSec = (s: number) => {
+    const mm = Math.floor(s / 60);
+    const ss = s % 60;
+    return `${mm}:${String(ss).padStart(2, '0')}`;
+  };
+
+  const timerLabel =
+    lang === 'it'
+      ? 'Tempo rimanente'
+      : lang === 'fr'
+      ? 'Temps restant'
+      : lang === 'es'
+      ? 'Tiempo restante'
+      : 'Time remaining';
+  
+
   // i18n quiz microcopy
   const tQuiz = getDict(lang).quiz;
 
@@ -652,6 +672,19 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
               {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
             </span>
 
+
+          {hideModeSwitch && isExam && (
+  <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+    🧪 {lang === 'it'
+      ? 'Mock Exam'
+      : lang === 'fr'
+      ? 'Mock examen'
+      : lang === 'es'
+      ? 'Simulacro'
+      : 'Mock Exam'}
+  </span>
+)}
+
             {reviewMode && reviewTotal > 0 && (
               <>
                 {' '}
@@ -663,17 +696,12 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             )}
 
             {isExam && (
-              <>
-                {' '}
-                · {label('score', lang)} {scorePct}%
-                {remaining != null && (
-                  <>
-                    {' '}
-                    · ⏱ {tQuiz.time}: {fmt(remaining)}
-                  </>
-                )}
-              </>
-            )}
+  <>
+    {' '}
+    · {label('score', lang)} {scorePct}%
+  </>
+)}
+
           </div>
 
           {/* toggle mode (hidden in mock exam) */}
@@ -700,6 +728,54 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
 )}
 
         </div>
+
+        {/* ✅ Sticky timer — exam mode */}
+        {effectiveMode === 'exam' &&
+          typeof remaining === 'number' &&
+          typeof examDurationSec === 'number' && (
+            <div className="sticky top-2 z-10 mb-3">
+              <div className="mx-auto w-fit rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur">
+                <span className="opacity-80">⏱️</span>{' '}
+                <span className="text-slate-600">{timerLabel}:</span>{' '}
+                <span
+                  className={[
+                    'tabular-nums',
+                    remaining <= examDurationSec * 0.2
+                      ? 'text-amber-700'
+                      : 'text-slate-900',
+                  ].join(' ')}
+                >
+                  {timeStrFromSec(remaining)}
+                </span>
+              </div>
+            </div>
+          )}
+
+
+                    {/* Exam notice (pre-domanda) */}
+        {effectiveMode === 'exam' && (
+          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            <p className="text-sm font-semibold">
+              ⚠️ {lang === 'it'
+                ? 'Modalità esame: niente feedback immediato'
+                : lang === 'fr'
+                ? "Mode examen : aucun retour immédiat"
+                : lang === 'es'
+                ? 'Modo examen: sin feedback inmediato'
+                : 'Exam mode: no instant feedback'}
+            </p>
+
+            <p className="mt-1 text-sm text-amber-900/90">
+              {lang === 'it'
+                ? 'Concentrati su gestione del tempo e precisione. Potrai rivedere le risposte alla fine.'
+                : lang === 'fr'
+                ? "Concentre-toi sur le temps et la précision. Tu pourras revoir tes réponses à la fin."
+                : lang === 'es'
+                ? 'Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final.'
+                : 'Focus on time management and accuracy. You can review your answers at the end.'}
+            </p>
+          </div>
+        )}
 
         {/* domanda */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">

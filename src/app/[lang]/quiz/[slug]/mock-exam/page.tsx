@@ -139,38 +139,64 @@ export default function MockExamPage() {
       ? 'Simulación de examen: temporizador, puntuación final, sin feedback inmediato.'
       : 'Exam simulation: timer on, final score, no instant feedback.';
 
-  return (
-    <div className="min-h-screen">
-      {/* Intro box */}
-      <div className="mx-auto max-w-5xl px-4 pt-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
-          <h1 className="text-xl md:text-2xl font-semibold">{title}</h1>
+ return (
+  <div className="min-h-screen">
+    {/* Intro box */}
+    <div className="mx-auto max-w-5xl px-4 pt-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
 
-          <p className="mt-2 text-sm md:text-base text-slate-700">{desc}</p>
+        {/* Exam badge + rules */}
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-700">
+            🛡️ Official Exam Simulation
+          </span>
 
-          <div className="mt-3 text-xs text-slate-500">
-            Pool:{' '}
-            <span className="font-semibold">
-              {poolTotal == null ? '…' : poolTotal.toLocaleString()}
-            </span>{' '}
-            ·{' '}
-            <span className="font-semibold">
-              {examSpec.questions.toLocaleString()}
-            </span>{' '}
-            {currentLang === 'es'
-              ? 'preguntas'
-              : currentLang === 'fr'
-              ? 'questions'
-              : currentLang === 'it'
-              ? 'domande'
-              : 'questions'}{' '}
-            ·{' '}
-            <span className="font-semibold">
-              {Math.round(examSpec.durationSec / 60)} min
-            </span>
-          </div>
+          <span className="text-xs text-slate-500">
+            ⏱️ Timer attivo · ❌ Nessun feedback immediato · 📄 Review finale
+          </span>
         </div>
+
+        {/* Title */}
+        <h1 className="mt-3 text-xl md:text-2xl font-semibold">
+          {title}
+        </h1>
+
+        {/* Description */}
+        <p className="mt-2 text-sm md:text-base text-slate-700">
+          {desc}
+        </p>
+
+        {/* Official conditions note */}
+        <p className="mt-2 text-sm text-slate-600">
+          Questa simulazione replica le condizioni reali dell’esame ufficiale.
+        </p>
+
+        {/* Meta info */}
+        <div className="mt-3 text-xs uppercase tracking-wide text-slate-500">
+          Pool{' '}
+          <span className="font-semibold">
+            {poolTotal == null ? '…' : poolTotal.toLocaleString()}
+          </span>{' '}
+          ·{' '}
+          <span className="font-semibold">
+            {examSpec.questions.toLocaleString()}
+          </span>{' '}
+          {currentLang === 'es'
+            ? 'preguntas'
+            : currentLang === 'fr'
+            ? 'questions'
+            : currentLang === 'it'
+            ? 'domande'
+            : 'questions'}{' '}
+          ·{' '}
+          <span className="font-semibold">
+            {Math.round(examSpec.durationSec / 60)} min
+          </span>
+        </div>
+
       </div>
+    </div>
+
 
       {/* Quiz (EXAM ONLY) */}
       <QuizEngine
