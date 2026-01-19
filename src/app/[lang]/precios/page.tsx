@@ -4,14 +4,14 @@ import type { Locale } from "@/lib/paths";
 import PricingPage from "../(marketing)/_pricing/PricingPage";
 import { generatePricingMetadata } from "../(marketing)/_pricing/metadata";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { lang: Locale };
-}): Promise<Metadata> {
-  return generatePricingMetadata(params.lang);
+type Params = Promise<{ lang: Locale }>;
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const { lang } = await params;
+  return generatePricingMetadata(lang);
 }
 
-export default function Page({ params }: { params: { lang: Locale } }) {
-  return <PricingPage lang={params.lang} />;
+export default async function Page({ params }: { params: Params }) {
+  const { lang } = await params;
+  return <PricingPage lang={lang} />;
 }

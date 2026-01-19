@@ -1,5 +1,5 @@
-import { CertificationsListView } from "@/app/[lang]/certificazioni/page";
+import CertificationsListView from "@/app/[lang]/certificazioni/CertificationsListView";
 
-export default function Page() {
+export default async function Page() {
   return <CertificationsListView lang="en" />;
 }
