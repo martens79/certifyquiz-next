@@ -1,3 +1,4 @@
+//src/app/components/layout/RootShellClient.tsx
 "use client";
 
 import type { ReactNode } from "react";
