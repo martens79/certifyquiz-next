@@ -66,6 +66,10 @@ export default function QuizTopicClient({
   const [certificationId, setCertificationId] = useState<number | null>(null);
   const [backToHref, setBackToHref] = useState<string>(`/${L}/quiz-home`);
 
+   // ✅ NUOVI: per header contestuale
+  const [topicTitle, setTopicTitle] = useState<string | null>(null);
+  const [certSlug, setCertSlug] = useState<string | null>(null);
+
   /* ─────────────────────────────────────────────────────────────
      VALIDAZIONE PARAMETRI BASE
      (QUI sì redirect: topicId invalido)
@@ -92,31 +96,54 @@ export default function QuizTopicClient({
   /* ─────────────────────────────────────────────────────────────
      METADATA TOPIC → certificazione + link "indietro"
   ───────────────────────────────────────────────────────────── */
-  useEffect(() => {
-    if (Number.isNaN(numericId)) return;
+ useEffect(() => {
+  if (Number.isNaN(numericId)) return;
 
-    let cancelled = false;
+  let cancelled = false;
 
-    (async () => {
-      try {
-        const meta = await getTopicMetaById(numericId);
-        const certId = meta?.topic?.certification_id;
+  (async () => {
+    try {
+      const meta = await getTopicMetaById(numericId);
 
-        if (!cancelled && typeof certId === "number") {
+      const certId = meta?.topic?.certification_id;
+
+      const t = meta?.topic;
+      const title =
+        (L === "it"
+          ? t?.title_it
+          : L === "en"
+          ? t?.title_en
+          : L === "fr"
+          ? t?.title_fr
+          : t?.title_es) ?? null;
+
+      if (!cancelled) {
+        setTopicTitle(title);
+
+        if (typeof certId === "number") {
           setCertificationId(certId);
 
           const slug = getCertSlugById(certId);
+          setCertSlug(slug ?? null);
           setBackToHref(slug ? `/${L}/quiz/${slug}` : `/${L}/quiz-home`);
+        } else {
+          setCertSlug(null);
+          setBackToHref(`/${L}/quiz-home`);
         }
-      } catch {
-        if (!cancelled) setBackToHref(`/${L}/quiz-home`);
       }
-    })();
+    } catch {
+      if (!cancelled) {
+        setTopicTitle(null);
+        setCertSlug(null);
+        setBackToHref(`/${L}/quiz-home`);
+      }
+    }
+  })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [numericId, L]);
+  return () => {
+    cancelled = true;
+  };
+}, [numericId, L]);
 
   /* ─────────────────────────────────────────────────────────────
      SE BLOCCATO (parametri rotti) → niente render
@@ -168,11 +195,27 @@ export default function QuizTopicClient({
      QUIZ ENGINE
   ───────────────────────────────────────────────────────────── */
   return (
-    <QuizEngine
-      lang={L}
-      storageScope={`topic:${numericId}:${L}`}
-      categoryColor="from-blue-900 to-blue-700"
-      backToHref={backToHref}
+  <QuizEngine
+    lang={L}
+    storageScope={`topic:${numericId}:${L}`}
+    categoryColor="from-blue-900 to-blue-700"
+    backToHref={backToHref}
+    context={{
+  kind: "topic",
+  certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
+  certificationSlug: certSlug ?? undefined,
+  topicTitle: topicTitle ?? `Topic #${numericId}`,
+  backHref: backToHref,
+  backLabel:
+    L === "it"
+      ? "← Torna alla certificazione"
+      : L === "es"
+      ? "← Volver a la certificación"
+      : L === "fr"
+      ? "← Retour à la certification"
+      : "← Back to certification",
+}}
+
 
       /* ───────────── FETCH DOMANDE (ANTI-CRASH) ───────────── */
       fetchQuestions={async (): Promise<UiQuestion[]> => {

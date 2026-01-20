@@ -9,6 +9,18 @@ import { withLang, getDict } from '@/lib/i18n';
 
 type Mode = 'training' | 'exam';
 
+type QuizKind = 'topic' | 'mixed' | 'mock';
+
+type QuizContext = {
+  kind: QuizKind;                // topic | mixed | mock
+  certificationName: string;     // es. "CEH"
+  certificationSlug?: string;    // es. "ceh" (facoltativo)
+  topicTitle?: string;           // solo se topic
+  backLabel?: string;            // testo link (già tradotto se vuoi)
+  backHref?: string;             // link "torna a..."
+};
+
+
 type Props = {
   lang: Locale;
 
@@ -46,6 +58,10 @@ type Props = {
   /** URL per tornare indietro */
   backToHref?: string;
 
+    /** Contesto visivo sopra al quiz (breadcrumb + badge + link back) */
+  context?: QuizContext;
+
+
   /** notifica quando cambia modalità */
   onModeChange?: (mode: Mode) => void;
 
@@ -68,6 +84,7 @@ export default function QuizEngine({
   backToHref,
   onModeChange,
   hideModeSwitch = false, // ✅ AGGIUNGI QUESTO
+  context, // ✅ QUESTA RIGA
 }: Props) {
 
   const router = useRouter();
@@ -776,6 +793,38 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             </p>
           </div>
         )}
+
+        {context && (
+  <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-white/90">
+    {/* breadcrumb */}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="font-medium">{context.certificationName}</span>
+
+      {context.topicTitle && (
+        <>
+          <span className="opacity-70">›</span>
+          <span className="opacity-95">{context.topicTitle}</span>
+        </>
+      )}
+
+      {/* badge */}
+      <span className="ml-1 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+        {context.kind === 'topic' ? 'TOPIC' : context.kind === 'mixed' ? 'MIXED' : 'MOCK EXAM'}
+      </span>
+    </div>
+
+    {/* back link */}
+    {context.backHref && (
+      <a
+        href={context.backHref}
+        className="ml-auto text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
+      >
+        {context.backLabel ?? '← Back'}
+      </a>
+    )}
+  </div>
+)}
+
 
         {/* domanda */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">
