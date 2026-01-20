@@ -316,52 +316,66 @@ export default function MixedQuizPage() {
         </div>
       </div>
 
-      {/* Quiz */}
-      <QuizEngine
-        key={`${currentSlug}:${currentLang}`} // ✅ non includere mode nella key
-        lang={currentLang}
-        storageScope={`mixed:${currentSlug}:${currentLang}`}
-        categoryColor="from-blue-900 to-blue-700"
-        initialMode={mode}
-        durationsByMode={{
-          training: undefined,
-          exam: examSpec.durationSec,
-        }}
-        limitsByMode={{
-          training: trainingCap,
-          exam: examSpec.questions,
-        }}
-        onModeChange={(m) => setMode(m)}
-        fetchQuestions={async () => {
-          try {
-            return await fetchPool();
-          } catch (e: any) {
-            if (e?.status === 401) {
-  // Non forziamo login: quiz pubblico.
-  // Mostra semplicemente zero domande o un messaggio (meglio: setErr in QuizEngine)
-  return [];
-}
+       {/* Quiz */}
+  <QuizEngine
+    key={`${currentSlug}:${currentLang}`} // ✅ non includere mode nella key
+    lang={currentLang}
+    storageScope={`mixed:${currentSlug}:${currentLang}`}
+    categoryColor="from-blue-900 to-blue-700"
+    context={{
+      kind: "mixed",
+      certificationName: currentSlug.toUpperCase(),
+      certificationSlug: currentSlug,
+      backHref: withLang(currentLang, `/quiz/${currentSlug}`),
+      backLabel:
+        currentLang === "it"
+          ? "← Torna alla certificazione"
+          : currentLang === "es"
+          ? "← Volver a la certificación"
+          : currentLang === "fr"
+          ? "← Retour à la certification"
+          : "← Back to certification",
+    }}
+    initialMode={mode}
+    durationsByMode={{
+      training: undefined,
+      exam: examSpec.durationSec,
+    }}
+    limitsByMode={{
+      training: trainingCap,
+      exam: examSpec.questions,
+    }}
+    onModeChange={(m) => setMode(m)}
+    fetchQuestions={async () => {
+      try {
+        return await fetchPool();
+      } catch (e: any) {
+        if (e?.status === 401) {
+          // Non forziamo login: quiz pubblico.
+          // Mostra semplicemente zero domande o un messaggio (meglio: setErr in QuizEngine)
+          return [];
+        }
 
-            throw e;
-          }
-        }}
-        onFinish={async (s: any) => {
-          try {
-            const finishedMode: 'training' | 'exam' =
-              s?.mode === 'exam' || s?.mode === 'training' ? s.mode : mode;
+        throw e;
+      }
+    }}
+    onFinish={async (s: any) => {
+      try {
+        const finishedMode: "training" | "exam" =
+          s?.mode === "exam" || s?.mode === "training" ? s.mode : mode;
 
-            await saveExam({
-              certification_id: certId,
-              totalQuestions: s.total,
-              correctAnswers: s.correct,
-              isExam: finishedMode === 'exam',
-            });
-          } catch {
-            // best-effort
-          }
-        }}
-        backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
-      />
-    </div>
-  );
+        await saveExam({
+          certification_id: certId,
+          totalQuestions: s.total,
+          correctAnswers: s.correct,
+          isExam: finishedMode === "exam",
+        });
+      } catch {
+        // best-effort
+      }
+    }}
+    backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
+  />
+</div>
+);
 }

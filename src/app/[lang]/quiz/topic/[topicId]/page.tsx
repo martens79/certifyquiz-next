@@ -1,3 +1,4 @@
+// src/app/[lang]/quiz/topic/[topicId]/page.tsx
 import type { Metadata } from "next";
 import QuizTopicClient from "./QuizTopicClient";
 
