@@ -390,19 +390,8 @@ export const getTopicMetaById = (topicId: number | string) =>
  * Ora possiamo chiedere pool più grandi (es. 100–500).
  *
  * strict:
- * - strict=false (default) → backend fa fallback su italiano se manca la traduzione
- * - strict=true  → backend NON fallbacka (utile per EXAM in EN/FR/ES senza mix IT)
- */
-/*─────────────────────────────── QUESTIONS ───────────────────────────────*/
-/**
- * Recupera le domande di un TOPIC con supporto a:
- * - lingua (lang)
- * - limit (numero massimo di domande)
- * - shuffle (ordine casuale o deterministico)
- * - strict (evita fallback IT → solo lingua richiesta)
- *
- * ⚠️ Storicamente il backend restituiva SEMPRE 30 domande.
- * Ora possiamo chiedere pool più grandi (es. 100–500).
+ * - strict=false → backend fa fallback su IT se manca la traduzione
+ * - strict=true  → backend NON fallbacka (utile per ES/FR)
  */
 export const getQuestionsByTopic = (
   topicId: number | string,
@@ -413,7 +402,6 @@ export const getQuestionsByTopic = (
     strict?: boolean;
   }
 ) => {
-  // ✅ params ESISTE
   const params = new URLSearchParams({ lang });
 
   // ───────────────────────── LIMIT ─────────────────────────
@@ -426,8 +414,9 @@ export const getQuestionsByTopic = (
   params.set("shuffle", (opts?.shuffle ?? true) ? "1" : "0");
 
   // ───────────────────────── STRICT ─────────────────────────
-  // strict=1 → niente fallback IT (solo question_en, ecc.)
-  if (opts?.strict) {
+  // default intelligente: ES / FR strict per evitare mix con IT / placeholder
+  const strict = opts?.strict ?? (lang === "es" || lang === "fr");
+  if (strict) {
     params.set("strict", "1");
   }
 
@@ -438,10 +427,9 @@ export const getQuestionsByTopic = (
    */
   return apiGet<QuestionsResponse>(
     `/questions/${topicId}?${params.toString()}`,
-    true // auth required
+    false // 🔓 endpoint pubblico (NO auth)
   );
 };
-
 
 
 /**
