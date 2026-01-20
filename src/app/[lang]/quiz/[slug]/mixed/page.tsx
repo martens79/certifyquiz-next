@@ -10,6 +10,7 @@ import { withLang } from '@/lib/i18n';
 
 // slug → certification_id
 import { IDS_BY_SLUG } from '@/certifications/data';
+import ComingSoonBox from "@/components/ui/ComingSoonBox";
 
 import {
   getMixedQuestions,
@@ -240,6 +241,9 @@ export default function MixedQuizPage() {
     return Math.min(TRAINING_CAP, poolSize);
   }, [poolSize]);
 
+  const isComingSoon =
+  poolTotal === 0 && currentLang !== "it"; // se vuoi mostrare anche per IT, togli la seconda condizione
+
   const examSpec = useMemo(() => {
     return getExamSpecForCert(certId, poolSize);
   }, [certId, poolSize]);
@@ -263,58 +267,79 @@ export default function MixedQuizPage() {
   }, [certId, currentLang, trainingCap, mode, examSpec.questions]);
 
   return (
-    <div className="min-h-screen">
-      {/* Intro box (SEO + UX) */}
-      <div className="mx-auto max-w-5xl px-4 pt-6">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
-          <h1 className="text-xl md:text-2xl font-semibold">
-            {copy.title(certName)}
-          </h1>
+  <div className="min-h-screen">
+    {/* Intro box (SEO + UX) */}
+    <div className="mx-auto max-w-5xl px-4 pt-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+        <h1 className="text-xl md:text-2xl font-semibold">
+          {copy.title(certName)}
+        </h1>
 
-          <p className="mt-2 text-sm md:text-base text-slate-700">
-            {copy.introA}{' '}
-            <strong>{copy.bullets.k_mixed}</strong>{' '}
-            {copy.introB}
-          </p>
+        <p className="mt-2 text-sm md:text-base text-slate-700">
+          {copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}
+        </p>
 
-          <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
-            <li>
-              {copy.bullets.a}{' '}
-              <strong>{copy.bullets.k_pool}</strong>
-              {currentLang === 'en' ? '' : '.'}
-            </li>
-            <li>
-              {copy.bullets.b}{' '}
-              <strong>{copy.bullets.k_exam}</strong> +{' '}
-              <strong>{copy.bullets.k_timer}</strong>.
-            </li>
-            <li>
-              {copy.bullets.c}{' '}
-              <strong>{copy.bullets.k_progress}</strong>{' '}
-              {currentLang === 'it'
-                ? 'vengono salvati (se sei loggato).'
-                : currentLang === 'fr'
-                ? 'sont sauvegardés (si vous êtes connecté).'
-                : currentLang === 'es'
-                ? 'se guardan (si inicias sesión).'
-                : 'is saved (when logged in).'}
-            </li>
-          </ul>
+        <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
+          <li>
+            {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
+            {currentLang === "en" ? "" : "."}
+          </li>
+          <li>
+            {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{" "}
+            <strong>{copy.bullets.k_timer}</strong>.
+          </li>
+          <li>
+            {copy.bullets.c} <strong>{copy.bullets.k_progress}</strong>{" "}
+            {currentLang === "it"
+              ? "vengono salvati (se sei loggato)."
+              : currentLang === "fr"
+              ? "sont sauvegardés (si vous êtes connecté)."
+              : currentLang === "es"
+              ? "se guardan (si inicias sesión)."
+              : "is saved (when logged in)."}
+          </li>
+        </ul>
 
-          <div className="mt-3 text-xs text-slate-500">
-            {copy.stats.pool}:{' '}
-            <span className="font-semibold">
-              {poolTotal == null ? '…' : poolTotal.toLocaleString()}
-            </span>{' '}
-            · {copy.stats.trainingCap}:{' '}
-            <span className="font-semibold">{trainingCap.toLocaleString()}</span>{' '}
-            · {copy.stats.exam}:{' '}
-            <span className="font-semibold">
-              {examSpec.questions.toLocaleString()} {copy.stats.questions}
-            </span>
-          </div>
+        <div className="mt-3 text-xs text-slate-500">
+          {copy.stats.pool}:{" "}
+          <span className="font-semibold">
+            {poolTotal == null ? "…" : poolTotal.toLocaleString()}
+          </span>{" "}
+          · {copy.stats.trainingCap}:{" "}
+          <span className="font-semibold">
+            {trainingCap.toLocaleString()}
+          </span>{" "}
+          · {copy.stats.exam}:{" "}
+          <span className="font-semibold">
+            {examSpec.questions.toLocaleString()} {copy.stats.questions}
+          </span>
         </div>
       </div>
+    </div>
+
+    {/* Coming soon (no pool in this language) */}
+{isComingSoon && (
+  <div className="mx-auto max-w-5xl px-4 mt-6">
+    <ComingSoonBox
+      lang={currentLang}
+      fallbackLang="en"
+      fallbackHref={`/en/quiz/${slug}/mixed`}
+      browseHref={`/${currentLang}/certificazioni`}
+    />
+  </div>
+)}
+
+    {/* ⬇️ Sotto, SOLO se NON è coming soon, renderizzerai il QuizEngine */}
+    {!isComingSoon && (
+      <>
+        {/* QUI resta tutto il tuo codice esistente:
+            <QuizEngine ... fetchQuestions={fetchPool} ... />
+        */}
+      </>
+    )}
+  </div>
+);
+
 
        {/* Quiz */}
   <QuizEngine
@@ -376,6 +401,4 @@ export default function MixedQuizPage() {
     }}
     backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
   />
-</div>
-);
 }

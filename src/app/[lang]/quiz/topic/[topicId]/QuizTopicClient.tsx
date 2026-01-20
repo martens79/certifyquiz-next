@@ -1,12 +1,16 @@
-
-  // src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
+// src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import QuizEngine from "@/components/quiz/QuizEngine";
+import ComingSoonBox from "@/components/ui/ComingSoonBox";
 
-import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-types";
+import type {
+  Question as UiQuestion,
+  Locale,
+  QuizSummary,
+} from "@/lib/quiz-types";
 
 import {
   getQuestionsByTopic,
@@ -66,9 +70,12 @@ export default function QuizTopicClient({
   const [certificationId, setCertificationId] = useState<number | null>(null);
   const [backToHref, setBackToHref] = useState<string>(`/${L}/quiz-home`);
 
-   // ✅ NUOVI: per header contestuale
+  // ✅ per header contestuale
   const [topicTitle, setTopicTitle] = useState<string | null>(null);
   const [certSlug, setCertSlug] = useState<string | null>(null);
+
+  // ✅ NEW: totale pool del topic in questa lingua (per Coming Soon)
+  const [topicTotal, setTopicTotal] = useState<number | null>(null);
 
   /* ─────────────────────────────────────────────────────────────
      VALIDAZIONE PARAMETRI BASE
@@ -96,54 +103,98 @@ export default function QuizTopicClient({
   /* ─────────────────────────────────────────────────────────────
      METADATA TOPIC → certificazione + link "indietro"
   ───────────────────────────────────────────────────────────── */
- useEffect(() => {
-  if (Number.isNaN(numericId)) return;
+  useEffect(() => {
+    if (Number.isNaN(numericId)) return;
 
-  let cancelled = false;
+    let cancelled = false;
 
-  (async () => {
-    try {
-      const meta = await getTopicMetaById(numericId);
+    (async () => {
+      try {
+        const meta = await getTopicMetaById(numericId);
 
-      const certId = meta?.topic?.certification_id;
+        const certId = meta?.topic?.certification_id;
 
-      const t = meta?.topic;
-      const title =
-        (L === "it"
-          ? t?.title_it
-          : L === "en"
-          ? t?.title_en
-          : L === "fr"
-          ? t?.title_fr
-          : t?.title_es) ?? null;
+        const t = meta?.topic;
+        const title =
+          (L === "it"
+            ? t?.title_it
+            : L === "en"
+            ? t?.title_en
+            : L === "fr"
+            ? t?.title_fr
+            : t?.title_es) ?? null;
 
-      if (!cancelled) {
-        setTopicTitle(title);
+        if (!cancelled) {
+          setTopicTitle(title);
 
-        if (typeof certId === "number") {
-          setCertificationId(certId);
+          if (typeof certId === "number") {
+            setCertificationId(certId);
 
-          const slug = getCertSlugById(certId);
-          setCertSlug(slug ?? null);
-          setBackToHref(slug ? `/${L}/quiz/${slug}` : `/${L}/quiz-home`);
-        } else {
+            const slug = getCertSlugById(certId);
+            setCertSlug(slug ?? null);
+            setBackToHref(slug ? `/${L}/quiz/${slug}` : `/${L}/quiz-home`);
+          } else {
+            setCertSlug(null);
+            setBackToHref(`/${L}/quiz-home`);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setTopicTitle(null);
           setCertSlug(null);
           setBackToHref(`/${L}/quiz-home`);
         }
       }
-    } catch {
-      if (!cancelled) {
-        setTopicTitle(null);
-        setCertSlug(null);
-        setBackToHref(`/${L}/quiz-home`);
-      }
-    }
-  })();
+    })();
 
-  return () => {
-    cancelled = true;
-  };
-}, [numericId, L]);
+    return () => {
+      cancelled = true;
+    };
+  }, [numericId, L]);
+
+  /* ─────────────────────────────────────────────────────────────
+     topicTotal (light call)
+     Serve solo a capire se ESISTONO domande per questa lingua.
+     - Se 401: backend protetto → NON possiamo dedurre "coming soon"
+     - Se 200 ma vuoto: coming soon (per non-IT)
+  ───────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (Number.isNaN(numericId)) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await getQuestionsByTopic(numericId, L, {
+          limit: 1,
+          shuffle: false,
+        });
+
+        // supporta sia array che { questions, poolTotal }
+        const poolTotalFromApi = (res as any)?.poolTotal;
+
+        // fallback: se non c'è poolTotal, deduciamo 0 o >0 dalla presenza di 1 domanda
+        let total: number | null = null;
+
+        if (typeof poolTotalFromApi === "number") {
+          total = poolTotalFromApi;
+        } else if (Array.isArray(res)) {
+          total = res.length > 0 ? 1 : 0;
+        } else if (Array.isArray((res as any)?.questions)) {
+          total = (res as any).questions.length > 0 ? 1 : 0;
+        }
+
+        if (!cancelled) setTopicTotal(total);
+      } catch (e: any) {
+        // Se backend protetto (401), non possiamo stimare → lascia null
+        if (!cancelled) setTopicTotal(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [numericId, L]);
 
   /* ─────────────────────────────────────────────────────────────
      SE BLOCCATO (parametri rotti) → niente render
@@ -192,30 +243,51 @@ export default function QuizTopicClient({
   }
 
   /* ─────────────────────────────────────────────────────────────
+     COMING SOON (topic senza domande nella lingua corrente)
+     Regola: se topicTotal === 0 e NON è IT, mostriamo coming soon.
+     (Per IT di solito è “sorgente” e non vuoi bloccare)
+  ───────────────────────────────────────────────────────────── */
+  const isComingSoon = topicTotal === 0 && L !== "it";
+
+  if (isComingSoon) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10">
+        <ComingSoonBox
+          lang={L}
+          fallbackLang="en"
+          // ✅ stessa pagina topic, ma in EN
+          fallbackHref={`/en/quiz/topic/${numericId}`}
+          // ✅ torna alla certificazione (se nota)
+          browseHref={backToHref}
+        />
+      </div>
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────────
      QUIZ ENGINE
   ───────────────────────────────────────────────────────────── */
   return (
-  <QuizEngine
-    lang={L}
-    storageScope={`topic:${numericId}:${L}`}
-    categoryColor="from-blue-900 to-blue-700"
-    backToHref={backToHref}
-    context={{
-  kind: "topic",
-  certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
-  certificationSlug: certSlug ?? undefined,
-  topicTitle: topicTitle ?? `Topic #${numericId}`,
-  backHref: backToHref,
-  backLabel:
-    L === "it"
-      ? "← Torna alla certificazione"
-      : L === "es"
-      ? "← Volver a la certificación"
-      : L === "fr"
-      ? "← Retour à la certification"
-      : "← Back to certification",
-}}
-
+    <QuizEngine
+      lang={L}
+      storageScope={`topic:${numericId}:${L}`}
+      categoryColor="from-blue-900 to-blue-700"
+      backToHref={backToHref}
+      context={{
+        kind: "topic",
+        certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
+        certificationSlug: certSlug ?? undefined,
+        topicTitle: topicTitle ?? `Topic #${numericId}`,
+        backHref: backToHref,
+        backLabel:
+          L === "it"
+            ? "← Torna alla certificazione"
+            : L === "es"
+            ? "← Volver a la certificación"
+            : L === "fr"
+            ? "← Retour à la certification"
+            : "← Back to certification",
+      }}
 
       /* ───────────── FETCH DOMANDE (ANTI-CRASH) ───────────── */
       fetchQuestions={async (): Promise<UiQuestion[]> => {
