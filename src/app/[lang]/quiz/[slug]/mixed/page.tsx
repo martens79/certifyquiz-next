@@ -10,7 +10,7 @@ import { withLang } from '@/lib/i18n';
 
 // slug → certification_id
 import { IDS_BY_SLUG } from '@/certifications/data';
-import ComingSoonBox from "@/components/ui/ComingSoonBox";
+import ComingSoonBox from '@/components/ui/ComingSoonBox';
 
 import {
   getMixedQuestions,
@@ -152,16 +152,16 @@ const COPY: Record<Locale, Copy> = {
 
 export default function MixedQuizPage() {
   const router = useRouter();
-  const { lang, slug } = useParams<{ lang: Locale; slug: string }>();
+  const params = useParams<{ lang: string; slug: string }>();
 
-  const currentLang = (lang ?? 'it') as Locale;
-  const currentSlug = slug ?? '';
+  const currentLang = ((params?.lang as Locale) ?? 'it') as Locale;
+  const currentSlug = (params?.slug ?? '') as string;
+
   const certId = IDS_BY_SLUG[currentSlug];
 
   const [mode, setMode] = useState<'training' | 'exam'>('training');
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
 
-  // Nome “leggibile”
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
 
@@ -191,18 +191,6 @@ export default function MixedQuizPage() {
     );
   }
 
-  /* Tolto questo pezzo per consentire il free login per Seo -----
-   ---------------------------- auth redirect ---------------------------- 
-  useEffect(() => {
-    const tok = getAccessToken();
-    if (!tok) {
-      router.replace(
-        `/${currentLang}/login?redirect=/${currentLang}/quiz/${currentSlug}/mixed`
-      );
-    }
-  }, [currentLang, currentSlug, router]);       
-     */
-
   /* --------------------- poolTotal (light call) --------------------- */
   useEffect(() => {
     let cancelled = false;
@@ -227,22 +215,18 @@ export default function MixedQuizPage() {
     };
   }, [certId, currentLang]);
 
-  // ------------------------- pool sizing + caps -------------------------
-  // Pool size (quanto è grande davvero il pool) — per stats + examSpec (safety coerente col backend)
   const poolSize = useMemo(() => {
     if (poolTotal == null) return 500; // fallback mentre carica
     return Math.min(poolTotal, 5000); // safety
   }, [poolTotal]);
 
-  // Training cap (quante domande per sessione training) — NOTA: diverso dal pool
   const TRAINING_CAP = 40;
 
   const trainingCap = useMemo(() => {
     return Math.min(TRAINING_CAP, poolSize);
   }, [poolSize]);
 
-  const isComingSoon =
-  poolTotal === 0 && currentLang !== "it"; // se vuoi mostrare anche per IT, togli la seconda condizione
+  const isComingSoon = poolTotal === 0 && currentLang !== 'it';
 
   const examSpec = useMemo(() => {
     return getExamSpecForCert(certId, poolSize);
@@ -256,7 +240,7 @@ export default function MixedQuizPage() {
     const res = await getMixedQuestions(certId, currentLang, {
       limit: effectiveLimit,
       shuffle: true,
-      strict: currentLang !== 'it', // ✅ NO fallback EN/FR/ES
+      strict: currentLang !== 'it',
     });
 
     const raw: ApiQuestion[] = Array.isArray(res)
@@ -267,138 +251,125 @@ export default function MixedQuizPage() {
   }, [certId, currentLang, trainingCap, mode, examSpec.questions]);
 
   return (
-  <div className="min-h-screen">
-    {/* Intro box (SEO + UX) */}
-    <div className="mx-auto max-w-5xl px-4 pt-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
-        <h1 className="text-xl md:text-2xl font-semibold">
-          {copy.title(certName)}
-        </h1>
+    <div className="min-h-screen">
+      {/* Intro box (SEO + UX) */}
+      <div className="mx-auto max-w-5xl px-4 pt-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5 shadow-sm">
+          <h1 className="text-xl md:text-2xl font-semibold">
+            {copy.title(certName)}
+          </h1>
 
-        <p className="mt-2 text-sm md:text-base text-slate-700">
-          {copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}
-        </p>
+          <p className="mt-2 text-sm md:text-base text-slate-700">
+            {copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}
+          </p>
 
-        <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
-          <li>
-            {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
-            {currentLang === "en" ? "" : "."}
-          </li>
-          <li>
-            {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{" "}
-            <strong>{copy.bullets.k_timer}</strong>.
-          </li>
-          <li>
-            {copy.bullets.c} <strong>{copy.bullets.k_progress}</strong>{" "}
-            {currentLang === "it"
-              ? "vengono salvati (se sei loggato)."
-              : currentLang === "fr"
-              ? "sont sauvegardés (si vous êtes connecté)."
-              : currentLang === "es"
-              ? "se guardan (si inicias sesión)."
-              : "is saved (when logged in)."}
-          </li>
-        </ul>
+          <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
+            <li>
+              {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
+              {currentLang === 'en' ? '' : '.'}
+            </li>
+            <li>
+              {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{' '}
+              <strong>{copy.bullets.k_timer}</strong>.
+            </li>
+            <li>
+              {copy.bullets.c} <strong>{copy.bullets.k_progress}</strong>{' '}
+              {currentLang === 'it'
+                ? 'vengono salvati (se sei loggato).'
+                : currentLang === 'fr'
+                ? 'sont sauvegardés (si vous êtes connecté).'
+                : currentLang === 'es'
+                ? 'se guardan (si inicias sesión).'
+                : 'is saved (when logged in).'}
+            </li>
+          </ul>
 
-        <div className="mt-3 text-xs text-slate-500">
-          {copy.stats.pool}:{" "}
-          <span className="font-semibold">
-            {poolTotal == null ? "…" : poolTotal.toLocaleString()}
-          </span>{" "}
-          · {copy.stats.trainingCap}:{" "}
-          <span className="font-semibold">
-            {trainingCap.toLocaleString()}
-          </span>{" "}
-          · {copy.stats.exam}:{" "}
-          <span className="font-semibold">
-            {examSpec.questions.toLocaleString()} {copy.stats.questions}
-          </span>
+          <div className="mt-3 text-xs text-slate-500">
+            {copy.stats.pool}:{' '}
+            <span className="font-semibold">
+              {poolTotal == null ? '…' : poolTotal.toLocaleString()}
+            </span>{' '}
+            · {copy.stats.trainingCap}:{' '}
+            <span className="font-semibold">{trainingCap.toLocaleString()}</span>{' '}
+            · {copy.stats.exam}:{' '}
+            <span className="font-semibold">
+              {examSpec.questions.toLocaleString()} {copy.stats.questions}
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* Coming soon (no pool in this language) */}
+      {isComingSoon && (
+        <div className="mx-auto max-w-5xl px-4 mt-6">
+          <ComingSoonBox
+            lang={currentLang}
+            fallbackLang="en"
+            fallbackHref={`/en/quiz/${currentSlug}/mixed`}
+            browseHref={`/${currentLang}/certificazioni`}
+          />
+        </div>
+      )}
+
+      {/* Quiz (solo se NON coming soon) */}
+      {!isComingSoon && (
+        <div className="mx-auto max-w-5xl px-4 mt-6 pb-10">
+          <QuizEngine
+            key={`${currentSlug}:${currentLang}`}
+            lang={currentLang}
+            storageScope={`mixed:${currentSlug}:${currentLang}`}
+            categoryColor="from-blue-900 to-blue-700"
+            context={{
+              kind: 'mixed',
+              certificationName: currentSlug.toUpperCase(),
+              certificationSlug: currentSlug,
+              backHref: withLang(currentLang, `/quiz/${currentSlug}`),
+              backLabel:
+                currentLang === 'it'
+                  ? '← Torna alla certificazione'
+                  : currentLang === 'es'
+                  ? '← Volver a la certificación'
+                  : currentLang === 'fr'
+                  ? '← Retour à la certification'
+                  : '← Back to certification',
+            }}
+            initialMode={mode}
+            durationsByMode={{
+              training: undefined,
+              exam: examSpec.durationSec,
+            }}
+            limitsByMode={{
+              training: trainingCap,
+              exam: examSpec.questions,
+            }}
+            onModeChange={(m) => setMode(m)}
+            fetchQuestions={async () => {
+              try {
+                return await fetchPool();
+              } catch (e: any) {
+                if (e?.status === 401) return [];
+                throw e;
+              }
+            }}
+            onFinish={async (s: any) => {
+              try {
+                const finishedMode: 'training' | 'exam' =
+                  s?.mode === 'exam' || s?.mode === 'training' ? s.mode : mode;
+
+                await saveExam({
+                  certification_id: certId,
+                  totalQuestions: s.total,
+                  correctAnswers: s.correct,
+                  isExam: finishedMode === 'exam',
+                });
+              } catch {
+                // best-effort
+              }
+            }}
+            backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
+          />
+        </div>
+      )}
     </div>
-
-    {/* Coming soon (no pool in this language) */}
-{isComingSoon && (
-  <div className="mx-auto max-w-5xl px-4 mt-6">
-    <ComingSoonBox
-      lang={currentLang}
-      fallbackLang="en"
-      fallbackHref={`/en/quiz/${slug}/mixed`}
-      browseHref={`/${currentLang}/certificazioni`}
-    />
-  </div>
-)}
-
-    {/* ⬇️ Sotto, SOLO se NON è coming soon, renderizzerai il QuizEngine */}
-    {!isComingSoon && (
-      <>
-        {/* QUI resta tutto il tuo codice esistente:
-            <QuizEngine ... fetchQuestions={fetchPool} ... />
-        */}
-      </>
-    )}
-  </div>
-);
-
-
-       {/* Quiz */}
-  <QuizEngine
-    key={`${currentSlug}:${currentLang}`} // ✅ non includere mode nella key
-    lang={currentLang}
-    storageScope={`mixed:${currentSlug}:${currentLang}`}
-    categoryColor="from-blue-900 to-blue-700"
-    context={{
-      kind: "mixed",
-      certificationName: currentSlug.toUpperCase(),
-      certificationSlug: currentSlug,
-      backHref: withLang(currentLang, `/quiz/${currentSlug}`),
-      backLabel:
-        currentLang === "it"
-          ? "← Torna alla certificazione"
-          : currentLang === "es"
-          ? "← Volver a la certificación"
-          : currentLang === "fr"
-          ? "← Retour à la certification"
-          : "← Back to certification",
-    }}
-    initialMode={mode}
-    durationsByMode={{
-      training: undefined,
-      exam: examSpec.durationSec,
-    }}
-    limitsByMode={{
-      training: trainingCap,
-      exam: examSpec.questions,
-    }}
-    onModeChange={(m) => setMode(m)}
-    fetchQuestions={async () => {
-      try {
-        return await fetchPool();
-      } catch (e: any) {
-        if (e?.status === 401) {
-          // Non forziamo login: quiz pubblico.
-          // Mostra semplicemente zero domande o un messaggio (meglio: setErr in QuizEngine)
-          return [];
-        }
-
-        throw e;
-      }
-    }}
-    onFinish={async (s: any) => {
-      try {
-        const finishedMode: "training" | "exam" =
-          s?.mode === "exam" || s?.mode === "training" ? s.mode : mode;
-
-        await saveExam({
-          certification_id: certId,
-          totalQuestions: s.total,
-          correctAnswers: s.correct,
-          isExam: finishedMode === "exam",
-        });
-      } catch {
-        // best-effort
-      }
-    }}
-    backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
-  />
+  );
 }
