@@ -882,11 +882,13 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
         </div>
 
         {/* spiegazione (training) */}
-        {!isExam && chosen != null && q.explanation && (
-          <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-            <b>{label('explain', lang)}</b> {q.explanation}
-          </div>
-        )}
+       {!isExam && chosen != null && q.explanation && (
+  <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+    <b>{label('explain', lang)}</b>{' '}
+    {stripExplainPrefix(q.explanation)}
+  </div>
+)}
+
 
         {/* footer nav */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -962,6 +964,16 @@ function fmt(s: number) {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return `${m}:${String(r).padStart(2, '0')}`;
+}
+function stripExplainPrefix(text: string) {
+  if (!text) return text;
+
+  return text
+    // rimuove prefissi legacy in varie lingue (con o senza spazio prima dei due punti)
+    .replace(/^(Explanation|Explication|Spiegazione|Explicación)\s*:\s*/i, '')
+    // se per caso è ripetuto 2 volte nel testo, ripulisce anche quello
+    .replace(/^(Explanation|Explication|Spiegazione|Explicación)\s*:\s*/i, '')
+    .trim();
 }
 
 function label(key: keyof typeof L, lang: Locale) {
