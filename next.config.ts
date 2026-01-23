@@ -26,6 +26,15 @@ const nextConfig: NextConfig = {
 
       { source: "/en/categories", destination: "/categories", permanent: true },
       { source: "/en/categories/:path*", destination: "/categories/:path*", permanent: true },
+
+            // EN SEO pages: niente /en davanti (regola generale)
+      { source: "/en/certifications", destination: "/certifications", permanent: true },
+      { source: "/en/certifications/:path*", destination: "/certifications/:path*", permanent: true },
+
+      // ✅ aggiungi anche la variante italiana dentro /en (capita spesso)
+      { source: "/en/certificazioni", destination: "/certifications", permanent: true },
+      { source: "/en/certificazioni/:path*", destination: "/certifications/:path*", permanent: true },
+
     ];
   },
 

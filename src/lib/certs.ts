@@ -118,6 +118,7 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "comptia-a-plus": "base",
   eipass: "base",
   ecdl: "base",
+  icdl: "base", // ✅ QUESTO MANCAVA
   pekit: "base",
 
   // Sicurezza

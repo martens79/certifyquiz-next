@@ -27,7 +27,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "google-cloud": "base",
   "eipass-basic": "base",
   eipass: "base",
-  ecdl: "base",
+  
   pekit: "base",
   icdl: "base",
   "cisco-ccst-networking": "base",
@@ -76,7 +76,8 @@ const ICON_BY_SLUG: Record<string, string> = {
   ceh: "/images/certifications/ceh.png",
   "isc2-cc": "/images/certifications/isc2-icon.png",
 
-  ecdl: "/images/certifications/ecdl.png",
+  
+  icdl: "/images/certifications/ecdl.png",
   "microsoft-azure-fundamentals": "/images/certifications/azure-fundamentals-icon.png",
   "microsoft-csharp": "/images/certifications/csharp-icon.png",
   "microsoft-sql-server": "/images/certifications/sqlserver.png",
@@ -89,7 +90,7 @@ const ICON_BY_SLUG: Record<string, string> = {
   "eipass-basic": "/images/certifications/eipass.png",
   eipass: "/images/certifications/eipass.png",
   pekit: "/images/certifications/pekit.png",
-  icdl: "/images/certifications/icdl.png",
+  
 
   "java-se": "/images/certifications/java-icon.png",
   "javascript-developer": "/images/certifications/javascript-icon.png",
@@ -135,6 +136,9 @@ const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 const normalizeSlug = (raw: unknown): string => {
   const s = String(raw ?? "").trim();
+
+  // ✅ ECDL vecchio slug → ICDL canonical
+  if (s === "ecdl") return "icdl";
 
   // alias CompTIA Security+
   if (s === "comptia-security-plus") return "security-plus";

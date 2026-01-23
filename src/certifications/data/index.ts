@@ -8,7 +8,8 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "comptia-itf-plus": 1,
   "comptia-a-plus": 2,
   "eipass": 3,
-  "ecdl": 4,
+  "ecdl": 4,  // opzionale: compat vecchio slug
+  "icdl": 4,  // ✅ nuovo slug canonical
   "pekit": 5,
   "security-plus": 6,
   "cissp": 7,
@@ -55,7 +56,9 @@ import CompTIACloudPlus from "./CompTIACloudPlus";
 import CompTIA_A_Plus from "./CompTIA_A_Plus";
 import CompTIA_ITF_Plus from "./CompTIA_ITF_Plus";
 import CSharpCertification from "./CSharpCertification";
-import ECDL from "./ECDL";
+import ICDL from "./ICDL"; // ✅
+
+//import ECDL from "./ECDL";
 import EIPASS from "./EIPASS";
 import F5 from "./F5";
 import GoogleCloud from "./GoogleCloud";
@@ -96,7 +99,7 @@ const RAW_CERTS = [
   CompTIA_A_Plus,             // slug: "comptia-a-plus"
   CompTIA_ITF_Plus,           // slug: "comptia-itf-plus"
   CSharpCertification,        // slug: "csharp" (rinomina futura: "azure-developer")
-  ECDL,                       // slug: "ecdl"
+  ICDL,  // slug: "icdl"
   EIPASS,                     // slug: "eipass"
   F5,                         // slug: "f5"
   GoogleCloud,                // slug: "google-cloud"

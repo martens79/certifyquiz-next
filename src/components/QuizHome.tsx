@@ -154,7 +154,7 @@ export default function QuizHome({ lang }: { lang: Locale }) {
 // ✅ base condivisa anche come fallback "default"
 const baseCerts = [
   { name: "EIPASS", link: certPath(lang, "eipass") },
-  { name: "ECDL", link: certPath(lang, "ecdl") },
+ { name: "ECDL", link: certPath(lang, "icdl") },
   { name: "PEKIT", link: certPath(lang, "pekit") },
   { name: "A+", link: certPath(lang, "comptia-a-plus") },
   { name: "IC3", link: null },

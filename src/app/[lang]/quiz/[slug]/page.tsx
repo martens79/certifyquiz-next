@@ -197,7 +197,10 @@ export default async function QuizTopicsPage({
 }) {
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
-  const certId = CERT_ID_BY_SLUG[slug];
+
+  const normalizedSlug = slug === "icdl" ? "ecdl" : slug;
+const certId = CERT_ID_BY_SLUG[normalizedSlug];
+
 
 
   if (!certId) {
@@ -317,7 +320,7 @@ const mockCta =
             </div>
 
             <Link
-              href={quizMixedPath(L, slug)}
+              href={quizMixedPath(L, normalizedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
             >
               {mixedCta}
@@ -349,7 +352,7 @@ const mockCta =
             </div>
 
             <Link
-              href={quizMockExamPath(L, slug)}
+              href={quizMockExamPath(L, normalizedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-orange-500 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-100"
             >
               {L === "it"
