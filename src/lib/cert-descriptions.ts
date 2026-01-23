@@ -7,7 +7,6 @@
 export type CertDescLocale = "it" | "en" | "fr" | "es";
 
 type LangMap = Record<CertDescLocale, string>;
-
 type DescRegistry = Record<string, LangMap>;
 
 /** Keep these strings short (1–2 lines). */
@@ -25,7 +24,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "Compétences IT essentielles : PC, OS, dépannage, réseaux et sécurité opérationnelle.",
     es: "Habilidades TI core: PCs, sistemas operativos, troubleshooting, redes y seguridad operativa.",
   },
-  "comptia-network-plus": {
+  "network-plus": {
     it: "Reti end-to-end: switching/routing, subnetting, troubleshooting, security e operatività.",
     en: "End-to-end networking: switching/routing, subnetting, troubleshooting, security and operations.",
     fr: "Réseaux de bout en bout : switching/routing, subnetting, dépannage, sécurité et exploitation.",
@@ -37,7 +36,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "Cybersécurité pratique : menaces, durcissement, IAM, sécurité réseau, réponse à incident et gouvernance.",
     es: "Ciberseguridad práctica: amenazas, hardening, IAM, seguridad de red, respuesta a incidentes y gobierno.",
   },
-  "cloud-plus": {
+  "comptia-cloud-plus": {
     it: "Cloud operations: deployment, networking, storage, security, troubleshooting e governance multi-cloud.",
     en: "Cloud operations: deployment, networking, storage, security, troubleshooting and multi-cloud governance.",
     fr: "Opérations cloud : déploiement, réseau, stockage, sécurité, dépannage et gouvernance multi-cloud.",
@@ -51,17 +50,23 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "Réseaux Cisco : switching, routing, IPv4/IPv6, VLAN, OSPF de base, sécurité et dépannage.",
     es: "Redes Cisco: switching, routing, IPv4/IPv6, VLAN, OSPF básico, seguridad y troubleshooting.",
   },
+  "ccst": {
+    it: "Cisco entry-level: networking di base + concetti di sicurezza e troubleshooting essenziale.",
+    en: "Cisco entry-level: basic networking + security concepts and essential troubleshooting.",
+    fr: "Cisco niveau débutant : réseaux de base + concepts sécurité et dépannage essentiel.",
+    es: "Cisco inicial: redes básicas + conceptos de seguridad y troubleshooting esencial.",
+  },
   "cisco-ccst-networking": {
     it: "Entry-level networking: cablaggio, switching base, addressing, Wi-Fi e troubleshooting essenziale.",
     en: "Entry-level networking: cabling, basic switching, addressing, Wi-Fi and essential troubleshooting.",
     fr: "Réseaux niveau débutant : câblage, switching de base, adressage, Wi-Fi et dépannage essentiel.",
     es: "Networking inicial: cableado, switching básico, direccionamiento, Wi-Fi y troubleshooting esencial.",
   },
-  "cisco-ccst-cybersecurity": {
-    it: "Fondamenti cyber: concetti di sicurezza, minacce, controlli, awareness e risposta di base.",
-    en: "Cyber fundamentals: security concepts, threats, controls, awareness and basic response.",
-    fr: "Fondamentaux cyber : concepts, menaces, contrôles, sensibilisation et réponse de base.",
-    es: "Fundamentos cyber: conceptos, amenazas, controles, concienciación y respuesta básica.",
+  "cisco-ccst-security": {
+    it: "Fondamenti cyber: minacce, controlli, awareness, accesso e risposta di base agli incidenti.",
+    en: "Cyber fundamentals: threats, controls, awareness, access, and basic incident response.",
+    fr: "Fondamentaux cyber : menaces, contrôles, sensibilisation, accès et réponse de base.",
+    es: "Fundamentos cyber: amenazas, controles, concienciación, acceso y respuesta básica.",
   },
 
   /* -------------------------- Security (advanced) ----------------------- */
@@ -72,9 +77,9 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     es: "Hacking ético: reconocimiento, escaneo, explotación, ataques web/app, post-explotación e informes.",
   },
   "cissp": {
-    it: "Security leadership: risk management, architecture, IAM, operations, SDLC e compliance (8 domains).",
-    en: "Security leadership: risk management, architecture, IAM, operations, SDLC and compliance (8 domains).",
-    fr: "Leadership sécurité : gestion du risque, architecture, IAM, opérations, SDLC et conformité (8 domaines).",
+    it: "Security leadership: risk, architecture, IAM, operations, SDLC e compliance (8 domini).",
+    en: "Security leadership: risk, architecture, IAM, operations, SDLC and compliance (8 domains).",
+    fr: "Leadership sécurité : risque, architecture, IAM, opérations, SDLC et conformité (8 domaines).",
     es: "Liderazgo en seguridad: riesgos, arquitectura, IAM, operaciones, SDLC y compliance (8 dominios).",
   },
   "isc2-cc": {
@@ -92,12 +97,12 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     es: "Fundamentos AWS: conceptos cloud, servicios core, precios, seguridad básica y buenas prácticas.",
   },
   "aws-solutions-architect": {
-    it: "Progettazione su AWS: architetture resilienti, networking, storage, security, cost optimization.",
+    it: "Progettazione AWS: architetture resilienti, networking, storage, security e cost optimization.",
     en: "AWS design: resilient architectures, networking, storage, security and cost optimization.",
     fr: "Conception AWS : architectures résilientes, réseau, stockage, sécurité et optimisation des coûts.",
     es: "Diseño en AWS: arquitecturas resilientes, redes, almacenamiento, seguridad y optimización de costos.",
   },
-  "azure-fundamentals": {
+  "microsoft-azure-fundamentals": {
     it: "Azure basics: servizi principali, identity, governance, pricing e concetti di cloud computing.",
     en: "Azure basics: core services, identity, governance, pricing and cloud computing concepts.",
     fr: "Bases Azure : services principaux, identité, gouvernance, tarification et concepts cloud.",
@@ -109,7 +114,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "Vue d’ensemble Google Cloud : services clés, sécurité, data/IA, opérations et modernisation.",
     es: "Visión general Google Cloud: servicios core, seguridad, datos/IA, operaciones y modernización.",
   },
-  "ibm-cloud": {
+  "ibm-cloud-v5": {
     it: "IBM Cloud: modelli cloud, servizi core, sicurezza, integrazione e scenari enterprise/ibridi.",
     en: "IBM Cloud: cloud models, core services, security, integration and enterprise/hybrid scenarios.",
     fr: "IBM Cloud : modèles, services clés, sécurité, intégration et scénarios entreprise/hybrides.",
@@ -129,11 +134,11 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "MySQL : SQL, optimisation requêtes, index, relations, transactions et gestion des données.",
     es: "MySQL: SQL, optimización de queries, índices, relaciones, transacciones y gestión de datos.",
   },
-  "oracle-sql": {
-    it: "Oracle SQL: query avanzate, join, funzioni, DDL/DML e concetti di performance su Oracle DB.",
-    en: "Oracle SQL: advanced queries, joins, functions, DDL/DML and performance concepts on Oracle DB.",
-    fr: "Oracle SQL : requêtes avancées, jointures, fonctions, DDL/DML et notions de performance.",
-    es: "Oracle SQL: consultas avanzadas, joins, funciones, DDL/DML y conceptos de rendimiento.",
+  "oracle-database-sql": {
+    it: "Oracle DB/SQL: query avanzate, join, funzioni, DDL/DML e concetti di performance.",
+    en: "Oracle DB/SQL: advanced queries, joins, functions, DDL/DML and performance concepts.",
+    fr: "Oracle DB/SQL : requêtes avancées, jointures, fonctions, DDL/DML et notions de performance.",
+    es: "Oracle DB/SQL: consultas avanzadas, joins, funciones, DDL/DML y conceptos de rendimiento.",
   },
   "microsoft-sql-server": {
     it: "SQL Server: T-SQL, query avanzate, indici, stored procedures e amministrazione di base.",
@@ -155,7 +160,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "JavaScript : ES6+, async, DOM, outillage, patterns et bases des web apps modernes.",
     es: "JavaScript: ES6+, async, DOM, tooling, patrones y bases para web apps modernas.",
   },
-  "python": {
+  "python-developer": {
     it: "Python: sintassi, funzioni, OOP, moduli, file/exception handling e scripting pratico.",
     en: "Python: syntax, functions, OOP, modules, file/exception handling and practical scripting.",
     fr: "Python : syntaxe, fonctions, POO, modules, fichiers/exceptions et scripting pratique.",
@@ -175,23 +180,23 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
   },
 
   /* --------------------------- Base / Digital --------------------------- */
-  "ecdl": {
-    it: "Competenze digitali: computer & online essentials, office base, sicurezza e cittadinanza digitale.",
-    en: "Digital skills: computer & online essentials, basic office tools, safety and digital citizenship.",
-    fr: "Compétences numériques : essentiels PC & web, bureautique de base, sécurité et citoyenneté numérique.",
-    es: "Competencias digitales: esenciales PC & web, ofimática básica, seguridad y ciudadanía digital.",
+  "eipass": {
+    it: "Competenze digitali: internet, produttività, sicurezza e strumenti essenziali per studio e lavoro.",
+    en: "Digital literacy: internet, productivity, security and essential tools for study and work.",
+    fr: "Compétences numériques : internet, productivité, sécurité et outils essentiels.",
+    es: "Alfabetización digital: internet, productividad, seguridad y herramientas esenciales.",
   },
-  "eipass-basic": {
-    it: "Competenze digitali pratiche: uso PC, internet, produttività, sicurezza e strumenti quotidiani.",
-    en: "Practical digital skills: PC use, internet, productivity, security and everyday tools.",
-    fr: "Compétences numériques pratiques : PC, internet, productivité, sécurité et outils du quotidien.",
-    es: "Habilidades digitales prácticas: PC, internet, productividad, seguridad y herramientas diarias.",
-  },
-  "pekit-base": {
+  "pekit": {
     it: "Alfabetizzazione digitale: operazioni al PC, gestione file, internet, sicurezza e produttività.",
     en: "Digital literacy: PC operations, file management, internet, security and productivity.",
     fr: "Littératie numérique : opérations PC, gestion de fichiers, internet, sécurité et productivité.",
     es: "Alfabetización digital: operaciones PC, gestión de archivos, internet, seguridad y productividad.",
+  },
+  "icdl": {
+    it: "ECDL/ICDL: competenze informatiche fondamentali (PC, online, office base, sicurezza).",
+    en: "ECDL/ICDL: core computer skills (PC use, online essentials, basic office tools, safety).",
+    fr: "ECDL/ICDL : compétences informatiques de base (PC, web, bureautique, sécurité).",
+    es: "ECDL/ICDL: competencias informáticas básicas (PC, web, ofimática, seguridad).",
   },
 
   /* ------------------------ Networking (advanced) ------------------------ */
@@ -215,14 +220,42 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     fr: "VMware vSphere : installation, configuration, réseau/stockage virtuels et gestion opérationnelle.",
     es: "VMware vSphere: instalación, configuración, redes/almacenamiento virtual y gestión operativa.",
   },
+  "microsoft-virtualization": {
+    it: "Virtualizzazione Microsoft: concetti Hyper-V, VM, storage/virtual networking e gestione di base.",
+    en: "Microsoft virtualization: Hyper-V concepts, VMs, storage/virtual networking and basic management.",
+    fr: "Virtualisation Microsoft : concepts Hyper-V, VM, stockage/réseau virtuels et gestion de base.",
+    es: "Virtualización Microsoft: conceptos de Hyper-V, VMs, almacenamiento/red virtual y gestión básica.",
+  },
 
   /* ---------------------------------- AI -------------------------------- */
   "microsoft-ai-fundamentals": {
-    it: "AI basics: machine learning, computer vision, NLP, responsible AI e servizi cloud correlati.",
-    en: "AI basics: machine learning, computer vision, NLP, responsible AI and related cloud services.",
-    fr: "Bases IA : machine learning, vision, NLP, IA responsable et services cloud associés.",
-    es: "Bases de IA: machine learning, visión, NLP, IA responsable y servicios cloud relacionados.",
+    it: "AI basics: ML, computer vision, NLP, responsible AI e servizi cloud correlati.",
+    en: "AI basics: ML, computer vision, NLP, responsible AI and related cloud services.",
+    fr: "Bases IA : ML, vision, NLP, IA responsable et services cloud associés.",
+    es: "Bases de IA: ML, visión, NLP, IA responsable y servicios cloud relacionados.",
   },
+};
+
+/* --------------------------------------------------------------------- */
+/* Aliases (compat) — keep old slugs working if they appear in links      */
+/* --------------------------------------------------------------------- */
+
+// Map legacy/alternate slugs -> canonical slug that exists above.
+// Keep this tiny: only when you KNOW you have old links indexed.
+const ALIAS_TO_CANONICAL: Record<string, string> = {
+  // old ECDL slug -> ICDL canonical
+  ecdl: "icdl",
+
+  // common older/alternate spellings (if they ever appear)
+  "comptia-network-plus": "network-plus",
+  "cloud-plus": "comptia-cloud-plus",
+  "azure-fundamentals": "microsoft-azure-fundamentals",
+  "ibm-cloud": "ibm-cloud-v5",
+  "oracle-sql": "oracle-database-sql",
+  python: "python-developer",
+  "eipass-basic": "eipass",
+  "pekit-base": "pekit",
+  "cisco-ccst-cybersecurity": "cisco-ccst-security",
 };
 
 /**
@@ -230,15 +263,14 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
  * Fallback order: requested lang → it → en → empty string.
  */
 export function getCertCardDesc(slug: string, lang: CertDescLocale): string {
-  const entry = CERT_CARD_DESCRIPTIONS[slug];
+  const canonical = ALIAS_TO_CANONICAL[slug] ?? slug;
+  const entry = CERT_CARD_DESCRIPTIONS[canonical];
   if (!entry) return "";
   return entry[lang] || entry.it || entry.en || "";
 }
 
-/**
- * Optional: expose the registry for debugging / tests (read-only usage).
- */
+/** Optional: expose the registry for debugging / tests (read-only usage). */
 export function hasCertCardDesc(slug: string): boolean {
-  return Boolean(CERT_CARD_DESCRIPTIONS[slug]);
+  const canonical = ALIAS_TO_CANONICAL[slug] ?? slug;
+  return Boolean(CERT_CARD_DESCRIPTIONS[canonical]);
 }
-
