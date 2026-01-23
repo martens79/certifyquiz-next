@@ -9,7 +9,8 @@ import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
 import { withLang } from '@/lib/i18n';
 
 // slug → certification_id
-import { IDS_BY_SLUG } from '@/certifications/data';
+import { CERT_ID_BY_SLUG } from '@/lib/certs';
+
 import ComingSoonBox from '@/components/ui/ComingSoonBox';
 
 import {
@@ -157,7 +158,8 @@ export default function MixedQuizPage() {
   const currentLang = ((params?.lang as Locale) ?? 'it') as Locale;
   const currentSlug = (params?.slug ?? '') as string;
 
-  const certId = IDS_BY_SLUG[currentSlug];
+  const certId = CERT_ID_BY_SLUG[currentSlug];
+
 
   const [mode, setMode] = useState<'training' | 'exam'>('training');
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
@@ -180,12 +182,12 @@ export default function MixedQuizPage() {
         </h1>
         <p className="mt-2 text-sm text-slate-700">
           {currentLang === 'it'
-            ? 'Questa certificazione non è mappata in IDS_BY_SLUG.'
+            ? 'Questa certificazione non è mappata .'
             : currentLang === 'fr'
-            ? "Cette certification n'est pas mappée dans IDS_BY_SLUG."
+            ? "Cette certification n'est pas mappée."
             : currentLang === 'es'
-            ? 'Esta certificación no está mapeada en IDS_BY_SLUG.'
-            : 'This certification is not mapped in IDS_BY_SLUG.'}
+            ? 'Esta certificación no está mapeada .'
+            : 'This certification is not mapped '}
         </p>
       </div>
     );

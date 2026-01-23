@@ -18,6 +18,7 @@ import QuizTitle from "@/components/QuizTitle";
 import CategoryBox from "@/components/CategoryBox";
 import BottomNavbar from "@/components/BottomNavbar";
 
+
 // Locale + builder dei path certificazioni (client-safe)
 import type { Locale, CategoryKey } from "@/lib/paths";
 import { certPath } from "@/lib/paths";
@@ -59,7 +60,7 @@ const slugFromLink = (link?: string | null) => {
   return m?.[2] ? m[2].replace(/\/+$/, "") : null;
 };
 const SLUG_ALIASES: Record<string, string> = {
-  "security-plus": "comptia-security-plus", // <-- usa QUI la chiave reale
+  "security-plus": "security-plus", // <-- usa QUI la chiave reale
 };
 
 const translatedCountForLink = (
@@ -173,13 +174,15 @@ const certificationNames: CertificationNames = {
     { name: "CISM", link: null },
     { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
     { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
+
   ],
 
   reti: [
     { name: "Network+", link: certPath(lang, "network-plus") },
     { name: "CCNA", link: certPath(lang, "ccna") },
     { name: "JNCIE", link: certPath(lang, "jncie") },
-    { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
+    { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
+
     { name: "F5-CTS", link: certPath(lang, "f5") },
   ],
 

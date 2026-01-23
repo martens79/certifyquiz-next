@@ -122,12 +122,13 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
 
   // Sicurezza
   "security-plus": "sicurezza",
-  "comptia-security-plus": "sicurezza",
   ceh: "sicurezza",
   cissp: "sicurezza",
   cism: "sicurezza",
   "isc2-cc": "sicurezza",
-  "cisco-ccst-cybersecurity": "sicurezza",
+  "cisco-ccst-security": "sicurezza",
+  // categoria (solo per colori)
+"comptia-security-plus": "sicurezza",
 
 
   // Reti
@@ -198,13 +199,13 @@ export const CERT_SLUG_BY_ID: Record<number, string> = {
   3: "eipass",
   4: "ecdl",
   5: "pekit",
-  6: "comptia-security-plus",
+  6: "security-plus",
   7: "cissp",
   8: "isc2-cc",
   9: "ceh",
   10: "ccna",
   11: "comptia-network-plus",
-  12: "cisco-ccst-cybersecurity",
+  34: "cisco-ccst-security",
   13: "comptia-cloud-plus",
   14: "ibm-cloud-v5",
   15: "aws-solutions-architect",
@@ -238,6 +239,53 @@ export const CERT_SLUG_BY_ID: Record<number, string> = {
  *     ? `/${lang}/quiz/${certSlug}`
  *     : `/${lang}/quiz-home`;
  */
+
+/* ======================  SLUG → ID HELPERS (per fetch by slug)  ====================== */
+
+export const CERT_ID_BY_SLUG: Record<string, number> = {
+  // canonical
+  "comptia-itf-plus": 1,
+  "comptia-a-plus": 2,
+  eipass: 3,
+  ecdl: 4,
+  pekit: 5,
+  "security-plus": 6,
+  cissp: 7,
+  "isc2-cc": 8,
+  ceh: 9,
+  ccna: 10,
+  "comptia-network-plus": 11,
+
+  // ✅ CCST cybersecurity (nuovo ID)
+  "cisco-ccst-security": 34,
+
+  "comptia-cloud-plus": 13,
+  "ibm-cloud-v5": 14,
+  "aws-solutions-architect": 15,
+  "microsoft-azure-fundamentals": 16,
+  "oracle-database-sql": 17,
+  "microsoft-csharp": 18,
+  python: 19,
+  "java-se": 20,
+  "javascript-developer": 21,
+  "vmware-certified-professional": 22,
+  "microsoft-virtualization": 23,
+  "microsoft-ai": 24,
+  "google-tensorflow": 25,
+  "mongodb-developer": 26,
+  "mysql-certification": 27,
+  jncie: 28,
+  f5: 29,
+  "microsoft-sql-server": 30,
+  "google-cloud": 31,
+  "aws-cloud-practitioner": 32,
+  "cisco-ccst-networking": 33,
+
+  // ----- ALIAS (compat / vecchi link) -----
+  "comptia-security-plus": 6,          // alias vecchio
+  "cisco-ccst-cybersecurity": 34,      // alias vecchio
+};
+
 export const getCertSlugById = (id: number): string | null => {
   return CERT_SLUG_BY_ID[id] ?? null;
 };

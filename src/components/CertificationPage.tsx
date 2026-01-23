@@ -2,6 +2,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { CertificationData, LocalizedText } from "@/certifications/types";
+import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
+
 
 type Lang = "it" | "en" | "fr" | "es";
 
@@ -132,6 +134,13 @@ export default function CertificationPage({
             }[lang] ?? "Go to quiz"}
           </Link>
         </div>
+                      {/* ✅ SEO + UX: practice box under the main CTA (shared across all certifications) */}
+        <CertificationPracticeBox
+          lang={lang}
+          certificationTitle={pageTitle}
+          quizHref={quizHref}
+          topics={topics}
+        />
 
         {/* Blocchi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import type { Locale } from "@/lib/i18n";
 import { CertificationCard } from "./CertificationCard";
 
@@ -135,6 +136,27 @@ export function CertificationListClient({
       </div>
     );
   }
+useEffect(() => {
+  if (process.env.NODE_ENV === "production") return;
+
+  const probe = items.filter((x) => {
+    const tt = (x.title || "").toLowerCase();
+    return (
+      x.slug.includes("security") ||
+      tt.includes("security") ||
+      x.slug.includes("ccst")
+    );
+  });
+
+  console.table(
+    probe.map((x) => ({
+      title: x.title,
+      slug: x.slug,
+      href: x.href,
+    }))
+  );
+}, [items]);
+
 
   const levelOptions = [
     { key: "all" as const, label: t.levels.all },

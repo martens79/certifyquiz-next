@@ -29,22 +29,38 @@ const API_PROXY = "/api/backend";
 
 // build + server → remoto
 // client → proxy
-const API =
-  typeof window === "undefined"
-    ? API_REMOTE
-    : API_PROXY;
+const API = typeof window === "undefined" ? API_REMOTE : API_PROXY;
 
+/* ------------------------- SLUG NORMALIZATION ------------------------- */
+/** Normalizza slug "alias/vecchi" → slug canonici del frontend */
+const normalizeSlug = (raw: unknown) => {
+  const s = String(raw ?? "").trim();
 
-// ✅ Slug già online/abilitati in staging (lista bianca)
+  // alias CompTIA Security+
+  if (s === "comptia-security-plus") return "security-plus";
+
+  // alias CCST cybersecurity (vecchio/DB) → slug canonico che ESISTE (security)
+  if (s === "cisco-ccst-cybersecurity") return "cisco-ccst-security";
+
+  return s;
+};
+
+/* ------------------------- LIVE SLUGS (CANONICI) ------------------------- */
+// ✅ Metti QUI SOLO gli slug CANONICI che vuoi esporre sul sito
 const LIVE = new Set([
   "jncie",
   "f5",
   "aws-cloud-practitioner",
   "cisco-ccst-networking",
+
   // aggiunti per test
   "eipass",
   "pekit",
   "ecdl",
+
+  // ✅ canonici corretti
+  "security-plus",
+  "cisco-ccst-security",
 ]);
 
 /* ---------------------------- Helpers & guards ---------------------------- */
@@ -219,7 +235,6 @@ const MOCK: Cert[] = [
     faq: [],
     imageUrl: "/og/cert-default.png",
   },
-  
 ];
 
 /* =============================== Public API =============================== */
@@ -234,10 +249,10 @@ export async function getAllCertSlugs(locale: Locale = "it"): Promise<string[]> 
   const pick = (arr: unknown[]): string[] => {
     const out: string[] = [];
     for (const item of arr) {
-      if (isRecord(item)) {
-        const s = getString(item, "slug");
-        if (s && LIVE.has(s)) out.push(s);
-      }
+      if (!isRecord(item)) continue;
+      const rawSlug = getString(item, "slug");
+      const s = normalizeSlug(rawSlug);
+      if (s && LIVE.has(s)) out.push(s);
     }
     return out;
   };
@@ -262,32 +277,38 @@ export async function getAllCertSlugs(locale: Locale = "it"): Promise<string[]> 
   return MOCK.filter((c) => c.locale === locale && LIVE.has(c.slug)).map((c) => c.slug);
 }
 
-/** Dettaglio certificazione: supporta sia payload oggetto sia array (backend non filtra `?slug=`) */
+/** Dettaglio certificazione: supporta sia payload oggetto sia array */
 export async function getCertBySlug(slug: string, locale: Locale = "it"): Promise<Cert | null> {
+  const canonSlug = normalizeSlug(slug);
+
   // In fase di build: no fetch → mock
   if (IS_BUILD) {
-    return MOCK.find((c) => c.slug === slug && c.locale === locale) ?? null;
+    return MOCK.find((c) => c.slug === canonSlug && c.locale === locale) ?? null;
   }
 
-  // selettore robusto dall'array
+  // selettore robusto dall'array (normalizza SEMPRE lo slug del backend)
   const pickFromArray = (arr: unknown): Record<string, unknown> | undefined => {
     if (!Array.isArray(arr)) return undefined;
-    // 1) match slug preciso
+
+    // 1) match slug (normalizzato)
     for (const x of arr) {
-      if (isRecord(x) && getString(x, "slug") === slug) return x;
+      if (!isRecord(x)) continue;
+      const s = normalizeSlug(getString(x, "slug"));
+      if (s === canonSlug) return x;
     }
-    // 2) fallback: slugify(name) === slug
+
+    // 2) fallback: slugify(name) === canonSlug
     for (const x of arr) {
-      if (isRecord(x) && slugify(getString(x, "name")) === slug) return x;
+      if (isRecord(x) && slugify(getString(x, "name")) === canonSlug) return x;
     }
+
     return undefined;
   };
 
   try {
-    // Il proxy può restituire un oggetto o un array non filtrato.
     const r = await okOrThrow(
-      fetchWithTimeout(`${API}/certifications/${encodeURIComponent(slug)}?locale=${locale}`, {
-        next: { tags: [`cert:${slug}`, "certs:list"], revalidate: 86400 },
+      fetchWithTimeout(`${API}/certifications/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
+        next: { tags: [`cert:${canonSlug}`, "certs:list"], revalidate: 86400 },
       } as NextFetchInit)
     );
 
@@ -299,7 +320,7 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     }
 
     let obj: Record<string, unknown> | undefined =
-      Array.isArray(raw) ? pickFromArray(raw) : (isRecord(raw) ? raw : undefined);
+      Array.isArray(raw) ? pickFromArray(raw) : isRecord(raw) ? raw : undefined;
 
     // Ultimo fallback: scarica la lista e filtra localmente
     if (!obj) {
@@ -313,15 +334,14 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     }
 
     if (!obj) {
-      const fb = MOCK.find((c) => c.slug === slug && c.locale === locale);
+      const fb = MOCK.find((c) => c.slug === canonSlug && c.locale === locale);
       return fb ?? null;
     }
 
-    const title = pickNameByLocale(obj, locale) || slug;
+    const title = pickNameByLocale(obj, locale) || canonSlug;
     const h1 = title;
 
     const intro = getString(obj, "intro") ?? getString(obj, "description") ?? "";
-
     const seoDescription =
       getString(obj, "seoDescription") ??
       getString(obj, "seo") ??
@@ -331,13 +351,19 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     const faq = normalizeFaq(obj["faq"]);
 
     return {
-      slug, locale, title, h1, intro, seoDescription, faq,
+      slug: canonSlug,
+      locale,
+      title,
+      h1,
+      intro,
+      seoDescription,
+      faq,
       imageUrl: pickImageUrl(obj),
       ogImage: getString(obj, "ogImage") ?? undefined,
       image: getString(obj, "image") ?? undefined,
     };
   } catch {
-    const fb = MOCK.find((c) => c.slug === slug && c.locale === locale);
+    const fb = MOCK.find((c) => c.slug === canonSlug && c.locale === locale);
     return fb ?? null;
   }
 }
@@ -362,8 +388,9 @@ export async function getCertList(locale: Locale = "it"): Promise<Cert[]> {
     for (const raw of arr) {
       if (!isRecord(raw)) continue;
 
-      const slug = getString(raw, "slug");
-      if (!slug || !LIVE.has(slug)) continue; // 👈 gate: mostra solo gli slug live
+      const rawSlug = getString(raw, "slug");
+      const slug = normalizeSlug(rawSlug);
+      if (!slug || !LIVE.has(slug)) continue; // 👈 gate su canonico
 
       const title = pickNameByLocale(raw, locale) || slug;
       const h1 = title;
@@ -376,7 +403,13 @@ export async function getCertList(locale: Locale = "it"): Promise<Cert[]> {
       const faq = normalizeFaq(raw["faq"]);
 
       list.push({
-        slug, locale, title, h1, intro, seoDescription, faq,
+        slug,
+        locale,
+        title,
+        h1,
+        intro,
+        seoDescription,
+        faq,
         imageUrl: pickImageUrl(raw),
         ogImage: getString(raw, "ogImage") ?? undefined,
         image: getString(raw, "image") ?? undefined,
@@ -402,9 +435,11 @@ export type QuizIntro = {
 
 // endpoint robusto: prova /quiz-intro/:slug, poi fallback da /certifications/:slug
 export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): Promise<QuizIntro | null> {
+  const canonSlug = normalizeSlug(slug);
+
   // In fase di build: deriviamo dai dati della certificazione
   if (IS_BUILD) {
-    const cert = MOCK.find((c) => c.slug === slug && c.locale === locale);
+    const cert = MOCK.find((c) => c.slug === canonSlug && c.locale === locale);
     return cert
       ? { title: cert.title, subtitle: cert.intro, seoDescription: cert.seoDescription || cert.intro }
       : null;
@@ -412,20 +447,21 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
 
   try {
     const r1 = await okOrThrow(
-      fetchWithTimeout(`${API}/quiz-intro/${encodeURIComponent(slug)}?locale=${locale}`, {
-        next: { tags: [`quiz:${slug}`, "quiz:intros"], revalidate: 86400 },
+      fetchWithTimeout(`${API}/quiz-intro/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
+        next: { tags: [`quiz:${canonSlug}`, "quiz:intros"], revalidate: 86400 },
       } as NextFetchInit)
     );
     const j1: unknown = await r1.json();
     if (isRecord(j1)) {
-      const title = sanitize(getString(j1, "title")) || slug;
+      const title = sanitize(getString(j1, "title")) || canonSlug;
       const rec = j1 as Record<string, unknown>;
       return {
         title,
         subtitle: sanitize(getString(rec, "subtitle")),
         questionCount: getNumber(rec, "questionCount"),
         premiumRequired: getBoolean(rec, "premiumRequired"),
-        seoDescription: sanitize(getString(rec, "seoDescription")) || sanitize(getString(rec, "description")),
+        seoDescription:
+          sanitize(getString(rec, "seoDescription")) || sanitize(getString(rec, "description")),
       };
     }
   } catch {
@@ -434,7 +470,7 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
 
   // Fallback: derive dall’oggetto certificazione (intro/descrizione)
   try {
-    const cert = await getCertBySlug(slug, locale);
+    const cert = await getCertBySlug(canonSlug, locale);
     if (!cert) return null;
     return {
       title: cert.title,
@@ -445,14 +481,15 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
     return null;
   }
 }
-/* ------------------------------- URL helper ------------------------------- */
 
+/* ------------------------------- URL helper ------------------------------- */
+/** ATTENZIONE: EN ufficiale è ROOT (/certifications/...) */
 export const certPath = (lang: "it" | "en" | "fr" | "es", slug: string): string => {
   switch (lang) {
     case "it":
       return `/it/certificazioni/${slug}`;
     case "en":
-      return `/en/certifications/${slug}`;
+      return `/certifications/${slug}`;
     case "fr":
       return `/fr/certifications/${slug}`;
     case "es":

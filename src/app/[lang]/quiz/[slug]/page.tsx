@@ -4,7 +4,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { IDS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
+import { CERT_ID_BY_SLUG } from "@/lib/certs";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 
@@ -197,10 +197,12 @@ export default async function QuizTopicsPage({
 }) {
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
-  const certId = IDS_BY_SLUG[slug];
+  const certId = CERT_ID_BY_SLUG[slug];
+
 
   if (!certId) {
-    const list = [...CERT_SLUGS].sort();
+    const list = Object.keys(CERT_ID_BY_SLUG).sort();
+
     return (
       <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-2xl font-bold mb-4">Quiz — Slug non mappato</h1>

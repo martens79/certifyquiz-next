@@ -185,7 +185,7 @@ const SUGGESTED: SuggestedItem[] = [
     },
   },
   {
-    slug: "comptia-security-plus",
+    slug: "security-plus",
     icon: "security",
     badge: {
       it: "Sicurezza",

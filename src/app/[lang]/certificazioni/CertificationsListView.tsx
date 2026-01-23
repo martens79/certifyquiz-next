@@ -14,9 +14,6 @@ const listPathByLang: Record<Locale, string> = {
   es: "/es/certificaciones",
 };
 
-// 🔥 EN ufficiale (root)
-const EN_ROOT_LIST_PATH = "/certifications";
-
 const detailPath = (lang: Locale, slug: string) => `${listPathByLang[lang]}/${slug}`;
 const enRootDetailPath = (slug: string) => `/certifications/${slug}`;
 
@@ -24,6 +21,7 @@ const enRootDetailPath = (slug: string) => `/certifications/${slug}`;
 type LevelKey = "base" | "intermediate" | "advanced";
 
 const LEVEL_BY_SLUG: Record<string, LevelKey> = {
+  // base
   "comptia-itf-plus": "base",
   "aws-cloud-practitioner": "base",
   "google-cloud": "base",
@@ -33,11 +31,12 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   pekit: "base",
   icdl: "base",
   "cisco-ccst-networking": "base",
-  "cisco-ccst-security": "base",
+  "cisco-ccst-cybersecurity": "base",
 
+  // intermediate
   "comptia-a-plus": "intermediate",
   "comptia-network-plus": "intermediate",
-  "comptia-security-plus": "intermediate",
+  "security-plus": "intermediate",
   ccna: "intermediate",
   ceh: "intermediate",
   "java-se": "intermediate",
@@ -46,6 +45,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "microsoft-virtualization": "intermediate",
   "microsoft-azure-fundamentals": "intermediate",
 
+  // advanced
   cissp: "advanced",
   jncie: "advanced",
   "aws-solutions-architect": "advanced",
@@ -64,13 +64,13 @@ const ICON_BY_SLUG: Record<string, string> = {
 
   "comptia-itf-plus": "/images/certifications/itf-icon.png",
   "comptia-a-plus": "/images/certifications/comptia-a-plus.png",
-  "comptia-security-plus": "/images/certifications/securityplus-icon.png",
+  "security-plus": "/images/certifications/securityplus-icon.png",
   "comptia-network-plus": "/images/certifications/networkplus.png",
   "comptia-cloud-plus": "/images/certifications/cloudplus-icon.png",
 
   ccna: "/images/certifications/ccna.png",
   "cisco-ccst-networking": "/images/certifications/ccst_networking.png",
-  "cisco-ccst-security": "/images/certifications/ccst_cybersecurity.png",
+  "cisco-ccst-cybersecurity": "/images/certifications/ccst_cybersecurity.png",
 
   cissp: "/images/certifications/cissp.png",
   ceh: "/images/certifications/ceh.png",
@@ -132,13 +132,27 @@ type ViewProps = { lang: Locale };
 const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
+/* ------------------------- SLUG NORMALIZATION ------------------------- */
+const normalizeSlug = (raw: unknown): string => {
+  const s = String(raw ?? "").trim();
+
+  // alias CompTIA Security+
+  if (s === "comptia-security-plus") return "security-plus";
+
+  // alias CCST: vecchio → canonico
+  if (s === "cisco-ccst-cybersecurity") return "cisco-ccst-security";
+
+  return s;
+};
+
+
 export default async function CertificationsListView({ lang }: ViewProps) {
   const L = lang;
 
   const raw = await getCertificationsListRSC();
 
   let certs: CertListItem[] = (raw as any[]).map((c: any) => {
-    const slug: string = String(c.slug || "").trim();
+    const slug = normalizeSlug(c.slug);
 
     const title =
       c.title && typeof c.title === "object" ? c.title : c.title ?? c.name ?? slug;
@@ -156,56 +170,59 @@ export default async function CertificationsListView({ lang }: ViewProps) {
     return { slug, title, imageUrl, level, description, category };
   });
 
-  // Fix CCST
-  const ccstIndex = certs.findIndex((c) => c.slug === "cisco-ccst");
-  if (ccstIndex !== -1) {
-    const base = certs[ccstIndex];
-    certs.splice(ccstIndex, 1);
+  /* ------------------------- FIX CCST "GENERIC" ------------------------- */
+  // Se dal backend arriva una sola voce "cisco-ccst", la splittiamo in 2
+  // Fix CCST (split)
+const ccstIndex = certs.findIndex((c) => c.slug === "cisco-ccst");
+if (ccstIndex !== -1) {
+  const base = certs[ccstIndex];
+  certs.splice(ccstIndex, 1);
 
-    const hasNetworking = certs.some((c) => c.slug === "cisco-ccst-networking");
-    const hasSecurity = certs.some((c) => c.slug === "cisco-ccst-security");
+  const hasNetworking = certs.some((c) => c.slug === "cisco-ccst-networking");
+  const hasCyber = certs.some((c) => c.slug === "cisco-ccst-cybersecurity");
 
-    const networkingTitle =
-      typeof base.title === "string"
-        ? `${base.title} – Networking`
-        : {
-            ...(base.title || {}),
-            it: "Cisco CCST – Networking",
-            en: "Cisco CCST – Networking",
-            fr: "Cisco CCST – Networking",
-            es: "Cisco CCST – Networking",
-          };
+  const networkingTitle =
+    typeof base.title === "string"
+      ? `${base.title} – Networking`
+      : {
+          ...(base.title || {}),
+          it: "Cisco CCST – Networking",
+          en: "Cisco CCST – Networking",
+          fr: "Cisco CCST – Networking",
+          es: "Cisco CCST – Networking",
+        };
 
-    const securityTitle =
-      typeof base.title === "string"
-        ? `${base.title} – Cybersecurity`
-        : {
-            ...(base.title || {}),
-            it: "Cisco CCST – Cybersecurity",
-            en: "Cisco CCST – Cybersecurity",
-            fr: "Cisco CCST – Cybersecurity",
-            es: "Cisco CCST – Cybersecurity",
-          };
+  const cyberTitle =
+    typeof base.title === "string"
+      ? `${base.title} – Cybersecurity`
+      : {
+          ...(base.title || {}),
+          it: "Cisco CCST – Cybersecurity",
+          en: "Cisco CCST – Cybersecurity",
+          fr: "Cisco CCST – Cybersecurity",
+          es: "Cisco CCST – Cybersecurity",
+        };
 
-    const toAdd: CertListItem[] = [];
-    if (!hasNetworking) {
-      toAdd.push({
-        ...base,
-        slug: "cisco-ccst-networking",
-        title: networkingTitle,
-        imageUrl: ICON_BY_SLUG["cisco-ccst-networking"],
-      });
-    }
-    if (!hasSecurity) {
-      toAdd.push({
-        ...base,
-        slug: "cisco-ccst-security",
-        title: securityTitle,
-        imageUrl: ICON_BY_SLUG["cisco-ccst-security"],
-      });
-    }
-    certs.push(...toAdd);
+  const toAdd: CertListItem[] = [];
+  if (!hasNetworking) {
+    toAdd.push({
+      ...base,
+      slug: "cisco-ccst-networking",
+      title: networkingTitle,
+      imageUrl: ICON_BY_SLUG["cisco-ccst-networking"],
+    });
   }
+  if (!hasCyber) {
+    toAdd.push({
+      ...base,
+      slug: "cisco-ccst-cybersecurity",
+      title: cyberTitle,
+      imageUrl: ICON_BY_SLUG["cisco-ccst-cybersecurity"],
+    });
+  }
+
+  certs.push(...toAdd);
+}
 
   const visible = certs.filter(
     (c): c is CertListItem & { slug: string } =>
