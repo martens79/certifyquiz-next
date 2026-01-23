@@ -1,3 +1,4 @@
+//src/app/[lang]/blog/page.tsx
 import { sanityClient } from "@/lib/sanity.client";
 import { articlesListByLang } from "@/lib/sanity.queries";
 import Link from "next/link";

@@ -9,11 +9,9 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-heading", displa
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html suppressHydrationWarning>
       <body className={`${inter.variable} ${manrope.variable}`}>
         <GoogleAnalytics />
-
-        {/* ✅ Header/Footer anche per EN root (/, /pricing, /certifications, ecc.) */}
         <RootShellClient>{children}</RootShellClient>
       </body>
     </html>

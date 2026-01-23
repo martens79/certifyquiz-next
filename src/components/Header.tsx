@@ -208,7 +208,8 @@ export default function Header({ lang, user }: Props) {
 
   // ---- routes coerenti (single source of truth) ----
   const homeHref = H("/");
-  const blogHref = H("/blog"); // EN = /blog, IT/FR/ES = /{lang}/blog
+  const blogHref = withLang(lang, "/blog"); // sempre /{lang}/blog
+
   const pricingHref = pricingPath(lang); // EN = /pricing, others = /{lang}/prezzi (o slug locale)
   const certsHref = certificationsPath(lang); // SEO root by lang
   const quizHomeHref = quizHomePath(lang); // QUIZ sempre /{lang}
