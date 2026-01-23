@@ -5,12 +5,12 @@
 //     e qui lascia /images/certifications/ecdl.png (Next servirà dal public/).
 
 const ECDL_ICDL = {
-  slug: "ecdl",
+  slug: "icdl", // ✅ nuovo slug canonical
   imageUrl: "/images/certifications/ecdl.png",
   officialUrl: "https://icdl.org/icdl-modules-programs/",
 
   title: {
-    it: "ECDL",
+    it: "ECDL (ICDL)",
     en: "ICDL",
     fr: "ICDL",
     es: "ICDL",
@@ -24,7 +24,7 @@ const ECDL_ICDL = {
   },
 
   description: {
-    it: "La certificazione ECDL attesta le competenze informatiche di base riconosciute a livello internazionale.",
+    it: "La certificazione ECDL (oggi ICDL) attesta le competenze informatiche di base riconosciute a livello internazionale.",
     en: "The ICDL certification proves internationally recognized basic computer skills.",
     fr: "La certification ICDL atteste des compétences informatiques de base reconnues au niveau international.",
     es: "La certificación ICDL acredita competencias informáticas básicas reconocidas internacionalmente.",
