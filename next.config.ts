@@ -5,21 +5,33 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // ---------------------------------------------------------------------
-      // ICDL / ECDL canonicalization (SEO)
-      // Obiettivo: EN pubblico senza /en -> /certifications/icdl
+      // ICDL / ECDL canonicalization (SEO) — CERTIFICATIONS pages
       // ---------------------------------------------------------------------
       { source: "/certifications/ecdl", destination: "/certifications/icdl", permanent: true },
-
-      // Varianti vecchie/indicizzate (se esistono)
       { source: "/en/certifications/ecdl", destination: "/certifications/icdl", permanent: true },
       { source: "/en/certificazioni/ecdl", destination: "/certifications/icdl", permanent: true },
-
-      // (Opzionale ma consigliato) FR/ES: slug coerente
       { source: "/fr/certifications/ecdl", destination: "/fr/certifications/icdl", permanent: true },
       { source: "/es/certificaciones/ecdl", destination: "/es/certificaciones/icdl", permanent: true },
 
       // ---------------------------------------------------------------------
-      // EN SEO pages: niente /en davanti (regola generale)
+      // ICDL / ECDL canonicalization (SEO) — QUIZ pages
+      // ✅ nel tuo progetto i quiz hanno SEMPRE prefisso lingua (/en/quiz/...)
+      // ---------------------------------------------------------------------
+      { source: "/it/quiz/ecdl", destination: "/it/quiz/icdl", permanent: true },
+      { source: "/en/quiz/ecdl", destination: "/en/quiz/icdl", permanent: true },
+      { source: "/fr/quiz/ecdl", destination: "/fr/quiz/icdl", permanent: true },
+      { source: "/es/quiz/ecdl", destination: "/es/quiz/icdl", permanent: true },
+
+      // ---------------------------------------------------------------------
+      // EIPASS Basic legacy -> EIPASS (QUIZ)
+      // ---------------------------------------------------------------------
+      { source: "/it/quiz/eipass-basic", destination: "/it/quiz/eipass", permanent: true },
+      { source: "/en/quiz/eipass-basic", destination: "/en/quiz/eipass", permanent: true },
+      { source: "/fr/quiz/eipass-basic", destination: "/fr/quiz/eipass", permanent: true },
+      { source: "/es/quiz/eipass-basic", destination: "/es/quiz/eipass", permanent: true },
+
+      // ---------------------------------------------------------------------
+      // EN canonical: no /en prefix (CERTIFICATIONS + CATEGORIES only)
       // ---------------------------------------------------------------------
       { source: "/en/certifications", destination: "/certifications", permanent: true },
       { source: "/en/certifications/:path*", destination: "/certifications/:path*", permanent: true },
@@ -27,34 +39,32 @@ const nextConfig: NextConfig = {
       { source: "/en/categories", destination: "/categories", permanent: true },
       { source: "/en/categories/:path*", destination: "/categories/:path*", permanent: true },
 
-            // EN SEO pages: niente /en davanti (regola generale)
-      { source: "/en/certifications", destination: "/certifications", permanent: true },
-      { source: "/en/certifications/:path*", destination: "/certifications/:path*", permanent: true },
-
-      // ✅ aggiungi anche la variante italiana dentro /en (capita spesso)
+      // ✅ EN pages sometimes indexed with IT segment
       { source: "/en/certificazioni", destination: "/certifications", permanent: true },
       { source: "/en/certificazioni/:path*", destination: "/certifications/:path*", permanent: true },
 
+      // ---------------------------------------------------------------------
+      // Legacy slug redirects (examples - add the ones you see in GSC)
+      // ---------------------------------------------------------------------
+      { source: "/it/certificazioni/mysql-certification", destination: "/it/certificazioni/mysql", permanent: true },
+      { source: "/it/certificazioni/google-tensorflow", destination: "/it/certificazioni/tensorflow", permanent: true },
+      { source: "/it/certificazioni/microsoft-ai", destination: "/it/certificazioni/microsoft-ai-fundamentals", permanent: true },
+      { source: "/it/certificazioni/vmware-certified-professional", destination: "/it/certificazioni/vmware-vcp", permanent: true },
+
+      // Quiz legacy (examples)
+      { source: "/it/quiz/javascript", destination: "/it/quiz/javascript-developer", permanent: true },
+      { source: "/quiz/javascript", destination: "/quiz/javascript-developer", permanent: true },
     ];
   },
 
   async rewrites() {
     return [
-      // ---------------------------------------------------------------------
-      // CERTIFICATIONS localized segments -> internal /[lang]/certificazioni
-      // (le pagine reali sono sotto /[lang]/certificazioni/*)
-      // ---------------------------------------------------------------------
       { source: "/fr/certifications", destination: "/fr/certificazioni" },
       { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
 
       { source: "/es/certificaciones", destination: "/es/certificazioni" },
       { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
 
-      // (IT già “giusto” perché usi /it/certificazioni)
-
-      // ---------------------------------------------------------------------
-      // CATEGORIES localized segments -> internal /[lang]/categorie
-      // ---------------------------------------------------------------------
       { source: "/fr/categories", destination: "/fr/categorie" },
       { source: "/fr/categories/:slug", destination: "/fr/categorie/:slug" },
 

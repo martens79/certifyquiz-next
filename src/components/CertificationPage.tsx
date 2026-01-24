@@ -78,11 +78,14 @@ export default function CertificationPage({
   const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
   const examRefs = examRefsRaw.map((r) => ({ text: r?.text ?? "", url: r?.url }));
 
+    const basePath = lang === "en" ? "" : `/${lang}`;
+
   // ✅ Use quizRoute when provided (fixes cases like SQL Server: slug != quiz slug)
   const quizHref =
     data.quizRoute?.[lang] ??
     data.quizRoute?.it ??
-    `/${lang}/quiz/${data.slug}`;
+    `${basePath}/quiz/${data.slug}`;
+
 
   // (Dev) avvisa se il quizRoute definito nel file non combacia con lo slug
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {

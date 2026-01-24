@@ -1,7 +1,9 @@
 // ================================================================
-// NEW FILE: src/lib/certs.ts
-// Purpose: Shared types for certification list/detail payloads
+// FILE: src/lib/certs.ts
+// Purpose: Shared types + category helpers + (derived) slug/id maps
 // ----------------------------------------------------------------
+
+import { CERTS } from "@/certifications/registry";
 
 export type Localized<T = string> = T | Record<string, T>;
 
@@ -53,47 +55,38 @@ export type CatStyle = {
 };
 
 export const CATEGORY_STYLES: Record<CategoryKey, CatStyle> = {
-  // Blu (Base)
   base: {
     wrapper: "bg-blue-50 border border-blue-200 hover:ring-2 hover:ring-blue-200/70",
     header: "bg-blue-50 border border-blue-200",
   },
-  // Rosso/Rosa (Sicurezza)
   sicurezza: {
     wrapper: "bg-red-50 border border-red-200 hover:ring-2 hover:ring-red-200/70",
     header: "bg-red-50 border border-red-200",
   },
-  // Verde (Reti)
   reti: {
     wrapper: "bg-green-50 border border-green-200 hover:ring-2 hover:ring-green-200/70",
     header: "bg-green-50 border border-green-200",
   },
-  // Lilla/Viola (Cloud)
   cloud: {
     wrapper: "bg-purple-50 border border-purple-200 hover:ring-2 hover:ring-purple-200/70",
     header: "bg-purple-50 border border-purple-200",
   },
-  // Giallo (Database)
   database: {
     wrapper: "bg-yellow-50 border border-yellow-200 hover:ring-2 hover:ring-yellow-200/70",
     header: "bg-yellow-50 border border-yellow-200",
   },
-  // Indaco/Turchese tenue (Programmazione)
   programmazione: {
     wrapper: "bg-teal-50 border border-teal-200 hover:ring-2 hover:ring-teal-200/70",
     header: "bg-teal-50 border border-teal-200",
   },
-  // Arancio (Virtualizzazione)
   virtualizzazione: {
     wrapper: "bg-orange-50 border border-orange-200 hover:ring-2 hover:ring-orange-200/70",
     header: "bg-orange-50 border border-orange-200",
   },
-  // Ciano (AI) — come nella home “originale”
   ai: {
     wrapper: "bg-cyan-50 border border-cyan-200 hover:ring-2 hover:ring-cyan-200/70",
     header: "bg-cyan-50 border border-cyan-200",
   },
-  // Default neutro
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
     header: "bg-gray-50 border border-gray-200",
@@ -107,8 +100,7 @@ export const getCategoryStyle = (key?: string | null): CatStyle => {
 
 /**
  * Fallback slug → categoria.
- * Supporta sia gli slug "vecchi" del frontend (itfplus, a-plus, ...)
- * sia quelli reali del DB (/certifications).
+ * Supporta sia gli slug "vecchi" del frontend sia quelli reali del DB.
  */
 export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   // Base
@@ -118,19 +110,18 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "comptia-a-plus": "base",
   eipass: "base",
   ecdl: "base",
-  icdl: "base", // ✅ QUESTO MANCAVA
+  icdl: "base",
   pekit: "base",
 
   // Sicurezza
   "security-plus": "sicurezza",
+  "comptia-security-plus": "sicurezza", // alias vecchio (categoria)
   ceh: "sicurezza",
   cissp: "sicurezza",
   cism: "sicurezza",
   "isc2-cc": "sicurezza",
   "cisco-ccst-security": "sicurezza",
-  // categoria (solo per colori)
-"comptia-security-plus": "sicurezza",
-
+  "cisco-ccst-cybersecurity": "sicurezza", // alias vecchio (categoria)
 
   // Reti
   ccna: "reti",
@@ -185,108 +176,32 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "microsoft-ai": "ai",
 };
 
-/* ======================  ID → SLUG HELPERS (per backToHref)  ====================== */
+/* ======================  ID <-> SLUG (DERIVED)  ====================== */
 
 /**
- * Mappa certification_id (DB/backend) → slug usato nel frontend
- * per la route /[lang]/quiz/[slug].
- *
- * Gli slug qui sono presi 1:1 dalla tabella `certifications`
- * che hai in backend.
+ * ✅ Single source of truth:
+ * Deriva le mappe da CERTS (registry), così non vanno mai fuori sync.
  */
-export const CERT_SLUG_BY_ID: Record<number, string> = {
-  1: "comptia-itf-plus",
-  2: "comptia-a-plus",
-  3: "eipass",
-  4: "ecdl",
-  5: "pekit",
-  6: "security-plus",
-  7: "cissp",
-  8: "isc2-cc",
-  9: "ceh",
-  10: "ccna",
-  11: "comptia-network-plus",
-  34: "cisco-ccst-security",
-  13: "comptia-cloud-plus",
-  14: "ibm-cloud-v5",
-  15: "aws-solutions-architect",
-  16: "microsoft-azure-fundamentals",
-  17: "oracle-database-sql",
-  18: "microsoft-csharp",
-  19: "python",
-  20: "java-se",
-  21: "javascript-developer",
-  22: "vmware-certified-professional",
-  23: "microsoft-virtualization",
-  24: "microsoft-ai",
-  25: "google-tensorflow",
-  26: "mongodb-developer",
-  27: "mysql-certification",
-  28: "jncie",
-  29: "f5",
-  30: "microsoft-sql-server",
-  31: "google-cloud",
-  32: "aws-cloud-practitioner",
-  33: "cisco-ccst-networking",
-};
+export const CERT_SLUG_BY_ID: Record<number, string> = Object.fromEntries(
+  CERTS.map((c) => [c.id, c.slug])
+) as Record<number, string>;
+
+export const CERT_ID_BY_SLUG: Record<string, number> = Object.fromEntries(
+  CERTS.map((c) => [c.slug, c.id])
+) as Record<string, number>;
 
 /**
- * Helper sicuro per ottenere lo slug di una certificazione
- * partendo dal suo `id` (proveniente dai quiz/topic del backend).
- *
- * Uso tipico:
- *   const certSlug = getCertSlugById(meta.topic.certification_id);
- *   const backToHref = certSlug
- *     ? `/${lang}/quiz/${certSlug}`
- *     : `/${lang}/quiz-home`;
+ * Alias compat / vecchi link.
+ * (Se non esiste il target, l’assegnazione resta undefined → safe.)
  */
+if (CERT_ID_BY_SLUG["security-plus"] != null) {
+  CERT_ID_BY_SLUG["comptia-security-plus"] = CERT_ID_BY_SLUG["security-plus"];
+}
+if (CERT_ID_BY_SLUG["cisco-ccst-security"] != null) {
+  CERT_ID_BY_SLUG["cisco-ccst-cybersecurity"] = CERT_ID_BY_SLUG["cisco-ccst-security"];
+}
 
-/* ======================  SLUG → ID HELPERS (per fetch by slug)  ====================== */
-
-export const CERT_ID_BY_SLUG: Record<string, number> = {
-  // canonical
-  "comptia-itf-plus": 1,
-  "comptia-a-plus": 2,
-  eipass: 3,
-  ecdl: 4,
-  pekit: 5,
-  "security-plus": 6,
-  cissp: 7,
-  "isc2-cc": 8,
-  ceh: 9,
-  ccna: 10,
-  "comptia-network-plus": 11,
-
-  // ✅ CCST cybersecurity (nuovo ID)
-  "cisco-ccst-security": 34,
-
-  "comptia-cloud-plus": 13,
-  "ibm-cloud-v5": 14,
-  "aws-solutions-architect": 15,
-  "microsoft-azure-fundamentals": 16,
-  "oracle-database-sql": 17,
-  "microsoft-csharp": 18,
-  python: 19,
-  "java-se": 20,
-  "javascript-developer": 21,
-  "vmware-certified-professional": 22,
-  "microsoft-virtualization": 23,
-  "microsoft-ai": 24,
-  "google-tensorflow": 25,
-  "mongodb-developer": 26,
-  "mysql-certification": 27,
-  jncie: 28,
-  f5: 29,
-  "microsoft-sql-server": 30,
-  "google-cloud": 31,
-  "aws-cloud-practitioner": 32,
-  "cisco-ccst-networking": 33,
-
-  // ----- ALIAS (compat / vecchi link) -----
-  "comptia-security-plus": 6,          // alias vecchio
-  "cisco-ccst-cybersecurity": 34,      // alias vecchio
-};
-
+/** Helper sicuro id -> slug */
 export const getCertSlugById = (id: number): string | null => {
   return CERT_SLUG_BY_ID[id] ?? null;
 };

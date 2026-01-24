@@ -4,7 +4,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { CERT_ID_BY_SLUG } from "@/lib/certs";
+
+import { getCertBySlug, CERT_SLUGS } from "@/certifications/registry";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 
@@ -51,9 +52,11 @@ async function fetchTopics(certId: number): Promise<TopicRow[]> {
   try {
     const base = API_BASE_URL || (await getInternalBase());
     if (!base) return [];
+
     const url = API_BASE_URL
       ? `${API_BASE_URL}/topics/${certId}`
       : `${base}/api/backend/topics/${certId}`;
+
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) return [];
     return (await res.json()) as TopicRow[];
@@ -68,14 +71,10 @@ function quizSeg(_lang: Locale) {
 }
 
 /**
- * ✅ FIX DEFINITIVO:
- * In questa sezione (/[lang]/quiz/...) la lingua è SEMPRE prefissata, anche per EN.
+ * ✅ In questa sezione (/[lang]/quiz/...) la lingua è SEMPRE prefissata, anche per EN.
  * Quindi:
  *  - /en/quiz/ceh
  *  - /it/quiz/ceh
- *  - /en/quiz/topic/74
- *
- * Se vuoi EN root per i quiz, allora NON dovrebbe esistere /en/quiz/... (ma oggi esiste e funziona così).
  */
 function langPrefix(lang: Locale) {
   return `/${lang}`;
@@ -117,26 +116,44 @@ function pickTopicField(t: TopicRow, lang: Locale, field: "title" | "description
 
 // Testi base per SEO pagina topics per cert
 const SEO_BASE: Record<Locale, { quizLabel: string; desc: string }> = {
-  it: {
-    quizLabel: "Quiz",
-    desc: "Allenati con i topic ufficiali di questa certificazione.",
-  },
-  en: {
-    quizLabel: "Quiz",
-    desc: "Practice with the official topics of this certification.",
-  },
-  fr: {
-    quizLabel: "Quiz",
-    desc: "Entraînez-vous avec les sujets officiels de cette certification.",
-  },
-  es: {
-    quizLabel: "Quiz",
-    desc: "Entrena con los temas oficiales de esta certificación.",
-  },
+  it: { quizLabel: "Quiz", desc: "Allenati con i topic ufficiali di questa certificazione." },
+  en: { quizLabel: "Quiz", desc: "Practice with the official topics of this certification." },
+  fr: { quizLabel: "Quiz", desc: "Entraînez-vous avec les sujets officiels de cette certification." },
+  es: { quizLabel: "Quiz", desc: "Entrena con los temas oficiales de esta certificación." },
 };
 
 const ogLocale = (lang: Locale) =>
   lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
+
+// ✅ Alias/compat per slug quiz (vecchi link / hardcode / GSC)
+function resolveQuizSlug(inputRaw: string): string {
+  const input = (inputRaw || "").trim().toLowerCase();
+
+  // Tutte le chiavi DEVONO puntare a slug che ESISTONO nel registry (CERTS)
+  const ALIASES: Record<string, string> = {
+    // --- I due che ti rimangono ---
+    itfplus: "comptia-itf-plus",
+    "cisco-ccna": "ccna",
+
+    // --- screenshot / link vecchi comuni ---
+    ecdl: "icdl",
+    "mysql-certification": "mysql",
+    javascript: "javascript-developer",
+    java: "java-se",
+    python: "python-developer",
+    vmware: "vmware-vcp",
+    "oracle-sql": "oracle-database-sql",
+    "ibm-cloud": "ibm-cloud-v5",
+    "aws-cloud": "aws-cloud-practitioner",
+    "ai-fundamentals": "microsoft-ai-fundamentals",
+    "azure-fundamentals": "microsoft-azure-fundamentals",
+
+    // (se in giro ti capita anche questa)
+    "eipass-basic": "eipass",
+  };
+
+  return ALIASES[input] ?? input;
+}
 
 // ─────────────────── Metadata ───────────────────
 export async function generateMetadata({
@@ -148,31 +165,30 @@ export async function generateMetadata({
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const base = SEO_BASE[L];
-  const certName = slug.replace(/-/g, " ");
+
+  // ✅ risolvi slug per canonical/hreflang
+  const resolvedSlug = resolveQuizSlug(slug);
+
+  const certName = resolvedSlug.replace(/-/g, " ");
   const title = `${base.quizLabel} — ${certName}`;
   const description = base.desc;
 
-  // ✅ canonical coerente con /[lang]/quiz/... (EN incluso)
-  const canonicalPath = quizCertPath(L, slug);
+  const canonicalPath = quizCertPath(L, resolvedSlug);
   const canonical = `${SITE}${canonicalPath}`;
 
-  // ✅ hreflang coerente (EN incluso su /en)
   const languages: Record<string, string> = {};
   for (const loc of locales as readonly Locale[]) {
     const localeKey =
       loc === "it" ? "it-IT" : loc === "en" ? "en-US" : loc === "fr" ? "fr-FR" : "es-ES";
-    languages[localeKey] = `${SITE}${quizCertPath(loc as Locale, slug)}`;
+    languages[localeKey] = `${SITE}${quizCertPath(loc as Locale, resolvedSlug)}`;
   }
-  languages["x-default"] = `${SITE}${quizCertPath("en", slug)}`;
+  languages["x-default"] = `${SITE}${quizCertPath("en", resolvedSlug)}`;
 
   return {
     title,
     description,
     robots: { index: true, follow: true },
-    alternates: {
-      canonical,
-      languages,
-    },
+    alternates: { canonical, languages },
     openGraph: {
       title,
       description,
@@ -181,11 +197,7 @@ export async function generateMetadata({
       locale: ogLocale(L),
       type: "website",
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -198,23 +210,31 @@ export default async function QuizTopicsPage({
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
-  const normalizedSlug = slug === "icdl" ? "ecdl" : slug;
-const certId = CERT_ID_BY_SLUG[normalizedSlug];
+  // ✅ risolvi slug (compat) PRIMA di leggere dal registry
+  const resolvedSlug = resolveQuizSlug(slug);
 
-
+  // ✅ ID ricavato dal registry (single source of truth)
+  const cert = getCertBySlug(resolvedSlug);
+  const certId = cert?.id;
 
   if (!certId) {
-    const list = Object.keys(CERT_ID_BY_SLUG).sort();
+    const list = [...CERT_SLUGS].slice().sort();
 
     return (
       <main className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="text-2xl font-bold mb-4">Quiz — Slug non mappato</h1>
+
         <p className="mb-2">
           Cliccato: <code className="bg-gray-100 px-2 py-1 rounded">{slug}</code>
         </p>
+
         <p className="mb-6 text-sm text-gray-600">
-          Lo slug non esiste in <code>IDS_BY_SLUG</code>. Allinea lo <b>slug</b> del modulo certificazione con la mappa.
+          Lo slug non esiste nel <code>registry</code> delle certificazioni.
+          <span className="ml-1">Allinea i link/CTA allo slug reale (es. </span>
+          <code className="bg-gray-100 px-2 py-1 rounded">eipass</code>
+          <span>). </span>
         </p>
+
         <h2 className="text-lg font-semibold mb-2">Slug disponibili:</h2>
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {list.map((s) => (
@@ -229,15 +249,16 @@ const certId = CERT_ID_BY_SLUG[normalizedSlug];
     );
   }
 
-  const categoryKey = CERT_CATEGORY_BY_SLUG[slug] ?? "default";
+  // ✅ categoria e stile basati sullo slug risolto
+  const categoryKey = CERT_CATEGORY_BY_SLUG[resolvedSlug] ?? "default";
   const css = getCategoryStyle(categoryKey);
+
   const topics = await fetchTopics(certId);
 
   const categoryName =
     categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/-/g, " ");
-
   const base = SEO_BASE[L];
-  const certName = slug.replace(/-/g, " ");
+  const certName = resolvedSlug.replace(/-/g, " ");
 
   // CTA "Quiz misto" label per lingua
   const mixedLabel =
@@ -261,30 +282,25 @@ const certId = CERT_ID_BY_SLUG[normalizedSlug];
       ? "Lancer le quiz mixte →"
       : "Iniciar quiz mixto →";
 
-      // CTA "Mock exam" label per lingua
-const mockLabel =
-  L === "it" ? "Mock exam" :
-  L === "en" ? "Mock exam" :
-  L === "fr" ? "Mock exam" :
-  "Mock exam";
+  // CTA "Mock exam"
+  const mockLabel = "Mock exam";
+  const mockDesc =
+    L === "it"
+      ? "Simulazione d’esame con timer e punteggio finale."
+      : L === "en"
+      ? "Real exam simulation with time limit and final score."
+      : L === "fr"
+      ? "Simulation d’examen avec chronomètre et score final."
+      : "Simulación de examen con temporizador y puntuación final.";
 
-const mockDesc =
-  L === "it"
-    ? "Simulazione d’esame con timer e punteggio finale."
-    : L === "en"
-    ? "Real exam simulation with time limit and final score."
-    : L === "fr"
-    ? "Simulation d’examen avec chronomètre et score final."
-    : "Simulación de examen con temporizador y puntuación final.";
-
-const mockCta =
-  L === "it"
-    ? "Avvia mock exam 🎯 →"
-    : L === "en"
-    ? "Start mock exam 🎯 →"
-    : L === "fr"
-    ? "Démarrer le mock exam 🎯 →"
-    : "Iniciar mock exam 🎯 →";
+  const mockCta =
+    L === "it"
+      ? "Avvia mock exam 🎯 →"
+      : L === "en"
+      ? "Start mock exam 🎯 →"
+      : L === "fr"
+      ? "Démarrer le mock exam 🎯 →"
+      : "Iniciar mock exam 🎯 →";
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
@@ -294,6 +310,7 @@ const mockCta =
           <h1 className="text-2xl font-bold">
             {base.quizLabel} — {certName}
           </h1>
+
           <span
             className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
               css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
@@ -305,11 +322,12 @@ const mockCta =
 
         {/* Debug info — puoi rimuoverla quando vuoi */}
         <p className="text-xs md:text-sm opacity-70">
-          Lang: <code>{L}</code> · certId: <code>{certId}</code> · topics: <code>{topics.length}</code>
+          Lang: <code>{L}</code> · certId: <code>{certId}</code> · topics:{" "}
+          <code>{topics.length}</code>
         </p>
       </header>
 
-           {/* 🔹 BOX QUIZ MISTO + MOCK EXAM (stessa riga) */}
+      {/* 🔹 BOX QUIZ MISTO + MOCK EXAM (stessa riga) */}
       <section className="mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* --- Mixed quiz --- */}
@@ -320,7 +338,7 @@ const mockCta =
             </div>
 
             <Link
-              href={quizMixedPath(L, normalizedSlug)}
+              href={quizMixedPath(L, resolvedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-sky-500 px-4 py-1.5 text-sm font-semibold text-sky-700 hover:bg-sky-100"
             >
               {mixedCta}
@@ -330,43 +348,19 @@ const mockCta =
           {/* --- Mock exam --- */}
           <div className="flex flex-col gap-3 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-base font-semibold">
-                {L === "it"
-                  ? "Mock exam"
-                  : L === "en"
-                  ? "Mock exam"
-                  : L === "fr"
-                  ? "Mock exam"
-                  : "Mock exam"}
-              </h2>
-
-              <p className="text-sm text-slate-700">
-                {L === "it"
-                  ? "Simulazione d’esame con timer e punteggio finale."
-                  : L === "en"
-                  ? "Real exam simulation with time limit and final score."
-                  : L === "fr"
-                  ? "Simulation d’examen avec chronomètre et score final."
-                  : "Simulación de examen con temporizador y puntuación final."}
-              </p>
+              <h2 className="text-base font-semibold">{mockLabel}</h2>
+              <p className="text-sm text-slate-700">{mockDesc}</p>
             </div>
 
             <Link
-              href={quizMockExamPath(L, normalizedSlug)}
+              href={quizMockExamPath(L, resolvedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-orange-500 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-100"
             >
-              {L === "it"
-                ? "Avvia mock exam 🎯 →"
-                : L === "en"
-                ? "Start mock exam 🎯 →"
-                : L === "fr"
-                ? "Démarrer le mock exam 🎯 →"
-                : "Iniciar mock exam 🎯 →"}
+              {mockCta}
             </Link>
           </div>
         </div>
       </section>
-
 
       {topics.length === 0 ? (
         <div className="text-gray-700">
@@ -401,14 +395,9 @@ const mockCta =
                 className={`rounded-2xl p-4 md:p-5 bg-white shadow-sm transition ${css.wrapper}`}
               >
                 <div className="font-semibold">{title}</div>
-
                 {desc && <div className="text-sm opacity-80 mt-1">{desc}</div>}
 
-                {/* ✅ FIX: usa Link e path con prefisso lingua sempre */}
-                <Link
-                  href={quizTopicPath(L, t.id)}
-                  className="inline-block mt-3 text-blue-700 underline"
-                >
+                <Link href={quizTopicPath(L, t.id)} className="inline-block mt-3 text-blue-700 underline">
                   {ctaLabel}
                 </Link>
               </li>

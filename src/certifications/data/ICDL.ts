@@ -67,10 +67,10 @@ const ICDL: CertificationData = {
   ],
 
   quizRoute: {
-    it: "/it/quiz/ecdl",
-    en: "/en/quiz/ecdl",
-    fr: "/fr/quiz/ecdl",
-    es: "/es/quiz/ecdl",
+    it: "/it/quiz/icdl",
+    en: "/en/quiz/icdl",
+    fr: "/fr/quiz/icdl",
+    es: "/es/quiz/icdl",
   },
 
   backRoute: {
