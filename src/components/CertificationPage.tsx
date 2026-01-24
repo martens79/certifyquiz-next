@@ -4,7 +4,6 @@ import Link from "next/link";
 import type { CertificationData, LocalizedText } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 
-
 type Lang = "it" | "en" | "fr" | "es";
 
 /* -------------------- i18n helpers -------------------- */
@@ -61,6 +60,11 @@ export default function CertificationPage({
     ? getList<string>(extraContent!.whyChoose, lang)
     : [];
 
+  // ✅ NEW: SEO booster block (current certification / 2021 / 2023)
+  const currentCertification = isLocalizedArray<string>(extraContent?.currentCertification)
+    ? getList<string>(extraContent!.currentCertification, lang)
+    : [];
+
   type FaqItem = { q: string; a: string };
   const faqRaw = isLocalizedArray<FaqItem>(extraContent?.faq)
     ? getList<FaqItem>(extraContent!.faq, lang)
@@ -74,15 +78,18 @@ export default function CertificationPage({
   const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
   const examRefs = examRefsRaw.map((r) => ({ text: r?.text ?? "", url: r?.url }));
 
-  // ✅ CTA sempre coerente con lo slug reale del registry
-  const quizHref = `/${lang}/quiz/${data.slug}`;
+  // ✅ Use quizRoute when provided (fixes cases like SQL Server: slug != quiz slug)
+  const quizHref =
+    data.quizRoute?.[lang] ??
+    data.quizRoute?.it ??
+    `/${lang}/quiz/${data.slug}`;
 
   // (Dev) avvisa se il quizRoute definito nel file non combacia con lo slug
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
-    if (anyQ && !anyQ.includes(`/quiz/${data.slug}`)) {
+    if (anyQ && !anyQ.includes(`/quiz/`)) {
       // eslint-disable-next-line no-console
-      console.warn(`[CertificationPage] quizRoute mismatch for "${data.slug}" → "${anyQ}"`);
+      console.warn(`[CertificationPage] quizRoute looks odd for "${data.slug}" → "${anyQ}"`);
     }
   }
 
@@ -119,6 +126,26 @@ export default function CertificationPage({
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
+        {/* ✅ SEO booster: "current certification / 2021 / 2023" (if present in data file) */}
+        {currentCertification.length > 0 && (
+          <section className="mt-4 mb-4 bg-blue-100 p-4 rounded-xl shadow">
+            <h2 className="text-lg font-semibold text-blue-800 mb-2">
+              {({
+                it: "Qual è la certificazione SQL “attuale”?",
+                en: "What is the current SQL certification?",
+                fr: "Quelle est la certification SQL “actuelle” ?",
+                es: "¿Cuál es la certificación SQL “actual”?",
+              } as const)[lang] ?? "Current certification"}
+            </h2>
+
+            <div className="text-sm text-gray-800 space-y-2">
+              {currentCertification.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* CTA */}
         <div className="mt-2 mb-6 text-center">
           <Link
@@ -126,15 +153,16 @@ export default function CertificationPage({
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
           >
             <span className="text-lg">🚀</span>
-            {{
+            {({
               it: "Vai ai quiz",
               en: "Go to quiz",
               fr: "Accéder aux quiz",
               es: "Ir a los cuestionarios",
-            }[lang] ?? "Go to quiz"}
+            } as const)[lang] ?? "Go to quiz"}
           </Link>
         </div>
-                      {/* ✅ SEO + UX: practice box under the main CTA (shared across all certifications) */}
+
+        {/* ✅ SEO + UX: practice box under the main CTA (shared across all certifications) */}
         <CertificationPracticeBox
           lang={lang}
           certificationTitle={pageTitle}
@@ -175,7 +203,12 @@ export default function CertificationPage({
                   <li key={idx}>
                     📘{" "}
                     {item.url ? (
-                      <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-700 hover:underline"
+                      >
                         {item.text}
                       </a>
                     ) : (

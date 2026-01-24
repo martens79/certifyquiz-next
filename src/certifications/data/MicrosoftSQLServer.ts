@@ -58,6 +58,30 @@ const MicrosoftSQLServer = {
       ],
     },
 
+    // ✅ SEO booster: risponde esattamente alle query “current … certification” e “2021/2023”
+    currentCertification: {
+      it: [
+        "Molti utenti cercano “Microsoft SQL Server certification 2021/2023”: oggi il percorso ufficiale Microsoft è orientato alle certificazioni role-based su Azure Data.",
+        "Se il tuo obiettivo è lavorare con SQL Server e database Microsoft, le due tappe più utili sono DP-900 (fondamenti dati) e DP-300 (amministrazione di Azure SQL).",
+        "Questa pagina ti aiuta a studiare SQL e SQL Server in pratica (query, modellazione, performance, backup), competenze valide anche nei percorsi moderni Microsoft.",
+      ],
+      en: [
+        "Many users search for “Microsoft SQL Server certification 2021/2023”: today Microsoft’s official path focuses on role-based Azure Data certifications.",
+        "If your goal is to work with SQL Server and Microsoft databases, the two most relevant steps are DP-900 (data fundamentals) and DP-300 (administering Azure SQL).",
+        "This page helps you practice core SQL/SQL Server skills (queries, modeling, performance, backup) that remain valuable across modern Microsoft tracks.",
+      ],
+      fr: [
+        "Beaucoup recherchent “Microsoft SQL Server certification 2021/2023” : aujourd’hui, le parcours officiel Microsoft est surtout orienté vers les certifications Azure Data (role-based).",
+        "Si ton objectif est de travailler avec SQL Server et l’écosystème Microsoft, les étapes les plus pertinentes sont DP-900 (fondamentaux data) et DP-300 (administration d’Azure SQL).",
+        "Cette page t’aide à pratiquer les compétences SQL/SQL Server clés (requêtes, modélisation, performances, sauvegarde), utiles aussi dans les parcours Microsoft actuels.",
+      ],
+      es: [
+        "Muchos buscan “Microsoft SQL Server certification 2021/2023”: hoy el camino oficial de Microsoft se centra en certificaciones role-based de Azure Data.",
+        "Si tu objetivo es trabajar con SQL Server y bases de datos Microsoft, los pasos más relevantes son DP-900 (fundamentos de datos) y DP-300 (administración de Azure SQL).",
+        "Esta página te ayuda a practicar habilidades clave de SQL/SQL Server (consultas, modelado, rendimiento, copias de seguridad) que siguen siendo valiosas en rutas modernas de Microsoft.",
+      ],
+    },
+
     learn: {
       it: [
         "Gestire database Microsoft SQL Server a livello professionale.",
@@ -122,21 +146,29 @@ const MicrosoftSQLServer = {
 
     faq: {
       it: [
+        { q: "Qual è la certificazione Microsoft SQL “attuale”?", a: "Oggi Microsoft punta su certificazioni role-based nell’area Azure Data. Per iniziare: DP-900. Per amministrare soluzioni Azure SQL: DP-300." },
+        { q: "SQL Server certification 2021/2023 esiste ancora?", a: "Molte certificazioni “SQL Server” storiche sono state sostituite o reindirizzate verso percorsi Azure Data. Le competenze SQL/SQL Server restano però fondamentali e riutilizzabili." },
         { q: "SQL Server è gratuito?", a: "Microsoft offre una versione gratuita chiamata SQL Server Express con funzionalità limitate." },
         { q: "Serve conoscere SQL per questa certificazione?", a: "Sì, è essenziale conoscere SQL per affrontare gli argomenti dell'esame." },
         { q: "Serve esperienza pratica con SQL Server?", a: "È consigliata, ma si può iniziare anche da zero con i giusti materiali." },
       ],
       en: [
+        { q: "What is the current Microsoft SQL certification?", a: "Today Microsoft focuses on role-based Azure Data certifications. To start: DP-900. To administer Azure SQL solutions: DP-300." },
+        { q: "Does the SQL Server certification 2021/2023 still exist?", a: "Many legacy “SQL Server” certifications were replaced or redirected toward Azure Data tracks. However, core SQL/SQL Server skills remain essential and transferable." },
         { q: "Is SQL Server free?", a: "Microsoft provides a free version called SQL Server Express with limited features." },
         { q: "Do I need to know SQL for this certification?", a: "Yes, SQL knowledge is essential for exam topics." },
         { q: "Do I need hands-on experience with SQL Server?", a: "It’s recommended, but you can start from scratch with proper materials." },
       ],
       fr: [
+        { q: "Quelle est la certification Microsoft SQL “actuelle” ?", a: "Aujourd’hui Microsoft privilégie les certifications Azure Data (role-based). Pour débuter : DP-900. Pour administrer Azure SQL : DP-300." },
+        { q: "La certification SQL Server 2021/2023 existe-t-elle encore ?", a: "De nombreuses anciennes certifications “SQL Server” ont été remplacées ou redirigées vers des parcours Azure Data. Les compétences SQL/SQL Server restent toutefois essentielles et transférables." },
         { q: "SQL Server est-il gratuit ?", a: "Microsoft propose une version gratuite appelée SQL Server Express avec des fonctionnalités limitées." },
         { q: "Faut-il connaître SQL pour cette certification ?", a: "Oui, la connaissance du SQL est essentielle pour l'examen." },
         { q: "Faut-il avoir de l'expérience avec SQL Server ?", a: "C’est recommandé, mais on peut débuter avec de bons supports." },
       ],
       es: [
+        { q: "¿Cuál es la certificación Microsoft SQL “actual”?", a: "Hoy Microsoft se centra en certificaciones role-based de Azure Data. Para empezar: DP-900. Para administrar Azure SQL: DP-300." },
+        { q: "¿Sigue existiendo la certificación SQL Server 2021/2023?", a: "Muchas certificaciones antiguas de “SQL Server” fueron reemplazadas o redirigidas a rutas de Azure Data. Aun así, las habilidades de SQL/SQL Server siguen siendo esenciales y transferibles." },
         { q: "¿SQL Server es gratuito?", a: "Microsoft ofrece una versión gratuita llamada SQL Server Express con funciones limitadas." },
         { q: "¿Necesito saber SQL para esta certificación?", a: "Sí, es esencial conocer SQL para el examen." },
         { q: "¿Necesito experiencia práctica con SQL Server?", a: "Se recomienda, aunque puedes empezar desde cero con buen material." },
@@ -145,12 +177,13 @@ const MicrosoftSQLServer = {
   },
 
   // Rotte quiz localizzate
-  quizRoute: {
-    it: "/it/quiz/sql-server",
-    en: "/en/quiz/sql-server",
-    fr: "/fr/quiz/sql-server",
-    es: "/es/quiz/sql-server",
+    quizRoute: {
+    it: "/it/quiz/microsoft-sql-server",
+    en: "/en/quiz/microsoft-sql-server",
+    fr: "/fr/quiz/microsoft-sql-server",
+    es: "/es/quiz/microsoft-sql-server",
   },
+
 
   // Rotta “indietro” alla categoria Database localizzata
   backRoute: {

@@ -8,7 +8,8 @@ import { CAT_KEY_TO_SLUG, type CategoryKey } from "@/lib/paths";
 /* REGEX                                                              */
 /* ------------------------------------------------------------------ */
 
-const QUIZ_RE = /^\/(it|en|fr|es)\/quiz\//i;
+// ✅ Quiz: EN root "/quiz/..." + altre lingue "/it|fr|es/quiz/..."
+const QUIZ_RE = /^\/(?:(it|fr|es)\/)?quiz\//i;
 
 const CAT_LIST_RE =
   /^\/(?:(it)\/categorie|(fr)\/categories|(es)\/categorias|categories)\/?$/i;
@@ -25,9 +26,6 @@ const CERT_DETAIL_RE =
 /** ✅ Prezzi/Premium — slug tradotti per lingua (SEO) */
 const PRICING_RE =
   /^\/(?:(it)\/prezzi|(fr)\/prix|(es)\/precios|pricing|prezzi)\/?$/i;
-
-/** EN root senza /en, altre lingue con prefisso */
-const LANG_PREFIX_RE = /^\/(it|fr|es)(?=\/|$)/i;
 
 /* ------------------------------------------------------------------ */
 /* HELPERS                                                            */
@@ -65,15 +63,31 @@ function categoryKeyFromSlug(lang: Locale, slug: string): CategoryKey | null {
   return (found?.[0] as CategoryKey) ?? null;
 }
 
+// ✅ Rimuove UNO O PIÙ prefissi lingua (gestisce anche /it/en/...)
+// Nota: en è root, ma se compare come prefisso lo togliamo comunque (stato "sporco")
+function stripAnyLocalePrefixes(pathname: string) {
+  const clean = pathname.replace(/^(?:\/(?:it|en|fr|es))+(?=\/|$)/i, "");
+  return clean === "" ? "/" : clean;
+}
+
+// ✅ Ricostruisce path con regola: EN root senza /en, altre lingue con prefisso
+function applyLocale(cleanPath: string, lang: Locale) {
+  if (lang === "en") return cleanPath;
+  return cleanPath === "/" ? `/${lang}` : `/${lang}${cleanPath}`;
+}
+
 /* ------------------------------------------------------------------ */
 /* COMPONENT                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function LocaleSwitcher({ current }: { current: Locale }) {
   const router = useRouter();
-  const pathname = usePathname() || "/";
+  const pathnameRaw = usePathname() || "/";
   const search = useSearchParams();
   const query = search?.toString();
+
+  // ✅ Sempre pulito: niente /it/en/... ecc.
+  const pathname = stripAnyLocalePrefixes(pathnameRaw);
 
   function switchTo(nextRaw: string) {
     if (!isLocale(nextRaw)) return;
@@ -81,8 +95,10 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     if (next === current) return;
 
     /* ---------------------- QUIZ ---------------------- */
+    // EN root: "/quiz/..."  | IT/FR/ES: "/it/quiz/..."
     if (QUIZ_RE.test(pathname)) {
-      router.push(qs(pathname.replace(QUIZ_RE, `/${next}/quiz/`), query));
+      const slugPart = pathname.replace(QUIZ_RE, "/quiz/"); // normalizza a "/quiz/..."
+      router.push(qs(applyLocale(slugPart, next), query));
       return;
     }
 
@@ -126,20 +142,14 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     }
 
     /* ---------------------- PRICING -------------------- */
-    // ✅ Da /it/prezzi → EN /pricing (non /prezzi), e viceversa
     if (PRICING_RE.test(pathname)) {
       router.push(qs(pricingRoot(next), query));
       return;
     }
 
     /* ------------------- SEO FALLBACK ------------------ */
-    const stripped = pathname.replace(LANG_PREFIX_RE, "") || "/";
-
-    if (next === "en") {
-      router.push(qs(stripped, query));
-    } else {
-      router.push(qs(`/${next}${stripped}`, query));
-    }
+    // fallback semplice e robusto: ripulisci e applica lingua
+    router.push(qs(applyLocale(pathname, next), query));
   }
 
   return (

@@ -31,6 +31,9 @@ export type ExtraContent = {
       ReadonlyArray<Readonly<{ q: string; a: string }>>
     >
   >;
+
+  // ✅ NEW: blocco SEO (risponde a "current certification", "2021", "2023")
+  currentCertification?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
 };
 
 export type CertificationData = {
