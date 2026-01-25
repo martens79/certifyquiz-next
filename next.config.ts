@@ -5,6 +5,51 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // ---------------------------------------------------------------------
+      // ✅ SALVAGENTE: doppio prefisso lingua /es/fr/... ecc.
+      // ---------------------------------------------------------------------
+
+      // se il secondo è EN, EN è root (niente /en)
+      {
+        source: "/:l1(it|en|fr|es)/en/:path*",
+        destination: "/:path*",
+        permanent: false,
+      },
+      // se il secondo NON è EN, tieni solo il secondo
+      {
+        source: "/:l1(it|en|fr|es)/:l2(it|fr|es)/:path*",
+        destination: "/:l2/:path*",
+        permanent: false,
+      },
+
+      // ---------------------------------------------------------------------
+      // ✅ SALVAGENTE: segmenti "sporchi" (mix lingua + segmento)
+      // ---------------------------------------------------------------------
+
+      // certifications "in italiano" dentro FR/ES -> correggi
+      {
+        source: "/fr/certificazioni/:path*",
+        destination: "/fr/certifications/:path*",
+        permanent: true,
+      },
+      {
+        source: "/es/certificazioni/:path*",
+        destination: "/es/certificaciones/:path*",
+        permanent: true,
+      },
+
+      // categories "in italiano" dentro FR/ES -> correggi
+      {
+        source: "/fr/categorie/:path*",
+        destination: "/fr/categories/:path*",
+        permanent: true,
+      },
+      {
+        source: "/es/categorie/:path*",
+        destination: "/es/categorias/:path*",
+        permanent: true,
+      },
+
+      // ---------------------------------------------------------------------
       // ICDL / ECDL canonicalization (SEO) — CERTIFICATIONS pages
       // ---------------------------------------------------------------------
       { source: "/certifications/ecdl", destination: "/certifications/icdl", permanent: true },
@@ -15,7 +60,6 @@ const nextConfig: NextConfig = {
 
       // ---------------------------------------------------------------------
       // ICDL / ECDL canonicalization (SEO) — QUIZ pages
-      // ✅ nel tuo progetto i quiz hanno SEMPRE prefisso lingua (/en/quiz/...)
       // ---------------------------------------------------------------------
       { source: "/it/quiz/ecdl", destination: "/it/quiz/icdl", permanent: true },
       { source: "/en/quiz/ecdl", destination: "/en/quiz/icdl", permanent: true },
@@ -51,7 +95,7 @@ const nextConfig: NextConfig = {
       { source: "/certifications/cisco-ccst-cybersecurity", destination: "/certifications/cisco-ccst-security", permanent: true },
       { source: "/it/certificazioni/cisco-ccst-cybersecurity", destination: "/it/certificazioni/cisco-ccst-security", permanent: true },
 
-      // C# alias (oggi 404)
+      // C# alias
       { source: "/it/certificazioni/microsoft-csharp", destination: "/it/certificazioni/csharp", permanent: true },
       { source: "/certifications/microsoft-csharp", destination: "/certifications/csharp", permanent: true },
 
@@ -66,26 +110,6 @@ const nextConfig: NextConfig = {
       // Quiz legacy (examples)
       { source: "/it/quiz/javascript", destination: "/it/quiz/javascript-developer", permanent: true },
       { source: "/quiz/javascript", destination: "/quiz/javascript-developer", permanent: true },
-    ];
-  },
-
-  async rewrites() {
-    return [
-      // NOTE:
-      // - redirects = canonical URL (visibile in browser)
-      // - rewrites  = alias invisibile (ti serve se vuoi accettare più path senza cambiare URL)
-
-      { source: "/fr/certifications", destination: "/fr/certificazioni" },
-      { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
-
-      { source: "/es/certificaciones", destination: "/es/certificazioni" },
-      { source: "/es/certificaciones/:slug", destination: "/es/certificazioni/:slug" },
-
-      { source: "/fr/categories", destination: "/fr/categorie" },
-      { source: "/fr/categories/:slug", destination: "/fr/categorie/:slug" },
-
-      { source: "/es/categorias", destination: "/es/categorie" },
-      { source: "/es/categorias/:slug", destination: "/es/categorie/:slug" },
     ];
   },
 };
