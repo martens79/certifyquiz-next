@@ -3,23 +3,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Answer, Question, QuizSummary, Locale } from '@/lib/quiz-types';
+import Link from 'next/link';
+
+import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang, getDict } from '@/lib/i18n';
 
+// ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
+// Se non ce l’hai ancora, commenta import + uso.
+import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
+
 type Mode = 'training' | 'exam';
-
-type QuizKind = 'topic' | 'mixed' | 'mock';
-
-type QuizContext = {
-  kind: QuizKind;                // topic | mixed | mock
-  certificationName: string;     // es. "CEH"
-  certificationSlug?: string;    // es. "ceh" (facoltativo)
-  topicTitle?: string;           // solo se topic
-  backLabel?: string;            // testo link (già tradotto se vuoi)
-  backHref?: string;             // link "torna a..."
-};
-
 
 type Props = {
   lang: Locale;
@@ -36,7 +30,7 @@ type Props = {
   /** default interno (usato solo se NON passi mode come prop) */
   initialMode?: Mode;
 
-  /** ✅ Controlled mode: se lo passi, QuizEngine usa SEMPRE questo (niente doppio click) */
+  /** ✅ Controlled mode: se lo passi, QuizEngine usa SEMPRE questo */
   mode?: Mode;
 
   /**
@@ -58,16 +52,14 @@ type Props = {
   /** URL per tornare indietro */
   backToHref?: string;
 
-    /** Contesto visivo sopra al quiz (breadcrumb + badge + link back) */
+  /** Contesto visivo sopra al quiz (breadcrumb + badge + link back) */
   context?: QuizContext;
-
 
   /** notifica quando cambia modalità */
   onModeChange?: (mode: Mode) => void;
 
-    /** Nasconde il toggle Training / Exam (usato per Mock Exam) */
+  /** Nasconde il toggle Training / Exam (usato per Mock Exam) */
   hideModeSwitch?: boolean;
-
 };
 
 export default function QuizEngine({
@@ -83,15 +75,25 @@ export default function QuizEngine({
   onFinish,
   backToHref,
   onModeChange,
-  hideModeSwitch = false, // ✅ AGGIUNGI QUESTO
-  context, // ✅ QUESTA RIGA
+  hideModeSwitch = false,
+  context,
 }: Props) {
-
   const router = useRouter();
 
-     // ---------------- Sticky timer (UI-only) ----------------
-  const examDurationSec =
-    (durationsByMode?.exam ?? null) ?? (durationSec ?? null);
+  // i18n quiz microcopy
+  const tQuiz = getDict(lang).quiz;
+
+  /* ─────────────────────────────────────────────────────────────
+     PREMIUM (non invasivo)
+     ------------------------------------------------------------
+     - QuizEngine NON legge flags direttamente.
+     - Riceve dal caller la decisione finale: context.premiumLocked
+  ───────────────────────────────────────────────────────────── */
+  const isPremiumUser = !!context?.isPremiumUser;
+  const premiumLocked = !!context?.premiumLocked;
+
+  // ---------------- Sticky timer (UI-only) ----------------
+  const examDurationSec = (durationsByMode?.exam ?? null) ?? (durationSec ?? null);
 
   const timeStrFromSec = (s: number) => {
     const mm = Math.floor(s / 60);
@@ -107,10 +109,6 @@ export default function QuizEngine({
       : lang === 'es'
       ? 'Tiempo restante'
       : 'Time remaining';
-  
-
-  // i18n quiz microcopy
-  const tQuiz = getDict(lang).quiz;
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -166,27 +164,25 @@ export default function QuizEngine({
     return durationSec;
   }, [durationsByMode, durationSec, effectiveMode]);
 
- /** Pesca subset per TRAINING/EXAM: shuffle del pool + slice a limit (no mutazione del pool) */
-function buildActiveQuestions(p: Question[], m: Mode): Question[] {
-  if (!p?.length) return [];
+  /** Pesca subset per TRAINING/EXAM: shuffle del pool + slice a limit (no mutazione del pool) */
+  function buildActiveQuestions(p: Question[], m: Mode): Question[] {
+    if (!p?.length) return [];
 
-  // ✅ limite per modalità
-  const target =
-    m === 'training'
-      ? (limitsByMode?.training ?? p.length)
-      : (effectiveLimit ?? p.length);
+    const target =
+      m === 'training'
+        ? (limitsByMode?.training ?? p.length)
+        : (effectiveLimit ?? p.length);
 
-  const n = Math.max(1, Math.min(p.length, target));
+    const n = Math.max(1, Math.min(p.length, target));
 
-  // ✅ shuffle in memoria (non mutare il pool)
-  const copy = [...p];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    const copy = [...p];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+
+    return copy.slice(0, n);
   }
-
-  return copy.slice(0, n);
-}
 
   /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
@@ -250,8 +246,8 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
         if (status === 401) {
           setErr(
             lang === 'it'
-              ? 'Non sei loggato su questo dispositivo. Accedi per salvare progressi e sbloccare le funzioni premium.'
-              : 'You are not logged in. Sign in to save progress and unlock premium features.'
+              ? 'Non sei loggato su questo dispositivo. Accedi per salvare progressi e (in futuro) funzioni premium.'
+              : 'You are not logged in. Sign in to save progress and (later) premium features.'
           );
           return;
         }
@@ -276,21 +272,16 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
   const setModeSafe = (m: Mode) => {
     if (m === effectiveMode) return;
 
-    // se vuoi bloccare switch dopo aver risposto, lascia questa riga.
-    // se ti rompe, commentala.
+    // blocca switch se già risposto qualcosa (se ti rompe, commenta)
     if (Object.keys(marked).length > 0) return;
 
-    // pulizia completa (evita restore sporchi tra mode)
     clearProgress(`${storageScope}:training`);
     clearProgress(`${storageScope}:exam`);
 
-    // notifica parent
     onModeChange?.(m);
 
-    // se non è controlled, aggiorna mode interno
     if (controlledMode == null) setInternalMode(m);
 
-    // reset UI immediato
     setIdx(0);
     setReviewMode(false);
     startedAtRef.current = null;
@@ -305,18 +296,14 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
       startedAtRef.current = null;
 
       const total =
-        effectiveDuration === null
-          ? null
-          : effectiveDuration ?? questions.length * 60;
+        effectiveDuration === null ? null : effectiveDuration ?? questions.length * 60;
 
       if (total == null) return;
 
-      // ✅ chiave: se arrivi dal training (remaining=null) lo setti subito
       setRemaining((prev) => (prev == null ? total : prev));
       return;
     }
 
-    // uscendo da exam → stop loop + pulizia timer
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
     tickRef.current = null;
     startedAtRef.current = null;
@@ -333,9 +320,7 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
     if (remaining == null) return;
 
     const total =
-      effectiveDuration === null
-        ? null
-        : effectiveDuration ?? questions.length * 60;
+      effectiveDuration === null ? null : effectiveDuration ?? questions.length * 60;
 
     if (total == null) return;
 
@@ -537,7 +522,6 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
       lastSummary && lastSummary.durationSec ? fmt(lastSummary.durationSec) : '--:--';
 
     const backUrl = backToHref || withLang(lang, '/quiz-home');
-
     const markedMap = lastSummary?.marked ?? marked;
 
     const wrongDetails = questions
@@ -625,6 +609,13 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
               </div>
             )}
 
+            {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
+            {!isPremiumUser && (
+              <div className="pt-2">
+                <PremiumTeaserBox />
+              </div>
+            )}
+
             <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-2 text-sm">
                 <button
@@ -650,13 +641,15 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
                 </button>
               </div>
 
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-                onClick={() => router.push(withLang(lang, '/prezzi'))}
-              >
-                {label('seePremium', lang)}
-              </button>
+              {!isPremiumUser && (
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
+                  onClick={() => router.push(withLang(lang, '/prezzi'))}
+                >
+                  {label('seePremium', lang)}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -675,6 +668,9 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
   const canGoNext =
     idx < questions.length - 1 || (effectiveMode === 'training' && reviewPositions.length > 0);
 
+  const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
+  const explainPreview = explainText ? makePreview(explainText, 260) : '';
+
   return (
     <div className={`min-h-screen ${gradient}`}>
       <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
@@ -684,23 +680,21 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
             {label('answered', lang)} {answeredCount}
 
-            {/* badge modalità */}
             <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
               {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
             </span>
 
-
-          {hideModeSwitch && isExam && (
-  <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-    🧪 {lang === 'it'
-      ? 'Mock Exam'
-      : lang === 'fr'
-      ? 'Mock examen'
-      : lang === 'es'
-      ? 'Simulacro'
-      : 'Mock Exam'}
-  </span>
-)}
+            {hideModeSwitch && isExam && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                🧪 {lang === 'it'
+                  ? 'Mock Exam'
+                  : lang === 'fr'
+                  ? 'Mock examen'
+                  : lang === 'es'
+                  ? 'Simulacro'
+                  : 'Mock Exam'}
+              </span>
+            )}
 
             {reviewMode && reviewTotal > 0 && (
               <>
@@ -713,37 +707,34 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             )}
 
             {isExam && (
-  <>
-    {' '}
-    · {label('score', lang)} {scorePct}%
-  </>
-)}
-
+              <>
+                {' '}
+                · {label('score', lang)} {scorePct}%
+              </>
+            )}
           </div>
 
-          {/* toggle mode (hidden in mock exam) */}
-{!hideModeSwitch && (
-  <div className="flex items-center gap-2">
-    <button
-      className={`px-3 py-1.5 rounded-full text-sm ${
-        !isExam ? 'bg-emerald-500' : 'bg-white/10'
-      }`}
-      onClick={() => setModeSafe('training')}
-    >
-      {label('training', lang)}
-    </button>
+          {!hideModeSwitch && (
+            <div className="flex items-center gap-2">
+              <button
+                className={`px-3 py-1.5 rounded-full text-sm ${
+                  !isExam ? 'bg-emerald-500' : 'bg-white/10'
+                }`}
+                onClick={() => setModeSafe('training')}
+              >
+                {label('training', lang)}
+              </button>
 
-    <button
-      className={`px-3 py-1.5 rounded-full text-sm ${
-        isExam ? 'bg-emerald-500' : 'bg-white/10'
-      }`}
-      onClick={() => setModeSafe('exam')}
-    >
-      {label('exam', lang)}
-    </button>
-  </div>
-)}
-
+              <button
+                className={`px-3 py-1.5 rounded-full text-sm ${
+                  isExam ? 'bg-emerald-500' : 'bg-white/10'
+                }`}
+                onClick={() => setModeSafe('exam')}
+              >
+                {label('exam', lang)}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ✅ Sticky timer — exam mode */}
@@ -757,9 +748,7 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
                 <span
                   className={[
                     'tabular-nums',
-                    remaining <= examDurationSec * 0.2
-                      ? 'text-amber-700'
-                      : 'text-slate-900',
+                    remaining <= examDurationSec * 0.2 ? 'text-amber-700' : 'text-slate-900',
                   ].join(' ')}
                 >
                   {timeStrFromSec(remaining)}
@@ -768,8 +757,7 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
             </div>
           )}
 
-
-                    {/* Exam notice (pre-domanda) */}
+        {/* Exam notice */}
         {effectiveMode === 'exam' && (
           <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
             <p className="text-sm font-semibold">
@@ -795,36 +783,38 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
         )}
 
         {context && (
-  <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-white/90">
-    {/* breadcrumb */}
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="font-medium">{context.certificationName}</span>
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-white/90">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{context.certificationName}</span>
 
-      {context.topicTitle && (
-        <>
-          <span className="opacity-70">›</span>
-          <span className="opacity-95">{context.topicTitle}</span>
-        </>
-      )}
+              {context.topicTitle && (
+                <>
+                  <span className="opacity-70">›</span>
+                  <span className="opacity-95">{context.topicTitle}</span>
+                </>
+              )}
 
-      {/* badge */}
-      <span className="ml-1 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-        {context.kind === 'topic' ? 'TOPIC' : context.kind === 'mixed' ? 'MIXED' : 'MOCK EXAM'}
-      </span>
-    </div>
+              <span className="ml-1 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                {context.kind === 'topic' ? 'TOPIC' : context.kind === 'mixed' ? 'MIXED' : 'MOCK EXAM'}
+              </span>
 
-    {/* back link */}
-    {context.backHref && (
-      <a
-        href={context.backHref}
-        className="ml-auto text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
-      >
-        {context.backLabel ?? '← Back'}
-      </a>
-    )}
-  </div>
-)}
+              {premiumLocked && (
+                <span className="ml-1 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                  Premium
+                </span>
+              )}
+            </div>
 
+            {context.backHref && (
+              <a
+                href={context.backHref}
+                className="ml-auto text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
+              >
+                {context.backLabel ?? '← Back'}
+              </a>
+            )}
+          </div>
+        )}
 
         {/* domanda */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">
@@ -881,14 +871,38 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
           })}
         </div>
 
-        {/* spiegazione (training) */}
-       {!isExam && chosen != null && q.explanation && (
-  <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-    <b>{label('explain', lang)}</b>{' '}
-    {stripExplainPrefix(q.explanation)}
-  </div>
-)}
+        {/* spiegazione (training) — premium-ready */}
+        {!isExam && chosen != null && q.explanation && (
+          <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+            <b>{label('explain', lang)}</b>{' '}
+            {premiumLocked ? explainPreview : explainText}
 
+            {premiumLocked && !isPremiumUser && (
+              <div className="mt-2 text-xs text-white/80">
+                🔒 {lang === 'it'
+                  ? 'Spiegazione completa con Premium.'
+                  : lang === 'fr'
+                  ? 'Explication complète avec Premium.'
+                  : lang === 'es'
+                  ? 'Explicación completa con Premium.'
+                  : 'Full explanation with Premium.'}
+
+                <Link
+                  href={withLang(lang, '/prezzi')}
+                  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
+                >
+                  {lang === 'it'
+                    ? 'Scopri Premium'
+                    : lang === 'fr'
+                    ? 'Découvrir Premium'
+                    : lang === 'es'
+                    ? 'Descubrir Premium'
+                    : 'See Premium'}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* footer nav */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -954,6 +968,7 @@ function buildActiveQuestions(p: Question[], m: Mode): Question[] {
 }
 
 /* ===== helpers ===== */
+
 function arraysEqual(a: Array<any>, b: Array<any>) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) if (String(a[i]) !== String(b[i])) return false;
@@ -965,15 +980,24 @@ function fmt(s: number) {
   const r = s % 60;
   return `${m}:${String(r).padStart(2, '0')}`;
 }
+
 function stripExplainPrefix(text: string) {
   if (!text) return text;
 
   return text
-    // rimuove prefissi legacy in varie lingue (con o senza spazio prima dei due punti)
     .replace(/^(Explanation|Explication|Spiegazione|Explicación)\s*:\s*/i, '')
-    // se per caso è ripetuto 2 volte nel testo, ripulisce anche quello
     .replace(/^(Explanation|Explication|Spiegazione|Explicación)\s*:\s*/i, '')
     .trim();
+}
+
+function makePreview(text: string, maxLen: number) {
+  const t = (text ?? '').trim();
+  if (t.length <= maxLen) return t;
+
+  const slice = t.slice(0, maxLen);
+  const cut = slice.lastIndexOf(' ');
+  const out = cut > 140 ? slice.slice(0, cut) : slice;
+  return out.trim() + '…';
 }
 
 function label(key: keyof typeof L, lang: Locale) {

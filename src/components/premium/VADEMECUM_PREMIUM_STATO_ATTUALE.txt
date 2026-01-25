@@ -1,0 +1,269 @@
+# VADEMECUM PREMIUM — ARCHITETTURA COMPLETA E STATO ATTUALE
+
+Data: 2026-01-25  
+Stato: **Premium OFF — infrastruttura completa e pronta**
+
+---
+
+## 1. OBIETTIVO STRATEGICO
+
+Costruire un sistema Premium:
+
+- non invasivo
+- architetturalmente pulito
+- attivabile in futuro senza refactor
+- UX-first (niente blocchi brutali)
+
+Situazione attuale:
+- traffico ancora basso
+- monetizzazione rimandata
+- infrastruttura già pronta
+
+Scelta consapevole: **preparare i ganci ora, vendere dopo**.
+
+---
+
+## 2. PRINCIPI ARCHITETTURALI (IMPORTANTISSIMI)
+
+### Regola d’oro
+Decisione ≠ Render ≠ Contesto
+
+| Responsabilità | Dove vive |
+|---------------|-----------|
+| Decisione Premium | `src/lib/premium.ts` |
+| Stato / tipi Premium | `src/lib/quiz-types.ts` |
+| Gating / UI | `src/components/quiz/QuizEngine.tsx` |
+| Passaggio dati | `QuizTopicClient / Mixed / Mock` |
+
+Regole:
+- ❌ vietato decidere Premium nei componenti UI
+- ❌ vietato duplicare `if (isPremium)` in giro
+- ❌ vietato bloccare quiz fuori dal QuizEngine
+- ✅ una sola source of truth
+
+---
+
+## 3. COSA È STATO FATTO (FINORA)
+
+---
+
+### 3.1 Tipi condivisi (TypeScript)
+
+File:
+`src/lib/quiz-types.ts`
+
+Azioni:
+- corretto errore TS (tipi annidati in `QuizSummary`)
+- introdotti tipi condivisi ufficiali:
+
+```ts
+export type QuizKind = "topic" | "mixed" | "mock";
+
+export type QuizContext = {
+  kind: QuizKind;
+  certificationName: string;
+  certificationSlug?: string;
+  topicTitle?: string;
+  backLabel?: string;
+  backHref?: string;
+
+  // Premium hooks (ready-to-flip)
+  isPremiumUser?: boolean;
+  premiumLocked?: boolean;
+};
+Scopo:
+
+evitare as any
+
+contesto tipato unico per tutti i quiz
+
+zero refactor quando Premium verrà attivato
+
+3.2 Decision layer Premium (single source of truth)
+File creato:
+src/lib/premium.ts
+
+Questo file decide tutto sul Premium.
+
+API pubblica:
+
+getPremiumFlags()
+getPremiumState({ user?, flags? })
+Output garantito:
+
+{
+  isPremiumUser: boolean;
+  premiumLocked: boolean;
+}
+Flag ENV supportati:
+
+NEXT_PUBLIC_PREMIUM_ENABLED=0|1
+NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=0|1
+Regole:
+
+Premium OFF → non bloccare MAI nulla
+
+Premium ON + lock OFF → Premium soft
+
+Premium ON + lock ON → blocco solo per utenti non premium
+
+Default:
+
+senza ENV → Premium completamente OFF
+
+3.3 Aggancio Premium al Quiz Topic (solo contesto)
+File:
+src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
+
+Azioni:
+
+aggiunto commento tecnico “NOTE PREMIUM”
+
+calcolato stato Premium:
+
+const premium = getPremiumState({ user: null });
+passato nel context del QuizEngine:
+
+isPremiumUser: premium.isPremiumUser
+premiumLocked: premium.premiumLocked
+Import aggiunto:
+
+import { getPremiumState } from "@/lib/premium";
+Nota fondamentale:
+
+QUI non si fa gating
+
+QUI non si blocca nulla
+
+QUI si passa solo contesto
+
+Il blocco UI deve vivere solo in QuizEngine.
+
+4. FILE COINVOLTI (STATO ATTUALE)
+Creati
+src/lib/premium.ts
+
+decision layer Premium
+
+Modificati
+src/lib/quiz-types.ts
+
+tipi sistemati + QuizContext Premium-ready
+
+src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
+
+passaggio contesto Premium + commenti tecnici
+
+NON ancora modificato (volutamente)
+src/components/quiz/QuizEngine.tsx
+
+il gating verrà fatto solo quando Premium sarà attivo
+
+5. COSA NON È ATTIVO (INTENZIONALMENTE)
+nessun popup Premium
+
+nessun redirect forzato
+
+nessun blocco quiz
+
+nessun blocco explanation
+
+UX identica a prima
+
+Risultato:
+
+sito 100% free
+
+ganci pronti
+
+nessuna frizione
+
+6. COME ATTIVARE PREMIUM (FUTURO)
+Step A — Collegare utente reale
+File da modificare:
+src/lib/apiClient.ts
+
+Aggiungere:
+
+getMe(): Promise<{
+  id: number;
+  isPremium: boolean;
+  plan?: "free" | "premium" | "pro";
+}>
+Poi nei client quiz:
+
+const me = await getMe();
+const premium = getPremiumState({ user: me });
+Step B — Attivare flag ENV
+Su Vercel / Next:
+
+NEXT_PUBLIC_PREMIUM_ENABLED=1
+NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=1
+Comportamento:
+
+ENABLED	LOCK	Effetto
+0	0	Premium OFF
+1	0	Premium soft
+1	1	Spiegazioni bloccate per free
+0	1	ignorato
+Step C — Gating reale nel QuizEngine
+File:
+src/components/quiz/QuizEngine.tsx
+
+Quando:
+
+context?.premiumLocked === true
+Training:
+
+explanation → preview (200–300 caratteri)
+
+CTA soft “Scopri Premium”
+
+quiz sempre giocabile
+
+Summary finale:
+
+CTA soft Premium
+
+nessun popup
+
+nessun redirect
+
+Futuro (opzionale):
+
+limitare pool / varianti
+
+sbloccare ripasso errori
+
+statistiche avanzate
+
+7. REGOLE UX DA NON ROMPERE
+❌ niente blocchi duri
+
+❌ niente popup automatici
+
+❌ niente redirect forzati
+
+✅ Premium = valore aggiunto
+
+✅ quiz sempre utilizzabile
+
+8. STATO FINALE (OGGI)
+Premium: OFF
+
+Infrastruttura: COMPLETA
+
+Refactor futuri: ZERO
+
+Attivazione: 1 commit + 2 ENV
+
+Conclusione:
+quando il traffico sale, sei già pronto.
+
+
+---
+
+Se vuoi, al prossimo messaggio posso:
+- scriverti **il gating definitivo dentro QuizEngine**
+- oppure una **checklist QA Premium (anon / free / premium)**  
+Dimmi tu.

@@ -2,7 +2,7 @@
 // 📘 Tipi condivisi per il motore quiz
 // ============================================================
 
-export type Locale = 'it' | 'en' | 'fr' | 'es';
+export type Locale = "it" | "en" | "fr" | "es";
 
 export type Answer = {
   id: number | string;
@@ -23,4 +23,20 @@ export type QuizSummary = {
   scorePct: number; // percentuale 0–100
   marked: Record<string | number, string | number | null>; // qId -> answerId scelto
   durationSec: number; // tempo totale in secondi
+};
+
+// ✅ fuori da QuizSummary
+export type QuizKind = "topic" | "mixed" | "mock";
+
+export type QuizContext = {
+  kind: QuizKind;
+  certificationName: string;
+  certificationSlug?: string;
+  topicTitle?: string;
+  backLabel?: string;
+  backHref?: string;
+
+  // Premium infra (ready-to-flip, non invasivo)
+  isPremiumUser?: boolean;
+  premiumLocked?: boolean;
 };

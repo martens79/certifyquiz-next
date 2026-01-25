@@ -1,0 +1,188 @@
+# PREMIUM_VADEMECUM — CertifyQuiz (non invasivo, ready-to-flip)
+
+Obiettivo: preparare oggi tutti i “ganci” Premium (UX soft + flag + struttura),
+senza attivare paywall. Quando il traffico sarà sufficiente, il Premium si accende
+in modo controllato in 1 giornata.
+
+---
+
+## 0) Principi (regole non negoziabili)
+
+- Il Premium NON deve interrompere lo studio.
+- Upsell solo **post-azione** (fine quiz, dopo un errore, nel profilo).
+- Niente popup automatici a inizio sessione/quiz.
+- Nessun “pay to continue”.
+- Un solo punto di upsell per schermata (box piccolo).
+- Tutti i link Premium puntano a **/premium**.
+
+---
+
+## 1) Stato Premium (backend + frontend)
+
+### Backend (minimo)
+- `users.is_premium` (TINYINT 0/1)
+- (futuro) `premium_expires_at` (DATETIME, nullable)
+
+### Frontend (minimo)
+- `isPremium` derivato dal profilo utente (/me, /profile)
+- Passare `isPremium` ai componenti che mostrano feature Premium.
+
+---
+
+## 2) Feature Premium (roadmap pronta)
+
+### Core Premium (che “vende” davvero)
+1. **Spiegazioni complete** (free = preview breve)
+2. **Varianti extra** (free = pool limitato)
+3. **Ripasso errori** (quiz basato su domande sbagliate)
+4. **Simulazioni più realistiche** (pool più grande, report avanzato)
+
+### Nice-to-have Premium (dopo)
+- Statistiche avanzate (punti deboli, trend, heatmap)
+- Badge verificabili / share (LinkedIn)
+- Storico completo e filtri
+
+---
+
+## 3) “Ganci” Premium da mettere ora (senza paywall)
+
+### 3.1 Dove mettere l’upsell (solo questi punti)
+- ✅ Fine quiz (riepilogo)
+- ✅ Profilo (sezione piccola “Premium”)
+- ✅ Pagina /premium (1 pagina unica)
+
+### 3.2 Dove NON metterlo
+- ❌ Popup a inizio quiz
+- ❌ Banner fissi in alto
+- ❌ Interruzioni mentre l’utente risponde
+
+### 3.3 Copy (soft, non aggressivo)
+- “Vuoi una preparazione completa? Premium sblocca spiegazioni complete e più varianti.”
+- “In beta alcune funzioni possono essere gratuite.”
+- “Pensato per chi vuole arrivare pronto all’esame.”
+
+---
+
+## 4) Feature flags (single source of truth)
+
+Creare un file unico, es:
+- `src/lib/flags.ts`
+
+Consigliato:
+- `PREMIUM_ENABLED`: abilita/disabilita enforcement
+- `PREMIUM_BETA_FREE`: se true, le feature “Premium” restano accessibili a tutti (beta)
+
+Esempio logico:
+- `PREMIUM_ENABLED = false` (oggi)
+- `PREMIUM_BETA_FREE = true` (oggi)
+
+> Nota: i flag servono per “accendere” il Premium più avanti senza refactor.
+
+---
+
+## 5) Regole UI: come mostrare “Premium” senza essere invasivi
+
+### 5.1 Badge discreti
+- Testo: `Premium` o `Premium (soon)`
+- Icona lock solo se utile: `🔒` ma NON ovunque
+
+### 5.2 Componenti consigliati (riusabili)
+- `PremiumBadge` (piccolo)
+- `PremiumTeaserBox` (box unico di upsell)
+- `PremiumFeatureRow` (list item)
+
+### 5.3 Riepilogo fine-quiz (il punto migliore)
+Mostrare un box con 3 bullet:
+- Spiegazioni complete
+- Varianti extra
+- Ripasso errori
+
+CTA:
+- “Scopri Premium” → `/premium`
+
+---
+
+## 6) Implementazione pratica per feature (ready-to-flip)
+
+### 6.1 Spiegazioni complete
+Obiettivo: free vede preview, premium vede full.
+
+Opzioni:
+- A) Lato frontend: `explanation.slice(0, N)` per preview
+- B) Lato backend/DB: `explanation_short` + `explanation_full` (futuro)
+
+UI free:
+- preview + nota: “Spiegazione completa disponibile con Premium”
+
+### 6.2 Varianti extra
+Obiettivo: free pool limitato, premium pool più ampio.
+
+Backend:
+- Se `!isPremium` → LIMIT/filtri per ridurre pool
+- Se `isPremium` → pool completo o maggiore
+
+Frontend:
+- Nessuna UI “di blocco”
+- Solo box a fine quiz per spiegare il vantaggio
+
+### 6.3 Ripasso errori
+Obiettivo: modalità quiz basata su domande sbagliate.
+
+Backend:
+- salvare errori (user_id, question_id, answered_at, is_correct)
+- endpoint “review-errors” per estrarre set di domande sbagliate
+
+Frontend:
+- Bottone “Ripasso errori” presente
+- Se non ci sono errori → messaggio “Fai un quiz e torna qui”
+
+Decisione attuale:
+- Ripasso errori può essere **FREE in beta**
+- In futuro può diventare Premium con enforcement via flag
+
+---
+
+## 7) Enforcement: come attivare Premium più avanti (procedura 1 giorno)
+
+Quando il traffico è sufficiente:
+
+1) Impostare `PREMIUM_ENABLED = true`
+2) Impostare `PREMIUM_BETA_FREE = false`
+3) Backend: proteggere endpoint/risposte premium (spiegazioni full, review-errors, varianti)
+4) Frontend: se non premium, mostrare preview e CTA a /premium (senza popup)
+
+> Obiettivo: nessun refactor grande; solo flip dei flag + controlli server.
+
+---
+
+## 8) Metriche minime prima di “vendere”
+Non attivare paywall serio finché non hai almeno:
+- Sessioni giornaliere stabili (es. 100+/giorno) O
+- Registrazioni giornaliere (es. 5–10/giorno) O
+- Retention (utenti che tornano) misurabile
+
+Nel frattempo:
+- tenere Premium “in beta”
+- usare ripasso errori per aumentare ritorni
+
+---
+
+## 9) To-do rapido (oggi / questa settimana)
+
+- [ ] Creare pagina `/premium` (una sola, minimal)
+- [ ] Creare `src/lib/flags.ts`
+- [ ] Inserire `PremiumTeaserBox` nel riepilogo fine-quiz
+- [ ] Inserire sezione Premium nel profilo (piccola)
+- [ ] Preparare “Ripasso errori” (feature free in beta)
+- [ ] Aggiungere badge “Premium (soon)” vicino a: varianti, ripasso errori, spiegazioni complete
+
+---
+
+## 10) “Definition of Done” (Premium infrastructure pronta)
+- Esiste `/premium`
+- Esistono flags (SSOT)
+- Esiste almeno 1 upsell box post-azione (fine quiz)
+- Feature principali sono già cablate a `isPremium` o ai flags
+- Attivazione futura = flip di flag + enforcement backend
+
+Fine.

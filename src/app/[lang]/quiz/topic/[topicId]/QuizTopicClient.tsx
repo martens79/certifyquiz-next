@@ -3,14 +3,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import QuizEngine from "@/components/quiz/QuizEngine";
 import ComingSoonBox from "@/components/ui/ComingSoonBox";
 
-import type {
-  Question as UiQuestion,
-  Locale,
-  QuizSummary,
-} from "@/lib/quiz-types";
+// ✅ Premium: flags globali (ready-to-flip)
+import { isPremiumLocked } from "@/lib/flags";
+
+import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-types";
 
 import {
   getQuestionsByTopic,
@@ -21,11 +21,17 @@ import {
 
 import { getCertSlugById } from "@/lib/certs";
 import { getExamSpecForCert } from "@/lib/exam-specs";
+import { getPremiumState } from "@/lib/premium";
+
+// TODO futuro: sostituire con user reale da /me
+const premium = getPremiumState({
+  user: null, // anonimo o free
+});
 
 /* ─────────────────────────────────────────────────────────────
    NORMALIZZAZIONE DATI
    API → formato atteso dal QuizEngine
-   (serve per isolare il backend da eventuali cambi futuri)
+   (isola il frontend da cambi futuri del backend)
 ───────────────────────────────────────────────────────────── */
 function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
@@ -41,41 +47,86 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
   };
 }
 
-export default function QuizTopicClient({
-  lang,
-  topicId,
-}: {
-  lang: Locale;
-  topicId: number;
-}) {
+/**
+ * Helper: fetch profilo utente (solo se loggato).
+ * ------------------------------------------------
+ * Scopo: sapere is_premium per preparare l'infrastruttura Premium.
+ *
+ * Regole prodotto (IMPORTANTI):
+ * - Quiz è pubblico: mai redirect/login obbligatorio per “giocare”.
+ * - Login serve solo per: salvataggio risultati e (in futuro) Premium.
+ *
+ * Nota tecnica:
+ * - uso /api/backend/me perché nel tuo progetto hai proxy Next → backend.
+ * - se l’endpoint non esiste o fallisce, semplicemente consideriamo l’utente non-premium.
+ */
+async function fetchMe(token: string): Promise<{ is_premium?: boolean | number } | null> {
+  try {
+    const res = await fetch("/api/backend/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as any;
+  } catch {
+    return null;
+  }
+}
+
+export default function QuizTopicClient({ lang, topicId }: { lang: Locale; topicId: number }) {
   const router = useRouter();
   const L = lang;
   const numericId = topicId;
 
   /* ─────────────────────────────────────────────────────────────
-     STATE
+     STATE (core)
   ───────────────────────────────────────────────────────────── */
 
-  // blocco solo per parametri invalidi (NON per auth)
+  // Blocco solo per parametri invalidi (NON per auth)
   const [blocked, setBlocked] = useState(false);
 
-  // usato SOLO se l’endpoint domande risponde 401
-  // (finché il backend non è pubblico)
+  // Usato SOLO se l’endpoint domande risponde 401
+  // (finché il backend /questions non è pubblico)
   const [needsLoginForQuestions, setNeedsLoginForQuestions] = useState(false);
 
-  // servono per:
-  // - salvare risultati sulla certificazione corretta
-  // - costruire link "torna ai quiz"
-  // - applicare exam spec ufficiale
+  // Meta: servono per back link + exam spec + salvataggio risultati
   const [certificationId, setCertificationId] = useState<number | null>(null);
   const [backToHref, setBackToHref] = useState<string>(`/${L}/quiz-home`);
 
-  // ✅ per header contestuale
+  // Header contestuale
   const [topicTitle, setTopicTitle] = useState<string | null>(null);
   const [certSlug, setCertSlug] = useState<string | null>(null);
 
-  // ✅ NEW: totale pool del topic in questa lingua (per Coming Soon)
+  // Totale pool (light call) per capire “coming soon” sulle lingue non-IT
   const [topicTotal, setTopicTotal] = useState<number | null>(null);
+
+  /* ─────────────────────────────────────────────────────────────
+     STATE (Premium infra — NON paywall oggi)
+  ───────────────────────────────────────────────────────────── */
+
+  /**
+   * isPremiumUser
+   * ------------
+   * Stato utente “premium” letto da /me (solo se loggato).
+   * Serve per cablare fin da ora il flusso Premium (soft hooks).
+   * Se non loggato o endpoint non disponibile → false.
+   */
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+
+  /**
+   * premiumLocked
+   * ------------
+   * Decisione finale di lock:
+   * - Tiene conto dei flags globali (src/lib/flags.ts)
+   * - Tiene conto dello stato utente (isPremiumUser)
+   *
+   * OGGI (config consigliata):
+   * - PREMIUM_ENABLED=false → premiumLocked sarà sempre false (nessun blocco)
+   * DOMANI (quando monetizzi):
+   * - PREMIUM_ENABLED=true e PREMIUM_BETA_FREE=false
+   * - premiumLocked diventa true per utenti free → attivi preview spiegazioni, ecc.
+   */
+  const premiumLocked = isPremiumLocked(isPremiumUser);
 
   /* ─────────────────────────────────────────────────────────────
      VALIDAZIONE PARAMETRI BASE
@@ -89,15 +140,44 @@ export default function QuizTopicClient({
   }, [numericId, router, L]);
 
   /* ─────────────────────────────────────────────────────────────
-     🔥 DECISIONE DI PRODOTTO
-     QUIZ PUBBLICO → NIENTE REDIRECT LOGIN
-     Il login verrà richiesto SOLO:
-     - per salvare risultati
-     - per premium / spiegazioni complete
+     🔥 DECISIONE DI PRODOTTO: QUIZ PUBBLICO
+     - niente redirect/login per svolgere il quiz
+     - login richiesto solo per:
+       1) salvare risultati (già così)
+       2) premium enforcement (in futuro)
   ───────────────────────────────────────────────────────────── */
   useEffect(() => {
-    // niente auth check qui
     setBlocked(false);
+  }, []);
+
+  /* ─────────────────────────────────────────────────────────────
+     PROFILO UTENTE (solo se token esiste)
+     Serve esclusivamente a:
+     - determinare isPremiumUser (infrastruttura Premium ready-to-flip)
+     - NON deve bloccare il quiz se fallisce
+  ───────────────────────────────────────────────────────────── */
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const token = getAccessToken();
+      if (!token) {
+        if (!cancelled) setIsPremiumUser(false);
+        return;
+      }
+
+      const me = await fetchMe(token);
+
+      // supporta boolean o 0/1
+      const premium =
+        me?.is_premium === true || me?.is_premium === 1 || (me as any)?.isPremium === true;
+
+      if (!cancelled) setIsPremiumUser(!!premium);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /* ─────────────────────────────────────────────────────────────
@@ -154,7 +234,7 @@ export default function QuizTopicClient({
 
   /* ─────────────────────────────────────────────────────────────
      topicTotal (light call)
-     Serve solo a capire se ESISTONO domande per questa lingua.
+     Serve SOLO a capire se ESISTONO domande per questa lingua.
      - Se 401: backend protetto → NON possiamo dedurre "coming soon"
      - Se 200 ma vuoto: coming soon (per non-IT)
   ───────────────────────────────────────────────────────────── */
@@ -170,10 +250,8 @@ export default function QuizTopicClient({
           shuffle: false,
         });
 
-        // supporta sia array che { questions, poolTotal }
         const poolTotalFromApi = (res as any)?.poolTotal;
 
-        // fallback: se non c'è poolTotal, deduciamo 0 o >0 dalla presenza di 1 domanda
         let total: number | null = null;
 
         if (typeof poolTotalFromApi === "number") {
@@ -185,8 +263,8 @@ export default function QuizTopicClient({
         }
 
         if (!cancelled) setTopicTotal(total);
-      } catch (e: any) {
-        // Se backend protetto (401), non possiamo stimare → lascia null
+      } catch {
+        // backend protetto o errore: non possiamo stimare → lascia null
         if (!cancelled) setTopicTotal(null);
       }
     })();
@@ -231,9 +309,7 @@ export default function QuizTopicClient({
 
           <button
             className="mt-4 inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
-            onClick={() =>
-              router.push(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`)
-            }
+            onClick={() => router.push(`/${L}/login?redirect=/${L}/quiz/topic/${numericId}`)}
           >
             {L === "it" ? "Accedi" : "Sign in"}
           </button>
@@ -244,8 +320,9 @@ export default function QuizTopicClient({
 
   /* ─────────────────────────────────────────────────────────────
      COMING SOON (topic senza domande nella lingua corrente)
-     Regola: se topicTotal === 0 e NON è IT, mostriamo coming soon.
-     (Per IT di solito è “sorgente” e non vuoi bloccare)
+     Regola:
+     - se topicTotal === 0 e NON è IT → coming soon
+     - IT è “sorgente”: non blocchiamo
   ───────────────────────────────────────────────────────────── */
   const isComingSoon = topicTotal === 0 && L !== "it";
 
@@ -255,9 +332,9 @@ export default function QuizTopicClient({
         <ComingSoonBox
           lang={L}
           fallbackLang="en"
-          // ✅ stessa pagina topic, ma in EN
+          // stessa pagina topic, ma in EN
           fallbackHref={`/en/quiz/topic/${numericId}`}
-          // ✅ torna alla certificazione (se nota)
+          // torna alla certificazione (se nota)
           browseHref={backToHref}
         />
       </div>
@@ -265,73 +342,101 @@ export default function QuizTopicClient({
   }
 
   /* ─────────────────────────────────────────────────────────────
-     QUIZ ENGINE
-  ───────────────────────────────────────────────────────────── */
-  return (
-    <QuizEngine
-      lang={L}
-      storageScope={`topic:${numericId}:${L}`}
-      categoryColor="from-blue-900 to-blue-700"
-      backToHref={backToHref}
-      context={{
-        kind: "topic",
-        certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
-        certificationSlug: certSlug ?? undefined,
-        topicTitle: topicTitle ?? `Topic #${numericId}`,
-        backHref: backToHref,
-        backLabel:
-          L === "it"
-            ? "← Torna alla certificazione"
-            : L === "es"
-            ? "← Volver a la certificación"
-            : L === "fr"
-            ? "← Retour à la certification"
-            : "← Back to certification",
-      }}
+   QUIZ ENGINE
 
-      /* ───────────── FETCH DOMANDE (ANTI-CRASH) ───────────── */
-      fetchQuestions={async (): Promise<UiQuestion[]> => {
-        try {
-          /**
-           * QUIZ PUBBLICO:
-           * - idealmente endpoint NO AUTH
-           * - se oggi risponde 401 → MAI crash, MAI redirect
-           */
-          const res = await getQuestionsByTopic(numericId, L, {
-            limit: 500,
-            shuffle: false,
-          });
+   PREMIUM (IMPORTANT):
+   -------------------
+   QuizTopicClient prepara lo stato premium, ma:
+   - il taglio spiegazione / preview
+   - la CTA soft nel riepilogo
+   - eventuali limiti (pool/varianti)
+   DEVONO vivere dentro QuizEngine, perché lì si renderizzano:
+   - explanation
+   - summary finale
+   - modalità speciali (training/exam/mock)
 
-          const raw: ApiQuestion[] = Array.isArray(res)
-            ? res
-            : (res as any).questions;
+   Attivazione futura:
+   - Abiliti i flag ENV (NEXT_PUBLIC_PREMIUM_*)
+   - Colleghi user reale (es. /me)
+   - QuizEngine usa:
+     1) context.premiumLocked → preview explanation + CTA non invasiva
+     2) context.isPremiumUser → badge/UI premium
+     3) (opzionale) limiti extra su pool/varianti
+───────────────────────────────────────────────────────────── */
 
-          return (raw ?? []).map(normalizeQuestion);
-        } catch (e: any) {
-          // 🔒 backend ancora protetto → UI soft login
-          if (e?.status === 401) {
-            setNeedsLoginForQuestions(true);
-            return [];
-          }
+// ✅ single source of truth (oggi: default ENV = 0 → premiumLocked false)
+const premium = getPremiumState({
+  // TODO: quando hai /me, passa qui { isPremium: true/false, plan: ... }
+  user: null,
+});
 
-          // 🛡️ altri errori: non rilanciare MAI
-          console.error("🟥 getQuestionsByTopic FAILED", e);
+return (
+  <QuizEngine
+    lang={L}
+    storageScope={`topic:${numericId}:${L}`}
+    categoryColor="from-blue-900 to-blue-700"
+    backToHref={backToHref}
+    context={{
+      kind: "topic",
+      certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
+      certificationSlug: certSlug ?? undefined,
+      topicTitle: topicTitle ?? `Topic #${numericId}`,
+      backHref: backToHref,
+      backLabel:
+        L === "it"
+          ? "← Torna alla certificazione"
+          : L === "es"
+          ? "← Volver a la certificación"
+          : L === "fr"
+          ? "← Retour à la certification"
+          : "← Back to certification",
+
+      // ✅ Premium hooks (ready-to-flip, non invasivo)
+      isPremiumUser: premium.isPremiumUser,
+      premiumLocked: premium.premiumLocked,
+    }}
+    /* ───────────── FETCH DOMANDE (ANTI-CRASH) ───────────── */
+    fetchQuestions={async (): Promise<UiQuestion[]> => {
+      try {
+        /**
+         * QUIZ PUBBLICO (target):
+         * - idealmente endpoint NO AUTH
+         * - se oggi risponde 401 → MAI crash, MAI redirect automatico
+         */
+        const res = await getQuestionsByTopic(numericId, L, {
+          limit: 500,
+          shuffle: false,
+        });
+
+        const raw: ApiQuestion[] = Array.isArray(res)
+          ? res
+          : (res as any).questions;
+
+        return (raw ?? []).map(normalizeQuestion);
+      } catch (e: any) {
+        // backend ancora protetto → UI soft login
+        if (e?.status === 401) {
+          setNeedsLoginForQuestions(true);
           return [];
         }
-      }}
+
+        // altri errori: non rilanciare MAI
+        console.error("🟥 getQuestionsByTopic FAILED", e);
+        return [];
+      }
+    }}
+
 
       /* ───────────── TIMER PER MODALITÀ ───────────── */
       durationsByMode={{
         training: null, // niente timer in training
         exam: examSpec.durationSec,
       }}
-
       /* ───────────── NUMERO DOMANDE ───────────── */
       limitsByMode={{
         training: 500, // pool grande
         exam: examSpec.questions,
       }}
-
       /* ───────────── SALVATAGGIO RISULTATI ───────────── */
       onFinish={async (s: QuizSummary & { mode: "training" | "exam" }) => {
         // salviamo solo esame
