@@ -48,6 +48,13 @@ export default function LoginPageClient({ initialLang }: Props) {
     return r && r.startsWith("/") ? r : null;
   }, [sp]);
 
+    const googleHref = useMemo(() => {
+    const redirectTarget = redirectParam || `/${lang}/profile`;
+    return `https://api.certifyquiz.com/api/auth/google?redirect=${encodeURIComponent(
+      redirectTarget
+    )}&remember=${remember ? 1 : 0}`;
+  }, [redirectParam, lang, remember]);
+
   // ✅ Se esiste un token, verifica con /auth/me.
   useEffect(() => {
     let alive = true;
@@ -189,6 +196,24 @@ export default function LoginPageClient({ initialLang }: Props) {
         <h2 className="text-2xl font-bold text-center text-blue-700">
           🔑 {String(getLabel({ it: "Accedi", en: "Login" }, lang))}
         </h2>
+
+    <a
+  href={googleHref}
+  className="w-full flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+>
+  Continue with Google
+</a>
+
+<div className="relative py-1">
+  <div className="absolute inset-0 flex items-center">
+    <div className="w-full border-t border-gray-200" />
+  </div>
+  <div className="relative flex justify-center text-xs">
+    <span className="bg-white px-2 text-gray-500">
+      {String(getLabel({ it: "oppure", en: "or" }, lang))}
+    </span>
+  </div>
+</div>
 
         {error && (
           <p className="text-red-600 text-center text-sm font-medium">{error}</p>
