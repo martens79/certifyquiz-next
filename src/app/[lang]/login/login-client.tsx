@@ -197,12 +197,37 @@ export default function LoginPageClient({ initialLang }: Props) {
           🔑 {String(getLabel({ it: "Accedi", en: "Login" }, lang))}
         </h2>
 
-    <a
+   <a
   href={googleHref}
-  className="w-full flex items-center justify-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+  className="flex w-full items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
 >
-  Continue with Google
+  {/* Google icon */}
+  <svg
+    className="h-5 w-5"
+    viewBox="0 0 48 48"
+    aria-hidden="true"
+  >
+    <path
+      fill="#EA4335"
+      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.38 17.74 9.5 24 9.5z"
+    />
+    <path
+      fill="#4285F4"
+      d="M46.1 24.5c0-1.64-.15-3.21-.43-4.73H24v9.01h12.44c-.54 2.91-2.18 5.38-4.63 7.04l7.49 5.81c4.38-4.04 6.8-9.98 6.8-17.13z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M10.54 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.01 0 19.91 0 24c0 4.09.92 7.99 2.56 11.78l7.98-6.19z"
+    />
+    <path
+      fill="#34A853"
+      d="M24 48c6.48 0 11.93-2.13 15.91-5.81l-7.49-5.81c-2.08 1.39-4.74 2.21-8.42 2.21-6.26 0-11.57-3.88-13.46-9.41l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+    />
+  </svg>
+
+  <span>Continue with Google</span>
 </a>
+
 
 <div className="relative py-1">
   <div className="absolute inset-0 flex items-center">
