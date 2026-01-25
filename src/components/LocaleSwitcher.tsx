@@ -11,6 +11,9 @@ import { CAT_KEY_TO_SLUG, type CategoryKey } from "@/lib/paths";
 // ✅ Quiz: EN root "/quiz/..." + altre lingue "/it|fr|es/quiz/..."
 const QUIZ_RE = /^\/(?:(it|fr|es)\/)?quiz\//i;
 
+// ✅ Home locale: /it /fr /es (EN è /)
+const LOCALE_HOME_RE = /^\/(it|fr|es)\/?$/i;
+
 const CAT_LIST_RE =
   /^\/(?:(it)\/categorie|(fr)\/categories|(es)\/categorias|categories)\/?$/i;
 
@@ -33,6 +36,10 @@ const PRICING_RE =
 
 function qs(path: string, q?: string) {
   return q ? `${path}?${q}` : path;
+}
+
+function homeRoot(lang: Locale) {
+  return lang === "en" ? "/" : `/${lang}`;
 }
 
 function categoriesRoot(lang: Locale) {
@@ -109,6 +116,13 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     if (!isLocale(nextRaw)) return;
     const next = nextRaw as Locale;
     if (next === current) return;
+
+    /* ---------------------- HOME ---------------------- */
+    // / (EN) oppure /it /fr /es
+    if (pathname === "/" || LOCALE_HOME_RE.test(pathname)) {
+      router.push(qs(homeRoot(next), query));
+      return;
+    }
 
     /* ---------------------- QUIZ ---------------------- */
     // EN root: "/quiz/..."  | IT/FR/ES: "/it/quiz/..."
