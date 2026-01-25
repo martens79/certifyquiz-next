@@ -31,7 +31,8 @@ const nextConfig: NextConfig = {
       { source: "/es/quiz/eipass-basic", destination: "/es/quiz/eipass", permanent: true },
 
       // ---------------------------------------------------------------------
-      // EN canonical: no /en prefix (CERTIFICATIONS + CATEGORIES only)
+      // FIX 404: EN path errato (/en/certificazioni/*) -> /certifications/*
+      // (EN SEO pages: niente /en davanti)
       // ---------------------------------------------------------------------
       { source: "/en/certifications", destination: "/certifications", permanent: true },
       { source: "/en/certifications/:path*", destination: "/certifications/:path*", permanent: true },
@@ -42,6 +43,17 @@ const nextConfig: NextConfig = {
       // ✅ EN pages sometimes indexed with IT segment
       { source: "/en/certificazioni", destination: "/certifications", permanent: true },
       { source: "/en/certificazioni/:path*", destination: "/certifications/:path*", permanent: true },
+
+      // ---------------------------------------------------------------------
+      // FIX 404: slug legacy / alias (quelli che hai visto oggi)
+      // ---------------------------------------------------------------------
+      // CCST Cybersecurity alias -> canonical slug
+      { source: "/certifications/cisco-ccst-cybersecurity", destination: "/certifications/cisco-ccst-security", permanent: true },
+      { source: "/it/certificazioni/cisco-ccst-cybersecurity", destination: "/it/certificazioni/cisco-ccst-security", permanent: true },
+
+      // C# alias (oggi 404)
+      { source: "/it/certificazioni/microsoft-csharp", destination: "/it/certificazioni/csharp", permanent: true },
+      { source: "/certifications/microsoft-csharp", destination: "/certifications/csharp", permanent: true },
 
       // ---------------------------------------------------------------------
       // Legacy slug redirects (examples - add the ones you see in GSC)
@@ -59,6 +71,10 @@ const nextConfig: NextConfig = {
 
   async rewrites() {
     return [
+      // NOTE:
+      // - redirects = canonical URL (visibile in browser)
+      // - rewrites  = alias invisibile (ti serve se vuoi accettare più path senza cambiare URL)
+
       { source: "/fr/certifications", destination: "/fr/certificazioni" },
       { source: "/fr/certifications/:slug", destination: "/fr/certificazioni/:slug" },
 

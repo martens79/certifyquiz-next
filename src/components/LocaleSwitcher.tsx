@@ -63,11 +63,27 @@ function categoryKeyFromSlug(lang: Locale, slug: string): CategoryKey | null {
   return (found?.[0] as CategoryKey) ?? null;
 }
 
-// ✅ Rimuove UNO O PIÙ prefissi lingua (gestisce anche /it/en/...)
-// Nota: en è root, ma se compare come prefisso lo togliamo comunque (stato "sporco")
-function stripAnyLocalePrefixes(pathname: string) {
-  const clean = pathname.replace(/^(?:\/(?:it|en|fr|es))+(?=\/|$)/i, "");
-  return clean === "" ? "/" : clean;
+/**
+ * ✅ Normalizza SOLO prefissi lingua "sporchi":
+ * - /it/en/...  -> /en/...
+ * - /fr/it/...  -> /it/...
+ * - /en/...     -> /...   (EN è root)
+ * - /it/...     -> resta /it/... (non lo tocchiamo)
+ */
+function normalizeLocalePrefix(pathname: string) {
+  // 1) se hai due prefissi lingua, tieni solo il secondo (quello "reale")
+  const m = pathname.match(/^\/(it|en|fr|es)\/(it|en|fr|es)(?=\/|$)/i);
+  if (m) {
+    const second = m[2].toLowerCase();
+    const rest = pathname.replace(/^\/(it|en|fr|es)\/(it|en|fr|es)/i, "");
+    pathname = `/${second}${rest}`;
+  }
+
+  // 2) EN è root: se compare come prefisso, lo rimuoviamo
+  pathname = pathname.replace(/^\/en(?=\/|$)/i, "");
+
+  // 3) normalizza empty
+  return pathname === "" ? "/" : pathname;
 }
 
 // ✅ Ricostruisce path con regola: EN root senza /en, altre lingue con prefisso
@@ -86,8 +102,8 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
   const search = useSearchParams();
   const query = search?.toString();
 
-  // ✅ Sempre pulito: niente /it/en/... ecc.
-  const pathname = stripAnyLocalePrefixes(pathnameRaw);
+  // ✅ Normalizza senza distruggere prefissi validi (/it, /fr, /es)
+  const pathname = normalizeLocalePrefix(pathnameRaw);
 
   function switchTo(nextRaw: string) {
     if (!isLocale(nextRaw)) return;
@@ -148,7 +164,7 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     }
 
     /* ------------------- SEO FALLBACK ------------------ */
-    // fallback semplice e robusto: ripulisci e applica lingua
+    // fallback semplice e robusto: applica lingua a pathname così com'è
     router.push(qs(applyLocale(pathname, next), query));
   }
 

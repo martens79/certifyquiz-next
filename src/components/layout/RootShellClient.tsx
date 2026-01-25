@@ -1,27 +1,15 @@
-//src/app/components/layout/RootShellClient.tsx
 "use client";
 
 import type { ReactNode } from "react";
-import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import { usePathname } from "next/navigation";
+import LayoutShellClient from "@/components/layout/LayoutShellClient";
+import type { Locale } from "@/lib/i18n";
 
 export default function RootShellClient({ children }: { children: ReactNode }) {
-  const pathname = usePathname() || "/";
+  const p = usePathname() ?? "/";
 
-  // ✅ IMPORTANTE:
-  // RootShellClient deve wrappare SOLO le route SENZA prefisso lingua (EN root SEO).
-  // Le route /it, /fr, /es (e /en se esiste) sono già wrappate da src/app/[lang]/layout.tsx.
+  const m = p.match(/^\/(it|fr|es)(\/|$)/);
+  const lang: Locale = (m?.[1] as Locale) || "en";
 
-  if (
-    pathname.startsWith("/it") ||
-    pathname.startsWith("/fr") ||
-    pathname.startsWith("/es") ||
-    pathname.startsWith("/en")
-  ) {
-    // niente wrapper qui, evitiamo doppio header
-    return <>{children}</>;
-  }
-
-  // EN root
-  return <LayoutShellClient lang="en">{children}</LayoutShellClient>;
+  return <LayoutShellClient lang={lang}>{children}</LayoutShellClient>;
 }
