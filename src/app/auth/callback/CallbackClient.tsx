@@ -19,11 +19,12 @@ export default function CallbackClient() {
     const redirect = safeRedirectPath(sp.get("redirect"));
 
     if (token) {
-      localStorage.setItem("auth_token", token);
-      router.replace(redirect);
-    } else {
-      router.replace("/login");
-    }
+  // ✅ compat: salva in entrambe finché non unifichiamo
+  localStorage.setItem("auth_token", token);
+  localStorage.setItem("token", token);       // <— aggiungi
+  router.replace(redirect);
+}
+
   }, [router, sp]);
 
   return (
