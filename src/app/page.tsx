@@ -35,9 +35,6 @@ export const metadata: Metadata = {
 };
 
 export default function HomeRootEN() {
-  return (
-    <main id="main">
-      <HomeWithAuth lang="en" />
-    </main>
-  );
+  return <HomeWithAuth lang="en" />;
 }
+
