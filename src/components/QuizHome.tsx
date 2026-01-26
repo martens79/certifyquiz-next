@@ -60,8 +60,10 @@ const slugFromLink = (link?: string | null) => {
   return m?.[2] ? m[2].replace(/\/+$/, "") : null;
 };
 const SLUG_ALIASES: Record<string, string> = {
-  "security-plus": "security-plus", // <-- usa QUI la chiave reale
+  "security-plus": "security-plus",
+  "cisco-ccst-security": "cisco-ccst-cybersecurity", // ✅ alias legacy → slug DB
 };
+
 
 const translatedCountForLink = (
   availability: AvailabilityMap,
@@ -200,7 +202,7 @@ const certificationNames: CertificationNames = {
     { name: "CISSP", link: certPath(lang, "cissp") },
     { name: "CISM", link: null },
     { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
-    { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
+    { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-cybersecurity") },
 
   ],
 
