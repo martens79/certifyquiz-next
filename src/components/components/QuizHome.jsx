@@ -183,8 +183,19 @@ useEffect(() => {
         }
       });
 
-      console.log("[availability]", map);
-      setAvailability(map);
+     console.log("[availability]", map);
+console.log(
+  "[avail has cyber]",
+  !!map["cisco-ccst-cybersecurity"],
+  map["cisco-ccst-cybersecurity"]
+);
+console.log(
+  "[avail has security]",
+  !!map["cisco-ccst-security"],
+  map["cisco-ccst-security"]
+);
+
+setAvailability(map);
     })
     .catch((e) => {
       console.error(
@@ -272,10 +283,10 @@ const allCerts = Object.values(certificationNames).flat();
 const translatedCertsForLang =
   lang !== "it"
     ? allCerts
-        .filter((c) => translatedCountForLink(availability, c.link) > 0)
+        .filter((c) => translatedCountForSlug(availability, c.slug) > 0)
         .sort((a, b) => {
-          const cb = translatedCountForLink(availability, b.link);
-          const ca = translatedCountForLink(availability, a.link);
+          const cb = translatedCountForSlug(availability, b.slug);
+          const ca = translatedCountForSlug(availability, a.slug);
           return cb !== ca ? cb - ca : (a.name || "").localeCompare(b.name || "");
         })
     : [];
@@ -427,10 +438,10 @@ const translatedCertsForLang =
       </div>
       <div className="flex flex-wrap gap-2">
        {translatedCertsForLang.map((c) => {
-  const label = smartBadgeLabel(availability, c.link, lang);
+  const label = smartBadgeLabel(availability, c.slug, lang);
   return (
     <Link
-      key={c.link} // meglio del name: è unico e stabile
+      key={c.slug} // meglio del name: è unico e stabile
       to={c.link}
       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-emerald-300 text-sm hover:bg-emerald-100 transition"
       title={label}

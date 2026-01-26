@@ -134,9 +134,10 @@ export default function QuizHome({ lang }: { lang: Locale }) {
 
   const ac = new AbortController();
 
-  fetch(`/api/backend/quiz-translation-availability?lang=${lang}`, {
-    signal: ac.signal,
-  })
+  fetch(`/api/backend/quiz-translation-availability?lang=${lang}&strict=1`, {
+  signal: ac.signal,
+})
+
     .then((r) => (r.ok ? r.json() : Promise.reject(r)))
     .then((data: unknown) => {
       const map: AvailabilityMap = {};
