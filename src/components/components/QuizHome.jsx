@@ -164,21 +164,34 @@ useEffect(() => {
     .get("/quiz-translation-availability", { params: { lang } })
     .then(({ data }) => {
       const map = {};
+
       (data?.items || []).forEach((it) => {
         const slug = normalizeAvailSlug(it?.slug);
         if (!slug) return;
 
-        map[slug] = {
+        const val = {
           translated: Number(it.topics_with_translations || 0),
           total: Number(it.topics_total || 0),
         };
+
+        // ✅ canonical
+        map[slug] = val;
+
+        // ✅ alias legacy: se in qualche punto il render usa ancora "...-security"
+        if (slug === "cisco-ccst-cybersecurity") {
+          map["cisco-ccst-security"] = val;
+        }
       });
 
       console.log("[availability]", map);
       setAvailability(map);
     })
     .catch((e) => {
-      console.error("availability fetch error:", e?.response?.status, e?.message);
+      console.error(
+        "availability fetch error:",
+        e?.response?.status,
+        e?.message
+      );
     });
 }, [lang]);
 
