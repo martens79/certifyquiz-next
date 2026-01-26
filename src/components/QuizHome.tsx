@@ -126,28 +126,44 @@ export default function QuizHome({ lang }: { lang: Locale }) {
   const [availability, setAvailability] = useState<AvailabilityMap>({});
 
   useEffect(() => {
-    if (lang === "it") return;
+  // ✅ reset immediato a ogni cambio lingua
+  setAvailability({});
 
-    fetch(`/api/backend/quiz-translation-availability?lang=${lang}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
-      .then((data: unknown) => {
-        const map: AvailabilityMap = {};
-        const rows: BackendAvailabilityItem[] = isArrayPayload(data)
-          ? data
-          : hasItemsPayload(data)
-          ? data.items
-          : [];
-        for (const it of rows) {
-          if (!it?.slug) continue;
-          map[it.slug] = {
-            translated: Number(it.topics_with_translations ?? 0),
-            total: Number(it.topics_total ?? 0),
-          };
-        }
-        setAvailability(map);
-      })
-      .catch(() => setAvailability({}));
-  }, [lang]);
+  // ✅ IT: niente chiamata (ma lo state è già pulito)
+  if (lang === "it") return;
+
+  const ac = new AbortController();
+
+  fetch(`/api/backend/quiz-translation-availability?lang=${lang}`, {
+    signal: ac.signal,
+  })
+    .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+    .then((data: unknown) => {
+      const map: AvailabilityMap = {};
+      const rows: BackendAvailabilityItem[] = isArrayPayload(data)
+        ? data
+        : hasItemsPayload(data)
+        ? data.items
+        : [];
+
+      for (const it of rows) {
+        if (!it?.slug) continue;
+        map[it.slug] = {
+          translated: Number(it.topics_with_translations ?? 0),
+          total: Number(it.topics_total ?? 0),
+        };
+      }
+
+      setAvailability(map);
+    })
+    .catch((err) => {
+      // ignora abort
+      if (err?.name !== "AbortError") setAvailability({});
+    });
+
+  return () => ac.abort();
+}, [lang]);
+
 
   /* ---------- SLUG ufficiali (tutti con certPath) ---------- */
 
@@ -426,7 +442,7 @@ name: getLabel(
     <div className="min-h-svh
  bg-gray-100 text-gray-900 flex flex-col">
       <main className="flex-1 overflow-y-auto px-3 pt-2 pb-15.5">
-        <QuizTitle />
+        <QuizTitle lang={lang} />
 
         {lang !== "it" && translatedCertsForLang.length > 0 && (
           <div className="mx-auto max-w-345 mb-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-900 p-3">

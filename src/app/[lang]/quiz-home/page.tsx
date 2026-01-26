@@ -86,5 +86,6 @@ export default async function Page(props: { params: Promise<{ lang: Locale }> })
   const { lang: raw } = await props.params;
   const lang = (["it", "en", "fr", "es"].includes(raw) ? raw : "it") as Locale;
 
-  return <QuizHomeView lang={lang} />;
+  return <QuizHomeView key={lang} lang={lang} />;
+
 }

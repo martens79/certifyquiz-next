@@ -1,13 +1,13 @@
 // src/components/QuizTitle.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { GraduationCap } from "lucide-react";
 
 type Locale = "it" | "en" | "fr" | "es";
 type I18nText = Partial<Record<Locale, string>>;
 
+/* ---------- Frasi motivazionali ---------- */
 const motivationalQuotes: I18nText[] = [
   {
     it: "Ogni quiz ti avvicina al traguardo 💪",
@@ -47,45 +47,37 @@ const motivationalQuotes: I18nText[] = [
   },
 ];
 
-const langFromPath = (p: string): Locale => {
-  const m = p.match(/^\/(it|en|fr|es)(?:\/|$)/i);
-  return (m?.[1]?.toLowerCase() || "it") as Locale;
-};
-
 const getLabel = (dict: I18nText, lang: Locale) =>
   dict[lang] ?? dict.it ?? dict.en ?? dict.fr ?? dict.es ?? "";
 
-export default function QuizTitle() {
-  const pathname = usePathname() || "/it";
-  const lang = useMemo(() => langFromPath(pathname), [pathname]);
-
+/* ---------- Component ---------- */
+export default function QuizTitle({ lang }: { lang: Locale }) {
   const [quote, setQuote] = useState<string>("");
 
   useEffect(() => {
     const idx = Math.floor(Math.random() * motivationalQuotes.length);
-    const candidate = motivationalQuotes[idx];
-    setQuote(getLabel(candidate, lang));
-  }, [lang, pathname]);
+    setQuote(getLabel(motivationalQuotes[idx], lang));
+  }, [lang]);
 
   return (
     <header className="mx-auto max-w-[1380px] text-center pt-1 pb-2 mb-4 animate-fadeInDown">
-      {/* Riga piccola con icona + label */}
+      {/* Riga piccola con icona */}
       <div className="inline-flex items-center justify-center gap-2 mb-1">
         <GraduationCap size={26} className="text-blue-600" />
         <span className="text-xs sm:text-sm font-medium text-slate-600">
           {getLabel(
             {
               it: "Quiz per certificazioni IT",
-              en: "Quizzes for IT certifications",
+              en: "IT certification quizzes",
               fr: "Quiz pour certifications IT",
-              es: "Quizzes para certificaciones IT",
+              es: "Cuestionarios de certificaciones IT",
             },
             lang
           )}
         </span>
       </div>
 
-      {/* Titolo principale, ma più compatto */}
+      {/* Titolo principale */}
       <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-purple-700 to-pink-600 tracking-tight leading-tight">
         {getLabel(
           {
@@ -98,8 +90,10 @@ export default function QuizTitle() {
         )}
       </h1>
 
-      {/* Sottotitolo / frase motivazionale, molto vicino al titolo */}
-      <p className="mt-1 text-sm md:text-base text-gray-600 italic">{quote}</p>
+      {/* Sottotitolo */}
+      <p className="mt-1 text-sm md:text-base text-gray-600 italic">
+        {quote}
+      </p>
     </header>
   );
 }

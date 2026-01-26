@@ -11,6 +11,9 @@ import { CAT_KEY_TO_SLUG, type CategoryKey } from "@/lib/paths";
 // ✅ Quiz: EN root "/quiz/..." + altre lingue "/it|fr|es/quiz/..."
 const QUIZ_RE = /^\/(?:(it|fr|es)\/)?quiz\//i;
 
+// ✅ Quiz Home: EN root "/quiz-home" + altre lingue "/it|fr|es/quiz-home"
+const QUIZ_HOME_RE = /^\/(?:(it|fr|es)\/)?quiz-home\/?$/i;
+
 // ✅ Home locale: /it /fr /es (EN è /)
 const LOCALE_HOME_RE = /^\/(it|fr|es)\/?$/i;
 
@@ -72,13 +75,12 @@ function categoryKeyFromSlug(lang: Locale, slug: string): CategoryKey | null {
 
 /**
  * ✅ Normalizza SOLO prefissi lingua "sporchi":
- * - /it/en/...  -> /en/...
+ * - /it/en/...  -> /en/... (ma EN è root, quindi poi diventa /...)
  * - /fr/it/...  -> /it/...
- * - /en/...     -> /...   (EN è root)
- * - /it/...     -> resta /it/... (non lo tocchiamo)
+ * - /en/...     -> /...    (EN è root)
  */
 function normalizeLocalePrefix(pathname: string) {
-  // 1) se hai due prefissi lingua, tieni solo il secondo (quello "reale")
+  // 1) doppio prefisso: tieni solo il secondo
   const m = pathname.match(/^\/(it|en|fr|es)\/(it|en|fr|es)(?=\/|$)/i);
   if (m) {
     const second = m[2].toLowerCase();
@@ -86,11 +88,16 @@ function normalizeLocalePrefix(pathname: string) {
     pathname = `/${second}${rest}`;
   }
 
-  // 2) EN è root: se compare come prefisso, lo rimuoviamo
+  // 2) EN è root: se compare come prefisso, rimuovilo
   pathname = pathname.replace(/^\/en(?=\/|$)/i, "");
 
-  // 3) normalizza empty
   return pathname === "" ? "/" : pathname;
+}
+
+/** ✅ Deriva la lingua dal path reale (EN root se nessun prefisso) */
+function localeFromPath(pathname: string): Locale {
+  const m = pathname.match(/^\/(it|fr|es)(?=\/|$)/i);
+  return (m?.[1]?.toLowerCase() || "en") as Locale;
 }
 
 // ✅ Ricostruisce path con regola: EN root senza /en, altre lingue con prefisso
@@ -109,23 +116,32 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
   const search = useSearchParams();
   const query = search?.toString();
 
-  // ✅ Normalizza senza distruggere prefissi validi (/it, /fr, /es)
+  // ✅ normalizza
   const pathname = normalizeLocalePrefix(pathnameRaw);
+
+  // ✅ non fidarti solo del prop: deriva dal path reale
+  const effectiveCurrent = localeFromPath(pathname) ?? current;
 
   function switchTo(nextRaw: string) {
     if (!isLocale(nextRaw)) return;
     const next = nextRaw as Locale;
-    if (next === current) return;
+
+    if (next === effectiveCurrent) return;
 
     /* ---------------------- HOME ---------------------- */
-    // / (EN) oppure /it /fr /es
     if (pathname === "/" || LOCALE_HOME_RE.test(pathname)) {
       router.push(qs(homeRoot(next), query));
       return;
     }
 
+    /* ------------------- QUIZ HOME ------------------- */
+    if (QUIZ_HOME_RE.test(pathname)) {
+      const target = next === "en" ? "/quiz-home" : `/${next}/quiz-home`;
+      router.push(qs(target, query));
+      return;
+    }
+
     /* ---------------------- QUIZ ---------------------- */
-    // EN root: "/quiz/..."  | IT/FR/ES: "/it/quiz/..."
     if (QUIZ_RE.test(pathname)) {
       const slugPart = pathname.replace(QUIZ_RE, "/quiz/"); // normalizza a "/quiz/..."
       router.push(qs(applyLocale(slugPart, next), query));
@@ -178,13 +194,12 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     }
 
     /* ------------------- SEO FALLBACK ------------------ */
-    // fallback semplice e robusto: applica lingua a pathname così com'è
     router.push(qs(applyLocale(pathname, next), query));
   }
 
   return (
     <select
-      value={current}
+      value={effectiveCurrent}
       onChange={(e) => switchTo(e.target.value)}
       className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
       aria-label="Language"
