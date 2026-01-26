@@ -39,7 +39,9 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "google-cloud": 31,
   "aws-cloud-practitioner": 32,
   "cisco-ccst-networking": 33,
-  "cisco-ccst-security": 34,
+  "cisco-ccst-cybersecurity": 34,
+"cisco-ccst-security": 34, // alias legacy
+
 };
 
 /* ---------------------------------------------------------------------

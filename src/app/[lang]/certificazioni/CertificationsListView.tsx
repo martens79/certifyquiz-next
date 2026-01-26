@@ -179,9 +179,11 @@ const normalizeSlug = (raw: unknown): string => {
   if (s === "javascript") return "javascript-developer";
 
   
-  // CCST aliases: accetta varianti legacy -> canonico = cisco-ccst-security
-if (s === "cisco-ccst-cybersecurity") return "cisco-ccst-security";
-if (s === "ccst-cybersecurity") return "cisco-ccst-security";
+
+// CCST aliases: canonical = cisco-ccst-cybersecurity
+if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
+if (s === "ccst-cybersecurity") return "cisco-ccst-cybersecurity";
+
 
   return s;
 };

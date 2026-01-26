@@ -153,7 +153,17 @@ export default function QuizHome({ lang }: { lang: Locale }) {
           total: Number(it.topics_total ?? 0),
         };
       }
-
+      // ⬇⬇⬇ METTI QUESTO BLOCCO QUI ⬇⬇⬇
+      console.log("🔎 availability keys:", Object.keys(map));
+      console.log(
+        "🔎 CCST entries:",
+        Object.entries(map).filter(([k]) => k.includes("ccst"))
+      );
+      console.log(
+        "❓ has cisco-ccst-cybersecurity?",
+        map["cisco-ccst-cybersecurity"]
+      );
+      // ⬆⬆⬆ FINE ⬆⬆⬆
       setAvailability(map);
     })
     .catch((err) => {
