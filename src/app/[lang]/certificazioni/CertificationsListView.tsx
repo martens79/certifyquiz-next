@@ -42,6 +42,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   icdl: "base",
   "cisco-ccst-networking": "base",
   "cisco-ccst-security": "base",
+  "cisco-ccst-cybersecurity": "base",
 
   // intermediate
   "comptia-a-plus": "intermediate",
@@ -258,7 +259,7 @@ export default async function CertificationsListView({ lang }: ViewProps) {
     if (!hasCyber) {
       toAdd.push({
         ...base,
-        slug: "cisco-ccst-security", // ✅ qui
+        slug: "cisco-ccst-cybersecurity", // ✅ qui
         title: cyberTitle,
         imageUrl: ICON_BY_SLUG["cisco-ccst-cybersecurity"] ?? base.imageUrl ?? null,
       });
