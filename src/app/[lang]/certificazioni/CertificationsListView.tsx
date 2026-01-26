@@ -41,7 +41,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   pekit: "base",
   icdl: "base",
   "cisco-ccst-networking": "base",
-  "cisco-ccst-cybersecurity": "base",
+  "cisco-ccst-security": "base",
 
   // intermediate
   "comptia-a-plus": "intermediate",
@@ -85,6 +85,7 @@ const ICON_BY_SLUG: Record<string, string> = {
 
   ccna: "/images/certifications/ccna.png",
   "cisco-ccst-networking": "/images/certifications/ccst_networking.png",
+  "cisco-ccst-security": "/images/certifications/ccst_cybersecurity.png", // ✅ nuovo canonico
   "cisco-ccst-cybersecurity": "/images/certifications/ccst_cybersecurity.png",
 
   cissp: "/images/certifications/cissp.png",
@@ -177,8 +178,10 @@ const normalizeSlug = (raw: unknown): string => {
   if (s === "python") return "python-developer";
   if (s === "javascript") return "javascript-developer";
 
-  // CCST aliases: accetta varianti, canonico = cisco-ccst-cybersecurity
-  if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
+  
+  // CCST aliases: accetta varianti legacy -> canonico = cisco-ccst-security
+if (s === "cisco-ccst-cybersecurity") return "cisco-ccst-security";
+if (s === "ccst-cybersecurity") return "cisco-ccst-security";
 
   return s;
 };
@@ -253,7 +256,7 @@ export default async function CertificationsListView({ lang }: ViewProps) {
     if (!hasCyber) {
       toAdd.push({
         ...base,
-        slug: "cisco-ccst-cybersecurity",
+        slug: "cisco-ccst-security", // ✅ qui
         title: cyberTitle,
         imageUrl: ICON_BY_SLUG["cisco-ccst-cybersecurity"] ?? base.imageUrl ?? null,
       });

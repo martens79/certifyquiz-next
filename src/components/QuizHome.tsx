@@ -181,8 +181,7 @@ const certificationNames: CertificationNames = {
     { name: "Network+", link: certPath(lang, "network-plus") },
     { name: "CCNA", link: certPath(lang, "ccna") },
     { name: "JNCIE", link: certPath(lang, "jncie") },
-    { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-security") },
-
+    { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
     { name: "F5-CTS", link: certPath(lang, "f5") },
   ],
 
