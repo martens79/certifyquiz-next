@@ -145,6 +145,17 @@ const AVAILABLE_TXT = {
 // 🔎 Disponibilità quiz tradotti per certificazione (slug → count)
 const [availability, setAvailability] = useState({});
 
+// ✅ normalizza slug backend → slug canonico FE
+const normalizeAvailSlug = (raw) => {
+  const s = String(raw || "").trim();
+
+  // CCST: accetta entrambe le varianti, ma usa SEMPRE quella che vuoi come canonical in FE
+  if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
+  if (s === "ccst-cybersecurity") return "cisco-ccst-cybersecurity";
+
+  return s;
+};
+
 // fetch una sola volta per lingua (solo non-IT)
 useEffect(() => {
   if (lang === "it") return;
@@ -154,23 +165,23 @@ useEffect(() => {
     .then(({ data }) => {
       const map = {};
       (data?.items || []).forEach((it) => {
-        if (!it?.slug) return;
-        map[it.slug] = {
+        const slug = normalizeAvailSlug(it?.slug);
+        if (!slug) return;
+
+        map[slug] = {
           translated: Number(it.topics_with_translations || 0),
           total: Number(it.topics_total || 0),
         };
       });
+
       console.log("[availability]", map);
       setAvailability(map);
     })
     .catch((e) => {
-      console.error(
-        "availability fetch error:",
-        e?.response?.status,
-        e?.message
-      );
+      console.error("availability fetch error:", e?.response?.status, e?.message);
     });
 }, [lang]);
+
 
 
 
