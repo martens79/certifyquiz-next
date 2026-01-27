@@ -369,10 +369,9 @@ const certBtnLabel =
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
-  {/* Top row: LEFT (CTA) — CENTER (title) — RIGHT (badge) */}
-  <div className="relative flex items-center mb-2">
-    {/* LEFT: View certification */}
+     <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
+  {/* Desktop (md+): LEFT CTA — CENTER title — RIGHT badge */}
+  <div className="relative hidden md:flex md:items-center md:mb-2">
     <div className="absolute left-0">
       <Link
         href={certPath(L, resolvedSlug)}
@@ -383,12 +382,10 @@ const certBtnLabel =
       </Link>
     </div>
 
-    {/* CENTER: Title */}
     <h1 className="mx-auto text-2xl font-bold text-center">
       {base.quizLabel} — {certName}
     </h1>
 
-    {/* RIGHT: Category badge */}
     <div className="absolute right-0">
       <span
         className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
@@ -400,8 +397,33 @@ const certBtnLabel =
     </div>
   </div>
 
-  {/* Subtitle: topics count */}
-  <p className="text-sm opacity-70 text-center">
+  {/* Mobile (<md): title centered + pills centered below */}
+  <div className="md:hidden">
+    <h1 className="text-2xl font-bold text-center">
+      {base.quizLabel} — {certName}
+    </h1>
+
+    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+      <Link
+        href={certPath(L, resolvedSlug)}
+        className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
+        prefetch={false}
+      >
+        {certBtnLabel}
+      </Link>
+
+      <span
+        className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
+          css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
+        }`}
+      >
+        {categoryName}
+      </span>
+    </div>
+  </div>
+
+  {/* Subtitle */}
+  <p className="text-sm opacity-70 text-center mt-3">
     {L === "it"
       ? `${topics.length} topic disponibili`
       : L === "en"
@@ -411,6 +433,7 @@ const certBtnLabel =
       : `${topics.length} temas disponibles`}
   </p>
 </header>
+
 
 
 
