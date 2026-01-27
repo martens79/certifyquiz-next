@@ -1,0 +1,174 @@
+# PREMIUM VADEMECUM — BACKEND (Railway) — CertifyQuiz
+Data: 2026-01-27  
+Stato: **FREE ora, Premium tra ~2 mesi (senza date hardcoded)**
+
+--------------------------------------------------------------------
+1) OBIETTIVO
+--------------------------------------------------------------------
+- Tenere il sito **100% free adesso** (quiz + spiegazioni).
+- Avere una logica Premium **pulita e attivabile con ENV** (senza refactor).
+- In futuro: possibilità di
+  A) bloccare solo le spiegazioni
+  B) (opzionale) filtrare domande premium-only via `questions.is_premium`
+  C) (opzionale) limitare quantità domande per free (clamp 30/60)
+
+--------------------------------------------------------------------
+2) REGOLE ARCHITETTURALI (SERVER)
+--------------------------------------------------------------------
+- Premium decision = **ENV** (NON date).
+- Gli endpoint quiz “SEO / free” devono restare **accessibili ai guest**
+  usando `optionalAuthMiddleware`.
+- Gli endpoint di salvataggio (risultati/streak) restano **protetti** con `authMiddleware`.
+- Gating principale (prima release Premium): **solo explanation**
+  -> `explanation: null` quando lock attivo + utente free.
+
+--------------------------------------------------------------------
+3) ENDPOINTS + AUTH (DEVONO MATCHARE IL CODICE)
+--------------------------------------------------------------------
+A) ENDPOINT QUIZ (FREE / SEO)
+- GET /api/quiz/questions/:topicId
+  - middleware: `optionalAuthMiddleware`
+  - guest OK
+  - se token valido -> req.user presente
+  - explanation dipende da `canShowExplanations(req.user)`
+
+- GET /api/quiz/questions-mixed/:id
+  - middleware: `optionalAuthMiddleware`
+  - guest OK
+  - explanation dipende da `canShowExplanations(req.user)`
+
+B) ENDPOINT SALVATAGGIO (PROTETTI)
+- POST /api/quiz/save-exam
+  - middleware: `authMiddleware` (401 se guest)
+
+- POST /api/quiz/save-result
+  - middleware: `authMiddleware` (401 se guest)
+
+--------------------------------------------------------------------
+4) SHAPE UTENTE (COERENZA MIDDLEWARE)
+--------------------------------------------------------------------
+Nei middleware attuali:
+req.user = {
+  id,
+  email,
+  username,
+  role,
+  premium: boolean   // true se users.premium==1 oppure role==admin
+}
+
+Quindi:
+- ❌ NON usare `user.isPremium` (non esiste in backend)
+- ✅ usare `user.premium` e/o `user.role`
+
+Helper mentale:
+- privileged = (user && (user.premium === true || user.role === "admin"))
+
+--------------------------------------------------------------------
+5) FLAGS ENV (RAILWAY) — REALI (OGGI)
+--------------------------------------------------------------------
+Usiamo SOLO queste due per il rollout iniziale:
+
+A) Modalità FREE totale (adesso)
+- PREMIUM_ENABLED=0
+Risultato:
+- quiz sempre giocabile
+- spiegazioni **sempre presenti** (guest + free + premium + admin)
+
+B) Modalità Premium “spiegazioni bloccate” (tra 2 mesi)
+- PREMIUM_ENABLED=1
+- PREMIUM_LOCK_EXPLANATIONS=1
+Risultato:
+- quiz sempre giocabile per tutti
+- explanation: SOLO premium/admin
+- per guest/free → explanation null
+
+Nota:
+- Se PREMIUM_ENABLED=0 → tutto free, indipendentemente dalle altre env.
+
+--------------------------------------------------------------------
+6) LOGICA SERVER “SINGLE SOURCE OF TRUTH”
+--------------------------------------------------------------------
+Nel backend deve esistere UNA SOLA logica:
+
+- Se PREMIUM_ENABLED=0 -> canShowExplanations() ritorna true per tutti
+- Se PREMIUM_ENABLED=1 e PREMIUM_LOCK_EXPLANATIONS=1:
+  - true solo se user.premium===true o role===admin
+  - altrimenti false (explanation null)
+
+Niente date hardcoded.
+
+--------------------------------------------------------------------
+7) i18n QUIZ: “NO FALLBACK IT” PER EN/FR/ES
+--------------------------------------------------------------------
+Scopo:
+- Se una lingua non è pronta, il FE deve mostrare “Coming soon”
+  invece di vedere testo IT.
+
+Regola:
+- Per lang != it:
+  - question usa SOLO question_<lang> (NULL se vuoto/manca)
+  - answers usa SOLO answer_text_<lang>
+  - explanation usa SOLO explanation_<lang> (se colonna esiste)
+- Header (topic_title, certification_name) può fare fallback su IT.
+
+Strict mode:
+- ?strict=1 => scarta domande senza testo lingua + senza 4 risposte valide.
+
+--------------------------------------------------------------------
+8) CHECKLIST QA (PRIMA E DOPO FLIP)
+--------------------------------------------------------------------
+TEST 1 — Guest (no token)
+- GET /questions/:topicId?lang=it -> 200
+- GET /questions-mixed/:id?lang=it -> 200
+- POST /save-exam -> 401
+- POST /save-result -> 401
+
+TEST 2 — FREE MODE (PREMIUM_ENABLED=0)
+- guest -> explanation presente
+- user free -> explanation presente
+
+TEST 3 — LOCK MODE (PREMIUM_ENABLED=1 + PREMIUM_LOCK_EXPLANATIONS=1)
+- guest -> explanation null
+- user free -> explanation null
+- user premium/admin -> explanation presente
+
+TEST 4 — Lingue
+- lang=en senza traduzioni:
+  - question null
+  - answers filtrate -> spesso poche/zero
+  - strict=1 => può tornare lista vuota (OK)
+
+--------------------------------------------------------------------
+9) FUTURO (OPZIONALE) — NOT IMPLEMENTED YET
+--------------------------------------------------------------------
+Questa sezione descrive feature FUTURE, da implementare solo quando serve.
+
+A) Domande premium-only (DB)
+Prerequisito:
+- colonna questions.is_premium (0/1) popolata su alcune domande
+Comportamento desiderato:
+- free: filtra is_premium=1
+- premium/admin: vede tutto
+
+B) Limit clamp (30 topic / 60 mixed)
+Comportamento desiderato:
+- free: se chiede 100 -> clamp a 30/60
+- premium/admin: nessun clamp
+
+Nota:
+- Non usare questi flag finché non sono realmente implementati.
+
+--------------------------------------------------------------------
+10) DEPLOY / ROLLOUT (ANTI-DIMENTICANZA)
+--------------------------------------------------------------------
+Quando vuoi accendere Premium (tra 2 mesi):
+1) Railway -> set:
+   PREMIUM_ENABLED=1
+   PREMIUM_LOCK_EXPLANATIONS=1
+2) QA rapido:
+   - guest: quiz ok, explanation null
+   - free logged: explanation null
+   - premium/admin: explanation ok
+3) FE: se explanation null => mostra preview + CTA (QuizEngine)
+
+FINE

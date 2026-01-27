@@ -1,0 +1,147 @@
+# VADEMECUM PREMIUM — ARCHITETTURA + SWITCH (FRONTEND + BACKEND)
+
+Data: 2026-01-27  
+Stato attuale: **FREE MODE (Premium disattivato via ENV)**  
+Obiettivo: **nessun refactor tra 2 mesi → solo flip di variabili d’ambiente**
+
+---
+
+## 1) PRINCIPIO “SINGLE SOURCE OF TRUTH”
+
+**Premium si decide con FLAG di ambiente, non con date hardcoded.**
+
+- Niente più `FREE_EXPLANATIONS_UNTIL`
+- Niente più logiche temporizzate “dimenticabili”
+- Attivi/disattivi Premium con **2 ENV** sia su Next che su Railway
+
+---
+
+## 2) ENV — VALORI UFFICIALI
+
+### 2.1 Backend (Railway)
+Usiamo:
+
+- `PREMIUM_ENABLED=0|1`
+- `PREMIUM_LOCK_EXPLANATIONS=0|1`
+
+Comportamento backend:
+- `ENABLED=0`  → **tutto free** (spiegazioni ON, domande premium non filtrate)
+- `ENABLED=1` + `LOCK=0` → **soft premium** (spiegazioni ON, ma UI/CTA pronta lato FE)
+- `ENABLED=1` + `LOCK=1` → **lock attivo**:
+  - **spiegazioni OFF** per utenti non premium
+  - **spiegazioni ON** per premium/admin
+
+> Nota: in lock attivo puoi anche filtrare domande premium se userai `questions.is_premium`.
+
+### 2.2 Frontend (Vercel / Next)
+Restano i flag già definiti nel tuo `src/lib/premium.ts`:
+
+- `NEXT_PUBLIC_PREMIUM_ENABLED=0|1`
+- `NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=0|1`
+
+Scopo FE:
+- decidere gating UI/CTA in `QuizEngine.tsx` senza spargere `if premium` in giro.
+
+---
+
+## 3) BACKEND — COSA È STATO CAMBIATO (quizRoutes)
+
+### 3.1 Rimosso “date gating”
+**Non usiamo più `FREE_EXPLANATIONS_UNTIL`** per decidere le spiegazioni.
+
+### 3.2 Decision helper unico (backend)
+Esiste una decisione centrale tipo:
+
+- `isPremiumSystemEnabled()` (legge `PREMIUM_ENABLED`)
+- `isExplanationLockEnabled()` (legge `PREMIUM_LOCK_EXPLANATIONS`)
+- `canShowExplanations(user)` → logica unica
+
+Regola:
+- se `PREMIUM_ENABLED=0` → `canShowExplanations()` deve tornare **true per tutti**
+- se `PREMIUM_ENABLED=1` e `LOCK=1` → true solo per `user.premium === true` o `admin`
+
+### 3.3 User object coerente
+`authMiddleware` e `optionalAuthMiddleware` mettono:
+- `req.user.premium` (boolean) già normalizzato
+- `req.user.role`
+
+Quindi in backend **non usare più** `user.isPremium` (bug tipico): usare `user.premium`.
+
+### 3.4 Endpoints quiz
+- `/questions/:topicId` (auth hard: serve token)
+- `/questions-mixed/:id` (auth opzionale: guest ok)
+
+In entrambi:
+- `allow = canShowExplanations(req.user)`
+- Se `allow === false` → `explanation: null` (no spiegazioni)
+
+---
+
+## 4) ROADMAP PREMIUM “VERO” (TRA 2 MESI)
+
+### Step 1 — Flip ENV (backend)
+Su Railway:
+- `PREMIUM_ENABLED=1`
+- `PREMIUM_LOCK_EXPLANATIONS=1`
+
+### Step 2 — Flip ENV (frontend)
+Su Vercel:
+- `NEXT_PUBLIC_PREMIUM_ENABLED=1`
+- `NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=1`
+
+### Step 3 — Gating UX nel QuizEngine (solo FE)
+File: `src/components/quiz/QuizEngine.tsx`
+
+Regole UX:
+- quiz sempre giocabile
+- se lock attivo e utente non premium:
+  - explanation → preview corta o “Locked”
+  - CTA soft: “Scopri Premium”
+
+---
+
+## 5) FUTURO: DOMANDE PREMIUM (OPZIONALE)
+
+Oggi:
+- può non esistere `questions.is_premium` e va bene.
+
+Domani:
+- aggiungi colonna `questions.is_premium` (0/1) e inizi a marcare:
+  - varianti extra
+  - pool aggiuntivo (es. 30 free + 60 premium)
+
+In backend:
+- quando `PREMIUM_ENABLED=1` e utente non premium:
+  - filtra `q.is_premium=0`
+- quando premium/admin:
+  - include tutto
+
+---
+
+## 6) CHECKLIST QA RAPIDA
+
+### Con `PREMIUM_ENABLED=0`
+- Guest: vede spiegazioni ✅
+- User free: vede spiegazioni ✅
+- Admin: vede spiegazioni ✅
+
+### Con `PREMIUM_ENABLED=1` + `LOCK=1`
+- Guest: spiegazioni ❌
+- User free: spiegazioni ❌
+- User premium: spiegazioni ✅
+- Admin: spiegazioni ✅
+
+---
+
+## 7) “NON FARE PIÙ”
+- ❌ Date hardcoded per gating (si dimenticano)
+- ❌ `user.isPremium` (in backend non esiste: usa `user.premium`)
+- ❌ Logiche premium sparse nei componenti UI (solo `QuizEngine`)
+
+---
+
+## 8) STATO FINALE OGGI
+- Free mode garantito da ENV
+- Backend premium-ready
+- Frontend già premium-ready (decision layer in `src/lib/premium.ts`)
+- Attivazione tra 2 mesi = **solo flip ENV**

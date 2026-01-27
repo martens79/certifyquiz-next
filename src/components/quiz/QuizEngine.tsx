@@ -668,6 +668,32 @@ export default function QuizEngine({
   const canGoNext =
     idx < questions.length - 1 || (effectiveMode === 'training' && reviewPositions.length > 0);
 
+    /* ============================================================
+   TODO(PREMIUM) — GATING SPIEGAZIONI (NON ATTIVO ORA)
+
+   Quando PREMIUM verrà attivato (via ENV):
+   - usare SOLO context.premiumLocked e context.isPremiumUser
+   - NON ricalcolare premium qui
+   - se premiumLocked === true:
+       - mostrare preview + CTA soft
+       - explanation completa SOLO per premium/admin
+   - quiz deve restare SEMPRE giocabile
+
+   Backend contract:
+   - explanation === null quando lock attivo + utente free
+   - explanation !== null per premium/admin
+
+   Attivazione prevista:
+   - Railway: PREMIUM_ENABLED=1, PREMIUM_LOCK_EXPLANATIONS=1
+   - Vercel:  NEXT_PUBLIC_PREMIUM_ENABLED=1,
+              NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=1
+============================================================ */
+// ------------------------------------------------------------------
+// PREMIUM (frontend) — single source of truth
+// - premiumLocked: viene dal context (backend/flags + user)
+// - q.explanation: se backend locka, arriva già null per i free
+// ------------------------------------------------------------------
+
   const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
   const explainPreview = explainText ? makePreview(explainText, 260) : '';
 

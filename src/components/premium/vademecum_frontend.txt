@@ -1,0 +1,105 @@
+# PREMIUM VADEMECUM — FRONTEND (Next.js) — CertifyQuiz
+Data: 2026-01-27
+Stato: **FREE ora, Premium tra ~2 mesi (senza date hardcoded)**
+
+--------------------------------------------------------------------
+1) OBIETTIVO
+--------------------------------------------------------------------
+- Tenere UI/UX identica e 100% free adesso.
+- Preparare la UI Premium-ready SENZA refactor futuri.
+- Quando Premium verrà attivato:
+  - quiz sempre giocabile
+  - spiegazioni: preview + CTA per free/guest
+  - spiegazioni complete per premium/admin
+
+--------------------------------------------------------------------
+2) SINGLE SOURCE OF TRUTH (FRONTEND)
+--------------------------------------------------------------------
+- Decisione Premium nel FE: `src/lib/premium.ts`
+  - flags ENV (NEXT_PUBLIC_*)
+  - getPremiumState({ user?, flags? }) -> { isPremiumUser, premiumLocked }
+
+- Il QuizEngine NON decide Premium: riceve SOLO context già pronto.
+- Il gating UI (preview/CTA) vive SOLO in `src/components/quiz/QuizEngine.tsx`.
+
+--------------------------------------------------------------------
+3) DATI CHE ARRIVANO DAL BACKEND (IMPORTANTE)
+--------------------------------------------------------------------
+- Il backend, quando lock attivo + utente non premium, restituirà:
+  - `explanation: null`
+- Quindi il FE non deve affidarsi a “q.explanation sempre stringa”.
+- Il FE deve gestire 2 scenari:
+  A) explanation presente -> mostra full o preview (in base a premiumLocked)
+  B) explanation null     -> mostra blocco “Premium: sblocca la spiegazione” (CTA)
+
+--------------------------------------------------------------------
+4) QUIZ CONTEXT (CONTRATTO)
+--------------------------------------------------------------------
+Nel FE il QuizEngine riceve (da QuizTopicClient / Mixed / Mock) un `context` tipato:
+- context.isPremiumUser?: boolean
+- context.premiumLocked?: boolean
+
+Questi due campi sono gli UNICI “ganci Premium” da usare nel QuizEngine.
+
+--------------------------------------------------------------------
+5) LOGICA UI NEL QUIZENGINE (STATO ATTUALE)
+--------------------------------------------------------------------
+Nel tuo QuizEngine oggi:
+- calcoli explainText / explainPreview
+- se `premiumLocked` mostri preview + CTA
+- se NON premiumLocked mostri explanation completa
+
+Badge “Premium” in header:
+- appare quando `premiumLocked` true
+
+Nota:
+- Evitare di redeclarare `premiumLocked`: deve esistere UNA sola variabile.
+
+--------------------------------------------------------------------
+6) FIX FUTURO (QUANDO PREMIUM SI ACCENDE DAVVERO)
+--------------------------------------------------------------------
+⚠️ Oggi il blocco spiegazione è renderizzato così:
+  `!isExam && chosen != null && q.explanation && (...)`
+
+Quando il backend sarà in lock mode, per free/guest `q.explanation` sarà NULL
+=> quel blocco NON si renderizza e non vedrai CTA/preview.
+
+Quando accendi Premium (tra 2 mesi) va fatto questo micro-fix:
+
+- cambiare la condizione di render del blocco spiegazione in modo da renderizzare
+  anche quando explanation è null (per mostrare CTA).
+
+Esempio concettuale:
+- render se: `!isExam && chosen != null && (q.explanation || premiumLocked)`
+- contenuto:
+  - se q.explanation presente: preview/full come ora
+  - se q.explanation null e premiumLocked: mostra CTA “Sblocca spiegazione con Premium”
+
+Questo è L’UNICO punto FE necessario quando il backend inizia a mandare explanation null.
+
+--------------------------------------------------------------------
+7) FLAGS ENV (VERCEL) — OGGI
+--------------------------------------------------------------------
+Oggi Premium deve rimanere OFF:
+- NEXT_PUBLIC_PREMIUM_ENABLED=0
+- NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=0 (o assente)
+
+Effetto:
+- premiumLocked deve risultare false
+- niente CTA premium forzata
+- UX totalmente free
+
+--------------------------------------------------------------------
+8) ROLLOUT (TRA 2 MESI) — CHECKLIST FE
+--------------------------------------------------------------------
+Quando il backend viene messo in:
+- PREMIUM_ENABLED=1
+- PREMIUM_LOCK_EXPLANATIONS=1
+
+Fare sul FE:
+1) Micro-fix condizione render blocco spiegazione (vedi sezione 6)
+2) Verifica:
+   - guest/free: dopo scelta risposta -> CTA Premium visibile
+   - premium/admin: dopo scelta risposta -> explanation completa visibile
+
+FINE
