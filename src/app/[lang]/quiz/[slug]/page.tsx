@@ -8,6 +8,8 @@ import Link from "next/link";
 import { getCertBySlug, CERT_SLUGS } from "@/certifications/registry";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
+import type { CertificationData } from "@/certifications/types";
+
 
 export const runtime = "nodejs";
 export const revalidate = 60;
@@ -90,6 +92,13 @@ function quizMixedPath(lang: Locale, slug: string) {
   return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mixed`;
 }
 
+
+function certPath(lang: Locale, slug: string) {
+  const base = lang === "en" ? "" : `/${lang}`;
+  const seg = lang === "it" ? "certificazioni" : lang === "es" ? "certificaciones" : "certifications";
+  return `${base}/${seg}/${slug}`;
+}
+
 // ✅ builder URL quiz mock exam
 function quizMockExamPath(lang: Locale, slug: string) {
   return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mock-exam`;
@@ -112,6 +121,31 @@ function pickTopicField(t: TopicRow, lang: Locale, field: "title" | "description
     default:
       return (t as any)[`${field}_it`] || (t as any)[field] || "";
   }
+}
+
+function pickCertTitle(
+  cert: CertificationData | undefined,
+  lang: Locale,
+  fallbackSlug: string
+) {
+  const t = cert?.title;
+  if (t) {
+    return (
+      t[lang] ??
+      t.it ??
+      t.en ??
+      t.fr ??
+      t.es ??
+      ""
+    );
+  }
+
+  // fallback estremo (se mai manca dal registry)
+  return fallbackSlug
+    .replace(/-/g, " ")
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 }
 
 // Testi base per SEO pagina topics per cert
@@ -169,7 +203,17 @@ export async function generateMetadata({
   // ✅ risolvi slug per canonical/hreflang
   const resolvedSlug = resolveQuizSlug(slug);
 
-  const certName = resolvedSlug.replace(/-/g, " ");
+  const certName = titleCase(resolvedSlug.replace(/-/g, " "));
+
+
+ function titleCase(s: string) {
+  return s
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+
   const title = `${base.quizLabel} — ${certName}`;
   const description = base.desc;
 
@@ -258,7 +302,18 @@ export default async function QuizTopicsPage({
   const categoryName =
     categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/-/g, " ");
   const base = SEO_BASE[L];
-  const certName = resolvedSlug.replace(/-/g, " ");
+
+
+  function titleCase(s: string) {
+  return s
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+ const certName = titleCase(resolvedSlug.replace(/-/g, " "));
+
 
   // CTA "Quiz misto" label per lingua
   const mixedLabel =
@@ -302,30 +357,63 @@ export default async function QuizTopicsPage({
       ? "Démarrer le mock exam 🎯 →"
       : "Iniciar mock exam 🎯 →";
 
+// CTA secondaria: link alla pagina certificazione
+const certBtnLabel =
+  L === "it"
+    ? "Pagina certificazione"
+    : L === "en"
+    ? "View certification"
+    : L === "fr"
+    ? "Voir la certification"
+    : "Ver certificación";
+
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      {/* Header con badge categoria */}
       <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold">
-            {base.quizLabel} — {certName}
-          </h1>
+  {/* Top row: LEFT (CTA) — CENTER (title) — RIGHT (badge) */}
+  <div className="relative flex items-center mb-2">
+    {/* LEFT: View certification */}
+    <div className="absolute left-0">
+      <Link
+        href={certPath(L, resolvedSlug)}
+        className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
+        prefetch={false}
+      >
+        {certBtnLabel}
+      </Link>
+    </div>
 
-          <span
-            className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
-              css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
-            }`}
-          >
-            {categoryName}
-          </span>
-        </div>
+    {/* CENTER: Title */}
+    <h1 className="mx-auto text-2xl font-bold text-center">
+      {base.quizLabel} — {certName}
+    </h1>
 
-        {/* Debug info — puoi rimuoverla quando vuoi */}
-        <p className="text-xs md:text-sm opacity-70">
-          Lang: <code>{L}</code> · certId: <code>{certId}</code> · topics:{" "}
-          <code>{topics.length}</code>
-        </p>
-      </header>
+    {/* RIGHT: Category badge */}
+    <div className="absolute right-0">
+      <span
+        className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
+          css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
+        }`}
+      >
+        {categoryName}
+      </span>
+    </div>
+  </div>
+
+  {/* Subtitle: topics count */}
+  <p className="text-sm opacity-70 text-center">
+    {L === "it"
+      ? `${topics.length} topic disponibili`
+      : L === "en"
+      ? `${topics.length} topics available`
+      : L === "fr"
+      ? `${topics.length} sujets disponibles`
+      : `${topics.length} temas disponibles`}
+  </p>
+</header>
+
+
+
 
       {/* 🔹 BOX QUIZ MISTO + MOCK EXAM (stessa riga) */}
       <section className="mb-8">
