@@ -1,0 +1,329 @@
+# PREMIUM_VADEMECUM_SCENARIOS.md
+Path: src/components/premium/PREMIUM_VADEMECUM_SCENARIOS.md
+
+Data: 2026-01-28  
+Stato prodotto: **FREE ora, Premium attivabile via ENV (no date hardcoded)**
+
+--------------------------------------------------------------------
+1) OBIETTIVO
+--------------------------------------------------------------------
+Introdurre “Scenario-based questions” (case lunghi con più domande collegate) come
+contenuto **Premium** e separato dai quiz standard.
+
+Principi:
+- Scenarios ≠ Questions (non usare quiz_id / questions / answers)
+- UX dedicata (scenario intro + flow sequenziale)
+- Monetizzazione pulita: Scenarios come valore Premium forte
+- No leak: intro + Q/A mai visibili se locked
+
+--------------------------------------------------------------------
+2) REGOLE ARCHITETTURALI (COERENTI COL PREMIUM ATTUALE)
+--------------------------------------------------------------------
+
+2.1 Single source of truth (Frontend)
+- La logica premium deve restare centralizzata (come per le spiegazioni).
+- Niente `if (premium)` sparsi nelle pagine.
+- I componenti Scenario devono usare lo stesso concetto di state:
+  - `isPremiumUser`
+  - `premiumLocked`
+  alimentati da `src/lib/premium.ts` / flags FE.
+
+2.2 Single source of truth (Backend)
+- Il backend decide sempre l’accesso (frontend gating da solo NON basta).
+- Auth:
+  - `authMiddleware` (hard: 401 se manca token / token revocato)
+  - `optionalAuthMiddleware` (soft: guest ok; token invalido/revocato => guest)
+- Shape utente garantito da middleware:
+  - `req.user = { id, email, username, role, premium }`
+  - `req.user.premium` è TRUE se `users.premium==1` oppure `role === "admin"`.
+
+2.3 Regola d’oro
+- Listing “SEO” può essere guest (optionalAuth)
+- Detail e azioni devono essere protette (auth + gating premium quando attivo)
+
+--------------------------------------------------------------------
+3) MODELLO DATI (SEPARATO DAI QUIZ)
+--------------------------------------------------------------------
+Scenarios NON entrano in:
+- questions / answers
+- quiz_id
+- mixed quizzes
+
+Tabelle nuove dedicate:
+
+3.1 `scenarios`
+```sql
+CREATE TABLE scenarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+
+  certification_id INT NOT NULL,
+  topic_id INT NOT NULL,
+
+  title VARCHAR(255) NOT NULL,
+  intro_text TEXT NOT NULL,
+
+  difficulty ENUM('base','advanced','exam') DEFAULT 'exam',
+
+  is_premium BOOLEAN DEFAULT TRUE,
+  is_active BOOLEAN DEFAULT FALSE,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_scenarios_cert (certification_id),
+  INDEX idx_scenarios_topic (topic_id)
+);
+
+
+
+CREATE TABLE scenario_questions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+
+  scenario_id INT NOT NULL,
+  order_index INT NOT NULL,
+
+  question_text TEXT NOT NULL,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (scenario_id) REFERENCES scenarios(id)
+    ON DELETE CASCADE,
+
+  UNIQUE (scenario_id, order_index)
+);
+3.3 scenario_answers
+
+CREATE TABLE scenario_answers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+
+  scenario_question_id INT NOT NULL,
+  answer_text TEXT NOT NULL,
+  is_correct BOOLEAN DEFAULT FALSE,
+
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (scenario_question_id)
+    REFERENCES scenario_questions(id)
+    ON DELETE CASCADE
+);
+3.4 (Opzionale) progress
+
+CREATE TABLE user_scenario_progress (
+  user_id INT NOT NULL,
+  scenario_id INT NOT NULL,
+
+  completed BOOLEAN DEFAULT FALSE,
+  score INT DEFAULT NULL,
+  last_question_index INT DEFAULT 0,
+
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (user_id, scenario_id)
+);
+FLAGS ENV (BACKEND + FRONTEND)
+
+4.1 Backend (Railway / Node)
+Flags Premium esistenti (già in uso):
+
+PREMIUM_ENABLED=0|1
+
+Nuovo flag dedicato ai scenarios:
+
+PREMIUM_LOCK_SCENARIOS=0|1
+
+Regola precedence (coerente):
+
+Se PREMIUM_ENABLED=0 => Premium “spento”: NON bloccare per Premium (modalità free).
+
+Se PREMIUM_ENABLED=1 e PREMIUM_LOCK_SCENARIOS=1 => Scenarios locked per non-premium.
+
+Nota prodotto:
+
+scenarios.is_active può restare false finché non vuoi esporli.
+
+Quindi puoi avere Premium OFF ma scenari non visibili (se is_active=false).
+
+4.2 Frontend (Vercel / Next)
+
+NEXT_PUBLIC_PREMIUM_ENABLED=0|1
+
+NEXT_PUBLIC_PREMIUM_LOCK_SCENARIOS=0|1
+
+Il FE usa questi flag solo per UI/CTA; il backend è l’autorità.
+
+ENDPOINTS API (CON I TUOI MIDDLEWARE REALI)
+
+Middleware disponibili:
+
+authMiddleware (hard)
+
+optionalAuthMiddleware (soft, token invalido => guest)
+
+5.1 LIST by topic (guest-friendly)
+GET /api/scenarios?topicId=123
+
+Middleware: optionalAuthMiddleware
+
+Comportamento:
+
+ritorna solo is_active=1
+
+NON include mai: intro_text, question_text, answers
+
+include locked calcolato server-side:
+
+Definizioni:
+
+premiumFeatureOn = (PREMIUM_ENABLED === "1" && PREMIUM_LOCK_SCENARIOS === "1")
+
+privileged = !!req.user && req.user.premium === true
+
+locked = premiumFeatureOn && !privileged
+
+Payload esempio:
+
+{
+  "items": [
+    {
+      "id": 5,
+      "certification_id": 16,
+      "topic_id": 106,
+      "title": "Monthly Orders Report — JOIN + GROUP BY + HAVING",
+      "difficulty": "exam",
+      "locked": true
+    }
+  ]
+}
+5.2 DETAIL (contenuto scenario completo)
+GET /api/scenarios/:scenarioId
+
+Middleware consigliato:
+
+optionalAuthMiddleware + gating server-side
+(così guest può ricevere 403 locked invece di 401)
+
+Regole:
+
+se is_active=0 => 404
+
+se locked===true => 403 { error: "PREMIUM_REQUIRED" } (preferito)
+
+se unlocked => ritorna:
+
+intro_text
+
+questions ordinati per order_index
+
+answers per ogni domanda
+
+Sicurezza anti-cheat (consigliata):
+
+nel DETAIL NON inviare is_correct
+
+inviare solo id + testo answer
+
+5.3 CHECK ANSWER (premium)
+POST /api/scenarios/:scenarioId/answer
+
+Middleware: authMiddleware (hard) + gating premium
+Body:
+
+{ "scenarioQuestionId": 501, "answerId": 9002 }
+Response:
+
+{ "correct": true, "correctAnswerId": 9002 }
+Regole:
+
+se locked => 403 { error: "PREMIUM_REQUIRED" }
+
+l’endpoint deve verificare:
+
+question belongs to scenario
+
+answer belongs to question
+
+5.4 PROGRESS (opzionale)
+
+GET /api/scenarios/:scenarioId/progress (authMiddleware)
+
+POST /api/scenarios/:scenarioId/progress (authMiddleware)
+
+FRONTEND UX (MINIMA, NON INVASIVA)
+
+6.1 Placement
+Nella pagina Topic (dopo quiz standard):
+
+card “Scenario-based questions (Premium)”
+
+stato:
+
+locked: CTA “Unlock Premium”
+
+unlocked: CTA “Start scenario”
+
+coming-soon (se nessun scenario attivo): box informativo
+
+6.2 Engine dedicato
+
+creare vista dedicata scenario (non usare QuizEngine):
+
+ScenarioEngine.tsx
+
+flow:
+
+intro → Q1 → Q2 → … → summary
+
+ordine fisso (order_index), niente random.
+
+6.3 No leak (FE)
+
+anche se FE ha “locked”, deve comunque chiamare backend detail solo se unlocked
+
+se backend risponde 403 PREMIUM_REQUIRED => mostra paywall / CTA
+
+CHECKLIST QA
+
+A) Guest (no token)
+
+GET list -> 200 (items se is_active=1)
+
+GET detail -> 403 PREMIUM_REQUIRED (se lock ON) oppure 200 (se lock OFF)
+
+POST answer -> 401 UNAUTHORIZED
+
+B) Logged free (token valido, premium=false)
+
+LIST -> locked true (se lock ON)
+
+DETAIL -> 403 PREMIUM_REQUIRED (se lock ON)
+
+ANSWER -> 403 PREMIUM_REQUIRED (se lock ON)
+
+C) Logged premium/admin (premium=true)
+
+LIST -> locked false
+
+DETAIL -> 200 con intro + domande
+
+ANSWER -> 200 con correct/incorrect
+
+ROADMAP (NON ORA)
+
+Multilingua scenari (tabella translations o colonne *_en/fr/es)
+
+Progress persistente + resume
+
+Exam simulation (timer + scoring)
+
+Upsell affiliate post-scenario
+
+FINE
+
+
+### Cosa ho cambiato (solo cose concrete)
+- Ho sostituito “middleware generici” con i tuoi **nomi veri**: `authMiddleware` e `optionalAuthMiddleware`.
+- Ho fissato che **admin è già premium** perché il tuo middleware lo incorpora (`premium: user.premium === 1 || role === 'admin'`).
+- Ho imposto come default di gating che il **detail** usi `optionalAuthMiddleware` per poter rispondere **403** anche ai guest (più UX-friendly del 401).
+
+Se vuoi, nel prossimo passo ti preparo anche:
+- gli **snippet Express router** pronti per `/api/scenarios` (list/detail/answer) con le query MySQL, g

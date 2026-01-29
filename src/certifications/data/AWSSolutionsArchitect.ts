@@ -145,13 +145,14 @@ const AWS_SOLUTIONS_ARCHITECT = {
     },
   },
 
-  // Nel legacy puntavi a `/${lang}/quiz/aws-cloud`
-  quizRoute: {
-    it: "/it/quiz/aws-cloud",
-    en: "/en/quiz/aws-cloud",
-    fr: "/fr/quiz/aws-cloud",
-    es: "/es/quiz/aws-cloud",
-  },
+  // ✅ AWS Solutions Architect -> deve puntare al suo quiz, non a aws-cloud (Cloud Practitioner)
+quizRoute: {
+  it: "/it/quiz/aws-solutions-architect",
+  en: "/en/quiz/aws-solutions-architect",
+  fr: "/fr/quiz/aws-solutions-architect",
+  es: "/es/quiz/aws-solutions-architect",
+},
+
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",
