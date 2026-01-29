@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PortableText } from "@portabletext/react";
 
-import { sanityServerClient } from "@/lib/sanity.server"; // ✅ server client (come l’API)
+import { sanityServerClient } from "@/lib/sanity.server";
 import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
 
 import type { Locale } from "@/lib/i18n";
-import { blogIndexPath, certificationsPath, quizHomePath } from "@/lib/paths"; // ✅ builder coerenti
+import { blogIndexPath, certificationsPath, quizHomePath } from "@/lib/paths";
 
 function formatDate(lang: Locale, iso?: string) {
   if (!iso) return "";
@@ -80,9 +80,9 @@ function cx(...parts: Array<string | undefined | false | null>) {
 export default async function BlogArticlePage({
   params,
 }: {
-  params: { lang: Locale; slug: string }; // ✅ non Promise
+  params: Promise<{ lang: Locale; slug: string }>; // ✅ Next 15: params async
 }) {
-  const { lang, slug } = params;
+  const { lang, slug } = await params; // ✅ FIX: await params
 
   const article = await sanityServerClient.fetch<any>(articleBySlugLang, {
     lang,
@@ -97,14 +97,12 @@ export default async function BlogArticlePage({
   const date = formatDate(lang, article.publishedAt ?? article.date);
   const coverUrl: string | undefined = article.coverUrl || undefined;
 
-  // ✅ path coerenti con la tua architettura
   const blogBase = blogIndexPath(lang);
   const hrefQuizHome = quizHomePath(lang);
   const hrefCerts = certificationsPath(lang);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-      {/* Breadcrumb */}
       <div className="mb-4 text-sm text-zinc-500">
         <Link className="hover:underline" href={blogBase}>
           {labels.blog}
@@ -113,13 +111,10 @@ export default async function BlogArticlePage({
         <span className="text-zinc-700">{article.title}</span>
       </div>
 
-      {/* HERO */}
       <header className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          {/* Cover */}
           {coverUrl ? (
             <div className="relative h-52 w-full overflow-hidden rounded-2xl bg-zinc-100 md:h-44 md:w-64">
-              {/* Uso <img> così non serve alcuna config di next/image domains */}
               <img
                 src={coverUrl}
                 alt={article.title ?? "Cover"}
@@ -131,7 +126,6 @@ export default async function BlogArticlePage({
             <div className="hidden md:block md:h-44 md:w-64" />
           )}
 
-          {/* Title + meta */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
@@ -176,7 +170,6 @@ export default async function BlogArticlePage({
         </div>
       </header>
 
-      {/* CONTENT */}
       <section className="mt-8">
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className={cx("prose prose-zinc lg:prose-lg", "max-w-none")}>
@@ -185,9 +178,10 @@ export default async function BlogArticlePage({
         </div>
       </section>
 
-      {/* CTA BOTTOM */}
       <section className="mt-10 rounded-2xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-zinc-900">{labels.ctaTitle}</h3>
+        <h3 className="text-lg font-semibold text-zinc-900">
+          {labels.ctaTitle}
+        </h3>
         <p className="mt-2 text-zinc-600">{labels.ctaBody}</p>
 
         <div className="mt-4 flex flex-wrap gap-3">
