@@ -208,6 +208,18 @@ export const categoryKeyFromSlug = (
   const safeLang = toLocale(lang, "en");
   return CAT_SLUG_TO_KEY[safeLang][slug] ?? "default";
 };
+/* ------------------------------------------------------------------ */
+/* BLOG (sempre con lingua)                                            */
+/* ------------------------------------------------------------------ */
+
+export const blogPath = (lang: Locale, slug: string): string => {
+  const clean = slug.replace(/^\/+/, "");
+  return `/${lang}/blog/${clean}`;
+};
+
+export const blogIndexPath = (lang: Locale): string => {
+  return `/${lang}/blog`;
+};
 
 /* ------------------------------------------------------------------ */
 /* PRICING / PREMIUM (SEO)                                             */
@@ -227,26 +239,27 @@ export const pricingPath = (lang: Locale): string => {
 };
 
 /* ------------------------------------------------------------------ */
-/* QUIZ                                                                */
+/* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
 
 export const quizHomePath = (lang: Locale): string =>
-  `${quizPrefix(lang)}/quiz-home`;
+  `/${lang}/quiz-home`;
 
 export const quizTopicPath = (
   lang: Locale,
   certSlug: string,
   topicId: number
 ): string =>
-  `${quizPrefix(lang)}/quiz/${certSlug}/topic/${topicId}`;
+  `/${lang}/quiz/${certSlug}/topic/${topicId}`;
 
 export const mixedQuizPath = (
   lang: Locale,
   certSlug: string
 ): string =>
-  `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;
+  `/${lang}/quiz/${certSlug}/mixed`;
+
 /* ------------------------------------------------------------------ */
-/* LANGUAGE SWITCH — URL SAFE (SEO + QUIZ)                             */
+/* LANGUAGE SWITCH — URL SAFE (SEO + QUIZ + BLOG)                      */
 /* ------------------------------------------------------------------ */
 /**
  * Usare SOLO per il cambio lingua dal menu header.
@@ -257,16 +270,28 @@ const LOCALES = ["it", "en", "fr", "es"] as const;
 
 export function switchLangPathname(
   pathname: string,
-  nextLang: Locale   // ⬅ usa il Locale già esistente
+  nextLang: Locale
 ): string {
   // Pulizia query e hash
   const cleanPath = pathname.split("?")[0].split("#")[0];
 
   /* ----------------------------- QUIZ ----------------------------- */
-  // /{lang}/quiz/... → sostituiamo SOLO la lingua
-  const quizRegex = new RegExp(`^/(${LOCALES.join("|")})/quiz/`);
+  // /{lang}/quiz/... → cambia SOLO la lingua
+  const quizRegex = new RegExp(`^/(${LOCALES.join("|")})/quiz(/|$)`);
   if (quizRegex.test(cleanPath)) {
-    return cleanPath.replace(quizRegex, `/${nextLang}/quiz/`);
+    return cleanPath.replace(quizRegex, `/${nextLang}/quiz$2`);
+  }
+
+  /* ----------------------------- BLOG ----------------------------- */
+  // BLOG è SEMPRE /{lang}/blog/...
+  const blogRegex = new RegExp(`^/(${LOCALES.join("|")})/blog(/|$)`);
+  if (blogRegex.test(cleanPath)) {
+    return cleanPath.replace(blogRegex, `/${nextLang}/blog$2`);
+  }
+
+  // Caso legacy /blog/... (EN normalizzato dal middleware)
+  if (cleanPath === "/blog" || cleanPath.startsWith("/blog/")) {
+    return `/${nextLang}${cleanPath}`;
   }
 
   /* ------------------------------ SEO ------------------------------ */
@@ -278,3 +303,4 @@ export function switchLangPathname(
     ? pathWithoutLang
     : `/${nextLang}${pathWithoutLang}`;
 }
+

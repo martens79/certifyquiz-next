@@ -40,7 +40,11 @@ export const portableTextComponents: PortableTextComponents = {
     em: ({ children }) => <em className="italic">{children}</em>,
 
     link: ({ value, children }) => {
-      const href = value?.href || "#";
+      let href = (value?.href || "#").trim();
+if (href && href !== "#" && !/^https?:\/\//.test(href) && !href.startsWith("/")) {
+  href = `/${href}`;
+}
+
       const openInNewTab = Boolean(value?.openInNewTab);
       const isExternal = /^https?:\/\//.test(href);
 

@@ -3,20 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
+import { blogIndexPath, blogPath } from "@/lib/paths"; // ✅ usa i builder
 
 type Article = {
-  slug: string;
+  slug: string; // es: "is-microsoft-sql-server-certification-still-worth-it-in-2025"
   title: string;
   excerpt?: string;
   publishedAt?: string;
   coverUrl?: string;
-};
-
-const BLOG_SEGMENT_BY_LANG: Record<Locale, string> = {
-  it: "blog",
-  en: "blog",
-  fr: "blog",
-  es: "blog",
 };
 
 const LBL_FROM_BLOG: Record<Locale, string> = {
@@ -75,9 +69,7 @@ export default function BlogTeaser({
 
     (async () => {
       try {
-        const res = await fetch(`/api/blog/latest?lang=${lang}`, {
-          cache: "no-store",
-        });
+        const res = await fetch(`/api/blog/latest?lang=${lang}`, { cache: "no-store" });
         const data = await res.json();
         if (!cancelled) setArticle(data.article ?? null);
       } catch {
@@ -96,11 +88,12 @@ export default function BlogTeaser({
   if (!loaded) return null;
   if (!article?.slug) return null;
 
-  const base = `/${lang}/${BLOG_SEGMENT_BY_LANG[lang]}`;
-  const href = `${base}/${article.slug}`;
+  // ✅ URL corrette (coerenti con /[lang]/blog)
+  const base = blogIndexPath(lang);
+  const href = blogPath(lang, article.slug);
+
   const dateLabel = formatDate(lang, article.publishedAt);
   const excerpt = (article.excerpt ?? "").trim();
-
   const isCompact = variant === "compact";
 
   return (
@@ -111,12 +104,7 @@ export default function BlogTeaser({
         className
       )}
     >
-      <div
-        className={cx(
-          "flex items-center gap-3",
-          isCompact ? "p-2 md:p-3" : "p-3 md:p-4"
-        )}
-      >
+      <div className={cx("flex items-center gap-3", isCompact ? "p-2 md:p-3" : "p-3 md:p-4")}>
         {/* Thumbnail */}
         <Link href={href} className="shrink-0">
           <div
@@ -141,9 +129,7 @@ export default function BlogTeaser({
           <div className="flex items-center justify-between gap-2">
             <p className={cx("text-zinc-500", isCompact ? "text-[11px]" : "text-xs")}>
               {LBL_FROM_BLOG[lang]}
-              {dateLabel ? (
-                <span className="ml-2 text-zinc-400">· {dateLabel}</span>
-              ) : null}
+              {dateLabel ? <span className="ml-2 text-zinc-400">· {dateLabel}</span> : null}
             </p>
 
             <div className="flex items-center gap-2">
@@ -155,6 +141,7 @@ export default function BlogTeaser({
               >
                 {lang.toUpperCase()}
               </span>
+
               <Link
                 href={base}
                 className={cx(
@@ -183,10 +170,7 @@ export default function BlogTeaser({
             <p
               className={cx(
                 "mt-1 text-zinc-600",
-                // compact: 1 riga, default: 1 su mobile e 2 su desktop
-                isCompact
-                  ? "line-clamp-1 text-xs"
-                  : "line-clamp-1 text-xs md:line-clamp-2 md:text-sm"
+                isCompact ? "line-clamp-1 text-xs" : "line-clamp-1 text-xs md:line-clamp-2 md:text-sm"
               )}
             >
               {excerpt}

@@ -14,7 +14,9 @@ export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
 
-  // skip assets / api
+  // -------------------------------------------------------
+  // SKIP assets / api
+  // -------------------------------------------------------
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -25,6 +27,14 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // -------------------------------------------------------
+  // LEGACY BLOG ROOT → /en/blog/...
+  // -------------------------------------------------------
+  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
+    url.pathname = `/en${pathname}`;
+    return NextResponse.redirect(url, 308);
+  }
+
   const parts = pathname.split("/").filter(Boolean);
   if (parts.length === 0) return NextResponse.next();
 
@@ -33,28 +43,32 @@ export function middleware(req: NextRequest) {
   // -------------------------------------------------------
   // 1) NORMALIZZA PREFISSI LINGUA
   // -------------------------------------------------------
+  // /en è root SOLO per SEO pages
+  // ❌ NON per quiz
+  // ❌ NON per blog
+  if (
+    parts[0] === "en" &&
+    parts[1] !== "quiz" &&
+    parts[1] !== "blog"
+  ) {
+    parts.shift();
+    changed = true;
+  }
 
-  // /en è root SOLO per pagine SEO, ma i QUIZ in EN restano /en/quiz/...
-if (parts[0] === "en" && parts[1] !== "quiz") {
-  parts.shift();
-  changed = true;
-}
-
-
-  // /fr/es/... -> /es/... (tieni solo il secondo)
+  // /fr/es/... -> tieni solo il secondo (evita doppia lingua)
   if (isLocale(parts[0]) && isLocale(parts[1])) {
     const second = parts[1];
     parts.splice(0, 2, second);
     changed = true;
   }
 
-  // ricalcola locale corrente dopo eventuali modifiche
+  // ricalcola locale corrente
   const locale = isLocale(parts[0]) ? parts[0] : "en";
-  const segIndex = isLocale(parts[0]) ? 1 : 0; // dove sta il segmento "sezione"
+  const segIndex = isLocale(parts[0]) ? 1 : 0;
   const seg = parts[segIndex];
 
   // -------------------------------------------------------
-  // 2) CORREGGI SEGMENTI "SPORCHI" (IT dentro FR/ES)
+  // 2) CORREGGI SEGMENTI "SPORCHI"
   // -------------------------------------------------------
 
   // FR
@@ -81,7 +95,7 @@ if (parts[0] === "en" && parts[1] !== "quiz") {
     }
   }
 
-  // (opzionale) IT: se arriva /it/certifications -> /it/certificazioni
+  // IT
   if (locale === "it") {
     if (seg === "certifications") {
       parts[segIndex] = "certificazioni";
@@ -93,6 +107,9 @@ if (parts[0] === "en" && parts[1] !== "quiz") {
     }
   }
 
+  // -------------------------------------------------------
+  // 3) REDIRECT SE SERVE
+  // -------------------------------------------------------
   if (!changed) return NextResponse.next();
 
   url.pathname = buildPath(parts);

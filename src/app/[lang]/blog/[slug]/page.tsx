@@ -1,11 +1,14 @@
-//src/app/[lang]/blog/[slug]/page.tsx
+// src/app/[lang]/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PortableText } from "@portabletext/react";
-import { sanityClient } from "@/lib/sanity.client";
+
+import { sanityServerClient } from "@/lib/sanity.server"; // ✅ server client (come l’API)
 import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
+
 import type { Locale } from "@/lib/i18n";
+import { blogIndexPath, certificationsPath, quizHomePath } from "@/lib/paths"; // ✅ builder coerenti
 
 function formatDate(lang: Locale, iso?: string) {
   if (!iso) return "";
@@ -24,7 +27,8 @@ function getLabels(lang: Locale) {
         fromBlog: "Dal blog",
         readMore: "Leggi l’articolo",
         ctaTitle: "Pronto a fare pratica?",
-        ctaBody: "Passa ai quiz, allenati con domande realistiche e traccia i tuoi progressi.",
+        ctaBody:
+          "Passa ai quiz, allenati con domande realistiche e traccia i tuoi progressi.",
         ctaPrimary: "Esplora i quiz",
         ctaSecondary: "Vedi certificazioni",
         moreArticles: "Altri articoli",
@@ -35,7 +39,8 @@ function getLabels(lang: Locale) {
         fromBlog: "Du blog",
         readMore: "Lire l’article",
         ctaTitle: "Prêt à pratiquer ?",
-        ctaBody: "Passe aux quiz, entraîne-toi avec des questions réalistes et suis tes progrès.",
+        ctaBody:
+          "Passe aux quiz, entraîne-toi avec des questions réalistes et suis tes progrès.",
         ctaPrimary: "Explorer les quiz",
         ctaSecondary: "Voir les certifications",
         moreArticles: "Plus d’articles",
@@ -46,7 +51,8 @@ function getLabels(lang: Locale) {
         fromBlog: "Del blog",
         readMore: "Leer el artículo",
         ctaTitle: "¿Listo para practicar?",
-        ctaBody: "Pasa a los quizzes, entrena con preguntas realistas y sigue tu progreso.",
+        ctaBody:
+          "Pasa a los quizzes, entrena con preguntas realistas y sigue tu progreso.",
         ctaPrimary: "Explorar quizzes",
         ctaSecondary: "Ver certificaciones",
         moreArticles: "Más artículos",
@@ -57,7 +63,8 @@ function getLabels(lang: Locale) {
         fromBlog: "From the blog",
         readMore: "Read the article",
         ctaTitle: "Ready to practice?",
-        ctaBody: "Jump into quizzes, train with realistic questions, and track your progress.",
+        ctaBody:
+          "Jump into quizzes, train with realistic questions, and track your progress.",
         ctaPrimary: "Explore quizzes",
         ctaSecondary: "Browse certifications",
         moreArticles: "More articles",
@@ -73,24 +80,27 @@ function cx(...parts: Array<string | undefined | false | null>) {
 export default async function BlogArticlePage({
   params,
 }: {
-  params: Promise<{ lang: Locale; slug: string }>;
+  params: { lang: Locale; slug: string }; // ✅ non Promise
 }) {
-  const { lang, slug } = await params;
+  const { lang, slug } = params;
 
-  const article = await sanityClient.fetch<any>(articleBySlugLang, { lang, slug });
+  const article = await sanityServerClient.fetch<any>(articleBySlugLang, {
+    lang,
+    slug,
+  });
+
   if (!article) return notFound();
 
-  // La tua query già fa coalesce(body, content) quindi qui basta body
   const value = article.body ?? [];
   const labels = getLabels(lang);
 
   const date = formatDate(lang, article.publishedAt ?? article.date);
   const coverUrl: string | undefined = article.coverUrl || undefined;
 
-  const blogBase = `/${lang}/blog`;
-const hrefQuizHome = `/${lang}/quiz-home`;
-const hrefCerts = `/certifications`; // ✅ no lang prefix: route unica
-
+  // ✅ path coerenti con la tua architettura
+  const blogBase = blogIndexPath(lang);
+  const hrefQuizHome = quizHomePath(lang);
+  const hrefCerts = certificationsPath(lang);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
@@ -131,7 +141,9 @@ const hrefCerts = `/certifications`; // ✅ no lang prefix: route unica
                 {lang.toUpperCase()}
               </span>
               {date ? (
-                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">{date}</span>
+                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-600">
+                  {date}
+                </span>
               ) : null}
             </div>
 
@@ -140,7 +152,9 @@ const hrefCerts = `/certifications`; // ✅ no lang prefix: route unica
             </h1>
 
             {article.excerpt ? (
-              <p className="mt-4 text-base leading-relaxed text-zinc-700">{article.excerpt}</p>
+              <p className="mt-4 text-base leading-relaxed text-zinc-700">
+                {article.excerpt}
+              </p>
             ) : null}
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -165,8 +179,6 @@ const hrefCerts = `/certifications`; // ✅ no lang prefix: route unica
       {/* CONTENT */}
       <section className="mt-8">
         <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          {/* Se hai @tailwindcss/typography, questa classe fa magia.
-              Se non ce l’hai, dimmelo e ti do il fallback. */}
           <div className={cx("prose prose-zinc lg:prose-lg", "max-w-none")}>
             <PortableText value={value} components={portableTextComponents} />
           </div>
