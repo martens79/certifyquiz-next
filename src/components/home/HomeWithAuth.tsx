@@ -1,3 +1,4 @@
+// src/components/home/HomeWithAuth.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -14,19 +15,17 @@ export default function HomeWithAuth({ lang }: Props) {
   useEffect(() => {
     setIsLoggedIn(!!getToken());
 
-    fetch("/api/backend/public/home-stats", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (
-          data &&
-          typeof data.questions === "number" &&
-          typeof data.topics === "number" &&
-          typeof data.certifications === "number"
-        ) {
-          setStats(data);
-        }
-      })
-      .catch(() => {});
+    (async () => {
+      try {
+        // ✅ endpoint reale: /api/public/home-stats
+        const r = await fetch("/api/backend/public/home-stats", { cache: "no-store" });
+        if (!r.ok) return;
+        const data = (await r.json()) as HomeStats;
+        setStats(data);
+      } catch {
+        // silent fail
+      }
+    })();
   }, []);
 
   return <Home lang={lang} isLoggedIn={isLoggedIn} stats={stats ?? undefined} />;
