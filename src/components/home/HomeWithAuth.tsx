@@ -14,22 +14,19 @@ export default function HomeWithAuth({ lang }: Props) {
   useEffect(() => {
     setIsLoggedIn(!!getToken());
 
-    // ✅ PROVA 1 (più probabile): proxy next -> backend
-    fetch("/api/backend/public/home-stats")
-      .then(async (r) => {
-        if (!r.ok) throw new Error(`home-stats ${r.status}`);
-        return r.json();
+    fetch("/api/backend/public/home-stats", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (
+          data &&
+          typeof data.questions === "number" &&
+          typeof data.topics === "number" &&
+          typeof data.certifications === "number"
+        ) {
+          setStats(data);
+        }
       })
-      .then((data) => setStats(data))
-      .catch(() => {
-        // ✅ fallback: se il proxy richiede /api esplicito
-        fetch("/api/backend/api/public/home-stats")
-          .then((r) => (r.ok ? r.json() : null))
-          .then((data) => {
-            if (data) setStats(data);
-          })
-          .catch(() => {});
-      });
+      .catch(() => {});
   }, []);
 
   return <Home lang={lang} isLoggedIn={isLoggedIn} stats={stats ?? undefined} />;
