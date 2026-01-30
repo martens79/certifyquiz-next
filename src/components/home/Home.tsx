@@ -73,12 +73,22 @@ const CATEGORY_UI: Record<
   },
 } as const;
 
+
+export type HomeStats = {
+  questions: number;
+  topics: number;
+  certifications: number;
+};
+
+
 type Props = {
   lang?: Locale;
   isLoggedIn?: boolean;
+  stats?: HomeStats; // ✅ aggiungi
 };
 
-export default function Home({ lang, isLoggedIn = false }: Props) {
+
+export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   const safeLang: Locale =
     lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
@@ -300,6 +310,30 @@ export default function Home({ lang, isLoggedIn = false }: Props) {
             </Link>
           )}
         </div>
+
+          {/* Contatore quiz  */}
+
+                  {stats && (
+          <p className="mt-3 text-xs md:text-sm text-slate-600">
+            {L(
+              {
+                it: `${stats.questions.toLocaleString("it-IT")} domande • ${stats.topics.toLocaleString(
+                  "it-IT"
+                )} topic • ${stats.certifications.toLocaleString("it-IT")} certificazioni`,
+                en: `${stats.questions.toLocaleString("en-US")} questions • ${stats.topics.toLocaleString(
+                  "en-US"
+                )} topics • ${stats.certifications.toLocaleString("en-US")} certifications`,
+                fr: `${stats.questions.toLocaleString("fr-FR")} questions • ${stats.topics.toLocaleString(
+                  "fr-FR"
+                )} sujets • ${stats.certifications.toLocaleString("fr-FR")} certifications`,
+                es: `${stats.questions.toLocaleString("es-ES")} preguntas • ${stats.topics.toLocaleString(
+                  "es-ES"
+                )} temas • ${stats.certifications.toLocaleString("es-ES")} certificaciones`,
+              },
+              safeLang
+            )}
+          </p>
+        )}
 
         <p className="text-xs text-slate-500 mt-3">
           {L(
