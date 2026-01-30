@@ -1,7 +1,16 @@
 // src/app/api/backend/[...path]/route.ts
 
-const API_REMOTE = process.env.API_BASE_URL || "https://api.certifyquiz.com/api";
-const API_LOCAL = process.env.API_BASE_URL_DEV || "http://127.0.0.1:8080/api";
+function stripTrailingApi(u: string) {
+  // rimuove solo un /api finale (con o senza slash)
+  return u.replace(/\/api\/?$/, "");
+}
+
+const API_REMOTE_RAW = process.env.API_BASE_URL || "https://api.certifyquiz.com/api";
+const API_LOCAL_RAW = process.env.API_BASE_URL_DEV || "http://127.0.0.1:8080/api";
+
+// ✅ Base senza /api finale (così non rischi mai /api/api)
+const API_REMOTE = stripTrailingApi(API_REMOTE_RAW);
+const API_LOCAL = stripTrailingApi(API_LOCAL_RAW);
 
 // Se sei su Vercel, NON usare mai il locale.
 // In locale, usa DEV a meno che tu voglia forzare remoto.
@@ -12,7 +21,13 @@ const TARGET_BASE = IS_VERCEL || FORCE_REMOTE ? API_REMOTE : API_LOCAL;
 
 function buildTargetUrl(req: Request, path: string[]) {
   const incoming = new URL(req.url);
-  const target = new URL(`${TARGET_BASE}/${path.join("/")}`);
+
+  // La nostra API backend è sempre sotto /api/...
+  // Esempi:
+  // - /api/backend/public/home-stats  -> https://api.certifyquiz.com/api/public/home-stats
+  // - /api/backend/topics/123         -> https://api.certifyquiz.com/api/topics/123
+  const target = new URL(`${TARGET_BASE}/api/${path.join("/")}`);
+
   target.search = incoming.search;
   return target.toString();
 }
