@@ -388,20 +388,24 @@ function normalizeHistory(data: any): QuizHistoryRow[] {
 
     const created_at = r?.created_at ?? r?.date ?? null;
 
-    return {
-      id: toNumFlexible(r?.id, i + 1),
-      quiz_id: r?.quiz_id ?? null,
-      certification_id: r?.certification_id ?? null,
-      certification_name:
-        r?.certification_name ?? r?.cert_name ?? r?.name ?? undefined,
-      correct_answers: Number.isFinite(correct) ? correct : 0,
-      total_questions: Number.isFinite(total) ? total : 0,
-      percentage: Number.isFinite(percentageNum) ? percentageNum : null,
-      score: Number.isFinite(scoreNum) ? scoreNum : null,
-      passed,
-      created_at,
-      date: r?.date ?? null,
-    };
+    const quizIdNum = toNumFlexible(r?.quiz_id, NaN);
+const certIdNum = toNumFlexible(r?.certification_id, NaN);
+
+return {
+  id: toNumFlexible(r?.id, i + 1),
+  quiz_id: Number.isFinite(quizIdNum) ? quizIdNum : null,
+  certification_id: Number.isFinite(certIdNum) ? certIdNum : null,
+  certification_name:
+    r?.certification_name ?? r?.cert_name ?? r?.name ?? undefined,
+  correct_answers: Number.isFinite(correct) ? correct : 0,
+  total_questions: Number.isFinite(total) ? total : 0,
+  percentage: Number.isFinite(percentageNum) ? percentageNum : null,
+  score: Number.isFinite(scoreNum) ? scoreNum : null,
+  passed,
+  created_at,
+  date: r?.date ?? null,
+};
+
   });
 }
 
@@ -624,20 +628,30 @@ useEffect(() => {
 
   // —— Certificazioni + filtro + stats
   const [certs, setCerts] = useState<CertRow[]>([]);
+
+ useEffect(() => {
+  let alive = true;
+
+  (async () => {
+    try {
+      const raw = await tryJson<any>("/certifications"); // ✅ NON /api/backend/...
+      const rows = normalizeCerts(raw);
+      if (alive) setCerts(rows);
+    } catch (e) {
+      console.error("[certs] fetch failed", e);
+      if (alive) setCerts([]);
+    }
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, []);
+
+
   const [selectedCertId, setSelectedCertId] = useState<string>(""); // "" = tutte
   const [certStats, setCertStats] = useState<CertStat>(null);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const raw = await tryJson<any>("/get-certifications");
-      const rows = normalizeCerts(raw);
-      if (alive) setCerts(rows);
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   // 🔍 numero della cert selezionata (o null se "tutte")
   const selectedCertNumeric = useMemo(
@@ -691,65 +705,47 @@ useEffect(() => {
 }, [validHistory]);
 
 
-  // —— Progresso per categoria
-  const [categoryProgress, setCategoryProgress] = useState<
-    CategoryProgressRow[]
-  >([]);
-  useEffect(() => {
-    let alive = true;
+ // —— Progresso per categoria
+const [categoryProgress, setCategoryProgress] = useState<CategoryProgressRow[]>(
+  []
+);
 
-    (async () => {
-      try {
-        const fromUser = await tryJson<any[]>(
-          "/user/user-categories-progress"
-        );
+useEffect(() => {
+  let alive = true;
 
-        let raw: any[] = [];
+  (async () => {
+    try {
+      const fromUser = await tryJson<any[]>("/user/user-categories-progress");
+      const raw = Array.isArray(fromUser) ? fromUser : [];
 
-        if (Array.isArray(fromUser) && fromUser.length) {
-          raw = fromUser;
-        } else {
-          const fallback = await tryJson<any[]>("/get-categories");
-          raw = Array.isArray(fallback) ? fallback : [];
-        }
+      const rows: CategoryProgressRow[] = raw.map((r: any) => ({
+        category: r.category ?? r.name ?? r.category_name ?? "",
+        total_topics: toNumFlexible(
+          r.total_topics ?? r.totalTopics ?? r.total_topics_count ?? r.total ?? 0
+        ),
+        quizTaken: toNumFlexible(
+          r.quizTaken ?? r.quiz_taken ?? r.taken ?? r.completed_quiz ?? 0
+        ),
+        totalQuestions: toNumFlexible(
+          r.totalQuestions ?? r.total_questions ?? r.questions ?? 0
+        ),
+        completed: toNumFlexible(r.completed ?? r.completed_topics ?? r.done ?? 0),
+        avgPercentage: toNumFlexible(
+          r.avgPercentage ?? r.avg_percentage ?? r.percentage ?? 0
+        ),
+      }));
 
-        const rows: CategoryProgressRow[] = raw.map((r: any) => ({
-          category: r.category ?? r.name ?? r.category_name ?? "",
-          total_topics: toNumFlexible(
-            r.total_topics ??
-              r.totalTopics ??
-              r.total_topics_count ??
-              r.total ??
-              0
-          ),
-          quizTaken: toNumFlexible(
-            r.quizTaken ??
-              r.quiz_taken ??
-              r.taken ??
-              r.completed_quiz ??
-              0
-          ),
-          totalQuestions: toNumFlexible(
-            r.totalQuestions ?? r.total_questions ?? r.questions ?? 0
-          ),
-          completed: toNumFlexible(
-            r.completed ?? r.completed_topics ?? r.done ?? 0
-          ),
-          avgPercentage: toNumFlexible(
-            r.avgPercentage ?? r.avg_percentage ?? r.percentage ?? 0
-          ),
-        }));
+      if (alive) setCategoryProgress(rows);
+    } catch (e) {
+      console.error("[categories] fetch failed", e);
+      if (alive) setCategoryProgress([]);
+    }
+  })();
 
-        if (alive) setCategoryProgress(rows);
-      } catch {
-        if (alive) setCategoryProgress([]);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+  return () => {
+    alive = false;
+  };
+}, []);
 
   // —— Date formatter deterministico (evita mismatch SSR/CSR)
   const localeMap: Record<Locale, string> = {
