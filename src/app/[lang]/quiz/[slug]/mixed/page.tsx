@@ -363,6 +363,7 @@ export default function MixedQuizPage() {
                   totalQuestions: s.total,
                   correctAnswers: s.correct,
                   isExam: finishedMode === 'exam',
+                   attempts: s.attempts, // ✅ NEW
                 });
               } catch {
                 // best-effort

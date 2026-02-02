@@ -227,17 +227,21 @@ export default function MockExamPage() {
           }
         }}
         onFinish={async (s: any) => {
-          try {
-            await saveExam({
-              certification_id: certId,
-              totalQuestions: s.total,
-              correctAnswers: s.correct,
-              isExam: true,
-            });
-          } catch {
-            // best-effort
-          }
-        }}
+  try {
+    await saveExam({
+      certification_id: certId,
+      totalQuestions: s.total,
+      correctAnswers: s.correct,
+      isExam: true,
+
+      // ✅ NEW: per aggiornare user_question_stats
+      attempts: s.attempts,
+    });
+  } catch {
+    // best-effort
+  }
+}}
+
         backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
       />
     </div>

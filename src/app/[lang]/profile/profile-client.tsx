@@ -63,6 +63,9 @@ type CertStat = {
 } | null;
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
+const FEATURE_ERROR_REVIEW =
+  process.env.NEXT_PUBLIC_FEATURE_ERROR_REVIEW === "1";
+
 
 // ——— Label localizzate (senza toccare dict globale)
 const LBL = {
@@ -260,6 +263,37 @@ readinessSelectHint: {
   en: "Select a certification to see your readiness.",
   fr: "Sélectionnez une certification pour voir votre préparation.",
   es: "Selecciona una certificación para ver tu preparación.",
+},
+
+errorReviewTitle: {
+  it: "Ripasso errori",
+  en: "Error review",
+  fr: "Révision des erreurs",
+  es: "Repaso de errores",
+},
+errorReviewDesc: {
+  it: "Ripassa le domande sbagliate finché le azzeri.",
+  en: "Review the questions you got wrong until you clear them.",
+  fr: "Révisez les questions ratées jusqu’à les éliminer.",
+  es: "Repasa las preguntas falladas hasta eliminarlas.",
+},
+errorReviewCta: {
+  it: "Ripassa ora",
+  en: "Review now",
+  fr: "Réviser",
+  es: "Repasar",
+},
+errorReviewPremiumOnly: {
+  it: "Solo Premium",
+  en: "Premium only",
+  fr: "Premium uniquement",
+  es: "Solo Premium",
+},
+unlockPremium: {
+  it: "Sblocca Premium",
+  en: "Unlock Premium",
+  fr: "Débloquer Premium",
+  es: "Desbloquear Premium",
 },
 
 };
@@ -839,136 +873,184 @@ const visibleBadges = useMemo(() => {
 
   const displayName = user?.username || user?.name || "User";
   const email = user?.email || "—";
+const isPremium = !!user?.premium || user?.role === "admin";
 
-    const avatarBorderClass =
-    user?.role === "admin"
-      ? "ring-2 ring-red-400 bg-red-50"
-      : user?.premium
-      ? "ring-2 ring-amber-400 bg-amber-50"
-      : "ring-2 ring-slate-200 bg-sky-50";
+const avatarBorderClass =
+  user?.role === "admin"
+    ? "ring-2 ring-red-400 bg-red-50"
+    : isPremium
+    ? "ring-2 ring-amber-400 bg-amber-50"
+    : "ring-2 ring-slate-200 bg-sky-50";
+
 
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-indigo-50/30 text-[#0a1f44] p-6">
       <div className="mx-auto max-w-6xl space-y-6">
         {/* Header */}
-        <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-5">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:justify-between">
-
-
-          {/* Colonna sinistra: avatar + dati profilo */}
-<div className="flex items-start gap-6 group">
-  {/* Wrapper avatar */}
-  <div className="relative">
-    {/* Halo neon dietro l'avatar */}
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      <div className="w-28 h-28 rounded-full bg-indigo-400/25 blur-xl group-hover:bg-pink-400/30 transition-colors duration-500" />
-    </div>
-
-    {/* Cerchio con gradiente e bordo dinamico */}
-    <div className="relative w-24 h-24">
-      <div
-        className={`
-          absolute inset-0 
-          rounded-full 
-          bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400
-          opacity-80
-          group-hover:opacity-100
-          transition-opacity duration-300
-        `}
-      />
-
-      <div
-        className={`
-          relative w-full h-full 
-          rounded-full 
-          shadow-lg overflow-hidden 
-          flex items-center justify-center 
-          transition-transform duration-300 ease-out 
-          group-hover:scale-110 group-hover:rotate-3
-          ${avatarBorderClass}
-        `}
-      >
-        {/* Avatar BOTTTs (robot) */}
-        <img
-          src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
-            user?.username || user?.email || "user"
-          )}`}
-          alt="Avatar utente"
-          className="w-full h-full rounded-full object-cover bg-white"
-        />
-      </div>
-
-      {/* Chip "CQ" tech in basso a sinistra */}
-      <div className="absolute -bottom-1 -left-1 rounded-md bg-slate-900 text-[10px] px-1.5 py-0.5 text-slate-100 shadow ring-1 ring-slate-700/80">
-        CQ
-      </div>
-
-      {/* Badge Premium in basso a destra, animato */}
-      {user?.premium && (
-        <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-400 text-xs px-1.5 py-0.5 shadow ring-1 ring-yellow-500 animate-pulse">
-          ⭐
+<div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-5">
+  <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:justify-between">
+    {/* Colonna sinistra: avatar + dati profilo */}
+    <div className="flex items-start gap-6 group">
+      {/* Wrapper avatar */}
+      <div className="relative">
+        {/* Halo neon dietro l'avatar */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-28 h-28 rounded-full bg-indigo-400/25 blur-xl group-hover:bg-pink-400/30 transition-colors duration-500" />
         </div>
-      )}
-    </div>
-  </div>
 
-  {/* Testo profilo */}
-  <div className="min-w-0 flex-1 flex flex-col justify-center">
-  <h1 className="text-2xl sm:text-3xl font-extrabold leading-snug break-words">
-    {getLabel(LBL.profile, lang)}: <span className="break-words">{displayName}</span>
-  </h1>
-  
-    {/* 🔧 Dati del profilo */}
-    <div className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
-     {/* Email */}
-<div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200 max-w-full min-w-0">
-  📧
-  <span className="font-medium min-w-0 flex-1 truncate">
-    {email}
-  </span>
-</div>
+        {/* Cerchio con gradiente e bordo dinamico */}
+        <div className="relative w-24 h-24">
+          <div
+            className={`
+              absolute inset-0
+              rounded-full
+              bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400
+              opacity-80
+              group-hover:opacity-100
+              transition-opacity duration-300
+            `}
+          />
 
+          <div
+            className={`
+              relative w-full h-full
+              rounded-full
+              shadow-lg overflow-hidden
+              flex items-center justify-center
+              transition-transform duration-300 ease-out
+              group-hover:scale-110 group-hover:rotate-3
+              ${avatarBorderClass}
+            `}
+          >
+            {/* Avatar BOTTTs (robot) */}
+            <img
+              src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(
+                user?.username || user?.email || "user"
+              )}`}
+              alt="Avatar utente"
+              className="w-full h-full rounded-full object-cover bg-white"
+            />
+          </div>
 
-      {/* ID + ruolo */}
-      {(user?.id || user?.role) && (
-        <div className="inline-flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
-          {user?.id && (
-            <span className="inline-flex items-center gap-1">
-              🆔 <span>ID: {user.id}</span>
-            </span>
-          )}
-          {user?.role && (
-            <span className="inline-flex items-center gap-1">
-              🤖 <span>Ruolo: {user.role}</span>
-            </span>
-          )}
-        </div>
-      )}
+          {/* Chip "CQ" */}
+          <div className="absolute -bottom-1 -left-1 rounded-md bg-slate-900 text-[10px] px-1.5 py-0.5 text-slate-100 shadow ring-1 ring-slate-700/80">
+            CQ
+          </div>
 
-      {/* Badge Premium */}
-      {user?.premium && (
-        <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1">
-          ⭐ Premium attivo
-        </div>
-      )}
-    </div>
-  </div>
-</div>
-
-
-
-            {/* Colonna destra: pulsante Classifica */}
-            <div className="flex gap-2">
-              <Link
-                href={`/${lang}/leaderboard`}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-500/90 hover:bg-amber-500 px-3.5 py-2 text-white text-sm font-semibold shadow"
-              >
-                🏆 {getLabel(LBL.leaderboard, lang)}
-              </Link>
+          {/* Badge Premium */}
+          {user?.premium && (
+            <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-400 text-xs px-1.5 py-0.5 shadow ring-1 ring-yellow-500 animate-pulse">
+              ⭐
             </div>
+          )}
+        </div>
+      </div>
+
+      {/* Testo profilo */}
+      <div className="min-w-0 flex-1 flex flex-col justify-center">
+        <h1 className="text-2xl sm:text-3xl font-extrabold leading-snug break-words">
+          {getLabel(LBL.profile, lang)}:{" "}
+          <span className="break-words">{displayName}</span>
+        </h1>
+
+        <div className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
+          {/* Email */}
+          <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 ring-1 ring-slate-200 max-w-full min-w-0">
+            📧 <span className="font-medium min-w-0 flex-1 truncate">{email}</span>
+          </div>
+
+          {/* ID + ruolo */}
+          {(user?.id || user?.role) && (
+            <div className="inline-flex flex-wrap items-center gap-2 text-xs text-slate-600 mt-1">
+              {user?.id && (
+                <span className="inline-flex items-center gap-1">
+                  🆔 <span>ID: {user.id}</span>
+                </span>
+              )}
+              {user?.role && (
+                <span className="inline-flex items-center gap-1">
+                  🤖 <span>Ruolo: {user.role}</span>
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Premium chip */}
+          {user?.premium && (
+            <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
+              ⭐ Premium attivo
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    {/* Colonna destra: azioni (Ripasso + Leaderboard) */}
+    <div className="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
+      {/* ✅ Ripasso errori (vicino al leaderboard) */}
+      {FEATURE_ERROR_REVIEW && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 shadow-sm w-full sm:w-[280px]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-sm font-semibold text-slate-900">
+              🧠 {getLabel(LBL.errorReviewTitle, lang)}
+            </div>
+
+            {!user?.premium && (
+              <span className="text-[11px] font-semibold rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 ring-1 ring-amber-200">
+                {getLabel(LBL.errorReviewPremiumOnly, lang)}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-1 text-xs text-slate-600">
+            {getLabel(LBL.errorReviewDesc, lang)}
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {user?.premium ? (
+              <Link
+                href={`/${lang}/review/errors?limit=20`}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-white text-sm font-semibold shadow"
+              >
+                {getLabel(LBL.errorReviewCta, lang)}
+              </Link>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-200 px-3 py-2 text-slate-500 text-sm font-semibold cursor-not-allowed"
+                  title={getLabel(LBL.errorReviewPremiumOnly, lang)}
+                >
+                  {getLabel(LBL.errorReviewCta, lang)}
+                </button>
+
+                <Link
+                  href={`/${lang}/premium`}
+                  className="text-sm font-semibold text-amber-700 hover:text-amber-800 underline underline-offset-4"
+                >
+                  {getLabel(LBL.unlockPremium, lang)}
+                </Link>
+              </>
+            )}
           </div>
         </div>
+      )}
+
+      {/* 🏆 Leaderboard */}
+      <div className="flex gap-2">
+        <Link
+          href={`/${lang}/leaderboard`}
+          className="inline-flex items-center gap-2 rounded-xl bg-amber-500/90 hover:bg-amber-500 px-3.5 py-2 text-white text-sm font-semibold shadow"
+        >
+          🏆 {getLabel(LBL.leaderboard, lang)}
+        </Link>
+      </div>
+    </div>
+  </div>
+</div>
+
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

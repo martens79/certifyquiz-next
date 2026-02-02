@@ -48,11 +48,18 @@ export type QuestionsResponse = Question[] | { questions: Question[] };
 
 export type SaveExamRequest = {
   topicId?: number | null;
-  certification_id?: number | null;
+  certification_id: number;
   totalQuestions: number;
   correctAnswers: number;
-  isExam?: boolean;
+  isExam: boolean;
+
+  // ✅ NEW: per ripasso errori
+  attempts?: Array<{
+    question_id: number;
+    selected_answer_id: number;
+  }>;
 };
+
 export type QuestionsCountResponse = {
   certification_id: number;
   lang: Locale;

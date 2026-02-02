@@ -35,17 +35,20 @@ const premium = getPremiumState({
 ───────────────────────────────────────────────────────────── */
 function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
-    id: q.id,
+    id: Number(q.id),
     question: q.question ?? "",
     // explanation può essere undefined → training la mostra solo se presente
     explanation: q.explanation ?? undefined,
-    answers: (q.answers ?? []).map((a) => ({
-      id: a.id,
-      text: (a as any).text ?? "",
-      isCorrect: a.is_correct === true || a.is_correct === 1,
+    answers: (q.answers ?? []).map((a: any) => ({
+      id: Number(a.id),
+      text: a.text ?? "",
+      // ✅ SINGLE SOURCE OF TRUTH PER QuizEngine
+      // supporta boolean, 0/1, string "1"
+      isCorrect: a.is_correct === true || a.is_correct === 1 || a.is_correct === "1",
     })),
   };
 }
+
 
 /**
  * Helper: fetch profilo utente (solo se loggato).
@@ -438,40 +441,50 @@ return (
         exam: examSpec.questions,
       }}
       /* ───────────── SALVATAGGIO RISULTATI ───────────── */
-      onFinish={async (s: QuizSummary & { mode: "training" | "exam" }) => {
-        // salviamo solo esame
-        if (s.mode !== "exam") return;
+      onFinish={async (s: QuizSummary & { mode: "training" | "exam"; attempts?: any[] }) => {
+  if (s.mode !== "exam") return;
 
-        const token = getAccessToken();
-        if (!token) return; // anonimo → niente salvataggio
+  const token = getAccessToken();
+  if (!token) return;
 
-        const payload = {
-          topicId: numericId,
-          certification_id: certificationId,
-          totalQuestions: s.total ?? 0,
-          correctAnswers: s.correct ?? 0,
-          isExam: true,
-          quizId: null,
-        };
+  const rawAttempts = Array.isArray((s as any).attempts) ? (s as any).attempts : [];
 
-        try {
-          const res = await fetch("/api/backend/save-exam", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(payload),
-          });
+const payload = {
+  topicId: numericId,
+  certification_id: certificationId,
+  totalQuestions: s.total ?? 0,
+  correctAnswers: s.correct ?? 0,
+  isExam: true,
+  quizId: null,
 
-          if (!res.ok) {
-            const txt = await res.text().catch(() => "");
-            throw new Error(`HTTP ${res.status} ${txt}`);
-          }
-        } catch (e) {
-          console.error("🟥 save-exam FAILED", e);
-        }
-      }}
+  // ✅ converti camelCase → snake_case (quello che vuole il backend)
+  attempts: rawAttempts
+    .filter((a: any) => a?.chosenAnswerId != null)
+    .map((a: any) => ({
+      question_id: Number(a.questionId),
+      selected_answer_id: Number(a.chosenAnswerId),
+    })),
+};
+
+  try {
+    const res = await fetch("/api/backend/save-exam", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status} ${txt}`);
+    }
+  } catch (e) {
+    console.error("🟥 save-exam FAILED", e);
+  }
+}}
+
     />
   );
 }

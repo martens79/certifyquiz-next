@@ -457,34 +457,66 @@ export default function QuizEngine({
     }
   };
 
-  async function doFinish(_timeExpired = false) {
-    setFinished(true);
-    const total = questions.length;
-    const correct = Math.round((scorePct / 100) * total);
-    const elapsedSec =
-      startedAtRef.current != null
-        ? Math.floor((Date.now() - startedAtRef.current) / 1000)
-        : 0;
+ async function doFinish(_timeExpired = false) {
+  setFinished(true);
 
-    const summary: QuizSummary & { mode: Mode } = {
-      total,
-      correct,
-      scorePct,
-      marked,
-      durationSec: elapsedSec,
-      mode: effectiveMode,
-    };
+  const total = questions.length;
 
-    setLastSummary(summary);
-
-    try {
-      await onFinish?.(summary);
-    } catch {
-      /* ignore */
+  // ⚠️ meglio calcolarlo “vero”, non dal % arrotondato
+  let correctCount = 0;
+  for (const q of questions) {
+    const chosen = marked[q.id];
+    const right = q.answers.find((a) => !!a.isCorrect)?.id;
+    if (chosen != null && right != null && Number(chosen) === Number(right)) {
+      correctCount++;
     }
-
-    clearProgress(scopedKey);
   }
+
+  const correct = correctCount;
+
+  const elapsedSec =
+    startedAtRef.current != null
+      ? Math.floor((Date.now() - startedAtRef.current) / 1000)
+      : 0;
+
+  // ✅ attempts COMPLETE: contiene anche isCorrect + usa nomi “camelCase”
+  const attempts = questions.map((q) => {
+    const chosen = marked[q.id] ?? null;
+    const right = q.answers.find((a) => !!a.isCorrect)?.id ?? null;
+
+    return {
+      questionId: Number(q.id),
+      chosenAnswerId: chosen != null ? Number(chosen) : null,
+      isCorrect:
+        chosen != null &&
+        right != null &&
+        Number(chosen) === Number(right),
+    };
+  });
+
+  // ✅ tipo pulito (non usare typeof attempts nel type intersection)
+  const summary: QuizSummary & { mode: Mode; attempts: typeof attempts } = {
+    total,
+    correct,
+    scorePct, // puoi anche ricalcolarlo, ma ok lasciarlo
+    marked,
+    durationSec: elapsedSec,
+    mode: effectiveMode,
+    attempts,
+  };
+
+  setLastSummary(summary);
+
+  try {
+    await onFinish?.(summary);
+  } catch {
+    /* ignore */
+  }
+
+  clearProgress(scopedKey);
+}
+
+
 
   const restart = () => {
     clearProgress(scopedKey);
