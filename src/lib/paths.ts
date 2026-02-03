@@ -258,6 +258,22 @@ export const mixedQuizPath = (
 ): string =>
   `/${lang}/quiz/${certSlug}/mixed`;
 
+
+  export const reviewErrorsPath = (params?: {
+  certificationId?: string;
+  topicId?: string;
+  limit?: number | string;
+}) => {
+  const qs = new URLSearchParams();
+  if (params?.certificationId) qs.set("certificationId", String(params.certificationId));
+  if (params?.topicId) qs.set("topicId", String(params.topicId));
+  if (params?.limit != null) qs.set("limit", String(params.limit));
+
+  const q = qs.toString();
+  return `/review/errors${q ? `?${q}` : ""}`;
+};
+
+
 /* ------------------------------------------------------------------ */
 /* LANGUAGE SWITCH — URL SAFE (SEO + QUIZ + BLOG)                      */
 /* ------------------------------------------------------------------ */

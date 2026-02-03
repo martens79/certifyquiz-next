@@ -28,6 +28,22 @@ export function middleware(req: NextRequest) {
   }
 
   // -------------------------------------------------------
+  // ✅ REVIEW ERRORS (app route EN-root)
+  // /review/...           -> ok (no changes)
+  // /en/review/...        -> redirect to /review/...
+  // /it|fr|es/review/...  -> redirect to /review/...
+  // -------------------------------------------------------
+  if (pathname === "/review" || pathname.startsWith("/review/")) {
+    return NextResponse.next();
+  }
+
+  const reviewPrefixed = pathname.match(/^\/(it|en|fr|es)\/review(\/|$)/);
+  if (reviewPrefixed) {
+    url.pathname = pathname.replace(/^\/(it|en|fr|es)/, "");
+    return NextResponse.redirect(url, 308);
+  }
+
+  // -------------------------------------------------------
   // LEGACY BLOG ROOT → /en/blog/...
   // -------------------------------------------------------
   if (pathname === "/blog" || pathname.startsWith("/blog/")) {
@@ -46,11 +62,7 @@ export function middleware(req: NextRequest) {
   // /en è root SOLO per SEO pages
   // ❌ NON per quiz
   // ❌ NON per blog
-  if (
-    parts[0] === "en" &&
-    parts[1] !== "quiz" &&
-    parts[1] !== "blog"
-  ) {
+  if (parts[0] === "en" && parts[1] !== "quiz" && parts[1] !== "blog") {
     parts.shift();
     changed = true;
   }

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, getToken } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
 import ReadinessCard from "@/components/profile/ReadinessCard";
+import { reviewErrorsPath } from "@/lib/paths";
 
 // 📈 Grafico andamento
 import {
@@ -1010,11 +1011,11 @@ const avatarBorderClass =
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {user?.premium ? (
               <Link
-                href={`/${lang}/review/errors?limit=20`}
-                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-white text-sm font-semibold shadow"
-              >
-                {getLabel(LBL.errorReviewCta, lang)}
-              </Link>
+  href={reviewErrorsPath({ limit: 20 })}
+  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-white text-sm font-semibold shadow"
+>
+  {getLabel(LBL.errorReviewCta, lang)}
+</Link>
             ) : (
               <>
                 <button
