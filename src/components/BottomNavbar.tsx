@@ -21,12 +21,19 @@ function certsHref(lang: Locale) {
 }
 
 function profileHref(lang: Locale) {
-  // nel tuo progetto Profile è /[lang]/profile (EN /profile)
   return lang === "en" ? "/profile" : `/${lang}/profile`;
 }
 
+// ✅ Nel tuo progetto /quiz è sempre prefissato con lingua anche per EN
+function quizCertHref(lang: Locale, slug: string) {
+  return `/${lang}/quiz/${slug}`;
+}
+
+// ───────────────────────────────
+// Path matchers (robusti)
+// ───────────────────────────────
 function isHomePage(pathname: string, lang: Locale) {
-  const base = homeHref(lang); // "/" oppure "/it" "/fr" "/es"
+  const base = homeHref(lang);
   return pathname === base || pathname === `${base}/`;
 }
 
@@ -40,42 +47,104 @@ function isProfilePage(pathname: string, lang: Locale) {
   return pathname === base || pathname.startsWith(base + "/");
 }
 
+function getQuizContext(pathname: string): { inQuiz: boolean; slug?: string } {
+  // /[lang]/quiz/topic/123 -> inQuiz (slug unknown)
+  const topic = pathname.match(/^\/(?:(it|en|fr|es)\/)?quiz\/topic\/\d+/i);
+  if (topic) return { inQuiz: true };
+
+  // /[lang]/quiz/<slug>[/...]
+  const cert = pathname.match(/^\/(?:(it|en|fr|es)\/)?quiz\/([^/]+)(?:\/|$)/i);
+  if (cert) return { inQuiz: true, slug: cert[2] };
+
+  return { inQuiz: false };
+}
+
+type NavItem = {
+  key: "home" | "topics" | "certs" | "profile";
+  href: string;
+  label: string;
+  icon: string;
+};
+
 export default function BottomNavbar() {
   const pathname = usePathname() || "/";
   const lang = getLocaleFromPath(pathname);
 
-  // ✅ nascondi SOLO nei quiz veri
-  
+  const quizCtx = getQuizContext(pathname);
 
-  const onHome = isHomePage(pathname, lang);
-  const onCerts = isCertificationsPage(pathname, lang);
-  const onProfile = isProfilePage(pathname, lang);
+  // ───────────────────────────────
+  // Items (quiz-aware)
+  // ───────────────────────────────
+  const items: NavItem[] = quizCtx.inQuiz
+    ? [
+        {
+          key: "topics",
+          href: quizCtx.slug ? quizCertHref(lang, quizCtx.slug) : certsHref(lang),
+          label: "Topics",
+          icon: "⬅️",
+        },
+        { key: "certs", href: certsHref(lang), label: "Certs", icon: "📜" },
+        { key: "profile", href: profileHref(lang), label: "Profile", icon: "👤" },
+      ]
+    : [
+        { key: "home", href: homeHref(lang), label: "Home", icon: "🏠" },
+        { key: "certs", href: certsHref(lang), label: "Certs", icon: "📜" },
+        { key: "profile", href: profileHref(lang), label: "Profile", icon: "👤" },
+      ];
 
-  const items = [
-    { key: "home", href: homeHref(lang), label: "Home", icon: "🏠" },
-    { key: "certs", href: certsHref(lang), label: "Certs", icon: "📜" },
-    { key: "profile", href: profileHref(lang), label: "Profile", icon: "👤" },
-  ].filter((it) => {
-    // ✅ nascondi l’icona della pagina corrente
-    if (onHome && it.key === "home") return false;
-    if (onCerts && it.key === "certs") return false;
-    if (onProfile && it.key === "profile") return false;
-    return true;
-  });
+  // ───────────────────────────────
+  // Active detection (highlight)
+  // ───────────────────────────────
+  const isActive = (key: NavItem["key"]) => {
+    if (quizCtx.inQuiz) {
+      // In quiz: "topics" attivo quando sei nella lista topic /quiz/<slug>
+      if (key === "topics" && quizCtx.slug) {
+        const base = quizCertHref(lang, quizCtx.slug);
+        return pathname === base || pathname === `${base}/`;
+      }
+      // In quiz: "certs" attivo se sei sulla pagina certificazioni (puoi arrivarci dal quiz)
+      if (key === "certs") return isCertificationsPage(pathname, lang);
+      if (key === "profile") return isProfilePage(pathname, lang);
+      return false;
+    }
+
+    // Fuori quiz
+    if (key === "home") return isHomePage(pathname, lang);
+    if (key === "certs") return isCertificationsPage(pathname, lang);
+    if (key === "profile") return isProfilePage(pathname, lang);
+    return false;
+  };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
       <div className="mx-auto flex max-w-screen-sm items-center justify-around px-2 py-2 text-xs">
-        {items.map((it) => (
-          <Link
-            key={it.key}
-            href={it.href}
-            className="flex flex-col items-center gap-1 px-2 py-1 text-gray-700"
-          >
-            <span className="text-lg">{it.icon}</span>
-            <span>{it.label}</span>
-          </Link>
-        ))}
+        {items.map((it) => {
+          const active = isActive(it.key);
+
+          return (
+            <Link
+              key={it.key}
+              href={it.href}
+              aria-current={active ? "page" : undefined}
+              className={[
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition",
+                active
+                  ? "text-gray-900 bg-gray-100"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
+              ].join(" ")}
+            >
+              {/* piccolo indicatore sopra (tipo tab) */}
+              <span
+                className={[
+                  "h-0.5 w-6 rounded-full mb-1",
+                  active ? "bg-gray-900" : "bg-transparent",
+                ].join(" ")}
+              />
+              <span className="text-lg leading-none">{it.icon}</span>
+              <span className="leading-none">{it.label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );
