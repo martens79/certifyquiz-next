@@ -45,8 +45,7 @@ export default function BottomNavbar() {
   const lang = getLocaleFromPath(pathname);
 
   // ✅ nascondi SOLO nei quiz veri
-  const QUIZ_PAGE_RE = /^\/(?:(it|fr|es|en)\/)?quiz\/[^/]+/i;
-  if (QUIZ_PAGE_RE.test(pathname)) return null;
+  
 
   const onHome = isHomePage(pathname, lang);
   const onCerts = isCertificationsPage(pathname, lang);
