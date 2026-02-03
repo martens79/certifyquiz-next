@@ -1,3 +1,4 @@
+// src/app/review/errors/page.tsx
 import ReviewErrorsClient from "./review-errors-client";
 
 type SearchParams = {
@@ -6,17 +7,20 @@ type SearchParams = {
   limit?: string;
 };
 
-export default function Page({
-  searchParams,
-}: {
-  searchParams?: SearchParams;
-}) {
+// ✅ Next 15.5.x nel tuo setup: searchParams è Promise
+type PageProps = {
+  searchParams?: Promise<SearchParams>;
+};
+
+export default async function Page(props: PageProps) {
+  const sp = (await props.searchParams) ?? {};
+
   return (
     <ReviewErrorsClient
       lang="en"
-      certificationId={searchParams?.certificationId}
-      topicId={searchParams?.topicId}
-      limit={searchParams?.limit}
+      certificationId={sp.certificationId}
+      topicId={sp.topicId}
+      limit={sp.limit}
     />
   );
 }
