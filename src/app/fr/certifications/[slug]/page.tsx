@@ -1,4 +1,5 @@
-import { CertificationDetailView } from "@/app/[lang]/certificazioni/[slug]/page";
+import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
+
 
 type Props = { params: Promise<{ slug: string }> };
 

@@ -1,19 +1,13 @@
 // src/app/[lang]/certificazioni/[slug]/page.tsx
 // Pagina dettaglio certificazione — Next 15, SSG + ISR, SEO EN-root safe
-// Pattern: View (props sync) + Page (await params Promise)
+// Pattern: View in file normale + Page (await params Promise)
 
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 import { locales, type Locale, isLocale } from "@/lib/i18n";
-import {
-  CERTS_BY_SLUG,
-  CERT_SLUGS,
-  type CertificationData,
-} from "@/certifications/registry";
-
-import CertificationPage from "@/components/CertificationPage";
-import { getAllCertSlugs, getCertBySlug, type Cert } from "@/lib/data";
+import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/registry";
+import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
+import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 
 export const revalidate = 86400;
 export const dynamic = "force-static";
@@ -145,67 +139,6 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
       locale: toHreflang(L),
     },
   };
-}
-
-/* ------------------------------- Adapter ---------------------------------- */
-
-const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
-
-const makeQuizRoute = (slug: string) =>
-  ({
-    it: `/it/quiz/${slug}`,
-    en: `/en/quiz/${slug}`, // ✅ quiz sempre con /en
-    fr: `/fr/quiz/${slug}`,
-    es: `/es/quiz/${slug}`,
-  } as const);
-
-const makeBackRoute = () =>
-  ({
-    it: listPathByLang.it,
-    en: EN_ROOT_LIST_PATH, // 🔥 torna all’elenco ufficiale EN root
-    fr: listPathByLang.fr,
-    es: listPathByLang.es,
-  } as const);
-
-function adaptCertToRegistryShape(cert: Cert): CertificationData {
-  const title = cert.title || cert.h1 || "Certification";
-  const desc = cert.seoDescription || cert.intro || cert.title || "";
-  const img = cert.imageUrl ?? "/og/cert-default.png";
-
-  return {
-    slug: cert.slug,
-    imageUrl: img,
-    officialUrl: "",
-
-    title: allLocales(title),
-    level: allLocales(""),
-    description: allLocales(desc),
-
-    topics: [] as const,
-    extraContent: undefined,
-
-    quizRoute: makeQuizRoute(cert.slug),
-    backRoute: makeBackRoute(),
-  };
-}
-
-/* ------------------------------------------------------------------------ */
-/*                         VIEW (riusabile nei wrapper)                      */
-/* ------------------------------------------------------------------------ */
-
-type ViewProps = { lang: Lang; slug: string };
-
-export async function CertificationDetailView({ lang, slug }: ViewProps) {
-  const L = lang;
-
-  const reg = CERTS_BY_SLUG[slug];
-  if (reg) return <CertificationPage lang={L} data={reg} />;
-
-  const cert = await getCertBySlug(slug, L);
-  if (!cert) return notFound();
-
-  const data = adaptCertToRegistryShape(cert);
-  return <CertificationPage lang={L} data={data} />;
 }
 
 /* ------------------------------------------------------------------------ */
