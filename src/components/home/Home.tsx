@@ -391,6 +391,152 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         </div>
       </section>
 
+
+                  {/* VENDORS (hub) */}
+      <section className="mt-10 md:mt-12" aria-label="Browse by vendor">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="text-xs font-semibold text-slate-500">
+            {L(
+              {
+                it: "Percorsi",
+                en: "Paths",
+                fr: "Parcours",
+                es: "Rutas",
+              },
+              safeLang
+            )}
+          </div>
+
+          <h2 className="mt-1 text-xl md:text-2xl font-extrabold text-slate-800">
+            {L(
+              {
+                it: "Sfoglia per Brand",
+                en: "Browse by vendor",
+                fr: "Parcourir par éditeur",
+                es: "Explorar por proveedor",
+              },
+              safeLang
+            )}
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-600">
+            {L(
+              {
+                it: "Scopri le certificazioni disponibili per ogni Brand.",
+                en: "Discover available certifications for each vendor.",
+                fr: "Découvrez les certifications disponibles pour chaque éditeur.",
+                es: "Descubre las certificaciones disponibles por proveedor.",
+              },
+              safeLang
+            )}
+          </p>
+        </div>
+
+        {(() => {
+          const hubHref = (slug: string) =>
+            safeLang === "en" ? `/hub/${slug}` : `/${safeLang}/hub/${slug}`;
+
+          // ✅ Mostra solo hub vendor che esistono ora (per evitare 404)
+          const vendors: Array<{
+            slug: string;
+            title: string;
+            desc: string;
+            ui: { bg: string; border: string; ring: string };
+          }> = [
+            {
+              slug: "google",
+              title: "Google",
+              desc: L(
+                {
+                  it: "Google Cloud (e altri percorsi in arrivo).",
+                  en: "Google Cloud (more paths coming).",
+                  fr: "Google Cloud (autres parcours à venir).",
+                  es: "Google Cloud (más rutas próximamente).",
+                },
+                safeLang
+              ),
+              ui: CATEGORY_UI.cloud,
+            },
+            // 👉 aggiungi questi solo quando hai creato gli hub corrispondenti
+            // {
+            //   slug: "aws",
+            //   title: "AWS",
+            //   desc: L(
+            //     { it: "Certificazioni AWS.", en: "AWS certifications.", fr: "Certifications AWS.", es: "Certificaciones AWS." },
+            //     safeLang
+            //   ),
+            //   ui: CATEGORY_UI.cloud,
+            // },
+            // {
+            //   slug: "microsoft",
+            //   title: "Microsoft",
+            //   desc: L(
+            //     { it: "Azure e Microsoft.", en: "Azure and Microsoft.", fr: "Azure et Microsoft.", es: "Azure y Microsoft." },
+            //     safeLang
+            //   ),
+            //   ui: CATEGORY_UI.programmazione,
+            // },
+            // {
+            //   slug: "cisco",
+            //   title: "Cisco",
+            //   desc: L(
+            //     { it: "Networking & Security.", en: "Networking & Security.", fr: "Réseaux & Sécurité.", es: "Redes y seguridad." },
+            //     safeLang
+            //   ),
+            //   ui: CATEGORY_UI.reti,
+            // },
+          ];
+
+          return (
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {vendors.map((v) => (
+                <Link
+                  key={v.slug}
+                  href={hubHref(v.slug)}
+                  className={`transition p-4 rounded-xl shadow border ${v.ui.bg} ${v.ui.border} ${v.ui.ring} text-left`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-slate-800 font-extrabold">{v.title}</div>
+                    <span className="text-xs font-semibold text-slate-600">
+                      {L({ it: "Apri →", en: "Open →", fr: "Ouvrir →", es: "Abrir →" }, safeLang)}
+                    </span>
+                  </div>
+
+                  <div className="mt-1 text-xs text-slate-600 leading-tight line-clamp-2">
+                    {v.desc}
+                  </div>
+
+                  <div className="mt-3 text-sm font-bold text-slate-800">
+                    {L(
+                      { it: "Vai al vendor", en: "Go to vendor", fr: "Voir le vendor", es: "Ver proveedor" },
+                      safeLang
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          );
+        })()}
+
+        {/* link alla pagina vendors centralizzata (quando la crei) */}
+        <div className="text-center mt-5">
+          <Link
+            href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
+            className="text-blue-600 font-semibold hover:underline text-sm"
+          >
+            {L(
+              {
+                it: "Vedi tutti i brand →",
+                en: "See all vendors →",
+                fr: "Voir tous les éditeurs →",
+                es: "Ver todos los proveedores →",
+              },
+              safeLang
+            )}
+          </Link>
+        </div>
+      </section>
+
       {/* BLOG (sotto, compatto, non invasivo) */}
       <section className="mt-10 md:mt-12" aria-label="Blog teaser">
         <div className="max-w-3xl mx-auto">
