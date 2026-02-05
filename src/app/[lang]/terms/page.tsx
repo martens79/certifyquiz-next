@@ -173,25 +173,21 @@ export default async function TermsPage(
           <span>·</span>
           <a className="underline" href={`/${lang}/cookie`}>Cookie Policy</a>
           <span>·</span>
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                window.dispatchEvent(new Event("open-cookie-preferences"));
-              }
-            }}
-            className="inline-flex items-center rounded-md bg-blue-600 px-3 py-1.5 text-white font-semibold hover:bg-blue-700"
-          >
-            {getLabel(
-              {
-                it: "Gestisci preferenze cookie",
-                en: "Manage cookie preferences",
-                fr: "Gérer les préférences cookies",
-                es: "Gestionar preferencias de cookies",
-              },
-              lang
-            )}
-          </button>
+          <a
+  className="underline"
+  href={lang === "en" ? "/cookies" : `/${lang}/cookie`}
+>
+  {getLabel(
+    {
+      it: "Gestione cookie",
+      en: "Cookie preferences",
+      fr: "Préférences cookies",
+      es: "Preferencias de cookies",
+    },
+    lang
+  )}
+</a>
+
         </div>
       </section>
     </main>

@@ -1,6 +1,5 @@
 import { type Locale } from "@/lib/i18n";
 
-// Slug localizzati una volta sola
 export const LEGAL_PAGES = {
   privacy:  { it: "privacy",     en: "privacy",      fr: "confidentialite", es: "privacidad" },
   terms:    { it: "termini",     en: "terms",        fr: "conditions",      es: "terminos" },
@@ -10,6 +9,8 @@ export const LEGAL_PAGES = {
 
 export type LegalKey = keyof typeof LEGAL_PAGES;
 
+const prefix = (lang: Locale) => (lang === "en" ? "" : `/${lang}`);
+
 export function legalPath(lang: Locale, key: LegalKey) {
-  return `/${lang}/${LEGAL_PAGES[key][lang]}`;
+  return `${prefix(lang)}/${LEGAL_PAGES[key][lang]}`;
 }

@@ -11,7 +11,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com")
 // Mapping dei path per lingua
 const PATH_BY_LANG: Record<Lang, string> = {
   it: "/it/cookie",
-  en: "/en/cookie",
+  en: "/cookies",
   fr: "/fr/cookie",
   es: "/es/cookie",
 };

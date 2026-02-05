@@ -11,7 +11,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com")
 // Path per lingua
 const PATH_BY_LANG: Record<Lang, string> = {
   it: "/it/privacy",
-  en: "/en/privacy",
+  en: "/privacy",
   fr: "/fr/privacy",
   es: "/es/privacy",
 };
@@ -237,6 +237,8 @@ export default async function PrivacyPage(
 ) {
   const { lang: raw } = await props.params;
   const lang: Lang = ALL.includes(raw) ? raw : "it";
+  const prefix = lang === "en" ? "" : `/${lang}`;
+
   const today = new Date().toISOString().slice(0, 10);
 
   const L = T;
@@ -284,9 +286,10 @@ export default async function PrivacyPage(
 
       <Section title={getLabel(L.cookiesRef, lang)}>
         {getLabel(L.cookiesRefTxt, lang)}{" "}
-        <a className="underline" href={`/${lang}/cookie`}>
-          Cookie Policy
-        </a>.
+       <a className="underline" href={lang === "en" ? "/cookies" : `/${lang}/cookie`}>
+  Cookie Policy
+</a>
+
       </Section>
 
       <Section title={getLabel(L.contacts, lang)}>{getLabel(L.contactsTxt, lang)}</Section>
