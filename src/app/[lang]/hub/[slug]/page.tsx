@@ -29,13 +29,18 @@ function quizHref(lang: Locale, certSlug: string) {
   return `/${lang}/quiz/${certSlug}`;
 }
 
-export default function HubLangPage({
+// ✅ Next 15: params (e spesso searchParams) sono tipizzati come Promise nel PageProps
+type Params = { lang: string; slug: string };
+
+export default async function HubLangPage({
   params,
 }: {
-  params: { lang: string; slug: string };
+  params: Promise<Params>;
 }) {
-  const lang = isLocale(params.lang) ? params.lang : "en";
-  const hub: HubData | undefined = HUBS_BY_SLUG[params.slug];
+  const { lang: rawLang, slug } = await params;
+
+  const lang = isLocale(rawLang) ? rawLang : "en";
+  const hub: HubData | undefined = HUBS_BY_SLUG[slug];
   if (!hub) return notFound();
 
   // -------------------- Vendor overview (/it/hub/google) --------------------

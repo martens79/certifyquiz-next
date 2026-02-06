@@ -1,10 +1,8 @@
 // src/app/hub/[slug]/page.tsx
 import { notFound } from "next/navigation";
 
-import type { Locale } from "@/lib/i18n"; // questo alias lo hai già in uso
-import CertificationHubPage, {
-  type HubResolvedCert,
-} from "@/components/CertificationHubPage";
+import type { Locale } from "@/lib/i18n";
+import CertificationHubPage, { type HubResolvedCert } from "@/components/CertificationHubPage";
 import { CERTS_BY_SLUG } from "@/certifications/registry";
 
 // ✅ IMPORT RELATIVO (niente @/content/...)
@@ -19,8 +17,17 @@ const certHref = (slug: string) => `/certifications/${slug}`;
 // ✅ QUIZ EN: MAI root → /en/quiz/...
 const quizHref = (slug: string) => `/en/quiz/${slug}`;
 
-export default function HubEnRootPage({ params }: { params: { slug: string } }) {
-  const hub: HubData | undefined = HUBS_BY_SLUG[params.slug];
+// ✅ Next 15: params tipizzati come Promise nel PageProps
+type Params = { slug: string };
+
+export default async function HubEnRootPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { slug } = await params;
+
+  const hub: HubData | undefined = HUBS_BY_SLUG[slug];
   if (!hub) return notFound();
 
   // -------------------- Vendor overview (google) --------------------
