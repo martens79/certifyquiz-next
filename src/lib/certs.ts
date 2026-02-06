@@ -115,6 +115,7 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
 
   // Sicurezza
   "security-plus": "sicurezza",
+  
   "comptia-security-plus": "sicurezza", // alias vecchio (categoria)
   ceh: "sicurezza",
   cissp: "sicurezza",
@@ -125,7 +126,8 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
 
   // Reti
   ccna: "reti",
-  "comptia-network-plus": "reti",
+  "network-plus": "reti",          // ✅ slug reale
+"comptia-network-plus": "reti",  // alias vecchio (se ti serve)
   "cisco-ccst-networking": "reti",
   jncie: "reti",
   f5: "reti",
