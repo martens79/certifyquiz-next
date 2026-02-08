@@ -729,22 +729,23 @@ export default function QuizEngine({
   const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
   const explainPreview = explainText ? makePreview(explainText, 260) : '';
 
-  return (
-    <div className={`min-h-screen ${gradient}`}>
-      <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
+   return (
+    <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
+      {/* ===================== TOP (non scrolla) ===================== */}
+      <div className="mobile-safe-top max-w-5xl mx-auto w-full px-4 pt-20">
         {/* header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="text-sm opacity-90">
             {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
             {label('answered', lang)} {answeredCount}
-
             <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
               {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
             </span>
 
             {hideModeSwitch && isExam && (
               <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                🧪 {lang === 'it'
+                🧪{' '}
+                {lang === 'it'
                   ? 'Mock Exam'
                   : lang === 'fr'
                   ? 'Mock examen'
@@ -795,7 +796,7 @@ export default function QuizEngine({
           )}
         </div>
 
-        {/* ✅ Sticky timer — exam mode */}
+        {/* ✅ Sticky timer — exam mode (top area, stabile) */}
         {effectiveMode === 'exam' &&
           typeof remaining === 'number' &&
           typeof examDurationSec === 'number' && (
@@ -819,7 +820,8 @@ export default function QuizEngine({
         {effectiveMode === 'exam' && (
           <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
             <p className="text-sm font-semibold">
-              ⚠️ {lang === 'it'
+              ⚠️{' '}
+              {lang === 'it'
                 ? 'Modalità esame: niente feedback immediato'
                 : lang === 'fr'
                 ? "Mode examen : aucun retour immédiat"
@@ -873,13 +875,16 @@ export default function QuizEngine({
             )}
           </div>
         )}
+      </div>
 
-        {/* domanda */}
-        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4">
-          <p className="font-medium">{q.question}</p>
+      {/* ===================== MIDDLE (solo qui scroll) ===================== */}
+      <div className="max-w-5xl mx-auto w-full px-4 flex-1 min-h-0 overflow-y-auto pb-6">
+        {/* domanda (altezza stabile) */}
+        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-[128px] flex items-center">
+          <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 
-        {/* risposte */}
+        {/* risposte (altezza stabile + no scale) */}
         <div className="space-y-3">
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
@@ -892,13 +897,13 @@ export default function QuizEngine({
             if (isExam) {
               if (isChosen) {
                 btnClasses =
-                  'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+                  'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] ring-2 ring-white/70';
               }
             } else {
               if (!showFeedback) {
                 if (isChosen) {
                   btnClasses =
-                    'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+                    'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] ring-2 ring-white/70';
                 }
               } else {
                 if (isRight) {
@@ -906,7 +911,7 @@ export default function QuizEngine({
                     'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]';
                 } else if (isChosen && !isRight) {
                   btnClasses =
-                    'bg-red-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] scale-[1.01]';
+                    'bg-red-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] ring-2 ring-white/70';
                 }
               }
             }
@@ -916,7 +921,7 @@ export default function QuizEngine({
                 key={String(a.id)}
                 type="button"
                 onClick={() => choose(q, a)}
-                className={`w-full text-left rounded-2xl px-4 py-3 transition border-2 ${btnClasses}`}
+                className={`w-full text-left rounded-2xl px-4 py-3 min-h-[56px] leading-snug whitespace-normal transition border-2 ${btnClasses}`}
               >
                 {a.text}
                 {showFeedback && (
@@ -937,7 +942,8 @@ export default function QuizEngine({
 
             {premiumLocked && !isPremiumUser && (
               <div className="mt-2 text-xs text-white/80">
-                🔒 {lang === 'it'
+                🔒{' '}
+                {lang === 'it'
                   ? 'Spiegazione completa con Premium.'
                   : lang === 'fr'
                   ? 'Explication complète avec Premium.'
@@ -961,68 +967,75 @@ export default function QuizEngine({
             )}
           </div>
         )}
+      </div>
 
-        {/* footer nav */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-              onClick={prev}
-              disabled={idx === 0}
-            >
-              ‹ {label('back', lang)}
-            </button>
-            <button
-              type="button"
-              className="px-4 py-2 rounded-lg bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
-              onClick={next}
-              disabled={!canGoNext}
-            >
-              {label('next', lang)} ›
-            </button>
-          </div>
+      {/* ===================== BOTTOM (fisso, sempre uguale) ===================== */}
+      <div className="max-w-5xl mx-auto w-full px-4 pb-4">
+        <div className="sticky bottom-3 z-20">
+          <div className="rounded-2xl bg-black/10 backdrop-blur border border-white/10 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={prev}
+                  disabled={idx === 0}
+                >
+                  ‹ {label('back', lang)}
+                </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={next}
+                  disabled={!canGoNext}
+                >
+                  {label('next', lang)} ›
+                </button>
+              </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="px-4 py-2 rounded-lg bg-white/10"
-              onClick={() => toggleReviewLater(q.id)}
-            >
-              {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
-            </button>
+              <div className="flex items-center gap-2 overflow-x-auto max-w-[55%] justify-end">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-white/10"
+                  onClick={() => toggleReviewLater(q.id)}
+                >
+                  {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
+                </button>
 
-            <button
-              type="button"
-              className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-              onClick={goToFirstUnanswered}
-              disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
-            >
-              {label('gotoUn', lang)}
-            </button>
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                  onClick={goToFirstUnanswered}
+                  disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
+                >
+                  {label('gotoUn', lang)}
+                </button>
 
-            {isExam ? (
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-red-500"
-                onClick={() => doFinish(false)}
-              >
-                {label('finish', lang)}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg bg-white/10"
-                onClick={restart}
-              >
-                {label('restart', lang)}
-              </button>
-            )}
+                {isExam ? (
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-lg bg-red-500"
+                    onClick={() => doFinish(false)}
+                  >
+                    {label('finish', lang)}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-lg bg-white/10"
+                    onClick={restart}
+                  >
+                    {label('restart', lang)}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
+
 }
 
 /* ===== helpers ===== */
