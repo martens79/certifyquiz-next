@@ -115,19 +115,19 @@ export function middleware(req: NextRequest) {
   }
 
   // ---------------------------------------------------------------------
-  // ✅ BLOG canonical = /en/blog
-  // - /blog/*        -> /en/blog/*
-  // - /it|fr|es/blog -> /en/blog/*
-  // ---------------------------------------------------------------------
-  if (pathname === "/blog" || pathname.startsWith("/blog/")) {
-    return redirect301(req, `/en${pathname}`);
-  }
-  const blogPrefixed = pathname.match(/^\/(it|fr|es)\/blog(\/|$)/);
-  if (blogPrefixed) {
-    // /fr/blog/x -> /en/blog/x
-    const newPath = pathname.replace(/^\/(it|fr|es)/, "/en");
-    return redirect301(req, newPath);
-  }
+// ✅ BLOG
+// - EN root optional: /en/blog -> /blog (se vuoi EN-root come le altre SEO pages)
+// - NON forzare /it|fr|es/blog verso /en
+// ---------------------------------------------------------------------
+
+// Se vuoi EN root (senza /en) anche per il blog:
+if (pathname.startsWith("/en/blog")) {
+  return redirect301(req, pathname.replace(/^\/en/, "")); // /en/blog/x -> /blog/x
+}
+
+// Se invece vuoi EN canonical con /en/blog, elimina il blocco sopra
+// e lascia tutto così com’è (senza redirect da it/fr/es).
+
 
   // ---------------------------------------------------------------------
   // ✅ LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
