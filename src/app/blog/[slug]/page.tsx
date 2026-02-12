@@ -1,13 +1,14 @@
 // src/app/blog/[slug]/page.tsx
 import BlogArticleLangPage from "@/app/[lang]/blog/[slug]/page";
 
-export default function BlogArticlePage({
+export default async function BlogArticlePage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  // forza EN per la route /blog/[slug]
+  const { slug } = await params;
+
   return BlogArticleLangPage({
-    params: Promise.resolve({ lang: "en", slug: params.slug }),
+    params: Promise.resolve({ lang: "en", slug }),
   } as any);
 }
