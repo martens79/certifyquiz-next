@@ -113,6 +113,9 @@ export default function QuizEngine({
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
+  const [actionsOpen, setActionsOpen] = useState(false);
+
+
   /** Pool completo */
   const [pool, setPool] = useState<Question[]>([]);
 
@@ -410,52 +413,64 @@ export default function QuizEngine({
   }, [marked, questions]);
 
   /* ----------------------------- HANDLER ------------------------------ */
-  const choose = (q: Question, a: Answer) => {
-    setMarked((m) => ({ ...m, [q.id]: a.id }));
-  };
+ const choose = (q: Question, a: Answer) => {
+  setActionsOpen(false); // ✅ chiude menu se era aperto
+  setMarked((m) => ({ ...m, [q.id]: a.id }));
+};
 
   const next = () => {
-    if (reviewMode) {
-      const currentPos = reviewPositions.indexOf(idx);
-      const nextPos = reviewPositions[currentPos + 1];
+  setActionsOpen(false); // ✅ chiude menu quando vai avanti
 
-      if (nextPos !== undefined) setIdx(nextPos);
-      else setReviewMode(false);
-      return;
-    }
+  if (reviewMode) {
+    const currentPos = reviewPositions.indexOf(idx);
+    const nextPos = reviewPositions[currentPos + 1];
 
-    if (idx < questions.length - 1) {
-      setIdx((i) => i + 1);
-      return;
-    }
+    if (nextPos !== undefined) setIdx(nextPos);
+    else setReviewMode(false);
+    return;
+  }
 
-    if (effectiveMode === 'training' && reviewPositions.length > 0) {
-      setReviewMode(true);
-      setIdx(reviewPositions[0]);
-    }
-  };
+  if (idx < questions.length - 1) {
+    setIdx((i) => i + 1);
+    return;
+  }
 
-  const prev = () => setIdx((i) => Math.max(i - 1, 0));
+  if (effectiveMode === 'training' && reviewPositions.length > 0) {
+    setReviewMode(true);
+    setIdx(reviewPositions[0]);
+  }
+};
 
-  const toggleReviewLater = (qId: Question['id']) => {
-    setReviewLater((old) => {
-      const n = new Set(old);
-      if (n.has(qId)) n.delete(qId);
-      else n.add(qId);
-      return n;
-    });
-    setReviewMode(false);
-  };
+const prev = () => {
+  setActionsOpen(false); // ✅ chiude menu quando vai indietro
+  setIdx((i) => Math.max(i - 1, 0));
+};
 
-  const goToFirstUnanswered = () => {
-    if (reviewUnansweredPositions.length > 0) {
-      setIdx(reviewUnansweredPositions[0]);
-      return;
-    }
-    if (unansweredPositions.length > 0) {
-      setIdx(unansweredPositions[0]);
-    }
-  };
+const toggleReviewLater = (qId: Question['id']) => {
+  setActionsOpen(false); // ✅ chiude menu quando usi azione
+
+  setReviewLater((old) => {
+    const n = new Set(old);
+    if (n.has(qId)) n.delete(qId);
+    else n.add(qId);
+    return n;
+  });
+
+  setReviewMode(false);
+};
+
+const goToFirstUnanswered = () => {
+  setActionsOpen(false); // ✅ chiude menu quando salti domanda
+
+  if (reviewUnansweredPositions.length > 0) {
+    setIdx(reviewUnansweredPositions[0]);
+    return;
+  }
+
+  if (unansweredPositions.length > 0) {
+    setIdx(unansweredPositions[0]);
+  }
+};
 
  async function doFinish(_timeExpired = false) {
   setFinished(true);
@@ -732,9 +747,10 @@ export default function QuizEngine({
    return (
     <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
       {/* ===================== TOP (non scrolla) ===================== */}
-      <div className="mobile-safe-top max-w-5xl mx-auto w-full px-4 pt-20">
+      <div className="mobile-safe-top max-w-5xl mx-auto w-full px-3 sm:px-4 pt-3 sm:pt-6">
+
         {/* header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           <div className="text-sm opacity-90">
             {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
             {label('answered', lang)} {answeredCount}
@@ -800,8 +816,9 @@ export default function QuizEngine({
         {effectiveMode === 'exam' &&
           typeof remaining === 'number' &&
           typeof examDurationSec === 'number' && (
-            <div className="sticky top-2 z-10 mb-3">
-              <div className="mx-auto w-fit rounded-full border border-slate-200 bg-white/90 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur">
+            <div className="mb-2">
+              <div className="mx-auto w-fit rounded-full border border-slate-200 bg-white/90 px-2 py-1 text-xs sm:text-sm font-semibold shadow-sm backdrop-blur">
+
                 <span className="opacity-80">⏱️</span>{' '}
                 <span className="text-slate-600">{timerLabel}:</span>{' '}
                 <span
@@ -878,7 +895,9 @@ export default function QuizEngine({
       </div>
 
       {/* ===================== MIDDLE (solo qui scroll) ===================== */}
-      <div className="max-w-5xl mx-auto w-full px-4 flex-1 min-h-0 overflow-y-auto pb-6">
+     <div className="max-w-5xl mx-auto w-full px-3 sm:px-4 flex-1 min-h-0 overflow-y-auto pb-24 sm:pb-16">
+
+
         {/* domanda (altezza stabile) */}
         <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-[128px] flex items-center">
           <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
@@ -969,70 +988,74 @@ export default function QuizEngine({
         )}
       </div>
 
-      {/* ===================== BOTTOM (fisso, sempre uguale) ===================== */}
-      <div className="max-w-5xl mx-auto w-full px-4 pb-4">
-        <div className="sticky bottom-3 z-20">
-          <div className="rounded-2xl bg-black/10 backdrop-blur border border-white/10 p-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={prev}
-                  disabled={idx === 0}
-                >
-                  ‹ {label('back', lang)}
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={next}
-                  disabled={!canGoNext}
-                >
-                  {label('next', lang)} ›
-                </button>
-              </div>
+  {/* ===================== BOTTOM (fixed, slim) ===================== */}
+<div className="fixed inset-x-0 bottom-0 z-30">
+  <div className="mx-auto max-w-5xl px-3 sm:px-4 pb-[env(safe-area-inset-bottom)]">
+    <div className="rounded-xl bg-black/20 backdrop-blur border border-white/10 p-2">
+      <div className="flex items-center justify-between gap-2">
 
-              <div className="flex items-center gap-2 overflow-x-auto max-w-[55%] justify-end">
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-white/10"
-                  onClick={() => toggleReviewLater(q.id)}
-                >
-                  {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
-                </button>
+        {/* LEFT: Back */}
+        <button
+          type="button"
+          className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={prev}
+          disabled={idx === 0}
+        >
+          ‹ {label('back', lang)}
+        </button>
 
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
-                  onClick={goToFirstUnanswered}
-                  disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
-                >
-                  {label('gotoUn', lang)}
-                </button>
+        {/* CENTER: Next */}
+        <button
+          type="button"
+          className="px-4 py-1.5 sm:py-2 rounded-lg bg-emerald-500 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+          onClick={next}
+          disabled={!canGoNext}
+        >
+          {label('next', lang)} ›
+        </button>
 
-                {isExam ? (
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg bg-red-500"
-                    onClick={() => doFinish(false)}
-                  >
-                    {label('finish', lang)}
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-lg bg-white/10"
-                    onClick={restart}
-                  >
-                    {label('restart', lang)}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* RIGHT: More actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+            onClick={() => toggleReviewLater(q.id)}
+          >
+            {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
+          </button>
+
+          <button
+            type="button"
+            className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={goToFirstUnanswered}
+            disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
+          >
+            {label('gotoUn', lang)}
+          </button>
+
+          {isExam ? (
+            <button
+              type="button"
+              className="px-3 py-1.5 sm:py-2 rounded-lg bg-red-500 text-sm"
+              onClick={() => doFinish(false)}
+            >
+              {label('finish', lang)}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+              onClick={restart}
+            >
+              {label('restart', lang)}
+            </button>
+          )}
         </div>
+
       </div>
+    </div>
+  </div>
+</div>
     </div>
   );
 
