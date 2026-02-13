@@ -17,5 +17,12 @@ export const microsoftAzureHub: HubData = {
     fr: "Parcours Azure : fondamentaux, services clés, gouvernance et entraînement via quiz. Contenu en croissance.",
     es: "Rutas Azure: fundamentos, servicios clave, gobernanza y práctica con quizzes. Contenido en crecimiento.",
   },
-  certs: [],
+  certs: [
+    {
+      slug: "microsoft-azure-fundamentals",
+      badge: "Foundational",
+      examCode: "AZ-900",
+      popularity: 90,
+    },
+  ],
 };

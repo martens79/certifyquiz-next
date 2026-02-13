@@ -17,5 +17,12 @@ export const ciscoNetworkingHub: HubData = {
     fr: "Routage, switching, services IP et bases sécurité : entraînez-vous avec des quiz type CCNA. Contenu en croissance.",
     es: "Routing, switching, servicios IP y bases de seguridad: practica con quizzes estilo CCNA. Contenido en crecimiento.",
   },
-  certs: [],
+  certs: [
+    {
+      slug: "ccna",
+      badge: "Associate",
+      examCode: "200-301",
+      popularity: 95,
+    },
+  ],
 };

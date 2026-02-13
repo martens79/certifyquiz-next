@@ -17,5 +17,18 @@ export const awsCloudHub: HubData = {
     fr: "Parcours AWS Cloud : fondamentaux, services clés et entraînement via quiz type examen. Contenu en croissance.",
     es: "Ruta AWS Cloud: fundamentos, servicios clave y práctica con quizzes estilo examen. Contenido en crecimiento.",
   },
-  certs: [],
+  certs: [
+    {
+      slug: "aws-cloud-practitioner",
+      badge: "Foundational",
+      examCode: "CLF-C02",
+      popularity: 95,
+    },
+    {
+      slug: "aws-solutions-architect",
+      badge: "Associate",
+      examCode: "SAA-C03",
+      popularity: 92,
+    },
+  ],
 };

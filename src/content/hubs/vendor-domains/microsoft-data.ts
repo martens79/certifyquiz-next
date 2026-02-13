@@ -17,5 +17,12 @@ export const microsoftDataHub: HubData = {
     fr: "SQL Server, plateformes data et analytics dans l’univers Microsoft. Contenu en croissance (bientôt).",
     es: "SQL Server, plataformas de datos y analítica en Microsoft. Contenido en crecimiento (próximamente).",
   },
-  certs: [],
+  certs: [
+    {
+      slug: "microsoft-sql-server",
+      badge: "Database",
+      examCode: "SQL Server",
+      popularity: 85,
+    },
+  ],
 };
