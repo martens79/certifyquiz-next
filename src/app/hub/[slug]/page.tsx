@@ -9,6 +9,9 @@ import { CERTS_BY_SLUG } from "@/certifications/registry";
 import { HUBS_BY_SLUG } from "../../../content/hubs/registry";
 import type { HubData, HubSection } from "../../../content/hubs/vendor-domains/google-cloud";
 
+// ✅ IMPORTANTE: evita 404 in produzione per nuovi slug
+export const dynamicParams = true;
+
 const lang: Locale = "en";
 
 // ✅ CERT EN root: /certifications/...
