@@ -17,5 +17,16 @@ export const microsoftDevHub: HubData = {
     fr: "Développement, API, toolchain et apps modernes dans l’écosystème Microsoft. Bientôt.",
     es: "Desarrollo, APIs, herramientas y apps modernas en Microsoft. Próximamente.",
   },
-  certs: [],
+  certs: [
+
+{
+  slug: "csharp",
+  badge: "Developer",
+  examCode: "C#",
+  popularity: 65,
+},
+
+
+
+  ],
 };

@@ -99,6 +99,27 @@ export const VENDORS: VendorCard[] = [
     },
   },
 
+
+    // -------------------------
+  // CompTIA
+  // -------------------------
+  {
+    slug: "comptia",
+    title: { it: "CompTIA", en: "CompTIA", fr: "CompTIA", es: "CompTIA" },
+    description: {
+      it: "Fondamenti IT, PC support, networking, security e cloud: pratica con quiz (in crescita).",
+      en: "IT fundamentals, PC support, networking, security and cloud: quiz practice (growing).",
+      fr: "Fondamentaux IT, support PC, réseau, sécurité et cloud : entraînement via quiz (en croissance).",
+      es: "Fundamentos IT, soporte PC, redes, seguridad y cloud: práctica con quizzes (en crecimiento).",
+    },
+    badge: {
+      it: "Foundations · A+ · Security · Cloud",
+      en: "Foundations · A+ · Security · Cloud",
+      fr: "Fondations · A+ · Sécurité · Cloud",
+      es: "Fundamentos · A+ · Seguridad · Cloud",
+    },
+  },
+
   // -------------------------
   // IBM
   // -------------------------

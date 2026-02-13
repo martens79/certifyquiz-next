@@ -77,6 +77,9 @@ export function middleware(req: NextRequest) {
     return redirect301(req, "/certifications/csharp");
   if (pathname === "/it/certificazioni/csharp-certification")
     return redirect301(req, "/it/certificazioni/csharp");
+  
+   if (pathname === "/certifications/microsoft-csharp")
+    return redirect301(req, "/certifications/csharp");
 
   if (pathname === "/certifications/vmware-certified-professional")
     return redirect301(req, "/certifications/vmware-vcp");

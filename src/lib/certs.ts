@@ -156,7 +156,6 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   javascript: "programmazione",
   "javascript-developer": "programmazione",
   csharp: "programmazione",
-  "microsoft-csharp": "programmazione",
   typescript: "programmazione",
   kotlin: "programmazione",
   go: "programmazione",

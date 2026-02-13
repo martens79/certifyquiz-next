@@ -21,17 +21,18 @@ export const ciscoCcsTHub: HubData = {
   },
 
   certs: [
-    {
-      slug: "cisco-ccst-networking",
-      badge: "Entry",
-      examCode: "CCST Networking",
-      popularity: 70,
-    },
-    {
-      slug: "cisco-ccst-cybersecurity",
-      badge: "Entry",
-      examCode: "CCST Cybersecurity",
-      popularity: 68,
-    },
-  ],
+  {
+    slug: "cisco-ccst-networking",
+    badge: "Entry",
+    examCode: "CCST Networking",
+    popularity: 70,
+  },
+  {
+    slug: "cisco-ccst-security",
+    badge: "Entry",
+    examCode: "CCST Security",
+    popularity: 68,
+  },
+],
+
 };

@@ -9,6 +9,9 @@ import { googleVendorHub } from "./vendors/google";
 import { awsVendorHub } from "./vendors/aws";
 import { microsoftVendorHub } from "./vendors/microsoft";
 import { ciscoVendorHub } from "./vendors/cisco";
+import { ibmVendorHub } from "./vendors/ibm";
+import { oracleVendorHub } from "./vendors/oracle";
+import { comptiaVendorHub } from "./vendors/comptia";
 
 /* ======================================================
    Google – vendor domains
@@ -22,7 +25,6 @@ import { googleEducationHub } from "./vendor-domains/google-education";
 /* ======================================================
    AWS – vendor domains
    ====================================================== */
-// (creali anche vuoti se serve, ma lo slug deve esistere)
 import { awsCloudHub } from "./vendor-domains/aws-cloud";
 import { awsArchitectureHub } from "./vendor-domains/aws-architecture";
 import { awsDevOpsHub } from "./vendor-domains/aws-devops";
@@ -36,6 +38,7 @@ import { microsoftAzureHub } from "./vendor-domains/microsoft-azure";
 import { microsoftSecurityHub } from "./vendor-domains/microsoft-security";
 import { microsoftDataHub } from "./vendor-domains/microsoft-data";
 import { microsoftDevHub } from "./vendor-domains/microsoft-dev";
+import { microsoftAiHub } from "./vendor-domains/microsoft-ai";
 
 /* ======================================================
    Cisco – vendor domains
@@ -43,6 +46,24 @@ import { microsoftDevHub } from "./vendor-domains/microsoft-dev";
 import { ciscoNetworkingHub } from "./vendor-domains/cisco-networking";
 import { ciscoCcsTHub } from "./vendor-domains/cisco-ccst";
 import { ciscoSecurityHub } from "./vendor-domains/cisco-security";
+
+/* ======================================================
+   CompTIA – vendor domains
+   ====================================================== */
+import { comptiaFoundationsHub } from "./vendor-domains/comptia-foundations";
+import { comptiaSecurityHub } from "./vendor-domains/comptia-security";
+import { comptiaNetworkingHub } from "./vendor-domains/comptia-networking";
+import { comptiaCloudHub } from "./vendor-domains/comptia-cloud";
+
+/* ======================================================
+   IBM – vendor domains
+   ====================================================== */
+import { ibmCloudHub } from "./vendor-domains/ibm-cloud";
+
+/* ======================================================
+   Oracle – vendor domains
+   ====================================================== */
+import { oracleDatabaseHub } from "./vendor-domains/oracle-database";
 
 /**
  * HUBS
@@ -55,6 +76,9 @@ export const HUBS = [
   awsVendorHub,
   microsoftVendorHub,
   ciscoVendorHub,
+  comptiaVendorHub,
+  ibmVendorHub,
+  oracleVendorHub,
 
   /* ---------------- Google domains ---------------- */
   googleCloudHub,
@@ -75,11 +99,24 @@ export const HUBS = [
   microsoftSecurityHub,
   microsoftDataHub,
   microsoftDevHub,
+  microsoftAiHub,
 
   /* ---------------- Cisco domains ---------------- */
   ciscoNetworkingHub,
   ciscoCcsTHub,
   ciscoSecurityHub,
+
+  /* ---------------- CompTIA domains ---------------- */
+  comptiaFoundationsHub,
+  comptiaSecurityHub,
+  comptiaNetworkingHub,
+  comptiaCloudHub,
+
+  /* ---------------- IBM domains ---------------- */
+  ibmCloudHub,
+
+  /* ---------------- Oracle domains ---------------- */
+  oracleDatabaseHub,
 ] as const;
 
 /**
@@ -87,7 +124,5 @@ export const HUBS = [
  * - lookup rapido per /hub/[slug]
  * - supporta vendor hub e vendor-domain hub
  */
-export const HUBS_BY_SLUG: Record<
-  string,
-  HubData | (typeof HUBS)[number]
-> = Object.fromEntries(HUBS.map((h) => [h.hubSlug, h]));
+export const HUBS_BY_SLUG: Record<string, HubData | (typeof HUBS)[number]> =
+  Object.fromEntries(HUBS.map((h) => [h.hubSlug, h]));

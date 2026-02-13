@@ -22,5 +22,15 @@ export const googleAiHub: HubData = {
   },
 
   // ✅ richiesto dal tuo tipo HubData
-  certs: [],
+  certs: [
+    {
+  slug: "tensorflow",
+  badge: "AI",
+  examCode: "TensorFlow",
+  popularity: 70,
+},
+
+
+
+  ],
 };

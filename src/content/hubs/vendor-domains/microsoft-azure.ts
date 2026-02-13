@@ -24,5 +24,12 @@ export const microsoftAzureHub: HubData = {
       examCode: "AZ-900",
       popularity: 90,
     },
+    {
+  slug: "microsoft-virtualization",
+  badge: "Infrastructure",
+  examCode: "Virtualization",
+  popularity: 60,
+},
+
   ],
 };
