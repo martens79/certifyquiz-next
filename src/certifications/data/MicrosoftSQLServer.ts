@@ -1,18 +1,20 @@
 // src/certifications/data/sql-server.ts
-// Modulo dati puro per la pagina "Microsoft SQL Server" (no React/JSX).
+// 🔥 SEO-optimized “killer” version – data-only (no React/JSX).
 
 const MicrosoftSQLServer = {
   slug: "microsoft-sql-server",
   imageUrl: "/images/certifications/sqlserver.png",
 
-  // 🔗 Pagina “ufficiale” di prodotto (documentazione SQL Server)
+  // 🔗 Pagina ufficiale prodotto/documentazione
   officialUrl: "https://learn.microsoft.com/sql/",
 
+  // ✅ SEO-first: intent “practice test / questions / quiz”
+  // EN ha 760 domande → lo dichiariamo SOLO in EN (pool reale).
   title: {
-    it: "Microsoft SQL Server",
-    en: "Microsoft SQL Server",
-    fr: "Microsoft SQL Server",
-    es: "Microsoft SQL Server",
+    it: "Microsoft SQL Server – Quiz e Domande Pratiche",
+    en: "SQL Server Practice Test 2026 – 760 Exam-Style Questions",
+    fr: "Microsoft SQL Server – Quiz et Questions Pratiques",
+    es: "Microsoft SQL Server – Quiz y Preguntas Prácticas",
   },
 
   level: {
@@ -22,23 +24,24 @@ const MicrosoftSQLServer = {
     es: "Intermedio",
   },
 
+  // ✅ description: non più “certificazione dedicata…”, ma pagina di pratica
   description: {
-    it: "Certificazione dedicata alla gestione e sviluppo di database con Microsoft SQL Server, una delle piattaforme più richieste nel mondo del lavoro.",
-    en: "Certification focused on managing and developing databases with Microsoft SQL Server, one of the most in-demand platforms.",
-    fr: "Certification dédiée à la gestion et au développement de bases de données avec Microsoft SQL Server, l'une des plateformes les plus demandées.",
-    es: "Certificación centrada en la gestión y desarrollo de bases de datos con Microsoft SQL Server, una de las plataformas más solicitadas.",
+    it: "Esercitati con quiz e domande pratiche su SQL e Microsoft SQL Server: query reali, modellazione dati, stored procedure, performance, backup e sicurezza. Modalità training e quiz misti per prepararti sul serio.",
+    en: "Practice SQL and Microsoft SQL Server with 760 exam-style questions (English pool). Train on real queries, database design, stored procedures, performance tuning, backup/restore, and security with focused quizzes and mixed tests.",
+    fr: "Entraînez-vous sur SQL et Microsoft SQL Server avec des quiz et des questions pratiques : requêtes, modélisation, procédures stockées, performances, sauvegarde/restauration et sécurité. Banque de questions en croissance.",
+    es: "Practica SQL y Microsoft SQL Server con quizzes y preguntas prácticas: consultas, modelado, procedimientos almacenados, rendimiento, backup/restauración y seguridad. Banco de preguntas en crecimiento.",
   },
 
   topics: [
-    { it: "Fondamenti di SQL", en: "SQL Fundamentals", fr: "Notions de base en SQL", es: "Fundamentos de SQL" },
-    { it: "Modellazione e progettazione dei database", en: "Database Modeling and Design", fr: "Modélisation et conception de bases de données", es: "Modelado y diseño de bases de datos" },
-    { it: "Stored procedure e funzioni", en: "Stored Procedures and Functions", fr: "Procédures stockées et fonctions", es: "Procedimientos almacenados y funciones" },
-    { it: "Gestione delle performance", en: "Performance Management", fr: "Gestion des performances", es: "Gestión del rendimiento" },
-    { it: "Backup, ripristino e sicurezza", en: "Backup, Restore, and Security", fr: "Sauvegarde, restauration et sécurité", es: "Copia de seguridad, restauración y seguridad" },
+    { it: "Fondamenti di SQL (SELECT, JOIN, GROUP BY)", en: "SQL Fundamentals (SELECT, JOIN, GROUP BY)", fr: "Bases SQL (SELECT, JOIN, GROUP BY)", es: "Fundamentos de SQL (SELECT, JOIN, GROUP BY)" },
+    { it: "Modellazione e progettazione database", en: "Database Modeling & Design", fr: "Modélisation et conception", es: "Modelado y diseño de BD" },
+    { it: "Stored procedure, funzioni e viste", en: "Stored Procedures, Functions & Views", fr: "Procédures stockées, fonctions et vues", es: "Procedimientos, funciones y vistas" },
+    { it: "Performance e ottimizzazione query", en: "Performance & Query Optimization", fr: "Performances et optimisation", es: "Rendimiento y optimización" },
+    { it: "Backup, restore e sicurezza", en: "Backup, Restore & Security", fr: "Sauvegarde, restauration et sécurité", es: "Backup, restauración y seguridad" },
   ],
 
   extraContent: {
-    // ✅ SOLO pagine d’esame ufficiali (role-based su Azure Data)
+    // ✅ SOLO pagine d’esame ufficiali (percorsi moderni Azure Data)
     examReference: {
       it: [
         { text: "DP-900: Microsoft Azure Data Fundamentals", url: "https://learn.microsoft.com/en-us/credentials/certifications/exams/dp-900/" },
@@ -58,134 +61,132 @@ const MicrosoftSQLServer = {
       ],
     },
 
-    // ✅ SEO booster: risponde esattamente alle query “current … certification” e “2021/2023”
+    // ✅ SEO booster (manteniamo la tua idea, ma più “search intent” + practice)
     currentCertification: {
       it: [
-        "Molti utenti cercano “Microsoft SQL Server certification 2021/2023”: oggi il percorso ufficiale Microsoft è orientato alle certificazioni role-based su Azure Data.",
-        "Se il tuo obiettivo è lavorare con SQL Server e database Microsoft, le due tappe più utili sono DP-900 (fondamenti dati) e DP-300 (amministrazione di Azure SQL).",
-        "Questa pagina ti aiuta a studiare SQL e SQL Server in pratica (query, modellazione, performance, backup), competenze valide anche nei percorsi moderni Microsoft.",
+        "Molti cercano “Microsoft SQL Server certification 2021/2023”: oggi Microsoft punta soprattutto su certificazioni role-based nell’area Azure Data.",
+        "Se vuoi lavorare con SQL Server e database Microsoft, i due step più rilevanti sono DP-900 (fondamenti dati) e DP-300 (amministrazione di Azure SQL).",
+        "Qui ti alleni sulle competenze che contano davvero: SQL pratico, progettazione, performance, backup e sicurezza — utili sia su SQL Server on-prem che nel mondo Azure.",
       ],
       en: [
         "Many users search for “Microsoft SQL Server certification 2021/2023”: today Microsoft’s official path focuses on role-based Azure Data certifications.",
-        "If your goal is to work with SQL Server and Microsoft databases, the two most relevant steps are DP-900 (data fundamentals) and DP-300 (administering Azure SQL).",
-        "This page helps you practice core SQL/SQL Server skills (queries, modeling, performance, backup) that remain valuable across modern Microsoft tracks.",
+        "If you work with SQL Server and Microsoft databases, the most relevant steps are DP-900 (data fundamentals) and DP-300 (administering Azure SQL).",
+        "This page is practice-first: real SQL/SQL Server skills (queries, design, performance, backup, security) that stay valuable across on-prem SQL Server and modern Azure tracks.",
       ],
       fr: [
-        "Beaucoup recherchent “Microsoft SQL Server certification 2021/2023” : aujourd’hui, le parcours officiel Microsoft est surtout orienté vers les certifications Azure Data (role-based).",
-        "Si ton objectif est de travailler avec SQL Server et l’écosystème Microsoft, les étapes les plus pertinentes sont DP-900 (fondamentaux data) et DP-300 (administration d’Azure SQL).",
-        "Cette page t’aide à pratiquer les compétences SQL/SQL Server clés (requêtes, modélisation, performances, sauvegarde), utiles aussi dans les parcours Microsoft actuels.",
+        "Beaucoup recherchent “Microsoft SQL Server certification 2021/2023” : aujourd’hui, le parcours officiel Microsoft est surtout orienté vers Azure Data (role-based).",
+        "Pour travailler avec SQL Server et l’écosystème Microsoft, les étapes clés sont DP-900 (fondamentaux data) et DP-300 (administration d’Azure SQL).",
+        "Cette page est centrée sur la pratique : SQL, modélisation, performances, sauvegarde et sécurité — compétences utiles on-prem et dans Azure.",
       ],
       es: [
-        "Muchos buscan “Microsoft SQL Server certification 2021/2023”: hoy el camino oficial de Microsoft se centra en certificaciones role-based de Azure Data.",
-        "Si tu objetivo es trabajar con SQL Server y bases de datos Microsoft, los pasos más relevantes son DP-900 (fundamentos de datos) y DP-300 (administración de Azure SQL).",
-        "Esta página te ayuda a practicar habilidades clave de SQL/SQL Server (consultas, modelado, rendimiento, copias de seguridad) que siguen siendo valiosas en rutas modernas de Microsoft.",
+        "Muchos buscan “Microsoft SQL Server certification 2021/2023”: hoy Microsoft se centra en certificaciones role-based de Azure Data.",
+        "Para trabajar con SQL Server y el ecosistema Microsoft, los pasos clave son DP-900 (fundamentos de datos) y DP-300 (administración de Azure SQL).",
+        "Esta página es práctica: SQL, modelado, rendimiento, copias de seguridad y seguridad — habilidades válidas tanto on-prem como en Azure.",
       ],
     },
 
+    // ✅ learn: più “practice test” e meno brochure
     learn: {
       it: [
-        "Gestire database Microsoft SQL Server a livello professionale.",
-        "Scrivere query SQL avanzate per estrazione e manipolazione dati.",
-        "Progettare tabelle, indici, viste e stored procedure.",
-        "Gestire sicurezza, backup e ripristino dei dati.",
-        "Monitorare le performance e ottimizzare le query.",
+        "Scrivere query SQL solide (JOIN, subquery, aggregazioni) con casi pratici.",
+        "Progettare database: tabelle, chiavi, vincoli, normalizzazione e indici.",
+        "Creare e usare viste, stored procedure e funzioni in T-SQL.",
+        "Capire performance: piani di esecuzione, indici, ottimizzazione query.",
+        "Gestire backup/restore e concetti base di sicurezza (ruoli, permessi).",
       ],
       en: [
-        "Manage Microsoft SQL Server databases professionally.",
-        "Write advanced SQL queries for data retrieval and manipulation.",
-        "Design tables, indexes, views, and stored procedures.",
-        "Handle data security, backup, and restore.",
-        "Monitor performance and optimize queries.",
+        "Write real SQL queries (JOINs, subqueries, aggregations) with practical scenarios.",
+        "Design databases: tables, keys, constraints, normalization, and indexing.",
+        "Build and use views, stored procedures, and functions (T-SQL).",
+        "Improve performance: execution plans, indexes, query tuning basics.",
+        "Handle backup/restore and core security concepts (roles, permissions).",
       ],
       fr: [
-        "Gérer des bases de données Microsoft SQL Server de manière professionnelle.",
-        "Écrire des requêtes SQL avancées pour l'extraction et la manipulation des données.",
-        "Concevoir des tables, index, vues et procédures stockées.",
-        "Gérer la sécurité, la sauvegarde et la restauration des données.",
-        "Surveiller les performances et optimiser les requêtes.",
+        "Écrire des requêtes SQL (JOIN, sous-requêtes, agrégations) sur des cas pratiques.",
+        "Concevoir une base : tables, clés, contraintes, normalisation et index.",
+        "Utiliser vues, procédures stockées et fonctions (T-SQL).",
+        "Travailler les performances : plans d’exécution, index, optimisation.",
+        "Comprendre sauvegarde/restauration et sécurité (rôles, permissions).",
       ],
       es: [
-        "Gestionar bases de datos de Microsoft SQL Server profesionalmente.",
-        "Escribir consultas SQL avanzadas para extracción y manipulación de datos.",
-        "Diseñar tablas, índices, vistas y procedimientos almacenados.",
-        "Gestionar seguridad, respaldo y recuperación de datos.",
-        "Monitorear el rendimiento y optimizar las consultas.",
+        "Escribir consultas SQL (JOIN, subconsultas, agregaciones) con casos prácticos.",
+        "Diseñar BD: tablas, claves, restricciones, normalización e índices.",
+        "Usar vistas, procedimientos y funciones (T-SQL).",
+        "Mejorar rendimiento: planes de ejecución, índices, optimización.",
+        "Entender backup/restauración y seguridad (roles, permisos).",
       ],
     },
 
+    // ✅ whyChoose: posizionamento “practice + lavoro”
     whyChoose: {
       it: [
-        "SQL Server è una delle piattaforme database più usate al mondo.",
-        "Rilevante in ambienti enterprise, finance e amministrazione pubblica.",
-        "Richiesta da aziende che usano tecnologie Microsoft.",
-        "Solida certificazione per data analyst e DBA.",
-        "Ottima base per specializzazioni cloud come Azure SQL.",
+        "SQL Server è ovunque in aziende e PA: saper fare query bene è una skill monetizzabile.",
+        "Approccio pratico: quiz e domande che ti allenano su problemi reali.",
+        "Ottimo ponte verso percorsi moderni (Azure Data: DP-900 / DP-300).",
+        "Perfetto se vuoi migliorare velocità e precisione su SQL/T-SQL.",
       ],
       en: [
-        "SQL Server is one of the most widely used database platforms globally.",
-        "Relevant in enterprise, finance, and public sector environments.",
-        "In demand by companies using Microsoft technologies.",
-        "Solid certification for data analysts and DBAs.",
-        "Great foundation for cloud specializations like Azure SQL.",
+        "SQL Server skills are in-demand across enterprise environments.",
+        "Practice-first: quizzes designed around real-world query scenarios.",
+        "A strong bridge toward modern Microsoft Azure Data paths (DP-900 / DP-300).",
+        "Great for improving speed and accuracy with SQL/T-SQL fundamentals.",
       ],
       fr: [
-        "SQL Server est l'une des plateformes de base de données les plus utilisées au monde.",
-        "Pertinent dans les environnements d'entreprise, de finance et du secteur public.",
-        "Très recherché par les entreprises utilisant les technologies Microsoft.",
-        "Certification solide pour les analystes de données et DBA.",
-        "Bonne base pour les spécialisations cloud comme Azure SQL.",
+        "Compétences SQL Server très recherchées en entreprise.",
+        "Approche pratique : quiz orientés cas réels et requêtes.",
+        "Bon tremplin vers Azure Data (DP-900 / DP-300).",
+        "Idéal pour gagner en vitesse et précision en SQL/T-SQL.",
       ],
       es: [
-        "SQL Server es una de las plataformas de bases de datos más utilizadas en el mundo.",
-        "Relevante en entornos empresariales, financieros y públicos.",
-        "Demandado por empresas que usan tecnologías Microsoft.",
-        "Certificación sólida para analistas de datos y administradores de bases de datos.",
-        "Excelente base para especializaciones en la nube como Azure SQL.",
+        "Habilidades de SQL Server muy demandadas en empresas.",
+        "Enfoque práctico: quizzes con escenarios reales de consultas.",
+        "Buen puente hacia Azure Data (DP-900 / DP-300).",
+        "Ideal para mejorar rapidez y precisión en SQL/T-SQL.",
       ],
     },
 
+    // ✅ FAQ: intent “practice + cert confusion 2021/2023 + percorso”
     faq: {
       it: [
-        { q: "Qual è la certificazione Microsoft SQL “attuale”?", a: "Oggi Microsoft punta su certificazioni role-based nell’area Azure Data. Per iniziare: DP-900. Per amministrare soluzioni Azure SQL: DP-300." },
-        { q: "SQL Server certification 2021/2023 esiste ancora?", a: "Molte certificazioni “SQL Server” storiche sono state sostituite o reindirizzate verso percorsi Azure Data. Le competenze SQL/SQL Server restano però fondamentali e riutilizzabili." },
-        { q: "SQL Server è gratuito?", a: "Microsoft offre una versione gratuita chiamata SQL Server Express con funzionalità limitate." },
-        { q: "Serve conoscere SQL per questa certificazione?", a: "Sì, è essenziale conoscere SQL per affrontare gli argomenti dell'esame." },
-        { q: "Serve esperienza pratica con SQL Server?", a: "È consigliata, ma si può iniziare anche da zero con i giusti materiali." },
+        { q: "Qual è la certificazione Microsoft SQL “attuale”?", a: "Oggi Microsoft punta su certificazioni Azure Data. Per iniziare: DP-900. Per amministrare Azure SQL: DP-300." },
+        { q: "SQL Server certification 2021/2023 esiste ancora?", a: "Molte certificazioni storiche sono state sostituite o reindirizzate. Le competenze SQL/SQL Server restano però fondamentali e trasferibili." },
+        { q: "Questa pagina è utile anche se uso SQL Server on-prem?", a: "Sì. Query, modellazione, performance, backup e sicurezza valgono sia on-prem che in ambienti cloud." },
+        { q: "SQL Server è gratuito?", a: "Esiste SQL Server Express (gratuito) con funzionalità limitate." },
+        { q: "Devo conoscere già SQL?", a: "Aiuta, ma puoi partire dalle basi e migliorare con esercizi e quiz progressivi." },
       ],
       en: [
-        { q: "What is the current Microsoft SQL certification?", a: "Today Microsoft focuses on role-based Azure Data certifications. To start: DP-900. To administer Azure SQL solutions: DP-300." },
-        { q: "Does the SQL Server certification 2021/2023 still exist?", a: "Many legacy “SQL Server” certifications were replaced or redirected toward Azure Data tracks. However, core SQL/SQL Server skills remain essential and transferable." },
-        { q: "Is SQL Server free?", a: "Microsoft provides a free version called SQL Server Express with limited features." },
-        { q: "Do I need to know SQL for this certification?", a: "Yes, SQL knowledge is essential for exam topics." },
-        { q: "Do I need hands-on experience with SQL Server?", a: "It’s recommended, but you can start from scratch with proper materials." },
+        { q: "What is the current Microsoft SQL certification path?", a: "Microsoft focuses on Azure Data role-based certifications. Start with DP-900, then DP-300 for Azure SQL administration." },
+        { q: "Does “SQL Server certification 2021/2023” still exist?", a: "Many legacy SQL Server certs were replaced or redirected. Core SQL/SQL Server skills are still essential and transferable." },
+        { q: "Is this useful for on-prem SQL Server too?", a: "Yes. Queries, modeling, performance, backup/restore, and security apply on-prem and in cloud environments." },
+        { q: "Is SQL Server free?", a: "There is a free edition called SQL Server Express with limited features." },
+        { q: "Do I need prior SQL knowledge?", a: "It helps, but you can start from fundamentals and improve with consistent practice." },
       ],
       fr: [
-        { q: "Quelle est la certification Microsoft SQL “actuelle” ?", a: "Aujourd’hui Microsoft privilégie les certifications Azure Data (role-based). Pour débuter : DP-900. Pour administrer Azure SQL : DP-300." },
-        { q: "La certification SQL Server 2021/2023 existe-t-elle encore ?", a: "De nombreuses anciennes certifications “SQL Server” ont été remplacées ou redirigées vers des parcours Azure Data. Les compétences SQL/SQL Server restent toutefois essentielles et transférables." },
-        { q: "SQL Server est-il gratuit ?", a: "Microsoft propose une version gratuite appelée SQL Server Express avec des fonctionnalités limitées." },
-        { q: "Faut-il connaître SQL pour cette certification ?", a: "Oui, la connaissance du SQL est essentielle pour l'examen." },
-        { q: "Faut-il avoir de l'expérience avec SQL Server ?", a: "C’est recommandé, mais on peut débuter avec de bons supports." },
+        { q: "Quel est le parcours “actuel” de certification SQL chez Microsoft ?", a: "Microsoft privilégie Azure Data. Commencez par DP-900, puis DP-300 pour l’administration d’Azure SQL." },
+        { q: "La “SQL Server certification 2021/2023” existe-t-elle encore ?", a: "De nombreuses certifications historiques ont été remplacées. Les compétences SQL/SQL Server restent essentielles et transférables." },
+        { q: "Utile aussi pour SQL Server on-prem ?", a: "Oui. Requêtes, modélisation, performances, sauvegarde/restauration et sécurité s’appliquent partout." },
+        { q: "SQL Server est-il gratuit ?", a: "Il existe une édition gratuite : SQL Server Express (fonctionnalités limitées)." },
+        { q: "Faut-il déjà connaître SQL ?", a: "C’est un plus, mais on peut démarrer des bases et progresser avec la pratique." },
       ],
       es: [
-        { q: "¿Cuál es la certificación Microsoft SQL “actual”?", a: "Hoy Microsoft se centra en certificaciones role-based de Azure Data. Para empezar: DP-900. Para administrar Azure SQL: DP-300." },
-        { q: "¿Sigue existiendo la certificación SQL Server 2021/2023?", a: "Muchas certificaciones antiguas de “SQL Server” fueron reemplazadas o redirigidas a rutas de Azure Data. Aun así, las habilidades de SQL/SQL Server siguen siendo esenciales y transferibles." },
-        { q: "¿SQL Server es gratuito?", a: "Microsoft ofrece una versión gratuita llamada SQL Server Express con funciones limitadas." },
-        { q: "¿Necesito saber SQL para esta certificación?", a: "Sí, es esencial conocer SQL para el examen." },
-        { q: "¿Necesito experiencia práctica con SQL Server?", a: "Se recomienda, aunque puedes empezar desde cero con buen material." },
+        { q: "¿Cuál es la ruta “actual” de certificación SQL en Microsoft?", a: "Microsoft se centra en Azure Data. Empieza con DP-900 y luego DP-300 para administración de Azure SQL." },
+        { q: "¿Sigue existiendo la “SQL Server certification 2021/2023”?", a: "Muchas certificaciones antiguas fueron reemplazadas. Aun así, las habilidades de SQL/SQL Server siguen siendo clave." },
+        { q: "¿Sirve también para SQL Server on-prem?", a: "Sí. Consultas, modelado, rendimiento, backup/restauración y seguridad aplican en cualquier entorno." },
+        { q: "¿SQL Server es gratuito?", a: "Existe SQL Server Express (gratuito) con funciones limitadas." },
+        { q: "¿Necesito saber SQL previamente?", a: "Ayuda, pero puedes empezar desde cero y mejorar con práctica constante." },
       ],
     },
   },
 
   // Rotte quiz localizzate
-    quizRoute: {
+  quizRoute: {
     it: "/it/quiz/microsoft-sql-server",
     en: "/en/quiz/microsoft-sql-server",
     fr: "/fr/quiz/microsoft-sql-server",
     es: "/es/quiz/microsoft-sql-server",
   },
 
-
-  // Rotta “indietro” alla categoria Database localizzata
+  // Rotta “indietro” localizzata
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",

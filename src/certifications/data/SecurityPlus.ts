@@ -1,18 +1,16 @@
 // src/certifications/data/security-plus.ts
-// Modulo dati per "CompTIA Security+" (no React/JSX).
+// 🔥 SEO-optimized version – data-only (no JSX)
 
 const SecurityPlus = {
   slug: "security-plus",
   imageUrl: "/images/certifications/securityplus-icon.png",
-
-  // Pagina ufficiale CompTIA
   officialUrl: "https://www.comptia.org/certifications/security",
 
   title: {
-    it: "CompTIA Security+",
-    en: "CompTIA Security+",
-    fr: "CompTIA Security+",
-    es: "CompTIA Security+",
+    it: "CompTIA Security+ – Quiz e Simulazioni d'Esame",
+    en: "Security+ Practice Test 2026 – 834 Exam Questions",
+    fr: "CompTIA Security+ – Quiz et Simulation d’Examen",
+    es: "CompTIA Security+ – Quiz y Simulación de Examen",
   },
 
   level: {
@@ -23,116 +21,110 @@ const SecurityPlus = {
   },
 
   description: {
-    it: "La certificazione Security+ di CompTIA è riconosciuta a livello globale e attesta competenze fondamentali in sicurezza informatica.",
-    en: "The CompTIA Security+ certification is globally recognized and validates fundamental cybersecurity skills.",
-    fr: "La certification CompTIA Security+ est reconnue mondialement et valide les compétences fondamentales en cybersécurité.",
-    es: "La certificación CompTIA Security+ está reconocida mundialmente y valida habilidades fundamentales en ciberseguridad.",
+    it: "Allenati per l’esame CompTIA Security+ (SY0-701) con quiz in stile esame, modalità training e simulazioni con timer. Copertura completa dei domini ufficiali e banca domande in crescita.",
+    en: "Practice with 834 Security+ exam-style questions (English pool). Includes training mode, timed exam simulation, and mixed quizzes covering all SY0-701 domains.",
+    fr: "Préparez l’examen CompTIA Security+ (SY0-701) avec des quiz type examen, un mode entraînement et une simulation chronométrée. Banque de questions en croissance.",
+    es: "Prepárate para el examen CompTIA Security+ (SY0-701) con quizzes tipo examen, modo entrenamiento y simulación con temporizador. Banco de preguntas en expansión.",
   },
 
   topics: [
-    { it: "Principi di sicurezza delle reti", en: "Network security principles", fr: "Principes de sécurité réseau", es: "Principios de seguridad de redes" },
-    { it: "Gestione di minacce e vulnerabilità", en: "Threat and vulnerability management", fr: "Gestion des menaces et vulnérabilités", es: "Gestión de amenazas y vulnerabilidades" },
-    { it: "Criptografia e protezione dei dati", en: "Cryptography and data protection", fr: "Cryptographie et protection des données", es: "Criptografía y protección de datos" },
-    { it: "Controlli di accesso e autenticazione", en: "Access control and authentication", fr: "Contrôle d'accès et authentification", es: "Control de acceso y autenticación" },
-    { it: "Risposta agli incidenti e risk management", en: "Incident response and risk management", fr: "Réponse aux incidents et gestion des risques", es: "Respuesta a incidentes y gestión de riesgos" },
+    { it: "Minacce, attacchi e vulnerabilità", en: "Threats, Attacks & Vulnerabilities", fr: "Menaces, attaques et vulnérabilités", es: "Amenazas, ataques y vulnerabilidades" },
+    { it: "Architettura e design sicuro", en: "Secure Architecture & Design", fr: "Architecture et conception sécurisées", es: "Arquitectura y diseño seguros" },
+    { it: "Implementazione della sicurezza", en: "Security Implementation", fr: "Mise en œuvre de la sécurité", es: "Implementación de seguridad" },
+    { it: "Operazioni e risposta agli incidenti", en: "Operations & Incident Response", fr: "Opérations et réponse aux incidents", es: "Operaciones y respuesta a incidentes" },
+    { it: "Governance, rischio e compliance", en: "Governance, Risk & Compliance", fr: "Gouvernance, risque et conformité", es: "Gobernanza, riesgo y cumplimiento" },
   ],
 
   extraContent: {
     learn: {
       it: [
-        "Capire i concetti chiave della sicurezza informatica.",
-        "Identificare minacce, attacchi e vulnerabilità.",
-        "Applicare soluzioni crittografiche e di protezione dei dati.",
-        "Gestire accessi e autenticazioni in modo sicuro.",
-        "Rispondere efficacemente agli incidenti di sicurezza.",
+        "Comprendere minacce moderne, attacchi e vulnerabilità.",
+        "Applicare controlli di sicurezza su reti e sistemi.",
+        "Gestire incidenti e implementare piani di risposta.",
+        "Prepararti con quiz realistici in stile esame.",
       ],
       en: [
-        "Understand key cybersecurity concepts.",
-        "Identify threats, attacks, and vulnerabilities.",
-        "Apply cryptographic and data security solutions.",
-        "Manage secure access and authentication.",
-        "Respond effectively to security incidents.",
+        "Master modern threats, attacks, and vulnerabilities.",
+        "Apply security controls across networks and systems.",
+        "Understand risk management and incident response.",
+        "Practice with realistic exam-style questions.",
       ],
       fr: [
-        "Comprendre les concepts clés de la cybersécurité.",
-        "Identifier menaces, attaques et vulnérabilités.",
-        "Appliquer des solutions de cryptographie et de sécurité des données.",
-        "Gérer l'accès et l'authentification de manière sécurisée.",
-        "Réagir efficacement aux incidents de sécurité.",
+        "Maîtriser les menaces modernes et vulnérabilités.",
+        "Appliquer des contrôles de sécurité sur réseaux et systèmes.",
+        "Gérer les incidents et analyser les risques.",
+        "S’entraîner avec des quiz type examen.",
       ],
       es: [
-        "Comprender los conceptos clave de ciberseguridad.",
-        "Identificar amenazas, ataques y vulnerabilidades.",
-        "Aplicar soluciones criptográficas y de seguridad de datos.",
-        "Gestionar accesos y autenticación de forma segura.",
-        "Responder eficazmente a incidentes de seguridad.",
+        "Dominar amenazas y vulnerabilidades modernas.",
+        "Aplicar controles de seguridad en redes y sistemas.",
+        "Gestionar incidentes y riesgos.",
+        "Practicar con preguntas tipo examen.",
       ],
     },
 
     whyChoose: {
       it: [
-        "Certificazione riconosciuta in ambito militare, pubblico e aziendale.",
-        "Ottimo punto di ingresso per una carriera in cybersecurity.",
-        "Base solida per ruoli come analista SOC o tecnico sicurezza.",
+        "Certificazione richiesta a livello globale.",
+        "Perfetta per ruoli come SOC Analyst o Security Administrator.",
+        "Base solida per certificazioni avanzate (CySA+, CASP+).",
       ],
       en: [
-        "Recognized across military, public, and enterprise sectors.",
-        "Great entry point for a cybersecurity career.",
-        "Solid foundation for roles like SOC analyst or security technician.",
+        "One of the most in-demand cybersecurity certifications worldwide.",
+        "Ideal for SOC analyst, security administrator, and junior security roles.",
+        "Strong foundation for advanced certs like CySA+ or CASP+.",
       ],
       fr: [
-        "Reconnue dans les secteurs militaire, public et entreprise.",
-        "Excellent point d’entrée pour une carrière en cybersécurité.",
-        "Base solide pour des rôles comme analyste SOC ou technicien sécurité.",
+        "Certification très demandée en cybersécurité.",
+        "Adaptée aux postes d’analyste SOC ou administrateur sécurité.",
+        "Base solide pour des certifications avancées.",
       ],
       es: [
-        "Reconocida en sectores militar, público y empresarial.",
-        "Excelente punto de partida para una carrera en ciberseguridad.",
-        "Base sólida para roles como analista SOC o técnico de seguridad.",
+        "Certificación muy demandada en ciberseguridad.",
+        "Ideal para analista SOC o administrador de seguridad.",
+        "Base sólida para certificaciones avanzadas.",
       ],
     },
 
-    // Esame ufficiale corrente
     examReference: {
       it: [
-        { text: "SY0-701 • CompTIA Security+ (esame attuale)", url: "https://www.comptia.org/certifications/security" },
+        { text: "SY0-701 • Pagina ufficiale CompTIA Security+", url: "https://www.comptia.org/certifications/security" },
       ],
       en: [
-        { text: "SY0-701 • CompTIA Security+ (current exam)", url: "https://www.comptia.org/certifications/security" },
+        { text: "SY0-701 • Official CompTIA Security+ page", url: "https://www.comptia.org/certifications/security" },
       ],
       fr: [
-        { text: "SY0-701 • CompTIA Security+ (examen actuel)", url: "https://www.comptia.org/certifications/security" },
+        { text: "SY0-701 • Page officielle CompTIA Security+", url: "https://www.comptia.org/certifications/security" },
       ],
       es: [
-        { text: "SY0-701 • CompTIA Security+ (examen actual)", url: "https://www.comptia.org/certifications/security" },
+        { text: "SY0-701 • Página oficial CompTIA Security+", url: "https://www.comptia.org/certifications/security" },
       ],
     },
 
     faq: {
       it: [
-        { q: "Serve esperienza in cybersecurity?", a: "Non è obbligatoria, ma una base tecnica generale è consigliata." },
-        { q: "È riconosciuta a livello internazionale?", a: "Sì, è una delle certificazioni più richieste nel mondo IT." },
-        { q: "Quanto dura la certificazione?", a: "3 anni. Si rinnova con CEU o nuove certificazioni." },
+        { q: "Quante domande include l’esame?", a: "Fino a 90 domande a scelta multipla e performance-based." },
+        { q: "È valida a livello internazionale?", a: "Sì, è riconosciuta globalmente." },
+        { q: "Quanto dura la certificazione?", a: "3 anni con rinnovo tramite CEU." },
       ],
       en: [
-        { q: "Is cybersecurity experience required?", a: "Not mandatory, but basic technical knowledge is recommended." },
-        { q: "Is it internationally recognized?", a: "Yes, it's one of the most in-demand IT certifications." },
-        { q: "How long is it valid?", a: "3 years. Renew via CEUs or newer certifications." },
+        { q: "How many questions are on the exam?", a: "Up to 90 multiple-choice and performance-based questions." },
+        { q: "Is it globally recognized?", a: "Yes, it's recognized worldwide." },
+        { q: "How long is it valid?", a: "3 years, renewable via CEUs." },
       ],
       fr: [
-        { q: "Une expérience en cybersécurité est-elle requise ?", a: "Pas obligatoire, mais une base technique est recommandée." },
-        { q: "Est-elle reconnue à l’international ?", a: "Oui, c’est l’une des certifications IT les plus demandées." },
-        { q: "Quelle est sa validité ?", a: "3 ans. Renouvelable via CEU ou nouvelles certifications." },
+        { q: "Combien de questions à l’examen ?", a: "Jusqu’à 90 questions (QCM et pratiques)." },
+        { q: "Est-elle reconnue à l’international ?", a: "Oui, mondialement reconnue." },
+        { q: "Quelle est sa validité ?", a: "3 ans avec renouvellement CEU." },
       ],
       es: [
-        { q: "¿Se requiere experiencia en ciberseguridad?", a: "No es obligatoria, pero se recomienda base técnica." },
-        { q: "¿Está reconocida internacionalmente?", a: "Sí, es de las certificaciones más demandadas en IT." },
-        { q: "¿Cuál es su vigencia?", a: "3 años. Se renueva con CEUs o nuevas certificaciones." },
+        { q: "¿Cuántas preguntas tiene el examen?", a: "Hasta 90 preguntas tipo test y prácticas." },
+        { q: "¿Está reconocida internacionalmente?", a: "Sí, a nivel mundial." },
+        { q: "¿Cuál es su vigencia?", a: "3 años renovables con CEUs." },
       ],
     },
   },
 
-  // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/security-plus",
     en: "/en/quiz/security-plus",
@@ -140,7 +132,6 @@ const SecurityPlus = {
     es: "/es/quiz/security-plus",
   },
 
-  // Rotta “indietro” localizzata (lista certificazioni o categoria)
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",

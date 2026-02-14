@@ -1,39 +1,44 @@
 // src/certifications/data/comptia-a-plus.ts
-// Data consumabile dal renderer server (nessun JSX/router).
+// 🔥 SEO-optimized version – data-only (no JSX/router).
 
 const CompTIAAPlus = {
   slug: "comptia-a-plus",
-  imageUrl: "/images/certifications/comptia-a-plus.png", // metti l’icona in /public/images/certifications/
+  imageUrl: "/images/certifications/comptia-a-plus.png",
   officialUrl: "https://www.comptia.org/en-us/certifications/a/",
 
   title: {
-    it: "CompTIA A+",
-    en: "CompTIA A+",
-    fr: "CompTIA A+",
-    es: "CompTIA A+",
+    it: "CompTIA A+ – Quiz e Simulazioni d'Esame (Core 1 + Core 2)",
+    en: "CompTIA A+ Practice Test 2026 – 270 Exam Questions (Core 1 + Core 2)",
+    fr: "CompTIA A+ – Quiz et Simulation d’Examen (Core 1 + Core 2)",
+    es: "CompTIA A+ – Quiz y Simulación de Examen (Core 1 + Core 2)",
   },
-  level: { it: "Intermedio", en: "Intermediate", fr: "Intermédiaire", es: "Intermedio" },
+
+  level: {
+    it: "Intermedio",
+    en: "Intermediate",
+    fr: "Intermédiaire",
+    es: "Intermedio",
+  },
 
   description: {
-    it: "CompTIA A+ è lo standard per i professionisti dell’assistenza IT: installazione, configurazione e manutenzione di hardware/software su sistemi moderni. Ottima per ruoli help desk e supporto tecnico.",
-    en: "CompTIA A+ is the industry standard for IT support pros: install, configure, and maintain hardware/software on modern OSes. Great for help desk and support roles.",
-    fr: "CompTIA A+ est la norme du support IT : installation, configuration et maintenance du matériel/logiciel sur systèmes modernes. Idéale pour le help desk.",
-    es: "CompTIA A+ es el estándar del soporte TI: instalar, configurar y mantener hardware/software en sistemas modernos. Ideal para help desk y soporte.",
+    it: "Preparati a CompTIA A+ (Core 1 220-1201 e Core 2 220-1202) con quiz in stile esame, modalità training e simulazioni. Ideale per help desk e supporto tecnico: hardware, reti, sistemi operativi, sicurezza e troubleshooting.",
+    en: "Prepare for CompTIA A+ (Core 1 220-1201 and Core 2 220-1202) with exam-style quizzes, training mode, and realistic simulations. Includes a 270-question English pool covering hardware, networking, operating systems, security, and troubleshooting.",
+    fr: "Préparez CompTIA A+ (Core 1 220-1201 et Core 2 220-1202) avec des quiz type examen, un mode entraînement et des simulations réalistes. Idéal pour le help desk : matériel, réseaux, OS, sécurité et dépannage.",
+    es: "Prepárate para CompTIA A+ (Core 1 220-1201 y Core 2 220-1202) con quizzes tipo examen, modo entrenamiento y simulaciones realistas. Ideal para help desk: hardware, redes, sistemas operativos, seguridad y troubleshooting.",
   },
 
-  // Allineato a V15 (220-1201 / 220-1202)
   topics: [
     {
-      it: "220-1201: Dispositivi mobili, Reti, Hardware, Virtualizzazione & Cloud, Troubleshooting hardware",
-      en: "220-1201: Mobile Devices, Networking, Hardware, Virtualization & Cloud, Hardware Troubleshooting",
-      fr: "220-1201 : Appareils mobiles, Réseaux, Matériel, Virtualisation & Cloud, Dépannage matériel",
-      es: "220-1201: Dispositivos móviles, Redes, Hardware, Virtualización & Cloud, Resolución de problemas de hardware",
+      it: "Core 1 (220-1201): Dispositivi mobili, Reti, Hardware, Virtualizzazione & Cloud, Troubleshooting hardware",
+      en: "Core 1 (220-1201): Mobile Devices, Networking, Hardware, Virtualization & Cloud, Hardware Troubleshooting",
+      fr: "Core 1 (220-1201) : Appareils mobiles, Réseaux, Matériel, Virtualisation & Cloud, Dépannage matériel",
+      es: "Core 1 (220-1201): Dispositivos móviles, Redes, Hardware, Virtualización & Cloud, Troubleshooting de hardware",
     },
     {
-      it: "220-1202: Sistemi Operativi, Sicurezza, Troubleshooting software, Procedure operative",
-      en: "220-1202: Operating Systems, Security, Software Troubleshooting, Operational Procedures",
-      fr: "220-1202 : Systèmes d’exploitation, Sécurité, Dépannage logiciel, Procédures opérationnelles",
-      es: "220-1202: Sistemas operativos, Seguridad, Resolución de problemas de software, Procedimientos operativos",
+      it: "Core 2 (220-1202): Sistemi operativi, Sicurezza, Troubleshooting software, Procedure operative",
+      en: "Core 2 (220-1202): Operating Systems, Security, Software Troubleshooting, Operational Procedures",
+      fr: "Core 2 (220-1202) : Systèmes d’exploitation, Sécurité, Dépannage logiciel, Procédures opérationnelles",
+      es: "Core 2 (220-1202): Sistemas operativos, Seguridad, Troubleshooting de software, Procedimientos operativos",
     },
   ],
 
@@ -41,31 +46,31 @@ const CompTIAAPlus = {
     learn: {
       it: [
         "Installare e configurare dispositivi e periferiche.",
-        "Gestire Windows, Linux e macOS.",
-        "Risoluzione problemi hardware/software.",
-        "Nozioni base di cybersecurity.",
-        "Procedure operative IT professionali.",
+        "Gestire Windows, Linux e macOS a livello base (supporto e troubleshooting).",
+        "Diagnosticare e risolvere problemi hardware e software con metodo.",
+        "Applicare concetti fondamentali di sicurezza e best practice.",
+        "Prepararti con quiz in stile esame per aumentare confidenza e accuratezza.",
       ],
       en: [
         "Install and configure devices and peripherals.",
-        "Manage Windows, Linux, and macOS.",
-        "Troubleshoot hardware/software issues.",
-        "Foundational cybersecurity concepts.",
-        "Professional IT operational procedures.",
+        "Support Windows, Linux, and macOS with practical troubleshooting.",
+        "Diagnose and fix hardware/software issues with a structured approach.",
+        "Apply foundational security concepts and best practices.",
+        "Build confidence with exam-style questions and realistic practice.",
       ],
       fr: [
         "Installer et configurer appareils et périphériques.",
-        "Gérer Windows, Linux et macOS.",
-        "Dépanner matériel/logiciel.",
-        "Notions de cybersécurité.",
-        "Procédures opérationnelles IT.",
+        "Assurer le support Windows, Linux et macOS avec dépannage pratique.",
+        "Diagnostiquer et résoudre les problèmes matériel/logiciel avec méthode.",
+        "Appliquer les bases de sécurité et les bonnes pratiques.",
+        "S’entraîner avec des questions type examen pour gagner en confiance.",
       ],
       es: [
         "Instalar y configurar dispositivos y periféricos.",
-        "Gestionar Windows, Linux y macOS.",
-        "Solucionar problemas de hardware/software.",
-        "Conceptos básicos de ciberseguridad.",
-        "Procedimientos operativos de TI.",
+        "Dar soporte a Windows, Linux y macOS con troubleshooting práctico.",
+        "Diagnosticar y resolver problemas de hardware/software con método.",
+        "Aplicar conceptos básicos de seguridad y buenas prácticas.",
+        "Practicar con preguntas tipo examen para ganar confianza.",
       ],
     },
 
@@ -90,56 +95,55 @@ const CompTIAAPlus = {
 
     whyChoose: {
       it: [
-        "Riconosciuta globalmente dal settore IT.",
-        "Ottimo ingresso per ruoli di supporto.",
-        "Aggiornata alle tecnologie recenti.",
-        "Valida per concorsi/crediti.",
-        "Materiali ufficiali CompTIA.",
+        "Standard di settore per ruoli help desk e supporto tecnico.",
+        "Copre competenze pratiche su hardware, OS, reti e sicurezza.",
+        "Ottima base prima di Network+ e Security+.",
+        "Ideale se vuoi esercitarti con quiz e simulazioni d’esame.",
       ],
       en: [
-        "Globally recognized in IT.",
-        "Great entry to support roles.",
-        "Covers modern technologies.",
-        "Valid for public/academic credits.",
-        "Official CompTIA prep resources.",
+        "The industry standard for help desk and IT support roles.",
+        "Covers practical skills across hardware, OS, networking, and security.",
+        "A strong foundation before Network+ and Security+.",
+        "Practice-first approach with exam-style quizzes and simulations.",
       ],
       fr: [
-        "Reconnue mondialement.",
-        "Excellent point d’entrée support.",
-        "Technologies modernes.",
-        "Valable pour concours/crédits.",
-        "Ressources officielles CompTIA.",
+        "La référence pour le help desk et le support IT.",
+        "Compétences pratiques : matériel, OS, réseaux et sécurité.",
+        "Excellente base avant Network+ et Security+.",
+        "Entraînement avec quiz type examen et simulations.",
       ],
       es: [
-        "Reconocida mundialmente.",
-        "Gran entrada a soporte TI.",
-        "Tecnologías actuales.",
-        "Válida para exámenes/créditos.",
-        "Recursos oficiales CompTIA.",
+        "Estándar para help desk y soporte TI.",
+        "Habilidades prácticas: hardware, sistemas, redes y seguridad.",
+        "Buena base antes de Network+ y Security+.",
+        "Práctica con quizzes tipo examen y simulaciones.",
       ],
     },
 
     faq: {
       it: [
+        { q: "Devo fare due esami per A+?", a: "Sì: Core 1 (220-1201) e Core 2 (220-1202). Devi superarli entrambi per ottenere la certificazione." },
         { q: "Prerequisiti?", a: "Nessuno ufficiale; consigliati 9–12 mesi di pratica e basi IT." },
-        { q: "Durata validità?", a: "3 anni; rinnovabile via CEUs o nuovi esami." },
+        { q: "Durata validità?", a: "3 anni; rinnovabile via CEUs o con certificazioni/esami successivi." },
       ],
       en: [
-        { q: "Prerequisites?", a: "No formal ones; 9–12 months hands-on and basic IT knowledge recommended." },
-        { q: "Validity?", a: "3 years; renewable via CEUs or retakes." },
+        { q: "Do I need to pass two exams for A+?", a: "Yes: Core 1 (220-1201) and Core 2 (220-1202). You need both to earn the certification." },
+        { q: "Prerequisites?", a: "No formal prerequisites; 9–12 months hands-on experience and basic IT knowledge recommended." },
+        { q: "Validity?", a: "3 years; renewable via CEUs or higher CompTIA certifications." },
       ],
       fr: [
-        { q: "Prérequis ?", a: "Aucun officiel ; 9–12 mois de pratique et bases IT recommandés." },
-        { q: "Validité ?", a: "3 ans ; renouvelable via CEUs ou nouvel examen." },
+        { q: "Faut-il passer deux examens pour A+ ?", a: "Oui : Core 1 (220-1201) et Core 2 (220-1202). Les deux sont nécessaires pour obtenir la certification." },
+        { q: "Prérequis ?", a: "Aucun officiel ; 9–12 mois de pratique et des bases IT sont recommandés." },
+        { q: "Validité ?", a: "3 ans ; renouvelable via CEUs ou certifications CompTIA supérieures." },
       ],
       es: [
-        { q: "¿Prerrequisitos?", a: "Ninguno oficial; se recomiendan 9–12 meses y bases de TI." },
-        { q: "¿Validez?", a: "3 años; renovable con CEUs o reexámenes." },
+        { q: "¿Hay que aprobar dos exámenes para A+?", a: "Sí: Core 1 (220-1201) y Core 2 (220-1202). Necesitas ambos para obtener la certificación." },
+        { q: "¿Prerrequisitos?", a: "No hay requisitos oficiales; se recomiendan 9–12 meses de práctica y bases de TI." },
+        { q: "¿Validez?", a: "3 años; renovable con CEUs o certificaciones CompTIA superiores." },
       ],
     },
   },
 
-  // rotte localizzate per pulsante/indietro
   quizRoute: {
     it: "/it/quiz/comptia-a-plus",
     en: "/en/quiz/comptia-a-plus",
