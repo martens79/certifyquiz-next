@@ -240,6 +240,46 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       ),
     },
   ];
+const TRENDING_CERTS: Array<{
+  key: string;
+  title: string;
+  desc: { it: string; en: string; fr: string; es: string };
+  path: string; // path “base” senza prefisso lingua
+}> = [
+  {
+    key: "ceh",
+    title: "CEH",
+    desc: {
+      it: "Pensa come un hacker. Allenati con domande realistiche.",
+      en: "Think like a hacker. Train with real exam questions.",
+      fr: "Pensez comme un hacker. Entraînez-vous avec de vraies questions.",
+      es: "Piensa como un hacker. Practica con preguntas reales.",
+    },
+    path: "/quiz/ceh",
+  },
+  {
+    key: "securityplus",
+    title: "Security+",
+    desc: {
+      it: "Costruisci solide basi di sicurezza informatica.",
+      en: "Build strong cybersecurity foundations.",
+      fr: "Construisez des bases solides en cybersécurité.",
+      es: "Construye bases sólidas en ciberseguridad.",
+    },
+    path: "/quiz/security-plus",
+  },
+  {
+    key: "isc2cc",
+    title: "ISC2 CC",
+    desc: {
+      it: "Il primo passo nel mondo della cybersecurity.",
+      en: "Your first step into cybersecurity.",
+      fr: "Votre premier pas en cybersécurité.",
+      es: "Tu primer paso en ciberseguridad.",
+    },
+    path: "/quiz/isc2-cc",
+  },
+];
 
   // ✅ helper hub href (coerente con la tua regola EN root)
   const hubHref = (slug: string) =>
@@ -358,45 +398,70 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         </p>
       </header>
 
-     {/* MINI STRIP TEASERS (stabili, anti shift) */}
-<section className="mt-4 max-w-3xl mx-auto" aria-label="Quick links">
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-
-   {/* Vendor strip dinamico */}
-<Link
-  href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
-  className="flex items-center justify-between px-4 py-2 rounded-xl border bg-purple-50 border-purple-200 hover:shadow-sm transition h-[64px]"
->
-  <div className="min-w-0">
-    <div className="text-[11px] font-semibold text-slate-600">
-      {L({ it: "Percorsi", en: "Paths", fr: "Parcours", es: "Rutas" }, safeLang)}
+   {/* TRENDING CYBERSECURITY */}
+<section className="mt-5 max-w-4xl mx-auto" aria-label="Trending cybersecurity">
+  <div className="rounded-2xl border border-red-200 border-t-4 border-t-red-500 bg-white p-3 shadow-sm">
+    <div className="flex items-center justify-between mb-2">
+      <h2 className="text-lg font-extrabold text-slate-800 flex items-center">
+        🔥 {L(
+          {
+            it: "Trending Cybersecurity Exams",
+            en: "Trending Cybersecurity Exams",
+            fr: "Examens Cybersecurity en Tendance",
+            es: "Exámenes de Ciberseguridad en Tendencia",
+          },
+          safeLang
+        )}
+        <span className="ml-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-semibold tracking-wide">
+          HOT
+        </span>
+      </h2>
     </div>
 
-    <div className="text-sm font-bold text-slate-800 truncate">
-      Google · AWS · Microsoft · Cisco
+    <p className="text-xs text-slate-600 mb-3">
+      {L(
+        {
+          it: "Le certificazioni che stanno generando più interesse in questo periodo.",
+          en: "The certifications getting the most attention right now.",
+          fr: "Les certifications qui attirent le plus d’intérêt en ce moment.",
+          es: "Las certificaciones que más interés están generando ahora.",
+        },
+        safeLang
+      )}
+    </p>
+
+    <div className="flex gap-3 overflow-x-auto pb-2">
+      {TRENDING_CERTS.map((c) => (
+        <Link
+          key={c.key}
+          href={withLang(safeLang as any, c.path)}
+          className="min-w-[200px] bg-slate-50 border border-red-200 rounded-xl p-3 hover:shadow-md transition"
+        >
+          <div className="font-bold text-sm text-slate-800 mb-1">{c.title}</div>
+          <div className="text-xs text-slate-600">{L(c.desc, safeLang)}</div>
+        </Link>
+      ))}
     </div>
-  </div>
 
-  <span className="text-xs font-semibold text-slate-700">
-    {L(
-      { it: "Vedi tutti →", en: "See all →", fr: "Voir tout →", es: "Ver todos →" },
-      safeLang
-    )}
-  </span>
-</Link>
-
-
-    {/* Blog strip */}
-    <div className="px-3 py-1 rounded-xl border bg-slate-50 border-slate-200 h-[72px] overflow-hidden flex items-center">
-      <BlogTeaser
-        lang={safeLang as any}
-        variant="compact"
-        className="border-0 shadow-none w-full"
-      />
+    <div className="mt-2 text-right">
+      <Link
+        href={categoryPath(safeLang, "sicurezza")}
+        className="text-xs font-semibold text-red-700 hover:underline"
+      >
+        {L(
+          {
+            it: "Vedi tutta la categoria Sicurezza →",
+            en: "See the full Security category →",
+            fr: "Voir toute la catégorie Sécurité →",
+            es: "Ver toda la categoría Seguridad →",
+          },
+          safeLang
+        )}
+      </Link>
     </div>
-
   </div>
 </section>
+
 
 
 
@@ -441,7 +506,18 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             )}
           </Link>
         </div>
+        
       </section>
+{/* BLOG SECTION */}
+<section className="mt-10 max-w-3xl mx-auto">
+  <div className="rounded-xl border bg-slate-50 border-slate-200 p-4">
+    <BlogTeaser
+      lang={safeLang as any}
+      variant="default"
+      className="border-0 shadow-none w-full"
+    />
+  </div>
+</section>
 
      
     </div>);

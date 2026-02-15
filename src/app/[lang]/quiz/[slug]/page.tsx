@@ -9,6 +9,8 @@ import { getCertBySlug, CERT_SLUGS } from "@/certifications/registry";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 import type { CertificationData } from "@/certifications/types";
+import { categoryPath, type CategoryKey } from "@/lib/paths";
+
 
 
 export const runtime = "nodejs";
@@ -188,6 +190,24 @@ function resolveQuizSlug(inputRaw: string): string {
 
   return ALIASES[input] ?? input;
 }
+function categoryLabel(key: CategoryKey, lang: Locale) {
+  const map: Record<CategoryKey, { it: string; en: string; fr: string; es: string }> = {
+    default: { it: "Categoria", en: "Category", fr: "Catégorie", es: "Categoría" },
+
+    base: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" },
+    sicurezza: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
+    reti: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" },
+    cloud: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Cloud" },
+    database: { it: "Database", en: "Database", fr: "Base de données", es: "Base de datos" },
+    programmazione: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
+    virtualizzazione: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
+    ai: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" },
+  };
+
+  const o = map[key] ?? map.default;
+  return o[lang] ?? o.it;
+}
+
 
 // ─────────────────── Metadata ───────────────────
 export async function generateMetadata({
@@ -293,15 +313,24 @@ export default async function QuizTopicsPage({
     );
   }
 
-  // ✅ categoria e stile basati sullo slug risolto
-  const categoryKey = CERT_CATEGORY_BY_SLUG[resolvedSlug] ?? "default";
-  const css = getCategoryStyle(categoryKey);
+// ✅ categoria e stile basati sullo slug risolto
+const rawCategoryKey = (CERT_CATEGORY_BY_SLUG[resolvedSlug] ?? "default") as CategoryKey;
 
-  const topics = await fetchTopics(certId);
+// per stile: se "default" non è gestito in getCategoryStyle, fallback su "base"
+const styleCategoryKey: CategoryKey = rawCategoryKey === "default" ? "base" : rawCategoryKey;
 
-  const categoryName =
-    categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/-/g, " ");
-  const base = SEO_BASE[L];
+const css = getCategoryStyle(styleCategoryKey);
+
+const topics = await fetchTopics(certId);
+
+// ✅ label categoria tradotta (qui puoi mostrare anche "Categoria" se default)
+const categoryName = categoryLabel(rawCategoryKey, L);
+
+const base = SEO_BASE[L];
+
+// ✅ link: se default, rimanda a quiz-home (localizzato), altrimenti alla categoria
+const categoryHref =
+  rawCategoryKey === "default" ? `${langPrefix(L)}/quiz-home` : categoryPath(L, rawCategoryKey);
 
 
   function titleCase(s: string) {
@@ -386,15 +415,19 @@ const certBtnLabel =
       {base.quizLabel} — {certName}
     </h1>
 
-    <div className="absolute right-0">
-      <span
-        className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
-          css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
-        }`}
-      >
-        {categoryName}
-      </span>
-    </div>
+   <div className="absolute right-0">
+  <Link
+    href={categoryHref}
+    className={`inline-flex items-center gap-2 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm bg-white/80 border hover:bg-white transition ${
+      css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
+    }`}
+    title={categoryName}
+  >
+    <span className="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+    {categoryName}
+  </Link>
+</div>
+
   </div>
 
   {/* Mobile (<md): title centered + pills centered below */}
