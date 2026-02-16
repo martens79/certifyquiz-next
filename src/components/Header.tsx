@@ -231,6 +231,13 @@ export default function Header({ lang, user }: Props) {
   const certsHref = certificationsPath(lang); // SEO root by lang
   const quizHomeHref = quizHomePath(lang); // QUIZ sempre /{lang}
   const suggestedHref = lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
+    // ---- about / chi sono ----
+  const aboutHref =
+    lang === "it" ? "/it/chi-sono" : lang === "fr" ? "/fr/a-propos" : lang === "es" ? "/es/sobre-mi" : "/about";
+
+  const aboutLabel =
+    lang === "it" ? "Chi sono" : lang === "fr" ? "À propos" : lang === "es" ? "Sobre mí" : "About";
+
 
   // ---- profile/auth ----
   const profilePath = H("/profile");
@@ -591,17 +598,27 @@ export default function Header({ lang, user }: Props) {
         >
           <div className="py-3">
             <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
-              {quick.map((q) => (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setOpenDrawer(false)}
-                >
-                  {q.label}
-                </Link>
-              ))}
-            </nav>
+  {quick.map((q) => (
+    <Link
+      key={q.href}
+      href={q.href}
+      className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+      onClick={() => setOpenDrawer(false)}
+    >
+      {q.label}
+    </Link>
+  ))}
+
+  {/* About / Chi sono */}
+  <Link
+    href={aboutHref}
+    className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+    onClick={() => setOpenDrawer(false)}
+  >
+    {aboutLabel}
+  </Link>
+</nav>
+
 
             <div className="mt-3 border-t pt-3 flex items-center gap-2 px-3">
               {!isAuthenticated ? (

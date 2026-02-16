@@ -7,6 +7,13 @@ import { dict, type Locale, legalPath } from "@/lib/i18n";
 
 type Status = "idle" | "loading" | "ok" | "err";
 
+function aboutPath(lang: Locale) {
+  if (lang === "it") return "/it/chi-sono";
+  if (lang === "fr") return "/fr/a-propos";
+  if (lang === "es") return "/es/sobre-mi";
+  return "/about"; // en
+}
+
 export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
@@ -113,6 +120,15 @@ export default function Footer({ lang }: { lang: Locale }) {
             </li>
           </ul>
         </nav>
+<Link href={aboutPath(lang)} className="...classi-del-menu...">
+  {lang === "it"
+    ? "Chi sono"
+    : lang === "fr"
+    ? "À propos"
+    : lang === "es"
+    ? "Sobre mí"
+    : "About"}
+</Link>
 
         {/* Newsletter */}
         <div>
