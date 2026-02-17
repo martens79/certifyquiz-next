@@ -168,13 +168,15 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "hyper-v": "virtualizzazione",
   "microsoft-virtualization": "virtualizzazione",
 
-  // AI
+   // AI
+  tensorflow: "ai", // ✅ slug reale usato dal registry
   "google-tensorflow-developer": "ai",
   "google-tensorflow": "ai",
   pytorch: "ai",
   openai: "ai",
   "microsoft-ai-fundamentals": "ai",
   "microsoft-ai": "ai",
+
 };
 
 /* ======================  ID <-> SLUG (DERIVED)  ====================== */

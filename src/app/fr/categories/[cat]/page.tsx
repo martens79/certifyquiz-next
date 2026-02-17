@@ -2,10 +2,9 @@
 import LangCategoryPage from "@/app/[lang]/categorie/[cat]/page";
 
 type Props = {
-  params: Promise<{ cat: string }>;
+  params: { cat: string };
 };
 
-export default async function Page({ params }: Props) {
-  const { cat } = await params;
-  return <LangCategoryPage params={Promise.resolve({ lang: "fr", cat })} />;
+export default function Page({ params }: Props) {
+  return <LangCategoryPage params={{ lang: "fr", cat: params.cat }} />;
 }

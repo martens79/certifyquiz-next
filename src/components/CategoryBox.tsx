@@ -8,8 +8,16 @@ import { categoryPath, type CategoryKey, type Locale } from "@/lib/paths";
 /* ----------------------------- UI COLORS ----------------------------- */
 
 type ColorKey =
-  | "red" | "rose" | "green" | "purple" | "yellow"
-  | "indigo" | "orange" | "cyan" | "blue" | "teal";
+  | "red"
+  | "rose"
+  | "green"
+  | "purple"
+  | "yellow"
+  | "indigo"
+  | "orange"
+  | "cyan"
+  | "blue"
+  | "teal";
 
 const borderColors: Record<ColorKey, string> = {
   red: "border-red-300",
@@ -72,6 +80,9 @@ type CertificationChip = {
   link: string | null;
 };
 
+/** ✅ Roadmap key: EN root (/roadmap-xxx), altre lingue /it/roadmap-xxx */
+type RoadmapKey = "cybersecurity" | "cloud" | "networking" | "devops";
+
 type Props = {
   title: string | I18nDict;
   description?: string | I18nDict;
@@ -82,6 +93,10 @@ type Props = {
 
   /** ✅ lingua corrente (OBBLIGATORIA) */
   lang: Locale;
+
+  /** ✅ opzionale: mostra link alla roadmap */
+  roadmapKey?: RoadmapKey;
+  roadmapLabel?: string | I18nDict;
 
   color?: ColorKey;
   certifications?: CertificationChip[];
@@ -97,6 +112,8 @@ export default function CategoryBox({
   icon,
   categoryKey,
   lang,
+  roadmapKey,
+  roadmapLabel,
   color = "blue",
   certifications = [],
   compact = false,
@@ -114,8 +131,7 @@ export default function CategoryBox({
   const chipPad = compact ? "px-2 py-0.5" : "px-2 py-1";
   const chipsMaxH = compact ? "max-h-[105px]" : "max-h-none";
 
-  const titleStr =
-    typeof title === "string" ? title : (getLabel(title) as string);
+  const titleStr = typeof title === "string" ? title : (getLabel(title) as string);
 
   const descStr =
     typeof description === "string"
@@ -123,6 +139,25 @@ export default function CategoryBox({
       : description
       ? (getLabel(description) as string)
       : "";
+
+  // ✅ Roadmap href: EN è root, le altre lingue hanno prefisso
+  const roadmapHref = roadmapKey
+    ? lang === "en"
+      ? `/roadmap-${roadmapKey}`
+      : `/${lang}/roadmap-${roadmapKey}`
+    : null;
+
+  const roadmapText =
+    typeof roadmapLabel === "string"
+      ? roadmapLabel
+      : roadmapLabel
+      ? (getLabel(roadmapLabel) as string)
+      : (getLabel({
+          it: "Guida: Roadmap →",
+          en: "Guide: Roadmap →",
+          fr: "Guide : Roadmap →",
+          es: "Guía: Roadmap →",
+        }) as string);
 
   const btnClasses =
     "rounded-md font-semibold text-xs py-1.5 px-3 bg-blue-600 text-white hover:bg-blue-700 transition";
@@ -148,9 +183,7 @@ export default function CategoryBox({
           >
             {icon}
           </div>
-          <div className={`${titleSize} font-semibold ${textClass}`}>
-            {titleStr}
-          </div>
+          <div className={`${titleSize} font-semibold ${textClass}`}>{titleStr}</div>
         </div>
 
         {/* Descrizione */}
@@ -164,6 +197,19 @@ export default function CategoryBox({
           >
             {descStr}
           </p>
+        )}
+
+        {/* ✅ Roadmap CTA (opzionale) */}
+        {roadmapHref && (
+          <div className="mt-3">
+            <Link
+              href={roadmapHref}
+              prefetch={false}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+            >
+              {roadmapText}
+            </Link>
+          </div>
         )}
 
         {/* Chips */}
@@ -205,11 +251,7 @@ export default function CategoryBox({
 
         {/* CTA */}
         <div className="flex justify-end mt-3">
-          <Link
-            href={categoryPath(lang, categoryKey)}
-            prefetch={false}
-            className={btnClasses}
-          >
+          <Link href={categoryPath(lang, categoryKey)} prefetch={false} className={btnClasses}>
             {getLabel({ it: "Quiz", en: "Quiz", fr: "Quiz", es: "Quiz" })}
           </Link>
         </div>

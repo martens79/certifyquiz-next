@@ -154,6 +154,19 @@ const CATEGORY_META: Record<
   },
 };
 
+
+const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
+  base: "fundamentals",
+  sicurezza: "cybersecurity",
+  reti: "networking",
+  cloud: "cloud",
+  programmazione: "programming",
+  database: "databases",
+  virtualizzazione: "virtualization",
+  ai: "ai",
+};
+
+
 /* ------------------------------------------------------------------------ */
 /*                           Slug mapping                                   */
 /* ------------------------------------------------------------------------ */
@@ -253,9 +266,21 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
 
 function resolveInternalKey(lang: Locale, slug: string): CategoryKey | null {
   const s = (slug || "").trim();
-  if (s in CAT_KEY_TO_SLUG[lang]) return s as CategoryKey;
-  return CAT_SLUG_TO_KEY[lang][s] ?? null;
+  if (!s) return null;
+
+  // slug pubblico → key interna (es. "seguridad" → "sicurezza")
+  const bySlug = CAT_SLUG_TO_KEY[lang]?.[s];
+  if (bySlug) return bySlug;
+
+  // già key interna (es. "sicurezza")
+  if (Object.prototype.hasOwnProperty.call(CAT_KEY_TO_SLUG[lang], s)) {
+    return s as CategoryKey;
+  }
+
+  return null;
 }
+
+
 
 /* ------------------------------------------------------------------------ */
 /*                              Path helpers                                */
@@ -321,12 +346,23 @@ export const runtime = "nodejs";
 export const dynamicParams = true;
 
 type Props = {
-  params: Promise<{ lang: Locale; cat: string }>;
+  params: { lang: Locale; cat: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, cat } = await params;          // ✅ await params
-  const key = resolveInternalKey(lang, cat);
+  const { lang, cat } = params;
+
+  // ✅ lang non valido → metadata "safe"
+  if (!LOCALES.includes(lang)) {
+    const canonical = `${SITE_URL}/categories/${cat || ""}`; // fallback
+    return {
+      title: "Invalid language — CertifyQuiz",
+      description: "Invalid language.",
+      alternates: { canonical },
+      robots: { index: false, follow: false },
+    };
+  }
+const key = resolveInternalKey(lang, cat);
 
   if (!key) {
     const canonical = `${SITE_URL}${seoPath(lang, `/${segForCategories(lang)}/${cat}`)}`;
@@ -337,6 +373,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       robots: { index: false, follow: false },
     };
   }
+  
 
   const meta = CATEGORY_META[key];
   const title = meta.title[lang] ?? meta.title.it;
@@ -360,9 +397,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CategoryPage({ params }: Props) {
-  const { lang, cat } = await params;          // ✅ await params
+export default function CategoryPage({ params }: Props) {
+  const { lang, cat } = params;
   const key = resolveInternalKey(lang, cat);
+
   if (!key) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-10">
@@ -381,9 +419,26 @@ export default async function CategoryPage({ params }: Props) {
       </main>
     );
   }
-
   const meta = CATEGORY_META[key];
   const css = getCategoryStyle(key);
+
+  const roadmapKey = ROADMAP_BY_CATEGORY[key];
+
+const roadmapHref = roadmapKey
+  ? lang === "en"
+    ? `/roadmap-${roadmapKey}`
+    : `/${lang}/roadmap-${roadmapKey}`
+  : null;
+
+const roadmapLabel =
+  lang === "it"
+    ? "Da dove partire? Apri la roadmap →"
+    : lang === "fr"
+    ? "Par où commencer ? Ouvrir la roadmap →"
+    : lang === "es"
+    ? "¿Por dónde empezar? Abrir la ruta →"
+    : "Not sure where to start? Open the roadmap →";
+
 
   const certSlugs = CERT_SLUGS.filter((s) => CERT_CATEGORY_BY_SLUG[s] === key);
 
@@ -431,6 +486,16 @@ export default async function CategoryPage({ params }: Props) {
           <span>{meta.emoji}</span> {meta.title[lang]}
         </h1>
         <p className="mt-1 opacity-80">{meta.subtitle[lang]}</p>
+        {roadmapHref && (
+  <Link
+    href={roadmapHref}
+    prefetch={false}
+    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+  >
+    {roadmapLabel}
+  </Link>
+)}
+
       </header>
 
       {certSlugs.length === 0 ? (

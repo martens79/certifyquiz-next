@@ -12,15 +12,8 @@ const EN_TO_KEY: Record<string, string> = {
   "artificial-intelligence": "ai",
 };
 
-type Props = { params: Promise<{ slug: string }> };
+export default function Page({ params }: { params: { slug: string } }) {
+  const mapped = EN_TO_KEY[params.slug] ?? params.slug;
 
-export default async function Page({ params }: Props) {
-  const { slug } = await params;
-  const mapped = EN_TO_KEY[slug] ?? slug;
-
-  return (
-    <LangCategoryPage
-      params={Promise.resolve({ lang: "en", cat: mapped })}
-    />
-  );
+  return <LangCategoryPage params={{ lang: "en", cat: mapped }} />;
 }
