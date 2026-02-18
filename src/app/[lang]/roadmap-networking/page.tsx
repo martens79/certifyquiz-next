@@ -2,6 +2,11 @@ import NetworkingRoadmapPage from "@/components/roadmaps/NetworkingRoadmapPage";
 
 type Locale = "it" | "en" | "es" | "fr";
 
-export default function Page({ params }: { params: { lang: Locale } }) {
-  return <NetworkingRoadmapPage lang={params.lang} />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ lang: Locale }>;
+}) {
+  const { lang } = await params;
+  return <NetworkingRoadmapPage lang={lang} />;
 }

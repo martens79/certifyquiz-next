@@ -346,11 +346,11 @@ export const runtime = "nodejs";
 export const dynamicParams = true;
 
 type Props = {
-  params: { lang: Locale; cat: string };
+  params: Promise<{ lang: Locale; cat: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { lang, cat } = params;
+  const { lang, cat } = await params;
 
   // ✅ lang non valido → metadata "safe"
   if (!LOCALES.includes(lang)) {
@@ -397,8 +397,8 @@ const key = resolveInternalKey(lang, cat);
   };
 }
 
-export default function CategoryPage({ params }: Props) {
-  const { lang, cat } = params;
+export default async function CategoryPage({ params }: Props) {
+  const { lang, cat } = await params;
   const key = resolveInternalKey(lang, cat);
 
   if (!key) {

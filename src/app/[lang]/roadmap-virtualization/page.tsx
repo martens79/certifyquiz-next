@@ -2,6 +2,11 @@ import VirtualizationRoadmapPage from "@/components/roadmaps/VirtualizationRoadm
 
 type Locale = "it" | "en" | "es" | "fr";
 
-export default function Page({ params }: { params: { lang: Locale } }) {
-  return <VirtualizationRoadmapPage lang={params.lang} />;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ lang: Locale }>;
+}) {
+  const { lang } = await params;
+  return <VirtualizationRoadmapPage lang={lang} />;
 }

@@ -1,3 +1,4 @@
+// src/app/categories/[slug]/page.tsx
 import LangCategoryPage from "@/app/[lang]/categorie/[cat]/page";
 
 const EN_TO_KEY: Record<string, string> = {
@@ -12,8 +13,18 @@ const EN_TO_KEY: Record<string, string> = {
   "artificial-intelligence": "ai",
 };
 
-export default function Page({ params }: { params: { slug: string } }) {
-  const mapped = EN_TO_KEY[params.slug] ?? params.slug;
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-  return <LangCategoryPage params={{ lang: "en", cat: mapped }} />;
+  const mapped = EN_TO_KEY[slug] ?? slug;
+
+  return (
+    <LangCategoryPage
+      params={Promise.resolve({ lang: "en", cat: mapped })}
+    />
+  );
 }
