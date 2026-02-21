@@ -16,6 +16,18 @@ import type { NextConfig } from "next";
  */
 
 const nextConfig: NextConfig = {
+
+   // ✅ ADD THIS (per Sanity / LCP)
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+        pathname: "/images/**",
+      },
+    ],
+    formats: ["image/avif", "image/webp"],
+  },
   async redirects() {
     return [
       // ---------------------------------------------------------------------

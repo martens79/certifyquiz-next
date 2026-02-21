@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import type { Locale } from "@/lib/i18n";
-import { blogIndexPath, blogPath } from "@/lib/paths"; // ✅ usa i builder
+import { blogIndexPath, blogPath } from "@/lib/paths";
 
 type Article = {
-  slug: string; // es: "is-microsoft-sql-server-certification-still-worth-it-in-2025"
+  slug: string;
   title: string;
   excerpt?: string;
   publishedAt?: string;
@@ -52,6 +53,17 @@ function formatDate(lang: Locale, iso?: string) {
   }
 }
 
+/**
+ * ✅ Sanity image optimizer:
+ * - w/h: dimensione richiesta
+ * - fit=crop: riempie il box senza deformare
+ * - auto=format: fa servire WebP/AVIF quando possibile (addio PNG da 2MB)
+ */
+function sanityThumb(url: string, w: number, h: number) {
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}w=${w}&h=${h}&fit=crop&auto=format`;
+}
+
 export default function BlogTeaser({
   lang,
   className,
@@ -84,17 +96,23 @@ export default function BlogTeaser({
     };
   }, [lang]);
 
-  // Regola: se non c'è articolo per la lingua → NASCONDI
   if (!loaded) return null;
   if (!article?.slug) return null;
 
-  // ✅ URL corrette (coerenti con /[lang]/blog)
   const base = blogIndexPath(lang);
   const href = blogPath(lang, article.slug);
 
   const dateLabel = formatDate(lang, article.publishedAt);
   const excerpt = (article.excerpt ?? "").trim();
   const isCompact = variant === "compact";
+
+  // ✅ dimensioni reali del box
+  const boxSize = isCompact ? 56 : 80; // px
+  const thumbUrl = useMemo(() => {
+    if (!article.coverUrl) return null;
+    // chiediamo una thumb un filo più grande del box (retina)
+    return sanityThumb(article.coverUrl, boxSize * 2, boxSize * 2);
+  }, [article.coverUrl, boxSize]);
 
   return (
     <section
@@ -106,18 +124,22 @@ export default function BlogTeaser({
     >
       <div className={cx("flex items-center gap-3", isCompact ? "p-2 md:p-3" : "p-3 md:p-4")}>
         {/* Thumbnail */}
-        <Link href={href} className="shrink-0">
+        <Link href={href} className="shrink-0" aria-label={article.title}>
           <div
             className={cx(
               "overflow-hidden rounded-xl bg-zinc-100",
               isCompact ? "h-12 w-12 md:h-14 md:w-14" : "h-16 w-16 md:h-20 md:w-20"
             )}
           >
-            {article.coverUrl ? (
-              <img
-                src={article.coverUrl}
+            {thumbUrl ? (
+              <Image
+                src={thumbUrl}
                 alt={article.title}
+                width={boxSize}
+                height={boxSize}
+                sizes={`${boxSize}px`}
                 className="h-full w-full object-cover"
+                // ✅ NON priority: non deve influire su LCP in home
                 loading="lazy"
               />
             ) : null}
