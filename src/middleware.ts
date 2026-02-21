@@ -8,11 +8,28 @@ function buildPath(parts: string[]) {
   return "/" + parts.filter(Boolean).join("/");
 }
 
-// 301 helper (SEO canonical)
+// ✅ detect locale from any pathname (supports EN-root)
+function detectLocaleFromPath(pathname: string) {
+  const first = pathname.split("/")[1];
+  if (isLocale(first)) return first;
+  return "en"; // EN root canonical when no locale prefix
+}
+
+// ✅ attach cookie used by RootLayout (<html lang>)
+function withLangCookie(res: NextResponse, lang: string) {
+  res.cookies.set("cq_lang", lang, { path: "/" });
+  return res;
+}
+
+// 301 helper (SEO canonical) + ✅ set cookie
 function redirect301(req: NextRequest, pathname: string) {
   const url = req.nextUrl.clone();
   url.pathname = pathname;
-  return NextResponse.redirect(url, 301);
+
+  const res = NextResponse.redirect(url, 301);
+  const lang = detectLocaleFromPath(pathname);
+
+  return withLangCookie(res, lang);
 }
 
 export function middleware(req: NextRequest) {
@@ -77,8 +94,8 @@ export function middleware(req: NextRequest) {
     return redirect301(req, "/certifications/csharp");
   if (pathname === "/it/certificazioni/csharp-certification")
     return redirect301(req, "/it/certificazioni/csharp");
-  
-   if (pathname === "/certifications/microsoft-csharp")
+
+  if (pathname === "/certifications/microsoft-csharp")
     return redirect301(req, "/certifications/csharp");
 
   if (pathname === "/certifications/vmware-certified-professional")
@@ -110,7 +127,8 @@ export function middleware(req: NextRequest) {
   // ✅ REVIEW ERRORS: EN-root
   // ---------------------------------------------------------------------
   if (pathname === "/review" || pathname.startsWith("/review/")) {
-    return NextResponse.next();
+    // ✅ set cookie also on pass-through
+    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
   }
   const reviewPrefixed = pathname.match(/^\/(it|en|fr|es)\/review(\/|$)/);
   if (reviewPrefixed) {
@@ -118,19 +136,12 @@ export function middleware(req: NextRequest) {
   }
 
   // ---------------------------------------------------------------------
-// ✅ BLOG
-// - EN root optional: /en/blog -> /blog (se vuoi EN-root come le altre SEO pages)
-// - NON forzare /it|fr|es/blog verso /en
-// ---------------------------------------------------------------------
-
-// Se vuoi EN root (senza /en) anche per il blog:
-if (pathname.startsWith("/en/blog")) {
-  return redirect301(req, pathname.replace(/^\/en/, "")); // /en/blog/x -> /blog/x
-}
-
-// Se invece vuoi EN canonical con /en/blog, elimina il blocco sopra
-// e lascia tutto così com’è (senza redirect da it/fr/es).
-
+  // ✅ BLOG
+  // - EN root optional: /en/blog -> /blog
+  // ---------------------------------------------------------------------
+  if (pathname.startsWith("/en/blog")) {
+    return redirect301(req, pathname.replace(/^\/en/, "")); // /en/blog/x -> /blog/x
+  }
 
   // ---------------------------------------------------------------------
   // ✅ LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
@@ -163,7 +174,10 @@ if (pathname.startsWith("/en/blog")) {
   // ✅ NORMALIZZAZIONE PREFISSI LINGUA + SEGMENTI SPORCHI
   // ---------------------------------------------------------------------
   const parts = pathname.split("/").filter(Boolean);
-  if (parts.length === 0) return NextResponse.next();
+
+  if (parts.length === 0) {
+    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
+  }
 
   let changed = false;
 
@@ -223,7 +237,9 @@ if (pathname.startsWith("/en/blog")) {
     }
   }
 
-  if (!changed) return NextResponse.next();
+  if (!changed) {
+    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
+  }
 
   return redirect301(req, buildPath(parts));
 }
