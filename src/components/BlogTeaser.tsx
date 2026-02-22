@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { blogIndexPath, blogPath } from "@/lib/paths";
 
@@ -57,7 +57,7 @@ function formatDate(lang: Locale, iso?: string) {
  * ✅ Sanity image optimizer:
  * - w/h: dimensione richiesta
  * - fit=crop: riempie il box senza deformare
- * - auto=format: fa servire WebP/AVIF quando possibile (addio PNG da 2MB)
+ * - auto=format: WebP/AVIF quando possibile
  */
 function sanityThumb(url: string, w: number, h: number) {
   const sep = url.includes("?") ? "&" : "?";
@@ -81,9 +81,17 @@ export default function BlogTeaser({
 
     (async () => {
       try {
-        const res = await fetch(`/api/blog/latest?lang=${lang}`, { cache: "no-store" });
+        const res = await fetch(`/api/blog/latest?lang=${lang}`, {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          if (!cancelled) setArticle(null);
+          return;
+        }
+
         const data = await res.json();
-        if (!cancelled) setArticle(data.article ?? null);
+        if (!cancelled) setArticle(data?.article ?? null);
       } catch {
         if (!cancelled) setArticle(null);
       } finally {
@@ -96,6 +104,15 @@ export default function BlogTeaser({
     };
   }, [lang]);
 
+  // ✅ Varianti UI
+  const isCompact = variant === "compact";
+  const boxSize = isCompact ? 56 : 80; // px (serve anche per sizes/width/height)
+
+  // ✅ Thumb URL (calcolo leggero, niente useMemo)
+  const thumbUrl =
+    article?.coverUrl ? sanityThumb(article.coverUrl, boxSize * 2, boxSize * 2) : null;
+
+  // ✅ Return condizionali SOLO dopo aver dichiarato tutte le variabili (hook-safe)
   if (!loaded) return null;
   if (!article?.slug) return null;
 
@@ -104,15 +121,6 @@ export default function BlogTeaser({
 
   const dateLabel = formatDate(lang, article.publishedAt);
   const excerpt = (article.excerpt ?? "").trim();
-  const isCompact = variant === "compact";
-
-  // ✅ dimensioni reali del box
-  const boxSize = isCompact ? 56 : 80; // px
-  const thumbUrl = useMemo(() => {
-    if (!article.coverUrl) return null;
-    // chiediamo una thumb un filo più grande del box (retina)
-    return sanityThumb(article.coverUrl, boxSize * 2, boxSize * 2);
-  }, [article.coverUrl, boxSize]);
 
   return (
     <section
@@ -139,7 +147,6 @@ export default function BlogTeaser({
                 height={boxSize}
                 sizes={`${boxSize}px`}
                 className="h-full w-full object-cover"
-                // ✅ NON priority: non deve influire su LCP in home
                 loading="lazy"
               />
             ) : null}
