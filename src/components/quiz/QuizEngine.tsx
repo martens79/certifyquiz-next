@@ -13,6 +13,48 @@ import { withLang, getDict } from '@/lib/i18n';
 // Se non ce l’hai ancora, commenta import + uso.
 import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 
+
+// ------------------------------------------------------------------
+// Local labels (indipendenti da QuizDict)
+// ------------------------------------------------------------------
+const L = {
+  training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
+  exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
+  question: { it: 'Domanda', en: 'Question', fr: 'Question', es: 'Pregunta' },
+  answered: { it: 'Risposte date', en: 'Answered', fr: 'Répondues', es: 'Respondidas' },
+
+  back: { it: 'Indietro', en: 'Back', fr: 'Retour', es: 'Atrás' },
+  next: { it: 'Avanti', en: 'Next', fr: 'Suiv.', es: 'Siguiente' },
+  restart: { it: 'Ricomincia', en: 'Restart', fr: 'Recommencer', es: 'Reiniciar' },
+  finish: { it: 'Termina esame', en: 'Finish exam', fr: 'Terminer', es: 'Terminar' },
+
+  explain: { it: 'Spiegazione:', en: 'Explanation:', fr: 'Explication :', es: 'Explicación:' },
+  review: { it: 'Rivedi dopo', en: 'Review later', fr: 'Revoir plus tard', es: 'Revisar después' },
+  gotoUn: {
+    it: 'Vai alla prima non risolta',
+    en: 'Go to first unanswered',
+    fr: 'Aller à la première non répondue',
+    es: 'Ir a la primera sin responder',
+  },
+  gotoUnShort: { it: 'Non risolta', en: 'Unanswered', fr: 'Non répondue', es: 'Sin responder' },
+
+  score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
+  summaryTitle: { it: 'Risultato esame', en: 'Exam summary', fr: 'Résumé de l’examen', es: 'Resumen del examen' },
+  questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
+  correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
+  wrongLabel: { it: 'Errate', en: 'Wrong', fr: 'Fausses', es: 'Incorrectas' },
+  durationLabel: { it: 'Durata', en: 'Duration', fr: 'Durée', es: 'Duración' },
+  backToQuizHome: { it: 'Torna ai quiz', en: 'Back to quizzes', fr: 'Retour aux quiz', es: 'Volver a los cuestionarios' },
+  seeProfile: { it: 'Vai al profilo', en: 'Go to profile', fr: 'Aller au profil', es: 'Ir al perfil' },
+  seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
+  wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
+  yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
+  correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
+} as const;
+
+function label(key: keyof typeof L, lang: Locale) {
+  return L[key][lang] ?? L[key].it;
+}
 type Mode = 'training' | 'exam';
 
 type Props = {
@@ -988,7 +1030,7 @@ const goToFirstUnanswered = () => {
         )}
       </div>
 
-{/* ===================== BOTTOM (fixed, slim) ===================== */}
+  {/* ===================== BOTTOM (fixed, slim) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
   <div className="mx-auto max-w-5xl px-3 sm:px-4 pb-[env(safe-area-inset-bottom)]">
     {/* blur solo da sm in su: su mobile è più pulito */}
@@ -1032,7 +1074,6 @@ const goToFirstUnanswered = () => {
             onClick={goToFirstUnanswered}
             disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
           >
-            {/* short mobile / long desktop */}
             <span className="sm:hidden">{label('gotoUnShort', lang)}</span>
             <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
           </button>
@@ -1060,12 +1101,9 @@ const goToFirstUnanswered = () => {
     </div>
   </div>
 </div>
-
-</div>
-);
-
-}
-
+    </div>
+  );
+} 
 /* ===== helpers ===== */
 
 function arraysEqual(a: Array<any>, b: Array<any>) {
@@ -1099,36 +1137,27 @@ function makePreview(text: string, maxLen: number) {
   return out.trim() + '…';
 }
 
-/* ✅ L prima di label() per TypeScript */
+/*function label(key: keyof typeof L, lang: Locale) {
+  return L[key][lang] ?? L[key].it;
+}
+
 const L = {
   training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
   exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
   question: { it: 'Domanda', en: 'Question', fr: 'Question', es: 'Pregunta' },
   answered: { it: 'Risposte date', en: 'Answered', fr: 'Répondues', es: 'Respondidas' },
-
   back: { it: 'Indietro', en: 'Back', fr: 'Retour', es: 'Atrás' },
   next: { it: 'Avanti', en: 'Next', fr: 'Suiv.', es: 'Siguiente' },
   restart: { it: 'Ricomincia', en: 'Restart', fr: 'Recommencer', es: 'Reiniciar' },
   finish: { it: 'Termina esame', en: 'Finish exam', fr: 'Terminer', es: 'Terminar' },
-
   explain: { it: 'Spiegazione:', en: 'Explanation:', fr: 'Explication :', es: 'Explicación:' },
   review: { it: 'Rivedi dopo', en: 'Review later', fr: 'Revoir plus tard', es: 'Revisar después' },
-
   gotoUn: {
     it: 'Vai alla prima non risolta',
     en: 'Go to first unanswered',
     fr: 'Aller à la première non répondue',
     es: 'Ir a la primera sin responder',
   },
-
-  /* ✅ short label per mobile */
-  gotoUnShort: {
-    it: 'Non risolta',
-    en: 'Unanswered',
-    fr: 'Non répondue',
-    es: 'Sin responder',
-  },
-
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
 
   summaryTitle: {
@@ -1141,15 +1170,11 @@ const L = {
   correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
   wrongLabel: { it: 'Errate', en: 'Wrong', fr: 'Fausses', es: 'Incorrectas' },
   durationLabel: { it: 'Durata', en: 'Duration', fr: 'Durée', es: 'Duración' },
-
   backToQuizHome: { it: 'Torna ai quiz', en: 'Back to quizzes', fr: 'Retour aux quiz', es: 'Volver a los cuestionarios' },
   seeProfile: { it: 'Vai al profilo', en: 'Go to profile', fr: 'Aller au profil', es: 'Ir al perfil' },
   seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
   wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
   yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
   correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
-} as const;
-
-function label(key: keyof typeof L, lang: Locale) {
-  return L[key][lang] ?? L[key].it;
-}
+};
+*/
