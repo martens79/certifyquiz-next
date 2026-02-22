@@ -1029,19 +1029,38 @@ const goToFirstUnanswered = () => {
           </div>
         )}
       </div>
-
-  {/* ===================== BOTTOM (fixed, slim) ===================== */}
+{/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
-  <div className="mx-auto max-w-5xl px-3 sm:px-4 pb-[env(safe-area-inset-bottom)]">
-    {/* blur solo da sm in su: su mobile è più pulito */}
-    <div className="rounded-xl bg-black/25 border border-white/10 p-2 sm:bg-black/20 sm:backdrop-blur">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+  <div className="mx-auto max-w-5xl px-3 sm:px-4 pb-[env(safe-area-inset-bottom)] relative">
 
-        {/* ROW 1 (mobile): Back + Next */}
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
+    {/* PROGRESS BAR (WOW) — sempre sopra la barra, mai sopra i bottoni */}
+    <div className="absolute -top-3 left-3 right-3 sm:left-4 sm:right-4">
+      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+        <div
+          className={`h-full transition-all duration-500 ease-out
+            ${
+              isExam
+                ? scorePct < 50
+                  ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.75)]'
+                  : scorePct < 75
+                  ? 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.75)]'
+                  : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.75)]'
+                : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]'
+            }`}
+          style={{ width: `${((idx + 1) / questions.length) * 100}%` }}
+        />
+      </div>
+    </div>
+
+    {/* NAV BAR */}
+    <div className="rounded-xl bg-black/20 backdrop-blur border border-white/10 p-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+
+        {/* ROW 1 */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2">
           <button
             type="button"
-            className="w-full px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={prev}
             disabled={idx === 0}
           >
@@ -1050,7 +1069,7 @@ const goToFirstUnanswered = () => {
 
           <button
             type="button"
-            className="w-full px-4 py-1.5 sm:py-2 rounded-lg bg-emerald-500 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 rounded-lg bg-emerald-500 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={next}
             disabled={!canGoNext}
           >
@@ -1058,11 +1077,11 @@ const goToFirstUnanswered = () => {
           </button>
         </div>
 
-        {/* ROW 2 (mobile): actions (wrap) */}
+        {/* ROW 2 */}
         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
           <button
             type="button"
-            className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
             onClick={() => toggleReviewLater(q.id)}
           >
             {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
@@ -1070,7 +1089,7 @@ const goToFirstUnanswered = () => {
 
           <button
             type="button"
-            className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={goToFirstUnanswered}
             disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
           >
@@ -1081,7 +1100,7 @@ const goToFirstUnanswered = () => {
           {isExam ? (
             <button
               type="button"
-              className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-red-500 text-sm"
+              className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
               onClick={() => doFinish(false)}
             >
               {label('finish', lang)}
@@ -1089,7 +1108,7 @@ const goToFirstUnanswered = () => {
           ) : (
             <button
               type="button"
-              className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+              className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
               onClick={restart}
             >
               {label('restart', lang)}
@@ -1099,6 +1118,7 @@ const goToFirstUnanswered = () => {
 
       </div>
     </div>
+
   </div>
 </div>
     </div>
