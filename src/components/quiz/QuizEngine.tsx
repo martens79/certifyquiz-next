@@ -988,37 +988,39 @@ const goToFirstUnanswered = () => {
         )}
       </div>
 
-  {/* ===================== BOTTOM (fixed, slim) ===================== */}
+{/* ===================== BOTTOM (fixed, slim) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
   <div className="mx-auto max-w-5xl px-3 sm:px-4 pb-[env(safe-area-inset-bottom)]">
-    <div className="rounded-xl bg-black/20 backdrop-blur border border-white/10 p-2">
-      <div className="flex items-center justify-between gap-2">
+    {/* blur solo da sm in su: su mobile è più pulito */}
+    <div className="rounded-xl bg-black/25 border border-white/10 p-2 sm:bg-black/20 sm:backdrop-blur">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
 
-        {/* LEFT: Back */}
-        <button
-          type="button"
-          className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-          onClick={prev}
-          disabled={idx === 0}
-        >
-          ‹ {label('back', lang)}
-        </button>
-
-        {/* CENTER: Next */}
-        <button
-          type="button"
-          className="px-4 py-1.5 sm:py-2 rounded-lg bg-emerald-500 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-          onClick={next}
-          disabled={!canGoNext}
-        >
-          {label('next', lang)} ›
-        </button>
-
-        {/* RIGHT: More actions */}
-        <div className="flex items-center gap-2">
+        {/* ROW 1 (mobile): Back + Next */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2">
           <button
             type="button"
-            className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+            className="w-full px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={prev}
+            disabled={idx === 0}
+          >
+            ‹ {label('back', lang)}
+          </button>
+
+          <button
+            type="button"
+            className="w-full px-4 py-1.5 sm:py-2 rounded-lg bg-emerald-500 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+            onClick={next}
+            disabled={!canGoNext}
+          >
+            {label('next', lang)} ›
+          </button>
+        </div>
+
+        {/* ROW 2 (mobile): actions (wrap) */}
+        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
+          <button
+            type="button"
+            className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
             onClick={() => toggleReviewLater(q.id)}
           >
             {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
@@ -1026,17 +1028,19 @@ const goToFirstUnanswered = () => {
 
           <button
             type="button"
-            className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={goToFirstUnanswered}
             disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
           >
-            {label('gotoUn', lang)}
+            {/* short mobile / long desktop */}
+            <span className="sm:hidden">{label('gotoUnShort', lang)}</span>
+            <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
           </button>
 
           {isExam ? (
             <button
               type="button"
-              className="px-3 py-1.5 sm:py-2 rounded-lg bg-red-500 text-sm"
+              className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-red-500 text-sm"
               onClick={() => doFinish(false)}
             >
               {label('finish', lang)}
@@ -1044,7 +1048,7 @@ const goToFirstUnanswered = () => {
           ) : (
             <button
               type="button"
-              className="px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
+              className="flex-1 sm:flex-none px-3 py-1.5 sm:py-2 rounded-lg bg-white/10 text-sm"
               onClick={restart}
             >
               {label('restart', lang)}
@@ -1056,8 +1060,9 @@ const goToFirstUnanswered = () => {
     </div>
   </div>
 </div>
-    </div>
-  );
+
+</div>
+);
 
 }
 
@@ -1094,27 +1099,36 @@ function makePreview(text: string, maxLen: number) {
   return out.trim() + '…';
 }
 
-function label(key: keyof typeof L, lang: Locale) {
-  return L[key][lang] ?? L[key].it;
-}
-
+/* ✅ L prima di label() per TypeScript */
 const L = {
   training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
   exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
   question: { it: 'Domanda', en: 'Question', fr: 'Question', es: 'Pregunta' },
   answered: { it: 'Risposte date', en: 'Answered', fr: 'Répondues', es: 'Respondidas' },
+
   back: { it: 'Indietro', en: 'Back', fr: 'Retour', es: 'Atrás' },
   next: { it: 'Avanti', en: 'Next', fr: 'Suiv.', es: 'Siguiente' },
   restart: { it: 'Ricomincia', en: 'Restart', fr: 'Recommencer', es: 'Reiniciar' },
   finish: { it: 'Termina esame', en: 'Finish exam', fr: 'Terminer', es: 'Terminar' },
+
   explain: { it: 'Spiegazione:', en: 'Explanation:', fr: 'Explication :', es: 'Explicación:' },
   review: { it: 'Rivedi dopo', en: 'Review later', fr: 'Revoir plus tard', es: 'Revisar después' },
+
   gotoUn: {
     it: 'Vai alla prima non risolta',
     en: 'Go to first unanswered',
     fr: 'Aller à la première non répondue',
     es: 'Ir a la primera sin responder',
   },
+
+  /* ✅ short label per mobile */
+  gotoUnShort: {
+    it: 'Non risolta',
+    en: 'Unanswered',
+    fr: 'Non répondue',
+    es: 'Sin responder',
+  },
+
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
 
   summaryTitle: {
@@ -1127,10 +1141,15 @@ const L = {
   correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
   wrongLabel: { it: 'Errate', en: 'Wrong', fr: 'Fausses', es: 'Incorrectas' },
   durationLabel: { it: 'Durata', en: 'Duration', fr: 'Durée', es: 'Duración' },
+
   backToQuizHome: { it: 'Torna ai quiz', en: 'Back to quizzes', fr: 'Retour aux quiz', es: 'Volver a los cuestionarios' },
   seeProfile: { it: 'Vai al profilo', en: 'Go to profile', fr: 'Aller au profil', es: 'Ir al perfil' },
   seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
   wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
   yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
   correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
-};
+} as const;
+
+function label(key: keyof typeof L, lang: Locale) {
+  return L[key][lang] ?? L[key].it;
+}

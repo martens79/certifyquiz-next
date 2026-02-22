@@ -6,13 +6,25 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  // ✅ Allow remote images (Sanity)
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+        pathname: "/images/**",
+      },
+    ],
+    formats: ["image/avif", "image/webp"],
+  },
+
   async rewrites() {
     const isProd = process.env.NODE_ENV === "production";
 
-    // ✅ DEV: non riscrivere /api/backend → così prende la route app/api/backend/[...path]
+    // ✅ DEV: do NOT rewrite /api/backend -> so it hits app/api/backend/[...path]
     if (!isProd) return [];
 
-    // ✅ PROD: riscrivi verso Railway come prima
+    // ✅ PROD: rewrite to your API (Railway / custom domain)
     return [
       {
         source: "/api/backend/:path*",
