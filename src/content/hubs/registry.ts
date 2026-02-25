@@ -12,6 +12,7 @@ import { ciscoVendorHub } from "./vendors/cisco";
 import { ibmVendorHub } from "./vendors/ibm";
 import { oracleVendorHub } from "./vendors/oracle";
 import { comptiaVendorHub } from "./vendors/comptia";
+import { isc2VendorHub } from "./vendors/isc2"; // ✅ NEW
 
 /* ======================================================
    Google – vendor domains
@@ -65,6 +66,11 @@ import { ibmCloudHub } from "./vendor-domains/ibm-cloud";
    ====================================================== */
 import { oracleDatabaseHub } from "./vendor-domains/oracle-database";
 
+/* ======================================================
+   ISC2 – vendor domains
+   ====================================================== */
+import { isc2SecurityHub } from "./vendor-domains/isc2-security"; // ✅ NEW
+
 /**
  * HUBS
  * - include BOTH vendor hubs and vendor-domain hubs
@@ -79,6 +85,7 @@ export const HUBS = [
   comptiaVendorHub,
   ibmVendorHub,
   oracleVendorHub,
+  isc2VendorHub, // ✅ NEW
 
   /* ---------------- Google domains ---------------- */
   googleCloudHub,
@@ -117,6 +124,9 @@ export const HUBS = [
 
   /* ---------------- Oracle domains ---------------- */
   oracleDatabaseHub,
+
+  /* ---------------- ISC2 domains ---------------- */
+  isc2SecurityHub, // ✅ NEW
 ] as const;
 
 /**

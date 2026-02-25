@@ -119,7 +119,25 @@ export const VENDORS: VendorCard[] = [
       es: "Fundamentos · A+ · Seguridad · Cloud",
     },
   },
-
+ // -------------------------
+  // ISC2
+  // -------------------------
+  {
+    slug: "isc2",
+    title: { it: "ISC2", en: "ISC2", fr: "ISC2", es: "ISC2" },
+    description: {
+      it: "Certificazioni cybersecurity avanzate come CISSP, CC e percorsi orientati alla sicurezza professionale.",
+      en: "Advanced cybersecurity certifications like CISSP, CC and professional security paths.",
+      fr: "Certifications cybersécurité avancées comme CISSP, CC et parcours professionnels en sécurité.",
+      es: "Certificaciones avanzadas de ciberseguridad como CISSP, CC y rutas profesionales en seguridad.",
+    },
+    badge: {
+      it: "Cybersecurity · CISSP · CC",
+      en: "Cybersecurity · CISSP · CC",
+      fr: "Cybersécurité · CISSP · CC",
+      es: "Ciberseguridad · CISSP · CC",
+    },
+  },
   // -------------------------
   // IBM
   // -------------------------

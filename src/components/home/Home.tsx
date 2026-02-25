@@ -247,6 +247,28 @@ const TRENDING_CERTS: Array<{
   path: string; // path “base” senza prefisso lingua
 }> = [
   {
+    key: "cissp",
+    title: "CISSP",
+    desc: {
+      it: "Avanzato: architettura, risk, IAM, operations e compliance.",
+      en: "Advanced: architecture, risk, IAM, operations and compliance.",
+      fr: "Avancé : architecture, risque, IAM, opérations et conformité.",
+      es: "Avanzado: arquitectura, riesgo, IAM, operaciones y cumplimiento.",
+    },
+    path: "/quiz/cissp", // ✅ verifica che esista
+  },
+  {
+    key: "ccst-cyber",
+    title: "Cisco CCST Cyber",
+    desc: {
+      it: "Fondamenti cyber: minacce, controlli, awareness e risposta base.",
+      en: "Cyber basics: threats, controls, awareness and basic response.",
+      fr: "Bases cyber : menaces, contrôles, sensibilisation et réponse.",
+      es: "Bases cyber: amenazas, controles, concienciación y respuesta.",
+    },
+    path: "/quiz/cisco-ccst-security", // ✅ verifica: potrebbe essere /quiz/ccst-cybersecurity
+  },
+  {
     key: "ceh",
     title: "CEH",
     desc: {
@@ -434,12 +456,12 @@ const TRENDING_CERTS: Array<{
       </p>
 
       {/* carosello “più basso” */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 pr-1 snap-x snap-mandatory">
         {TRENDING_CERTS.map((c) => (
           <Link
             key={c.key}
             href={withLang(safeLang as any, c.path)}
-            className="min-w-[190px] bg-slate-50 border border-red-200 rounded-xl p-2.5 hover:shadow-md transition"
+            className="min-w-[190px] bg-slate-50 border border-red-200 rounded-xl p-2.5 hover:shadow-md transition snap-start"
           >
             <div className="font-bold text-sm text-slate-800 mb-0.5">{c.title}</div>
             <div className="text-[11px] text-slate-600 line-clamp-2">
@@ -468,42 +490,86 @@ const TRENDING_CERTS: Array<{
     </div>
   </div>
 
-  {/* VENDOR / PATHS (stile simile + bordo blu) */}
-  <div aria-label="Paths">
-    <Link
-      href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
-      className="flex items-center justify-between rounded-2xl border border-blue-200 border-t-4 border-t-blue-500 bg-white p-2.5 md:p-3 shadow-sm hover:shadow-md transition h-full"
-    >
-      <div className="min-w-0">
-        <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1">
-          🧭 {L({ it: "Percorsi", en: "Paths", fr: "Parcours", es: "Rutas" }, safeLang)}
+{/* VENDOR / PATHS (più pieno + con ISC2) */}
+<div aria-label="Paths">
+  <div className="rounded-2xl border border-blue-200 border-t-4 border-t-blue-500 bg-white p-3 md:p-4 shadow-sm h-full">
+
+    {/* Header */}
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
+          🧭{" "}
+          {L(
+            { it: "Trending Paths", en: "Trending Paths", fr: "Parcours tendance", es: "Rutas en tendencia" },
+            safeLang
+          )}
         </div>
 
-        <div className="text-base md:text-lg font-extrabold text-slate-800 tracking-wide truncate">
-          Google · AWS · Microsoft · Cisco
-        </div>
-
-        <div className="text-[11px] md:text-xs text-slate-600 mt-1 line-clamp-2">
+        <div className="text-base md:text-lg font-extrabold text-slate-800">
           {L(
             {
-              it: "Scegli un vendor e vai dritto ai quiz più importanti.",
-              en: "Pick a vendor and jump straight to the most important quizzes.",
-              fr: "Choisissez un vendor et allez directement aux quiz les plus importants.",
-              es: "Elige un vendor y ve directo a los quizzes más importantes.",
+              it: "Percorsi certificazioni",
+              en: "Certification Paths",
+              fr: "Parcours de certifications",
+              es: "Rutas de certificación",
             },
             safeLang
           )}
         </div>
       </div>
 
-      <span className="ml-3 text-[11px] md:text-xs font-bold text-blue-700 whitespace-nowrap">
+      <Link
+        href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
+        className="text-[11px] md:text-xs font-bold text-blue-700 hover:underline whitespace-nowrap"
+      >
         {L(
           { it: "Vedi tutti →", en: "See all →", fr: "Voir tout →", es: "Ver todos →" },
           safeLang
         )}
-      </span>
-    </Link>
+      </Link>
+    </div>
+
+    {/* Trending vendors */}
+    <div className="mt-4 flex flex-wrap gap-2">
+      {[
+        { name: "ISC2", slug: "isc2" },
+        { name: "AWS", slug: "aws" },
+        { name: "Microsoft", slug: "microsoft" },
+        { name: "Google", slug: "google" },
+      ].map((v) => (
+        <Link
+          key={v.slug}
+          href={safeLang === "en" ? `/hub/${v.slug}` : `/${safeLang}/hub/${v.slug}`}
+          className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-100 transition"
+        >
+          {v.name}
+        </Link>
+      ))}
+    </div>
+
+    {/* Divider */}
+    <div className="my-4 h-px bg-neutral-100" />
+
+    {/* Other vendors */}
+    <div className="flex flex-wrap gap-2">
+      {[
+        { name: "Cisco", slug: "cisco" },
+        { name: "CompTIA", slug: "comptia" },
+        { name: "IBM", slug: "ibm" },
+        { name: "Oracle", slug: "oracle" },
+      ].map((v) => (
+        <Link
+          key={v.slug}
+          href={safeLang === "en" ? `/hub/${v.slug}` : `/${safeLang}/hub/${v.slug}`}
+          className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
+        >
+          {v.name}
+        </Link>
+      ))}
+    </div>
+
   </div>
+</div>
 </section>
 
 
