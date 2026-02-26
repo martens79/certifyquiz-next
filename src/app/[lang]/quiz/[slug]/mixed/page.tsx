@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import QuizEngine from '@/components/quiz/QuizEngine';
 import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
 import { withLang } from '@/lib/i18n';
+import { getPremiumState } from "@/lib/premium";
 
 // slug → certification_id
 import { CERT_ID_BY_SLUG } from '@/lib/certs';
@@ -166,7 +167,9 @@ export default function MixedQuizPage() {
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
-
+  const premium = getPremiumState({
+  user: null, // finché non colleghi /me reale
+});
   // slug non mappato
   if (!certId) {
     return (
@@ -316,61 +319,78 @@ export default function MixedQuizPage() {
       {/* Quiz (solo se NON coming soon) */}
       {!isComingSoon && (
         <div className="mx-auto max-w-5xl px-4 mt-6 pb-10">
-          <QuizEngine
-            key={`${currentSlug}:${currentLang}`}
-            lang={currentLang}
-            storageScope={`mixed:${currentSlug}:${currentLang}`}
-            categoryColor="from-blue-900 to-blue-700"
-            context={{
-              kind: 'mixed',
-              certificationName: currentSlug.toUpperCase(),
-              certificationSlug: currentSlug,
-              backHref: withLang(currentLang, `/quiz/${currentSlug}`),
-              backLabel:
-                currentLang === 'it'
-                  ? '← Torna alla certificazione'
-                  : currentLang === 'es'
-                  ? '← Volver a la certificación'
-                  : currentLang === 'fr'
-                  ? '← Retour à la certification'
-                  : '← Back to certification',
-            }}
-            initialMode={mode}
-            durationsByMode={{
-              training: undefined,
-              exam: examSpec.durationSec,
-            }}
-            limitsByMode={{
-              training: trainingCap,
-              exam: examSpec.questions,
-            }}
-            onModeChange={(m) => setMode(m)}
-            fetchQuestions={async () => {
-              try {
-                return await fetchPool();
-              } catch (e: any) {
-                if (e?.status === 401) return [];
-                throw e;
-              }
-            }}
-            onFinish={async (s: any) => {
-              try {
-                const finishedMode: 'training' | 'exam' =
-                  s?.mode === 'exam' || s?.mode === 'training' ? s.mode : mode;
+  <QuizEngine
+  key={`${currentSlug}:${currentLang}`}
+  lang={currentLang}
+  storageScope={`mixed:${currentSlug}:${currentLang}`}
+  categoryColor="from-blue-900 to-blue-700"
+  context={{
+    kind: 'mixed',
+    certificationName: currentSlug.toUpperCase(),
+    certificationSlug: currentSlug,
+    backHref: withLang(currentLang, `/quiz/${currentSlug}`),
+    backLabel:
+      currentLang === 'it'
+        ? '← Torna alla certificazione'
+        : currentLang === 'es'
+        ? '← Volver a la certificación'
+        : currentLang === 'fr'
+        ? '← Retour à la certification'
+        : '← Back to certification',
+    isPremiumUser: premium.isPremiumUser,
+    premiumLocked: premium.premiumLocked,
+  }}
+  initialMode={mode}
+  durationsByMode={{ training: undefined, exam: examSpec.durationSec }}
+  limitsByMode={{ training: trainingCap, exam: examSpec.questions }}
+  onModeChange={(m) => setMode(m)}
+  fetchQuestions={async () => {
+    try {
+      return await fetchPool();
+    } catch (e: any) {
+      if (e?.status === 401) return [];
+      throw e;
+    }
+  }}
+  onFeedback={async ({ questionId, type, description }) => {
+    const token = getAccessToken();
+    try {
+      await fetch("/api/backend/feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          question_id: questionId,
+          topic_id: null,
+          certification_id: certId,
+          type,
+          description: description?.trim() || null,
+        }),
+      });
+    } catch (e) {
+      console.error("feedback failed", e);
+    }
+  }}
+  onFinish={async (s: any) => {
+    try {
+      const finishedMode: 'training' | 'exam' =
+        s?.mode === 'exam' || s?.mode === 'training' ? s.mode : mode;
 
-                await saveExam({
-                  certification_id: certId,
-                  totalQuestions: s.total,
-                  correctAnswers: s.correct,
-                  isExam: finishedMode === 'exam',
-                   attempts: s.attempts, // ✅ NEW
-                });
-              } catch {
-                // best-effort
-              }
-            }}
-            backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
-          />
+      await saveExam({
+        certification_id: certId,
+        totalQuestions: s.total,
+        correctAnswers: s.correct,
+        isExam: finishedMode === 'exam',
+        attempts: s.attempts,
+      });
+    } catch {
+      // best-effort
+    }
+  }}
+  backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
+/>
         </div>
       )}
     </div>

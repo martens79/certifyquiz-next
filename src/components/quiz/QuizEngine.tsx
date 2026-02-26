@@ -102,7 +102,16 @@ type Props = {
 
   /** Nasconde il toggle Training / Exam (usato per Mock Exam) */
   hideModeSwitch?: boolean;
+
+    /** Segnala un problema sulla domanda (typo/errata/etc.) */
+
+  onFeedback?: (p: {
+    questionId: number;
+    type: "typo" | "wrong_answer" | "outdated" | "other";
+    description?: string;
+  }) => Promise<void>;
 };
+
 
 export default function QuizEngine({
   lang,
@@ -119,6 +128,7 @@ export default function QuizEngine({
   onModeChange,
   hideModeSwitch = false,
   context,
+  onFeedback,
 }: Props) {
   const router = useRouter();
 
@@ -157,6 +167,19 @@ export default function QuizEngine({
 
   const [actionsOpen, setActionsOpen] = useState(false);
 
+const [fbOpen, setFbOpen] = useState(false);
+const [fbType, setFbType] = useState<"typo" | "wrong_answer" | "outdated" | "other">("typo");
+const [fbText, setFbText] = useState("");
+const [fbSending, setFbSending] = useState(false);
+const [fbSent, setFbSent] = useState(false);
+
+const openFeedback = () => {
+  setActionsOpen(false);      // se usi il menu azioni
+  setFbType("typo");
+  setFbText("");
+  setFbSent(false);
+  setFbOpen(true);
+};
 
   /** Pool completo */
   const [pool, setPool] = useState<Question[]>([]);
@@ -488,6 +511,7 @@ const prev = () => {
   setIdx((i) => Math.max(i - 1, 0));
 };
 
+
 const toggleReviewLater = (qId: Question['id']) => {
   setActionsOpen(false); // ✅ chiude menu quando usi azione
 
@@ -748,6 +772,32 @@ const goToFirstUnanswered = () => {
 
   /* --------------------------- UI QUIZ NORMALE ------------------------ */
   const q = questions[idx];
+
+  const submitFeedback = async () => {
+  if (!onFeedback) return;
+  if (!q?.id) return;
+
+  setFbSending(true);
+  setFbSent(false);
+
+  try {
+    await onFeedback({
+      questionId: Number(q.id),
+      type: fbType,
+      description: fbText.trim() || undefined,
+    });
+
+    setFbSent(true);
+    setFbOpen(false);
+    setFbText("");
+    setFbType("typo");
+  } catch (e) {
+    console.error("🟥 feedback FAILED", e);
+    alert(lang === "it" ? "Errore invio feedback" : "Failed to send feedback");
+  } finally {
+    setFbSending(false);
+  }
+};
   const isExam = effectiveMode === 'exam';
   const chosen = marked[q.id];
 
@@ -945,6 +995,77 @@ const goToFirstUnanswered = () => {
           <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 
+        {/* feedback (sempre disponibile se onFeedback è passato) */}
+{onFeedback && (
+  <div className="mb-3">
+    <button
+      type="button"
+      className="text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
+      onClick={() => {
+        setFbSent(false);
+        setFbOpen((v) => !v);
+      }}
+    >
+      {lang === "it"
+        ? "Segnala un problema"
+        : lang === "fr"
+        ? "Signaler un problème"
+        : lang === "es"
+        ? "Reportar un problema"
+        : "Report an issue"}
+    </button>
+
+    {fbOpen && (
+      <div className="mt-2 rounded-xl border border-white/15 bg-black/20 backdrop-blur p-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            className="rounded-lg bg-white/10 px-2 py-1 text-xs"
+            value={fbType}
+            onChange={(e) => setFbType(e.target.value as any)}
+          >
+            <option value="typo">{lang === "it" ? "Refuso" : "Typo"}</option>
+            <option value="wrong_answer">{lang === "it" ? "Risposta errata" : "Wrong answer"}</option>
+            <option value="outdated">{lang === "it" ? "Non aggiornato" : "Outdated"}</option>
+            <option value="other">{lang === "it" ? "Altro" : "Other"}</option>
+          </select>
+
+          <button
+            type="button"
+            className="ml-auto rounded-lg bg-emerald-500 px-3 py-1 text-xs font-semibold text-white disabled:opacity-40"
+            onClick={submitFeedback}
+            disabled={fbSending}
+          >
+            {fbSending
+              ? (lang === "it" ? "Invio..." : "Sending...")
+              : (lang === "it" ? "Invia" : "Send")}
+          </button>
+        </div>
+
+        <textarea
+          className="mt-2 w-full rounded-lg bg-white/10 p-2 text-xs"
+          rows={3}
+          placeholder={
+            lang === "it"
+              ? "Descrivi il problema (opzionale)"
+              : lang === "fr"
+              ? "Décris le problème (optionnel)"
+              : lang === "es"
+              ? "Describe el problema (opcional)"
+              : "Describe the issue (optional)"
+          }
+          value={fbText}
+          onChange={(e) => setFbText(e.target.value)}
+        />
+
+        {fbSent && (
+          <div className="mt-2 text-xs text-emerald-200">
+            ✅ {lang === "it" ? "Inviato" : "Sent"}
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+)}
         {/* risposte (altezza stabile + no scale) */}
         <div className="space-y-3">
           {q.answers.map((a) => {
@@ -1077,44 +1198,62 @@ const goToFirstUnanswered = () => {
           </button>
         </div>
 
-        {/* ROW 2 */}
-        <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
-          <button
-            type="button"
-            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
-            onClick={() => toggleReviewLater(q.id)}
-          >
-            {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
-          </button>
+{/* ROW 2 */}
+<div className="flex flex-wrap items-center gap-2 sm:flex-nowrap sm:justify-end">
 
-          <button
-            type="button"
-            className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
-            onClick={goToFirstUnanswered}
-            disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
-          >
-            <span className="sm:hidden">{label('gotoUnShort', lang)}</span>
-            <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
-          </button>
+  {/* ✅ Segnala (solo se onFeedback esiste) */}
+  {onFeedback && (
+    <button
+      type="button"
+      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
+      onClick={openFeedback}
+    >
+      {lang === "it"
+        ? "Segnala"
+        : lang === "fr"
+        ? "Signaler"
+        : lang === "es"
+        ? "Reportar"
+        : "Report"}
+    </button>
+  )}
 
-          {isExam ? (
-            <button
-              type="button"
-              className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
-              onClick={() => doFinish(false)}
-            >
-              {label('finish', lang)}
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
-              onClick={restart}
-            >
-              {label('restart', lang)}
-            </button>
-          )}
-        </div>
+  <button
+    type="button"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
+    onClick={() => toggleReviewLater(q.id)}
+  >
+    {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
+  </button>
+
+  <button
+    type="button"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+    onClick={goToFirstUnanswered}
+    disabled={!hasUnanswered && reviewUnansweredPositions.length === 0}
+  >
+    <span className="sm:hidden">{label('gotoUnShort', lang)}</span>
+    <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
+  </button>
+
+  {isExam ? (
+    <button
+      type="button"
+      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
+      onClick={() => doFinish(false)}
+    >
+      {label('finish', lang)}
+    </button>
+  ) : (
+    <button
+      type="button"
+      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
+      onClick={restart}
+    >
+      {label('restart', lang)}
+    </button>
+  )}
+</div>
 
       </div>
     </div>

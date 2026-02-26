@@ -359,11 +359,11 @@ export const authRegister = (payload: { email: string; password: string; usernam
   apiPost<{ success: true }>("/auth/register", payload, false, false);
 
 export const authMe = () =>
-  apiGet<{ user: { id: number; username: string; email: string; role: string; premium: boolean } }>(
+  apiFetch<{ user: { id: number; username: string; email: string; role: string; premium: boolean } }>(
     "/auth/me",
-    true
+    { method: "GET", auth: true, withCredentials: true }
   );
-
+  
 /*─────────────────────────────── CERTIFICATIONS ───────────────────────────────*/
 export const listCertifications = () => apiGet<CertificationListItem[]>("/certifications");
 export const getCertificationById = (id: number | string) => apiGet<Certification>(`/certifications/${id}`);

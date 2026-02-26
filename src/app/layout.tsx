@@ -4,6 +4,7 @@ import { Inter, Manrope } from "next/font/google";
 import { cookies } from "next/headers";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import RootShellClient from "@/components/layout/RootShellClient";
+import { AuthProvider } from "@/components/auth/AuthProvider"; // ✅ aggiungi
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,7 +31,11 @@ export default async function RootLayout({
     <html lang={lang} suppressHydrationWarning>
       <body className={`${inter.variable} ${manrope.variable}`}>
         <GoogleAnalytics />
-        <RootShellClient>{children}</RootShellClient>
+
+        {/* ✅ Provider client globale: abilita isAdmin/isPremiumUser/premiumLocked ovunque */}
+        <AuthProvider>
+          <RootShellClient>{children}</RootShellClient>
+        </AuthProvider>
       </body>
     </html>
   );
