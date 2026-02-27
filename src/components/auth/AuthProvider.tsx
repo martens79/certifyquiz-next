@@ -75,7 +75,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLostSession(true);
         } else {
           // ✅ rete/502/timeout: NON buttare giù la sessione e NON redirectare
-          // (su mobile evita loop brutti)
           setLostSession(false);
         }
       } finally {
@@ -95,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Redirect UX: se perdi sessione (401/403), manda a login con returnTo
+  // ✅ Redirect UX: se perdi sessione (401/403), manda a login con returnTo (preserva lingua)
   useEffect(() => {
     if (loading) return;
     if (!lostSession) return;
@@ -108,9 +107,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? window.location.pathname + window.location.search
         : pathname ?? "/";
 
-    // ✅ mantieni la logica "prima": redirect a /login root
-    // (se vuoi lingua, lo facciamo dopo, ma prima spegniamo l’incendio)
-    router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    // ✅ Preserva prefisso lingua (IT/FR/ES). EN = root.
+    const langPrefix =
+      pathname?.startsWith("/it") ? "/it" :
+      pathname?.startsWith("/fr") ? "/fr" :
+      pathname?.startsWith("/es") ? "/es" :
+      ""; // EN root
+
+    router.replace(`${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`);
   }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
