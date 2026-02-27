@@ -1,27 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider"; // <-- adatta se serve
 
 const COPY: Record<string, any> = {
   it: {
-    title: "Premium attivato 🎉",
-    subtitle: "La tua prova gratuita di 7 giorni è iniziata.",
-    desc: "Ora hai accesso completo a spiegazioni e funzionalità Premium.",
+    title: "Premium attivato",
+    desc: "Prova attiva. Ora puoi accedere alle funzionalità Premium.",
     quiz: "Vai ai quiz",
     home: "Torna alla home",
   },
   fr: {
-    title: "Premium activé 🎉",
-    subtitle: "Votre essai gratuit de 7 jours a commencé.",
-    desc: "Vous avez maintenant accès complet aux explications et fonctionnalités Premium.",
+    title: "Premium activé",
+    desc: "Essai actif. Vous avez maintenant accès aux fonctionnalités Premium.",
     quiz: "Aller aux quiz",
     home: "Retour à l’accueil",
   },
   es: {
-    title: "Premium activado 🎉",
-    subtitle: "Tu prueba gratuita de 7 días ha comenzado.",
-    desc: "Ahora tienes acceso completo a explicaciones y funciones Premium.",
+    title: "Premium activado",
+    desc: "Prueba activa. Ahora tienes acceso a las funciones Premium.",
     quiz: "Ir a los quiz",
     home: "Volver al inicio",
   },
@@ -31,20 +30,40 @@ export default function PremiumSuccessLangPage() {
   const { lang } = useParams() as { lang: string };
   const t = COPY[lang] ?? COPY.it;
 
-  return (
-    <div className="max-w-2xl mx-auto py-20 px-6 text-center">
-      <h1 className="text-3xl font-bold mb-6">{t.title}</h1>
-      <p className="mb-4 text-lg">{t.subtitle}</p>
-      <p className="mb-10 text-gray-600">{t.desc}</p>
+  const { refreshMe } = useAuth();
+  const [sync, setSync] = useState<"idle" | "ok" | "fail">("idle");
 
-      <div className="flex flex-col gap-4">
-        <Link href={`/${lang}/quiz`} className="bg-black text-white px-6 py-3 rounded-lg">
+  useEffect(() => {
+    (async () => {
+      try {
+        setSync("idle");
+        await refreshMe();
+        setSync("ok");
+      } catch {
+        setSync("fail");
+      }
+    })();
+  }, [refreshMe]);
+
+  return (
+    <main className="mx-auto max-w-2xl px-6 py-16 text-center">
+      <h1 className="text-3xl font-bold">{t.title}</h1>
+      <p className="mt-4 text-gray-600">{t.desc}</p>
+
+      <p className="mt-6 text-sm text-gray-500">
+        {sync === "idle" && "Sincronizzazione Premium..."}
+        {sync === "ok" && "Premium sincronizzato ✅"}
+        {sync === "fail" && "Sync fallito. Prova a ricaricare la pagina."}
+      </p>
+
+      <div className="mt-10 flex flex-col gap-3">
+        <Link className="rounded-lg bg-black px-6 py-3 text-white" href={`/${lang}/quiz-home`}>
           {t.quiz}
         </Link>
-        <Link href={`/${lang}`} className="border px-6 py-3 rounded-lg">
+        <Link className="rounded-lg border px-6 py-3" href={`/${lang}`}>
           {t.home}
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

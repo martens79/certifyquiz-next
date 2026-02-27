@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { authMe, getAccessToken, clearAuth } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
 
@@ -19,26 +20,36 @@ type AuthState = {
 const AuthCtx = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // ✅ serve solo per sapere che "avevamo un token" ma è diventato invalido
+  const [lostSession, setLostSession] = useState(false);
 
   const refreshMe = async () => {
     const t = getAccessToken();
     setToken(t);
 
     if (!t) {
+      // ✅ utente non loggato: ok, nessun redirect automatico
       setUser(null);
       return;
     }
 
     try {
-      const me = await authMe(); // GET /api/backend/auth/me (con refresh automatico)
+      const me = await authMe(); // GET /api/backend/auth/me
       setUser(me.user);
+      setLostSession(false); // ✅ se torna valido, reset
     } catch {
-      clearAuth();          // ✅ evita token zombie
+      // ✅ token scaduto o refresh fallito
+      clearAuth();
       setToken(null);
       setUser(null);
+      setLostSession(true); // ✅ trigger redirect
     }
   };
 
@@ -48,12 +59,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await refreshMe();
       setLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ✅ Redirect UX: se perdi sessione, manda a login con returnTo
+  useEffect(() => {
+    if (loading) return;
+    if (!lostSession) return;
+
+    // Evita loop se sei già su login
+    if (pathname?.includes("/login")) return;
+
+    const returnTo =
+      typeof window !== "undefined"
+        ? window.location.pathname + window.location.search
+        : pathname ?? "/";
+
+    router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+  }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
     const isAdmin = user?.role === "admin";
-    const isPremiumUser = !!user?.premium || isAdmin;   // ✅ admin sees everything
-    const premiumLocked = isPremiumLocked(isPremiumUser); // ✅ governato dai flag
+    const isPremiumUser = !!user?.premium || isAdmin;
+    const premiumLocked = isPremiumLocked(isPremiumUser);
 
     return { token, user, loading, isAdmin, isPremiumUser, premiumLocked, refreshMe };
   }, [token, user, loading]);
