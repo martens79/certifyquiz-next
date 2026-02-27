@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { authMe, getAccessToken, clearAuth } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
@@ -33,31 +40,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ serve solo per sapere che "avevamo un token" ma è diventato invalido
+  // serve solo per sapere che "avevamo un token" ma è diventato invalido
   const [lostSession, setLostSession] = useState(false);
 
+  // ✅ evita più refreshMe simultanei (login/profile/header ecc.)
+  const refreshInFlight = useRef<Promise<void> | null>(null);
+
   const refreshMe = async () => {
-    const t = getAccessToken();
-    setToken(t);
+    if (refreshInFlight.current) return refreshInFlight.current;
 
-    if (!t) {
-      // ✅ utente non loggato: ok, nessun redirect automatico
-      setUser(null);
-      setLostSession(false);
-      return;
-    }
+    refreshInFlight.current = (async () => {
+      const t = getAccessToken();
+      setToken(t);
 
-    try {
-      const me = await authMe(); // GET /api/backend/auth/me
-      setUser(me.user);
-      setLostSession(false); // ✅ se torna valido, reset
-    } catch {
-      // ✅ token scaduto o refresh fallito
-      clearAuth();
-      setToken(null);
-      setUser(null);
-      setLostSession(true); // ✅ trigger redirect
-    }
+      if (!t) {
+        // utente non loggato: ok, nessun redirect automatico
+        setUser(null);
+        setLostSession(false);
+        return;
+      }
+
+      try {
+        const me = await authMe(); // GET /api/backend/auth/me
+        setUser(me.user);
+        setLostSession(false);
+      } catch (err: any) {
+        const status = err?.status ?? err?.response?.status;
+
+        // ✅ SOLO token invalido/scaduto => logout + redirect
+        if (status === 401 || status === 403) {
+          clearAuth();
+          setToken(null);
+          setUser(null);
+          setLostSession(true);
+        } else {
+          // ✅ rete/502/timeout: NON buttare giù la sessione e NON redirectare
+          // (su mobile evita loop brutti)
+          setLostSession(false);
+        }
+      } finally {
+        refreshInFlight.current = null;
+      }
+    })();
+
+    return refreshInFlight.current;
   };
 
   useEffect(() => {
@@ -69,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Redirect UX: se perdi sessione, manda a login con returnTo (preserva lang)
+  // ✅ Redirect UX: se perdi sessione (401/403), manda a login con returnTo
   useEffect(() => {
     if (loading) return;
     if (!lostSession) return;
@@ -82,19 +108,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? window.location.pathname + window.location.search
         : pathname ?? "/";
 
-    const langPrefix =
-      pathname?.startsWith("/it") ? "/it" :
-      pathname?.startsWith("/fr") ? "/fr" :
-      pathname?.startsWith("/es") ? "/es" :
-      "";
-
-    router.replace(`${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`);
+    // ✅ mantieni la logica "prima": redirect a /login root
+    // (se vuoi lingua, lo facciamo dopo, ma prima spegniamo l’incendio)
+    router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
   }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
     const isAdmin = user?.role === "admin";
-    const isPremiumUser = !!user?.premium || isAdmin; // ✅ admin sees everything
-    const premiumLocked = isPremiumLocked(isPremiumUser); // ✅ governato dai flag
+    const isPremiumUser = !!user?.premium || isAdmin; // admin sees everything
+    const premiumLocked = isPremiumLocked(isPremiumUser);
 
     return { token, user, loading, isAdmin, isPremiumUser, premiumLocked, refreshMe };
   }, [token, user, loading]);
