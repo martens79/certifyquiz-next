@@ -38,12 +38,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+
+  // loading SOLO per la primissima “bootstrap” session
   const [loading, setLoading] = useState(true);
+  const didInit = useRef(false);
 
-  // serve solo per sapere che "avevamo un token" ma è diventato invalido
   const [lostSession, setLostSession] = useState(false);
-
-  // ✅ evita più refreshMe simultanei (login/profile/header ecc.)
   const refreshInFlight = useRef<Promise<void> | null>(null);
 
   const refreshMe = async () => {
@@ -51,31 +51,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     refreshInFlight.current = (async () => {
       const t = getAccessToken();
-      setToken(t);
+
+      // ✅ evita re-render se token identico
+      setToken((prev) => (prev === t ? prev : t));
 
       if (!t) {
-        // utente non loggato: ok, nessun redirect automatico
         setUser(null);
         setLostSession(false);
         return;
       }
 
+      // ✅ se ho un token, non voglio che lostSession resti “true” durante i retry/login
+      setLostSession(false);
+
       try {
-        const me = await authMe(); // GET /api/backend/auth/me
+        const me = await authMe();
         setUser(me.user);
-        setLostSession(false);
       } catch (err: any) {
         const status = err?.status ?? err?.response?.status;
 
-        // ✅ SOLO token invalido/scaduto => logout + redirect
         if (status === 401 || status === 403) {
           clearAuth();
           setToken(null);
           setUser(null);
           setLostSession(true);
         } else {
-          // ✅ rete/502/timeout: NON buttare giù la sessione e NON redirectare
-          setLostSession(false);
+          // rete/502: non distruggere sessione
+          // (qui NON tocchiamo user/token)
         }
       } finally {
         refreshInFlight.current = null;
@@ -86,6 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
+
     (async () => {
       setLoading(true);
       await refreshMe();
@@ -94,12 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Redirect UX: se perdi sessione (401/403), manda a login con returnTo (preserva lingua)
   useEffect(() => {
     if (loading) return;
     if (!lostSession) return;
 
-    // Evita loop se sei già su login (root o lang)
     if (pathname?.includes("/login")) return;
 
     const returnTo =
@@ -107,22 +110,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? window.location.pathname + window.location.search
         : pathname ?? "/";
 
-    // ✅ Preserva prefisso lingua (IT/FR/ES). EN = root.
     const langPrefix =
-      pathname?.startsWith("/it") ? "/it" :
-      pathname?.startsWith("/fr") ? "/fr" :
-      pathname?.startsWith("/es") ? "/es" :
-      ""; // EN root
+      pathname?.startsWith("/it")
+        ? "/it"
+        : pathname?.startsWith("/fr")
+        ? "/fr"
+        : pathname?.startsWith("/es")
+        ? "/es"
+        : "";
 
-    router.replace(`${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`);
+    router.replace(
+      `${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`
+    );
   }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
     const isAdmin = user?.role === "admin";
-    const isPremiumUser = !!user?.premium || isAdmin; // admin sees everything
+    const isPremiumUser = !!user?.premium || isAdmin;
     const premiumLocked = isPremiumLocked(isPremiumUser);
 
-    return { token, user, loading, isAdmin, isPremiumUser, premiumLocked, refreshMe };
+    return {
+      token,
+      user,
+      loading,
+      isAdmin,
+      isPremiumUser,
+      premiumLocked,
+      refreshMe,
+    };
   }, [token, user, loading]);
 
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;

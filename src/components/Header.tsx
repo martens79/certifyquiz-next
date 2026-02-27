@@ -19,6 +19,7 @@ import type { MinimalUser } from "@/lib/auth";
 
 import { certificationsPath, pricingPath, quizHomePath } from "@/lib/paths";
 
+
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
 /* ------------------------------------------------------------------ */
@@ -265,10 +266,10 @@ function IconSearch() {
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
 
-type Props = {
-  lang: Locale;
-  user?: MinimalUser | null;
-};
+ type Props = {
+   lang: Locale;
+ user: MinimalUser | null;
+ };
 
 type QuickItem = { href: string; label: string; icon: ReactNode };
 
@@ -283,13 +284,17 @@ export default function Header({ lang, user }: Props) {
   const router = useRouter();
   const pathname = usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
+  
 
   // ✅ admin deriva SOLO da user (source of truth)
   const isAdmin = user?.role === "admin";
   const isAuthenticated = !!user;
 
   // label + initials da user
-  const userLabel = user?.name?.trim() || user?.username?.trim() || user?.email?.trim() || "Account";
+  const userLabel =
+  user?.username?.trim() ||
+  user?.email?.trim() ||
+  "Account";
   const userInitials = useMemo(() => {
     const parts = String(userLabel).trim().split(/\s+/);
     const first = parts[0]?.[0]?.toUpperCase() || "U";
