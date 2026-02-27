@@ -5,7 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { authMe, getAccessToken, clearAuth } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
 
-type User = { id: number; username: string; email: string; role: string; premium: boolean };
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  premium: boolean;
+};
 
 type AuthState = {
   token: string | null;
@@ -37,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!t) {
       // ✅ utente non loggato: ok, nessun redirect automatico
       setUser(null);
+      setLostSession(false);
       return;
     }
 
@@ -62,12 +69,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ✅ Redirect UX: se perdi sessione, manda a login con returnTo
+  // ✅ Redirect UX: se perdi sessione, manda a login con returnTo (preserva lang)
   useEffect(() => {
     if (loading) return;
     if (!lostSession) return;
 
-    // Evita loop se sei già su login
+    // Evita loop se sei già su login (root o lang)
     if (pathname?.includes("/login")) return;
 
     const returnTo =
@@ -75,13 +82,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? window.location.pathname + window.location.search
         : pathname ?? "/";
 
-    router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+    const langPrefix =
+      pathname?.startsWith("/it") ? "/it" :
+      pathname?.startsWith("/fr") ? "/fr" :
+      pathname?.startsWith("/es") ? "/es" :
+      "";
+
+    router.replace(`${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`);
   }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
     const isAdmin = user?.role === "admin";
-    const isPremiumUser = !!user?.premium || isAdmin;
-    const premiumLocked = isPremiumLocked(isPremiumUser);
+    const isPremiumUser = !!user?.premium || isAdmin; // ✅ admin sees everything
+    const premiumLocked = isPremiumLocked(isPremiumUser); // ✅ governato dai flag
 
     return { token, user, loading, isAdmin, isPremiumUser, premiumLocked, refreshMe };
   }, [token, user, loading]);
