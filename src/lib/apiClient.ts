@@ -4,24 +4,24 @@
 
 export const API_PREFIX = "/api/backend";
 
-/*─────────────────────────────── AUTH TOKEN STORAGE ───────────────────────────────*/
-const TOKEN_KEY = "cq:access";
+/*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
+import { getToken, setToken, clearToken, setUser } from "@/lib/auth";
 
+/** Compat API: usata in giro nel codice */
 export function getAccessToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
+  return getToken();
 }
-export function setAccessToken(token: string | null) {
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch {}
+
+/** Compat API: remember controlla localStorage vs sessionStorage */
+export function setAccessToken(token: string | null, remember = true) {
+  if (token) setToken(token, remember); // ✅ NO ricorsione
+  else clearToken();
 }
+
+/** Pulisce token + user cache */
 export function clearAuth() {
-  setAccessToken(null);
+  clearToken();
+  setUser(null);
 }
 
 /*─────────────────────────────── TIPI BASE ───────────────────────────────*/
@@ -87,13 +87,12 @@ export type SaveResultRequest = {
   score: number;
 
   // 🔽 CAMPI REALI DELLA TABELLA quiz_results
-  percentage?: number;        // 0–100
+  percentage?: number; // 0–100
   total_questions?: number;
   correct_answers?: number;
-  is_exam?: number;           // 0 | 1
-  passed?: number;            // 0 | 1
+  is_exam?: number; // 0 | 1
+  passed?: number; // 0 | 1
 };
-
 
 export type Badge = {
   id: number;
@@ -235,9 +234,11 @@ async function refreshAccessToken(): Promise<string | null> {
       headers: { accept: "application/json" },
     });
     if (!res.ok) return null;
+
     const data = (await res.json()) as { ok?: boolean; token?: string };
     if (data?.token) {
-      setAccessToken(data.token);
+      // ✅ refresh -> persist true va bene (sessione corrente)
+      setAccessToken(data.token, true);
       return data.token;
     }
     return null;
@@ -265,10 +266,10 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   if (!isForm && body != null && !h.has("content-type")) {
     h.set("content-type", "application/json");
   }
- // ✅ Attacca SEMPRE il bearer se presente (molti endpoint lo richiedono)
-const token = getAccessToken();
-if (token) h.set("authorization", `Bearer ${token}`);
 
+  // ✅ Attacca SEMPRE il bearer se presente (molti endpoint lo richiedono)
+  const token = getAccessToken();
+  if (token) h.set("authorization", `Bearer ${token}`);
 
   const init: RequestInit = { method, headers: h, signal };
   if (withCredentials) init.credentials = "include";
@@ -276,7 +277,7 @@ if (token) h.set("authorization", `Bearer ${token}`);
 
   const res = await fetch(url, init);
 
-  // 401 → tenta refresh una volta
+  // 401 → tenta refresh una volta (solo se auth=true)
   if (res.status === 401 && auth && retry) {
     const newTok = await refreshAccessToken();
     if (newTok) {
@@ -285,6 +286,9 @@ if (token) h.set("authorization", `Bearer ${token}`);
       const res2 = await fetch(url, { ...init, headers: h2 });
       if (!res2.ok) throw await toApiError(res2);
       return parseJson<T>(res2);
+    } else {
+      // refresh fallito => pulisci auth coerente
+      clearAuth();
     }
   }
 
@@ -342,8 +346,28 @@ export type LoginResponse = {
 };
 
 export async function authLogin(email: string, password: string, remember = false) {
-  const data = await apiPost<LoginResponse>("/auth/login", { email, password, remember }, false, true);
-  if (data?.token) setAccessToken(data.token);
+  const data = await apiPost<LoginResponse>(
+    "/auth/login",
+    { email, password, remember },
+    false,
+    true
+  );
+
+  // ✅ token + user cache (stabile per header)
+  if (data?.token) setAccessToken(data.token, remember);
+  if (data?.user) {
+    setUser(
+      {
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username,
+        role: data.user.role,
+        premium: data.user.premium,
+      },
+      remember
+    );
+  }
+
   return data;
 }
 
@@ -363,7 +387,7 @@ export const authMe = () =>
     "/auth/me",
     { method: "GET", auth: true, withCredentials: true }
   );
-  
+
 /*─────────────────────────────── CERTIFICATIONS ───────────────────────────────*/
 export const listCertifications = () => apiGet<CertificationListItem[]>("/certifications");
 export const getCertificationById = (id: number | string) => apiGet<Certification>(`/certifications/${id}`);
@@ -385,91 +409,38 @@ export const getTopicMetaById = (topicId: number | string) =>
   apiGet<TopicMeta>(`/topics/meta/by-topic/${topicId}`);
 
 /*─────────────────────────────── QUESTIONS ───────────────────────────────*/
-/**
- * Recupera le domande di un TOPIC con supporto a:
- * - lingua (lang)
- * - limit (numero massimo di domande)
- * - shuffle (ordine casuale o deterministico)
- * - strict (se true: NO fallback IT → ritorna solo contenuti nella lingua richiesta)
- *
- * ⚠️ NOTA STORICA:
- * In origine il backend restituiva SEMPRE 30 domande random.
- * Ora possiamo chiedere pool più grandi (es. 100–500).
- *
- * strict:
- * - strict=false → backend fa fallback su IT se manca la traduzione
- * - strict=true  → backend NON fallbacka (utile per ES/FR)
- */
 export const getQuestionsByTopic = (
   topicId: number | string,
   lang: Locale = "it",
-  opts?: {
-    limit?: number;
-    shuffle?: boolean;
-    strict?: boolean;
-  }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean }
 ) => {
   const params = new URLSearchParams({ lang });
 
-  // ───────────────────────── LIMIT ─────────────────────────
-  // default: 30 | cap: 500
   const limit = Math.max(1, Math.min(opts?.limit ?? 30, 500));
   params.set("limit", String(limit));
 
-  // ───────────────────────── SHUFFLE ─────────────────────────
-  // default: true
   params.set("shuffle", (opts?.shuffle ?? true) ? "1" : "0");
 
-  // ───────────────────────── STRICT ─────────────────────────
-  // default intelligente: ES / FR strict per evitare mix con IT / placeholder
   const strict = opts?.strict ?? (lang === "es" || lang === "fr");
-  if (strict) {
-    params.set("strict", "1");
-  }
+  if (strict) params.set("strict", "1");
 
-  /**
-   * Esempi URL finali:
-   * /questions/65?lang=en&limit=200&shuffle=1
-   * /questions/65?lang=en&limit=100&shuffle=0&strict=1
-   */
-  return apiGet<QuestionsResponse>(
-    `/questions/${topicId}?${params.toString()}`,
-    false // 🔓 endpoint pubblico (NO auth)
-  );
+  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false);
 };
 
-
-/**
- * Recupera quiz MISTI (per certificazione o categoria)
- *
- * @param id    certification_id oppure category_id
- * @param lang  lingua richiesta (it | en | fr | es)
- * @param opts  opzioni extra (limit, shuffle)
- *
- * NOTE:
- * - limit: numero massimo di domande (default backend)
- * - shuffle: true = ordine casuale, false = ordine stabile
- */
 export const getMixedQuestions = (
   id: number | string,
   lang: Locale = "it",
-  opts?: {
-    limit?: number;
-    shuffle?: boolean;
-    strict?: boolean;
-  }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean }
 ) => {
   const params = new URLSearchParams({ lang });
-
   if (opts?.limit != null) params.set("limit", String(opts.limit));
   if (opts?.shuffle != null) params.set("shuffle", opts.shuffle ? "1" : "0");
   if (opts?.strict != null) params.set("strict", opts.strict ? "1" : "0");
 
-  // ✅ PUBLIC: niente auth richiesta
- return apiGet<{ poolTotal?: number; questions: Question[] }>(
-  `/questions-mixed/${id}?${params.toString()}`,
-  false
-);
+  return apiGet<{ poolTotal?: number; questions: Question[] }>(
+    `/questions-mixed/${id}?${params.toString()}`,
+    false
+  );
 };
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
@@ -523,5 +494,8 @@ export const getLangAvailabilityForCert = (certId: number | string, lang: Locale
 /*─────────────────────────────── UTILITY ───────────────────────────────*/
 export function withAuthHeaders(init?: RequestInit): RequestInit {
   const token = getAccessToken();
-  return { ...init, headers: { ...(init?.headers || {}), ...(token ? { authorization: `Bearer ${token}` } : {}) } };
+  return {
+    ...init,
+    headers: { ...(init?.headers || {}), ...(token ? { authorization: `Bearer ${token}` } : {}) },
+  };
 }

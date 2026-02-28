@@ -8,7 +8,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
 import BottomNavbar from "@/components/BottomNavbar";
-import { useAuth } from "@/components/auth/AuthProvider"; // ✅ path corretto al tuo AuthProvider
 
 type Props = {
   lang: Locale;
@@ -17,14 +16,14 @@ type Props = {
 
 export default function LayoutShellClient({ lang, children }: Props) {
   const pathname = usePathname();
-  const { user } = useAuth(); // ✅ prendi user globale
 
   // ✅ Nascondi solo nelle pagine quiz (focus + più spazio verticale)
   const hideBottomNav = pathname.includes("/quiz/");
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      <Header lang={lang} user={user} /> {/* ✅ PASSI user */}
+      {/* ✅ NON passare user: HeaderAuthSlot gestisce tutto */}
+      <Header lang={lang} />
 
       <main className={`flex-1 ${hideBottomNav ? "pb-0" : "pb-16"}`}>
         {children}

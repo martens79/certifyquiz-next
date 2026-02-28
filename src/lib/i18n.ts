@@ -19,9 +19,14 @@ export function withLang(lang: unknown, path: string) {
   const safeLang: Locale =
     lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
-      : "en";
+      : "en"; // EN è la root
 
-  // Sempre prefisso lingua (anche EN) → evita fallback su IT
+  // ✅ EN = root (NO /en)
+  if (safeLang === "en") {
+    return (clean === "/index" ? "/" : clean).replace(/\/{2,}/g, "/");
+  }
+
+  // ✅ IT/FR/ES con prefisso
   return `/${safeLang}${clean === "/index" ? "" : clean}`.replace(/\/{2,}/g, "/");
 }
 
@@ -29,8 +34,8 @@ export function withLang(lang: unknown, path: string) {
 
 /** Estrae la lingua dal pathname (es. "/it/certificazioni") */
 export function langFromPathname(pathname: string | null | undefined): Locale {
-  const seg = (pathname ?? '').split('/').filter(Boolean)[0];
-  return seg && isLocale(seg) ? seg : defaultLocale;
+  const seg = (pathname ?? "").split("/").filter(Boolean)[0];
+  return seg && isLocale(seg) ? seg : "en"; // ✅ root = EN
 }
 
 /**
@@ -40,15 +45,23 @@ export function langFromPathname(pathname: string | null | undefined): Locale {
 export function switchLangPath(
   pathname: string,
   nextLang: Locale,
-  search = '',
-  hash = ''
+  search = "",
+  hash = ""
 ): string {
-  const parts = pathname.split('/').filter(Boolean);
+  const parts = pathname.split("/").filter(Boolean);
   const first = parts[0];
   const rest = first && isLocale(first) ? parts.slice(1) : parts;
-  let newPath = `/${nextLang}/${rest.join('/')}`.replace(/\/+$/, '/').replace(/\/$/, '');
-  if (newPath === `/${nextLang}`) newPath = `/${nextLang}/`;
-  return `${newPath}${search || ''}${hash || ''}`;
+
+  // ✅ EN = root
+  let newPath =
+    nextLang === "en"
+      ? `/${rest.join("/")}`
+      : `/${nextLang}/${rest.join("/")}`;
+
+  newPath = newPath.replace(/\/{2,}/g, "/").replace(/\/+$/, "");
+  if (newPath === "") newPath = "/";
+
+  return `${newPath}${search || ""}${hash || ""}`;
 }
 
 // === Tipi utili i18n ===

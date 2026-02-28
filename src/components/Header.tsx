@@ -1,4 +1,4 @@
-// src/components/layout/Header.tsx
+// src/components/Header.tsx
 "use client";
 
 import Link from "next/link";
@@ -10,16 +10,14 @@ import {
   type ReactNode,
   Suspense,
 } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
-import { clearToken } from "@/lib/auth";
-import type { MinimalUser } from "@/lib/auth";
 
+import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
 import { certificationsPath, pricingPath, quizHomePath } from "@/lib/paths";
-
-
+import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
 /* ------------------------------------------------------------------ */
@@ -115,7 +113,7 @@ const UI: Record<
 };
 
 /* ------------------------------------------------------------------ */
-/* Icons (inline SVG, no deps)                                         */
+/* Icons                                                               */
 /* ------------------------------------------------------------------ */
 
 function IconHome() {
@@ -151,7 +149,11 @@ function IconCerts() {
         strokeLinejoin="round"
         d="M4 6.75A2.25 2.25 0 0 1 6.25 4.5h11.5A2.25 2.25 0 0 1 20 6.75v10.5A2.25 2.25 0 0 1 17.75 19.5H6.25A2.25 2.25 0 0 1 4 17.25V6.75z"
       />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 8h8M8 12h8M8 16h5" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 8h8M8 12h8M8 16h5"
+      />
     </svg>
   );
 }
@@ -170,7 +172,11 @@ function IconBlog() {
         strokeLinejoin="round"
         d="M4 6.75A2.25 2.25 0 0 1 6.25 4.5h9.5A4.75 4.75 0 0 1 20.5 9.25v10.25A2.25 2.25 0 0 1 18.25 21H6.25A2.25 2.25 0 0 1 4 18.75V6.75z"
       />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 8.5h8M8 12h8M8 15.5h6" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 8.5h8M8 12h8M8 15.5h6"
+      />
     </svg>
   );
 }
@@ -221,24 +227,10 @@ function IconSuggested() {
       aria-hidden="true"
     >
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a9 9 0 1 0 9 9" />
-    </svg>
-  );
-}
-function IconUser() {
-  return (
-    <svg
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25a7.5 7.5 0 0 1 15 0"
+        d="M12 3a9 9 0 1 0 9 9"
       />
     </svg>
   );
@@ -266,10 +258,9 @@ function IconSearch() {
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
 
- type Props = {
-   lang: Locale;
- user: MinimalUser | null;
- };
+type Props = {
+  lang: Locale;
+};
 
 type QuickItem = { href: string; label: string; icon: ReactNode };
 
@@ -277,93 +268,69 @@ type QuickItem = { href: string; label: string; icon: ReactNode };
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function Header({ lang, user }: Props) {
+export default function Header({ lang }: Props) {
   const t = dict[lang];
   const ui = UI[lang];
 
-  const router = useRouter();
-  const pathname = usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
+  const pathname =
+    usePathname() || (lang === "en" ? "/" : withLang(lang, "/"));
   const pathNoQuery = pathname.split("?")[0].split("#")[0];
-  
 
-  // ✅ admin deriva SOLO da user (source of truth)
-  const isAdmin = user?.role === "admin";
-  const isAuthenticated = !!user;
-
-  // label + initials da user
-  const userLabel =
-  user?.username?.trim() ||
-  user?.email?.trim() ||
-  "Account";
-  const userInitials = useMemo(() => {
-    const parts = String(userLabel).trim().split(/\s+/);
-    const first = parts[0]?.[0]?.toUpperCase() || "U";
-    const second = parts[1]?.[0]?.toUpperCase() || "";
-    return `${first}${second}`.slice(0, 2);
-  }, [userLabel]);
-
-  /**
-   * ✅ Helper: EN = root (nessun /en)
-   * IT/FR/ES = prefisso via withLang
-   */
   const H = useMemo(() => {
     return (path: string) => (lang === "en" ? path : withLang(lang, path));
   }, [lang]);
 
-  // ---- routes coerenti ----
   const homeHref = H("/");
   const blogHref = H("/blog");
   const pricingHref = pricingPath(lang);
   const certsHref = certificationsPath(lang);
   const quizHomeHref = quizHomePath(lang);
-  const suggestedHref = lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
+  const suggestedHref =
+    lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
 
-  // ---- about / chi sono ----
   const aboutHref =
-    lang === "it" ? "/it/chi-sono" : lang === "fr" ? "/fr/a-propos" : lang === "es" ? "/es/sobre-mi" : "/about";
+    lang === "it"
+      ? "/it/chi-sono"
+      : lang === "fr"
+      ? "/fr/a-propos"
+      : lang === "es"
+      ? "/es/sobre-mi"
+      : "/about";
   const aboutLabel =
-    lang === "it" ? "Chi sono" : lang === "fr" ? "À propos" : lang === "es" ? "Sobre mí" : "About";
+    lang === "it"
+      ? "Chi sono"
+      : lang === "fr"
+      ? "À propos"
+      : lang === "es"
+      ? "Sobre mí"
+      : "About";
 
-  // ---- profile/auth ----
   const profilePath = H("/profile");
   const isProfile = pathNoQuery === profilePath;
 
-  const profileHref = isAuthenticated
-    ? H("/profile")
-    : H(`/login?redirect=${encodeURIComponent(pathname)}`);
-
-  // ---- menu state ----
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // ---- quick actions ----
-  const quickBase = useMemo<QuickItem[]>(() => {
-    const base: QuickItem[] = [
+  const quick = useMemo<QuickItem[]>(() => {
+    return [
       { href: homeHref, label: ui.home, icon: <IconHome /> },
-      { href: certsHref, label: t.certifications ?? ui.certifications, icon: <IconCerts /> },
+      {
+        href: certsHref,
+        label: t.certifications ?? ui.certifications,
+        icon: <IconCerts />,
+      },
       { href: `${certsHref}?search=1`, label: "Search", icon: <IconSearch /> },
       { href: blogHref, label: t.blog ?? ui.blog, icon: <IconBlog /> },
       { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
       { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
       { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
     ];
-
-    if (isAuthenticated) {
-      base.push({ href: profileHref, label: ui.profile, icon: <IconUser /> });
-    }
-
-    return base;
   }, [
     blogHref,
     certsHref,
     homeHref,
-    isAuthenticated,
     pricingHref,
-    profileHref,
     quizHomeHref,
     suggestedHref,
     t.blog,
@@ -372,35 +339,33 @@ export default function Header({ lang, user }: Props) {
     ui.blog,
     ui.certifications,
     ui.home,
-    ui.profile,
     ui.pricing,
     ui.quiz,
     ui.suggested,
   ]);
+const [isAdminLocal, setIsAdminLocal] = useState(false);
 
-  const quick = useMemo(
-    () => (isProfile ? quickBase.filter((q) => q.label !== ui.profile) : quickBase),
-    [isProfile, quickBase, ui.profile]
-  );
+useEffect(() => {
+  const u = getUser();
+  setIsAdminLocal(u?.role === "admin");
 
-  // ---- close menus on route change ----
+  const off = onUserChange((nu: MinimalUser | null) => {
+    setIsAdminLocal(nu?.role === "admin");
+  });
+
+  return off;
+}, []);
   useEffect(() => {
     setOpenDrawer(false);
-    setUserMenuOpen(false);
   }, [pathname]);
 
-  // ---- esc + click outside + lock scroll when drawer open ----
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpenDrawer(false);
-        setUserMenuOpen(false);
-      }
+      if (e.key === "Escape") setOpenDrawer(false);
     }
 
     function onClick(e: MouseEvent) {
       const target = e.target as Node;
-
       if (
         openDrawer &&
         drawerRef.current &&
@@ -409,10 +374,6 @@ export default function Header({ lang, user }: Props) {
         !btnRef.current.contains(target)
       ) {
         setOpenDrawer(false);
-      }
-
-      if (userMenuOpen && userMenuRef.current && !userMenuRef.current.contains(target)) {
-        setUserMenuOpen(false);
       }
     }
 
@@ -428,19 +389,12 @@ export default function Header({ lang, user }: Props) {
       document.removeEventListener("mousedown", onClick);
       html.classList.remove("overflow-y-hidden");
     };
-  }, [openDrawer, userMenuOpen]);
-
-  const handleLogout = () => {
-    clearToken();
-    setUserMenuOpen(false);
-    router.push(withLang(lang, "/login"));
-  };
+  }, [openDrawer]);
 
   const isActive = (href: string) => pathNoQuery === href;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60">
-      {/* Skip link */}
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-gray-900 focus:px-3 focus:py-2 focus:text-white"
@@ -449,17 +403,12 @@ export default function Header({ lang, user }: Props) {
       </a>
 
       <div className="mx-auto max-w-6xl px-4">
-        {/* Top row */}
         <div className="flex h-14 items-center justify-between">
-          {/* Logo */}
           <Link
             href={homeHref}
             className="flex items-center gap-2"
             aria-label="CertifyQuiz – Home"
-            onClick={() => {
-              setOpenDrawer(false);
-              setUserMenuOpen(false);
-            }}
+            onClick={() => setOpenDrawer(false)}
           >
             <div className="grid h-8 w-8 place-items-center rounded-xl bg-gray-900 text-xs font-bold text-white">
               CQ
@@ -473,91 +422,17 @@ export default function Header({ lang, user }: Props) {
               <LocaleSwitcher current={lang} />
             </Suspense>
 
-            {/* 🔍 Search certifications */}
             <Link
               href={`${certsHref}?search=1`}
               aria-label="Search certifications"
               title="Search certifications"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 bg-white hover:bg-gray-50"
-              onClick={() => {
-                setOpenDrawer(false);
-                setUserMenuOpen(false);
-              }}
+              onClick={() => setOpenDrawer(false)}
             >
               <IconSearch />
             </Link>
 
-            {!isAuthenticated ? (
-              <>
-                <Link
-                  href={withLang(lang, "/login")}
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-                >
-                  {ui.login}
-                </Link>
-                <Link
-                  href={withLang(lang, "/inizia")}
-                  className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
-                >
-                  {ui.start} 🚀
-                </Link>
-              </>
-            ) : (
-              <div ref={userMenuRef} className="relative flex items-center">
-                <button
-                  type="button"
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 py-1.5 text-sm hover:bg-gray-50"
-                  aria-haspopup="menu"
-                  aria-expanded={userMenuOpen}
-                >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
-                    {userInitials || "U"}
-                  </div>
-                  <span className="max-w-[140px] truncate text-xs md:text-sm">
-                    {userLabel || "Account"}
-                  </span>
-                  <span aria-hidden className="text-xs">
-                    ▾
-                  </span>
-                </button>
-
-                {userMenuOpen && (
-                  <div role="menu" className="absolute right-0 top-10 w-44 rounded-md border bg-white shadow-lg">
-                    {!isProfile && (
-                      <Link
-                        href={withLang(lang, "/profile")}
-                        className="block px-3 py-2 text-sm hover:bg-gray-100"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        {ui.profile}
-                      </Link>
-                    )}
-
-                    {isAdmin && (
-                      <>
-                        <div className="my-1 h-px bg-gray-200" />
-                        <Link
-                          href="/admin/feedback"
-                          className="block px-3 py-2 text-sm hover:bg-gray-100"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          Admin · Feedback
-                        </Link>
-                      </>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <span>{ui.logout}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            <HeaderAuthSlot lang={lang} ui={ui} isProfile={isProfile} />
           </div>
 
           {/* Right mobile */}
@@ -570,24 +445,9 @@ export default function Header({ lang, user }: Props) {
               href={`${certsHref}?search=1`}
               aria-label="Search certifications"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-50"
-              onClick={() => {
-                setOpenDrawer(false);
-                setUserMenuOpen(false);
-              }}
+              onClick={() => setOpenDrawer(false)}
             >
               <IconSearch />
-            </Link>
-
-            <Link
-              href={profileHref}
-              aria-label={isAuthenticated ? ui.profile : ui.login}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-sm hover:bg-gray-50"
-              onClick={() => {
-                setOpenDrawer(false);
-                setUserMenuOpen(false);
-              }}
-            >
-              {isAuthenticated ? <span className="font-semibold">{userInitials || "U"}</span> : <span aria-hidden>👤</span>}
             </Link>
 
             <button
@@ -603,7 +463,7 @@ export default function Header({ lang, user }: Props) {
           </div>
         </div>
 
-        {/* Quick actions (desktop) */}
+        {/* Quick actions desktop */}
         <div className="hidden items-center justify-between py-1.5 text-sm text-gray-800 md:flex">
           <nav className="flex items-center gap-4" aria-label={ui.quick}>
             {quick.map((q) => {
@@ -612,7 +472,9 @@ export default function Header({ lang, user }: Props) {
                 <Link
                   key={q.href}
                   href={q.href}
-                  className={`flex items-center gap-1 ${active ? "underline underline-offset-4" : "hover:opacity-80"}`}
+                  className={`flex items-center gap-1 ${
+                    active ? "underline underline-offset-4" : "hover:opacity-80"
+                  }`}
                   aria-current={active ? "page" : undefined}
                 >
                   {q.icon}
@@ -645,16 +507,15 @@ export default function Header({ lang, user }: Props) {
                 </Link>
               ))}
 
-              {isAdmin && (
-                <Link
-                  href="/admin/feedback"
-                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setOpenDrawer(false)}
-                >
-                  Admin · Feedback
-                </Link>
-              )}
-
+                {isAdminLocal && (
+    <Link
+      href="/admin/feedback"
+      className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+      onClick={() => setOpenDrawer(false)}
+    >
+      Admin · Feedback
+    </Link>
+  )}
               <Link
                 href={aboutHref}
                 className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
@@ -664,36 +525,14 @@ export default function Header({ lang, user }: Props) {
               </Link>
             </nav>
 
-            <div className="mt-3 border-t pt-3 flex items-center gap-2 px-3">
-              {!isAuthenticated ? (
-                <>
-                  <Link
-                    href={withLang(lang, "/login")}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => setOpenDrawer(false)}
-                  >
-                    {ui.login}
-                  </Link>
-                  <Link
-                    href={withLang(lang, "/inizia")}
-                    className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
-                    onClick={() => setOpenDrawer(false)}
-                  >
-                    {ui.start} 🚀
-                  </Link>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleLogout();
-                    setOpenDrawer(false);
-                  }}
-                  className="rounded-md border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                >
-                  {ui.logout}
-                </button>
-              )}
+            <div className="mt-3 border-t pt-3 px-3">
+              <HeaderAuthSlot
+                lang={lang}
+                ui={ui}
+                isProfile={isProfile}
+                variant="drawer"
+                onNavigate={() => setOpenDrawer(false)}
+              />
             </div>
           </div>
         </div>

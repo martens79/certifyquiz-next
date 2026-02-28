@@ -9,8 +9,17 @@ import React, {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { authMe, getAccessToken, clearAuth } from "@/lib/apiClient";
+import { authMe } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
+import {
+  getToken,
+  getUser as getCachedUser,
+  setUser as setCachedUser,
+  clearToken,
+  onTokenChange,
+  onUserChange,
+  type MinimalUser,
+} from "@/lib/auth";
 
 type User = {
   id: number;
@@ -32,52 +41,83 @@ type AuthState = {
 
 const AuthCtx = createContext<AuthState | null>(null);
 
+function toUser(u: MinimalUser | User | null): User | null {
+  if (!u) return null;
+  const anyU = u as any;
+  return {
+    id: Number(anyU.id),
+    username: String(anyU.username ?? anyU.name ?? "").trim() || "User",
+    email: String(anyU.email ?? "").trim(),
+    role: String(anyU.role ?? "user"),
+    premium: Boolean(anyU.premium),
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [token, setToken] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  // ✅ bootstrap immediato da storage (niente flicker)
+  const [token, setTokenState] = useState<string | null>(() => getToken());
+  const [user, setUserState] = useState<User | null>(() => toUser(getCachedUser()));
 
-  // loading SOLO per la primissima “bootstrap” session
   const [loading, setLoading] = useState(true);
-  const didInit = useRef(false);
-
   const [lostSession, setLostSession] = useState(false);
+
+  const didInit = useRef(false);
   const refreshInFlight = useRef<Promise<void> | null>(null);
 
   const refreshMe = async () => {
     if (refreshInFlight.current) return refreshInFlight.current;
 
     refreshInFlight.current = (async () => {
-      const t = getAccessToken();
-
-      // ✅ evita re-render se token identico
-      setToken((prev) => (prev === t ? prev : t));
-
-      if (!t) {
-        setUser(null);
-        setLostSession(false);
-        return;
-      }
-
-      // ✅ se ho un token, non voglio che lostSession resti “true” durante i retry/login
-      setLostSession(false);
-
       try {
+        const t = getToken();
+
+        // ✅ aggiorna token state solo se cambia
+        setTokenState((prev) => (prev === t ? prev : t));
+
+        if (!t) {
+          // logout/guest
+          setUserState(null);
+          setLostSession(false);
+          return;
+        }
+
+        // se ho token, non voglio "lostSession" true
+        setLostSession(false);
+
+        // se ho già user cache, non devo per forza chiamare /me ogni volta
+        // (ma la facciamo comunque in bootstrap e quando token cambia)
         const me = await authMe();
-        setUser(me.user);
+        const normalized = toUser(me.user);
+
+        setUserState(normalized);
+
+        // ✅ aggiorna anche cache locale, così header/slot restano coerenti
+        setCachedUser(
+          {
+            id: normalized!.id,
+            email: normalized!.email,
+            username: normalized!.username,
+            role: normalized!.role,
+            premium: normalized!.premium,
+          },
+          true
+        );
       } catch (err: any) {
         const status = err?.status ?? err?.response?.status;
 
         if (status === 401 || status === 403) {
-          clearAuth();
-          setToken(null);
-          setUser(null);
+          // token non valido → logout “hard”
+          clearToken();
+          setCachedUser(null, true);
+          setTokenState(null);
+          setUserState(null);
           setLostSession(true);
         } else {
-          // rete/502: non distruggere sessione
-          // (qui NON tocchiamo user/token)
+          // rete/502: NON distruggere sessione
+          // lascia token/user come stanno
         }
       } finally {
         refreshInFlight.current = null;
@@ -87,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return refreshInFlight.current;
   };
 
+  // ✅ bootstrap una sola volta
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
@@ -99,10 +140,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ✅ ascolta cambi token (login/logout) dal tuo lib/auth.ts
+  useEffect(() => {
+    const off = onTokenChange(async (t) => {
+      setTokenState(t);
+
+      if (!t) {
+        setUserState(null);
+        setLostSession(false);
+        return;
+      }
+
+      // appena arriva un token nuovo → valida con /me
+      await refreshMe();
+    });
+
+    return off;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ✅ ascolta cambi user cache (es. login che setta cq_user)
+  useEffect(() => {
+    const off = onUserChange((u) => {
+      setUserState(toUser(u));
+    });
+    return off;
+  }, []);
+
+  // ✅ redirect solo se session persa e non siamo già su /login
   useEffect(() => {
     if (loading) return;
     if (!lostSession) return;
-
     if (pathname?.includes("/login")) return;
 
     const returnTo =
@@ -119,9 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ? "/es"
         : "";
 
-    router.replace(
-      `${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`
-    );
+    router.replace(`${langPrefix}/login?returnTo=${encodeURIComponent(returnTo)}`);
   }, [lostSession, loading, pathname, router]);
 
   const value = useMemo<AuthState>(() => {
