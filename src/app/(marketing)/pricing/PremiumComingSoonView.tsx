@@ -1,3 +1,4 @@
+// src/app/(marketing)/pricing/PremiumComingSoonView.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -5,93 +6,108 @@ import { useMemo, useState } from "react";
 
 type Lang = "it" | "es" | "en" | "fr";
 
+type Props = {
+  /**
+   * Se passato, forza la lingua (utile per pagine SEO alias tipo /pricing, /fr/prix, /es/precios)
+   * evitando di dedurre la lingua dal pathname.
+   */
+  forceLang?: Lang;
+};
+
 function getLangFromPathname(pathname: string): Lang {
-  const seg = (pathname.split("/")[1] || "it").toLowerCase();
-  if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") return seg as Lang;
-  return "it";
+  const seg = (pathname.split("/")[1] || "").toLowerCase();
+  if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
+    return seg as Lang;
+  }
+  return "en"; // ✅ root (/pricing) = inglese
 }
+
+const TARGET_INTEREST = 50;
+const INTENT_PRICE_EUR = 9.99;
 
 const COPY: Record<Lang, any> = {
   it: {
-    badge: "Coming soon",
-    title: "Premium in arrivo",
+    badge: "VALIDAZIONE • Non è ancora in vendita",
+    title: "Premium a 9,99€/mese: lo attiviamo solo se interessa davvero",
     subtitle:
-      "Stiamo preparando un Premium pensato per chi vuole una preparazione più seria e orientata all’esame.",
-    priceLine: "Prezzo previsto: 9,99€/mese",
-    cta: "Iscriviti alla lista prioritaria",
+      "Lascia la tua email. Se raggiungiamo 50 interessati, attiviamo Premium. Zero spam: una sola email quando parte.",
+    priceLine: "Prezzo in test: 9,99€/mese (validazione interesse)",
+    cta: "Voglio il Premium a 9,99€/mese",
     emailPlaceholder: "La tua email",
-    consent: "Ti invieremo una sola email quando Premium sarà disponibile (niente spam).",
+    consent: `Obiettivo: ${TARGET_INTEREST} interessati → attiviamo Premium. Ti invieremo una sola email (niente spam).`,
     successTitle: "Sei dentro ✅",
     successBody: "Perfetto. Ti avviseremo appena Premium sarà disponibile.",
     errorGeneric: "Qualcosa non va. Riprova tra poco.",
     invalidEmail: "Inserisci una email valida.",
     featuresTitle: "Cosa includerà Premium",
     features: [
+      { h: "Spiegazioni complete", p: "Sblocco totale delle explanation per capire davvero gli errori." },
       { h: "Ripasso errori avanzato", p: "Quiz mirati sulle domande sbagliate e sui punti deboli." },
       { h: "Report personalizzati", p: "Analisi dei pattern di errore e consigli di studio." },
       { h: "EXAM+ long scenario (in futuro)", p: "Simulazioni lunghe e realistiche stile esame." },
-      { h: "Accesso anticipato ai contenuti", p: "Nuovi quiz e aggiornamenti disponibili prima." },
     ],
   },
   es: {
-    badge: "Próximamente",
-    title: "Premium próximamente",
+    badge: "VALIDACIÓN • Aún no está a la venta",
+    title: "Premium a 9,99€/mes: lo lanzamos solo si de verdad interesa",
     subtitle:
-      "Estamos preparando un plan Premium para quien quiere una preparación más seria y orientada al examen.",
-    priceLine: "Precio previsto: 9,99€/mes",
-    cta: "Únete a la lista prioritaria",
+      "Deja tu email. Si llegamos a 50 interesados, activamos Premium. Cero spam: un email cuando salga.",
+    priceLine: "Precio en test: 9,99€/mes (validación de interés)",
+    cta: "Quiero Premium a 9,99€/mes",
     emailPlaceholder: "Tu email",
-    consent: "Recibirás un solo email cuando Premium esté disponible (sin spam).",
+    consent: `Objetivo: ${TARGET_INTEREST} interesados → lanzamos Premium. Solo 1 email (sin spam).`,
     successTitle: "Listo ✅",
     successBody: "Perfecto. Te avisaremos cuando Premium esté disponible.",
     errorGeneric: "Algo salió mal. Inténtalo de nuevo.",
     invalidEmail: "Introduce un email válido.",
     featuresTitle: "Qué incluirá Premium",
     features: [
+      { h: "Explicaciones completas", p: "Acceso total a las explicaciones para entender errores." },
       { h: "Repaso avanzado de errores", p: "Quizzes enfocados en tus fallos y puntos débiles." },
       { h: "Reportes personalizados", p: "Patrones de error + consejos de estudio." },
       { h: "EXAM+ long scenario (futuro)", p: "Simulaciones largas estilo examen." },
-      { h: "Acceso anticipado", p: "Nuevo contenido y mejoras antes que nadie." },
     ],
   },
   en: {
-    badge: "Coming soon",
-    title: "Premium coming soon",
-    subtitle: "A Premium plan built for serious, exam-focused practice is coming.",
-    priceLine: "Planned price: €9.99/month",
-    cta: "Join the priority list",
+    badge: "VALIDATION • Not for sale yet",
+    title: "Premium at €9.99/month: we launch only if people actually want it",
+    subtitle:
+      "Leave your email. If we reach 50 interested users, we launch Premium. No spam: one email when it goes live.",
+    priceLine: "Test price: €9.99/month (interest validation)",
+    cta: "I want Premium at €9.99/month",
     emailPlaceholder: "Your email",
-    consent: "You’ll receive one email when Premium goes live (no spam).",
+    consent: `Goal: ${TARGET_INTEREST} interested users → we launch Premium. One email only (no spam).`,
     successTitle: "You’re in ✅",
     successBody: "We’ll notify you when Premium is available.",
     errorGeneric: "Something went wrong. Try again.",
     invalidEmail: "Please enter a valid email.",
     featuresTitle: "What Premium will include",
     features: [
+      { h: "Full explanations", p: "Unlimited explanations to truly understand mistakes." },
       { h: "Advanced error review", p: "Targeted quizzes based on your weak areas." },
       { h: "Personalized reports", p: "Error patterns + focused study suggestions." },
       { h: "EXAM+ long scenarios (future)", p: "Long, realistic exam-style simulations." },
-      { h: "Early access", p: "New content and updates before everyone else." },
     ],
   },
   fr: {
-    badge: "Bientôt",
-    title: "Premium bientôt disponible",
-    subtitle: "Un plan Premium orienté examen arrive.",
-    priceLine: "Prix prévu : 9,99€/mois",
-    cta: "Rejoindre la liste prioritaire",
+    badge: "VALIDATION • Pas encore en vente",
+    title: "Premium à 9,99€/mois : on lance seulement si ça intéresse vraiment",
+    subtitle:
+      "Laisse ton email. Si on atteint 50 personnes intéressées, on active Premium. Zéro spam : 1 email au lancement.",
+    priceLine: "Prix en test : 9,99€/mois (validation d’intérêt)",
+    cta: "Je veux Premium à 9,99€/mois",
     emailPlaceholder: "Votre email",
-    consent: "Un seul email au lancement (pas de spam).",
+    consent: `Objectif : ${TARGET_INTEREST} intéressés → on lance Premium. Un seul email (pas de spam).`,
     successTitle: "C’est bon ✅",
     successBody: "On te prévient dès que Premium est disponible.",
     errorGeneric: "Une erreur est survenue. Réessaie.",
     invalidEmail: "Entre un email valide.",
     featuresTitle: "Ce que Premium inclura",
     features: [
+      { h: "Explications complètes", p: "Accès illimité aux explications pour comprendre tes erreurs." },
       { h: "Révision avancée des erreurs", p: "Quiz ciblés sur tes points faibles." },
       { h: "Rapports personnalisés", p: "Patterns d’erreurs + recommandations." },
       { h: "EXAM+ long scenario (futur)", p: "Simulations longues style examen." },
-      { h: "Accès anticipé", p: "Nouveaux contenus avant tout le monde." },
     ],
   },
 };
@@ -126,9 +142,18 @@ function FeatureCard({
   );
 }
 
-export default function PremiumComingSoonView() {
+export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
-  const lang = useMemo(() => getLangFromPathname(pathname), [pathname]);
+
+  // ✅ Se siamo su /pricing, /fr/prix, /es/precios, il pathname NON contiene la lingua:
+  // forceLang risolve e rende la pagina “deterministica”.
+  const lang = useMemo<Lang>(() => {
+    if (forceLang && (forceLang === "it" || forceLang === "en" || forceLang === "fr" || forceLang === "es")) {
+      return forceLang;
+    }
+    return getLangFromPathname(pathname);
+  }, [forceLang, pathname]);
+
   const t = COPY[lang] || COPY.it;
 
   const [email, setEmail] = useState("");
@@ -151,7 +176,14 @@ export default function PremiumComingSoonView() {
       const res = await fetch("/api/backend/premium-waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: clean, source: "coming_soon", lang }),
+        body: JSON.stringify({
+          email: clean,
+          source: "pricing_waitlist",
+          lang,
+          intentPlan: "premium",
+          intentPriceEur: INTENT_PRICE_EUR,
+          targetInterested: TARGET_INTEREST,
+        }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -167,7 +199,7 @@ export default function PremiumComingSoonView() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <div className="rounded-3xl border bg-white shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
         <div className="border-b bg-gradient-to-b from-gray-50 to-white px-6 py-6">
           <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs text-gray-700">
             <span className="h-2 w-2 rounded-full bg-amber-500" />

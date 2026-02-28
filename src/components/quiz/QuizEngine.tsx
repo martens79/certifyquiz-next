@@ -8,6 +8,7 @@ import Link from 'next/link';
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang, getDict } from '@/lib/i18n';
+import { pricingPath } from "@/lib/paths";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -725,7 +726,7 @@ const goToFirstUnanswered = () => {
             {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
             {!isPremiumUser && (
               <div className="pt-2">
-                <PremiumTeaserBox />
+                <PremiumTeaserBox lang={lang} />
               </div>
             )}
 
@@ -758,7 +759,7 @@ const goToFirstUnanswered = () => {
                 <button
                   type="button"
                   className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-                  onClick={() => router.push(withLang(lang, '/prezzi'))}
+                  onClick={() => router.push(pricingPath(lang))}
                 >
                   {label('seePremium', lang)}
                 </button>
@@ -1134,9 +1135,9 @@ const goToFirstUnanswered = () => {
                   : 'Full explanation with Premium.'}
 
                 <Link
-                  href={withLang(lang, '/prezzi')}
-                  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
-                >
+  href={pricingPath(lang)}
+  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
+>
                   {lang === 'it'
                     ? 'Scopri Premium'
                     : lang === 'fr'
