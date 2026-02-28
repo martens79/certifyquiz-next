@@ -37,7 +37,19 @@ export function getToken(): string | null {
     return null;
   }
 }
-
+/** True se il token "principale" è in localStorage (quindi remember=true) */
+export function isTokenRemembered(): boolean {
+  if (!isBrowser()) return false;
+  try {
+    // Priorità: nuovo key, poi legacy
+    return (
+      localStorage.getItem(AUTH_KEY) !== null ||
+      localStorage.getItem(LEGACY_KEY) !== null
+    );
+  } catch {
+    return false;
+  }
+}
 export function setToken(token: string, persist: boolean = true) {
   if (!isBrowser()) return;
   try {

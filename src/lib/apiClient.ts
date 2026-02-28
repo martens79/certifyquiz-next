@@ -7,6 +7,7 @@ export const API_PREFIX = "/api/backend";
 /*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
 import { getToken, setToken, clearToken, setUser } from "@/lib/auth";
 
+
 /** Compat API: usata in giro nel codice */
 export function getAccessToken(): string | null {
   return getToken();
@@ -226,6 +227,8 @@ function joinUrl(prefix: string, path: string) {
   return `${a}${b}`;
 }
 
+import { isTokenRemembered } from "@/lib/auth";
+
 async function refreshAccessToken(): Promise<string | null> {
   try {
     const res = await fetch(joinUrl(API_PREFIX, "/auth/refresh"), {
@@ -237,8 +240,8 @@ async function refreshAccessToken(): Promise<string | null> {
 
     const data = (await res.json()) as { ok?: boolean; token?: string };
     if (data?.token) {
-      // ✅ refresh -> persist true va bene (sessione corrente)
-      setAccessToken(data.token, true);
+      // ✅ refresh mantiene la scelta originale (remember vs session)
+      setAccessToken(data.token, isTokenRemembered());
       return data.token;
     }
     return null;
@@ -246,7 +249,6 @@ async function refreshAccessToken(): Promise<string | null> {
     return null;
   }
 }
-
 async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const {
     method = "GET",
