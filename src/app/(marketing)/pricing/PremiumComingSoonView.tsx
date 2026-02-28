@@ -3,6 +3,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
+import PremiumLiveCounter from "./PremiumLiveCounter";
 
 type Lang = "it" | "es" | "en" | "fr";
 
@@ -208,7 +209,9 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
           <h1 className="mt-3 text-3xl font-semibold tracking-tight">{t.title}</h1>
           <p className="mt-2 max-w-2xl text-sm text-gray-700">{t.subtitle}</p>
-          <p className="mt-2 text-sm font-medium">{t.priceLine}</p>
+          <p className="text-base font-semibold">{t.priceLine}</p>
+          
+          <PremiumLiveCounter lang={lang} />
         </div>
 
         <div className="grid gap-6 px-6 py-6 lg:grid-cols-2">
@@ -245,9 +248,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
               </div>
             )}
 
-            <div className="mt-6 text-xs text-gray-500">
-              Prossimo step (Settimana 2): box nei risultati quiz con <code>source="quiz_results"</code>.
-            </div>
+           
           </div>
 
           {/* RIGHT: features */}
