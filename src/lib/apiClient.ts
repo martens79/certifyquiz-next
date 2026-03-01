@@ -229,26 +229,50 @@ function joinUrl(prefix: string, path: string) {
 
 import { isTokenRemembered } from "@/lib/auth";
 
-async function refreshAccessToken(): Promise<string | null> {
-  try {
+async function refreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
+  const attempt = async () => {
     const res = await fetch(joinUrl(API_PREFIX, "/auth/refresh"), {
       method: "POST",
       credentials: "include",
       headers: { accept: "application/json" },
     });
-    if (!res.ok) return null;
+
+    if (!res.ok) return { ok: false as const, status: res.status };
 
     const data = (await res.json()) as { ok?: boolean; token?: string };
-    if (data?.token) {
-      // ✅ refresh mantiene la scelta originale (remember vs session)
-      setAccessToken(data.token, isTokenRemembered());
-      return data.token;
+    return { ok: true as const, status: res.status, token: data?.token ?? null };
+  };
+
+  try {
+    const r1 = await attempt();
+
+    if (r1.ok && r1.token) {
+      setAccessToken(r1.token, isTokenRemembered());
+      return { token: r1.token, status: r1.status };
     }
-    return null;
+
+    // retry solo su 5xx
+    if (!r1.ok && r1.status >= 500) {
+      await new Promise((r) => setTimeout(r, 400));
+      const r2 = await attempt();
+
+      if (r2.ok && r2.token) {
+        setAccessToken(r2.token, isTokenRemembered());
+        return { token: r2.token, status: r2.status };
+      }
+
+      // retry fallito: ritorna lo status del secondo tentativo
+      return { token: null, status: r2.ok ? r2.status : r2.status };
+    }
+
+    // fallimento non-5xx (es: 401/403)
+    return { token: null, status: r1.ok ? r1.status : r1.status };
   } catch {
-    return null;
+    // rete KO
+    return { token: null, status: null };
   }
 }
+
 async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   const {
     method = "GET",
@@ -283,19 +307,23 @@ if (auth || withCredentials) init.credentials = "include";
   const res = await fetch(url, init);
 
   // 401 → tenta refresh una volta (solo se auth=true)
-  if (res.status === 401 && auth && retry) {
-    const newTok = await refreshAccessToken();
-    if (newTok) {
-      const h2 = new Headers(h);
-      h2.set("authorization", `Bearer ${newTok}`);
-      const res2 = await fetch(url, { ...init, headers: h2 });
-      if (!res2.ok) throw await toApiError(res2);
-      return parseJson<T>(res2);
-    } else {
-      // refresh fallito => pulisci auth coerente
-      clearAuth();
-    }
+ // 401 → tenta refresh una volta (solo se auth=true)
+if (res.status === 401 && auth && retry) {
+  const { token: newTok, status: refreshStatus } = await refreshAccessToken();
+
+  if (newTok) {
+    const h2 = new Headers(h);
+    h2.set("authorization", `Bearer ${newTok}`);
+    const res2 = await fetch(url, { ...init, headers: h2 });
+    if (!res2.ok) throw await toApiError(res2);
+    return parseJson<T>(res2);
   }
+
+  // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato)
+  if (refreshStatus === 401 || refreshStatus === 403) {
+    clearAuth();
+  }
+}
 
   if (!res.ok) throw await toApiError(res);
   return parseJson<T>(res);
