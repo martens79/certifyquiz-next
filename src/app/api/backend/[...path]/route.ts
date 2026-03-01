@@ -1,4 +1,6 @@
 // src/app/api/backend/[...path]/route.ts
+// Proxy verso Express API (/api/*) con forwarding headers (incl. cookie) + CORS/preflight robusto.
+// Nota: usato sia in locale (API_BASE_URL_DEV) sia su Vercel (API_BASE_URL).
 
 function stripTrailingApi(u: string) {
   // rimuove solo un /api finale (con o senza slash)
@@ -52,16 +54,43 @@ function sanitizeHeaders(inHeaders: Headers) {
   return h;
 }
 
+/**
+ * CORS headers robusti:
+ * - Non rompe same-origin (sono header extra).
+ * - Salva i casi edge (preflight / mobile / header custom) per /auth/refresh.
+ */
+function corsHeaders(req: Request) {
+  const origin = req.headers.get("origin") || "*";
+  const reqHeaders =
+    req.headers.get("access-control-request-headers") ||
+    "authorization, content-type";
+  const reqMethod =
+    req.headers.get("access-control-request-method") ||
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS";
+
+  return {
+    "access-control-allow-origin": origin,
+    "access-control-allow-credentials": "true",
+    "access-control-allow-headers": reqHeaders,
+    "access-control-allow-methods": reqMethod,
+    "access-control-max-age": "86400",
+    vary: "origin",
+  };
+}
+
 async function proxy(req: Request, path: string[]) {
-  // Rispondi subito al preflight: evita fetch inutile e problemi CORS locali
-  if (req.method.toUpperCase() === "OPTIONS") {
-    return new Response(null, { status: 204 });
+  const method = req.method.toUpperCase();
+
+  // ✅ Rispondi al preflight con CORS completo (evita edge-case su refresh)
+  if (method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders(req) });
   }
 
   const url = buildTargetUrl(req, path);
+
+  // ✅ Forward headers in arrivo (incl. cookie + authorization)
   const headers = sanitizeHeaders(req.headers);
 
-  const method = req.method.toUpperCase();
   const body =
     method === "GET" || method === "HEAD" ? undefined : await req.arrayBuffer();
 
@@ -71,6 +100,10 @@ async function proxy(req: Request, path: string[]) {
   const outHeaders = new Headers(res.headers);
   outHeaders.delete("content-encoding"); // evita mismatch se runtime ricompone
   outHeaders.delete("content-length");
+
+  // ✅ Aggiungi CORS anche alle risposte (non rompe, ma rende stabile)
+  const ch = corsHeaders(req);
+  Object.entries(ch).forEach(([k, v]) => outHeaders.set(k, v));
 
   return new Response(res.body, { status: res.status, headers: outHeaders });
 }
