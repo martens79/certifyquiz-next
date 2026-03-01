@@ -1,9 +1,10 @@
 // src/components/Footer.tsx
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { dict, type Locale, legalPath } from "@/lib/i18n";
+import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 
 type Status = "idle" | "loading" | "ok" | "err";
 
@@ -14,16 +15,42 @@ function aboutPath(lang: Locale) {
   return "/about"; // en
 }
 
+const LS_KEY = "newsletter_subscribed_v1";
+
 export default function Footer({ lang }: { lang: Locale }) {
   const t = dict[lang];
   const year = new Date().getFullYear();
 
+  // ✅ user (come in Header)
+  const [user, setUser] = useState<MinimalUser | null>(() => getUser());
+
+  // ✅ newsletter state
   const [email, setEmail] = useState("");
   const [hp, setHp] = useState(""); // honeypot
   const [status, setStatus] = useState<Status>("idle");
   const [msg, setMsg] = useState("");
 
-  const s = status;
+  // ✅ già iscritto (browser)
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+
+  useEffect(() => {
+    // sync user
+    setUser(getUser());
+    const unsub = onUserChange(() => setUser(getUser()));
+    return () => {
+      if (typeof unsub === "function") unsub();
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      setAlreadySubscribed(localStorage.getItem(LS_KEY) === "1");
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const hideNewsletter = Boolean(user) || alreadySubscribed;
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,11 +60,15 @@ export default function Footer({ lang }: { lang: Locale }) {
       setStatus("ok");
       setMsg(t.newsletterOk ?? "Subscribed!");
       setEmail("");
+      try {
+        localStorage.setItem(LS_KEY, "1");
+        setAlreadySubscribed(true);
+      } catch {}
       return;
     }
 
     const cleanEmail = email.trim();
-    if (!cleanEmail || s === "loading") return;
+    if (!cleanEmail || status === "loading") return;
 
     setStatus("loading");
     setMsg("");
@@ -60,14 +91,28 @@ export default function Footer({ lang }: { lang: Locale }) {
         setStatus("ok");
         setMsg(data.message || t.newsletterOk || "Subscribed!");
         setEmail("");
+
+        // ✅ memorizza => non ricompare su questo browser
+        try {
+          localStorage.setItem(LS_KEY, "1");
+          setAlreadySubscribed(true);
+        } catch {}
+
         return;
       }
 
+      // ✅ messaggio umano
       setStatus("err");
-      setMsg(data.message || t.newsletterErr || "Something went wrong. Please try again.");
+      setMsg(
+        t.newsletterErr ||
+          "We couldn't complete the subscription. Please try again in a moment."
+      );
     } catch {
       setStatus("err");
-      setMsg(t.newsletterErr || "Something went wrong. Please try again.");
+      setMsg(
+        t.newsletterErr ||
+          "We couldn't complete the subscription. Please try again in a moment."
+      );
     }
   }
 
@@ -118,76 +163,89 @@ export default function Footer({ lang }: { lang: Locale }) {
                 {t.nav.contact ?? "Contact"}
               </Link>
             </li>
+
+            {/* ✅ About link qui dentro */}
+            <li>
+              <Link href={aboutPath(lang)} className="text-sm text-gray-700 hover:underline">
+                {lang === "it"
+                  ? "Chi sono"
+                  : lang === "fr"
+                  ? "À propos"
+                  : lang === "es"
+                  ? "Sobre mí"
+                  : "About"}
+              </Link>
+            </li>
           </ul>
         </nav>
-<Link href={aboutPath(lang)} className="...classi-del-menu...">
-  {lang === "it"
-    ? "Chi sono"
-    : lang === "fr"
-    ? "À propos"
-    : lang === "es"
-    ? "Sobre mí"
-    : "About"}
-</Link>
 
         {/* Newsletter */}
         <div>
           <h3 className="mb-2 text-sm font-semibold">{t.newsletterTitle ?? "Newsletter"}</h3>
-          <p className="text-sm text-gray-600">
-            {t.newsletterBlurb ?? "Subscribe for updates on new certifications and features."}
-          </p>
 
-          {s === "ok" ? (
-            <p className="mt-3 text-sm text-emerald-700" role="status" aria-live="polite">
-              {msg || (t.newsletterOk ?? "Subscribed!")}
+          {hideNewsletter ? (
+            <p className="text-sm text-gray-600">
+              {t.newsletterOk ?? "Subscribed!"}
             </p>
           ) : (
             <>
-              <form onSubmit={onSubmit} className="mt-3 flex gap-2" noValidate>
-                {/* honeypot */}
-                <input
-                  type="text"
-                  tabIndex={-1}
-                  autoComplete="off"
-                  aria-hidden="true"
-                  className="hidden"
-                  value={hp}
-                  onChange={(e) => setHp(e.target.value)}
-                />
+              <p className="text-sm text-gray-600">
+                {t.newsletterBlurb ?? "Subscribe for updates on new certifications and features."}
+              </p>
 
-                <label htmlFor="newsletter-email" className="sr-only">
-                  Email
-                </label>
-
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  name="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.newsletterPlaceholder ?? "you@example.com"}
-                  className="w-full rounded-md border px-3 py-2 text-sm"
-                  autoComplete="email"
-                  inputMode="email"
-                  disabled={s === "loading"}
-                />
-
-                <button
-                  type="submit"
-                  disabled={s === "loading"}
-                  className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
-                  aria-busy={s === "loading"}
-                >
-                  {s === "loading" ? "…" : (t.newsletterCta ?? "Subscribe")}
-                </button>
-              </form>
-
-              {s === "err" && msg ? (
-                <p className="mt-2 text-sm text-red-600" role="status" aria-live="polite">
-                  {msg}
+              {status === "ok" ? (
+                <p className="mt-3 text-sm text-emerald-700" role="status" aria-live="polite">
+                  {msg || (t.newsletterOk ?? "Subscribed!")}
                 </p>
-              ) : null}
+              ) : (
+                <>
+                  <form onSubmit={onSubmit} className="mt-3 flex gap-2" noValidate>
+                    {/* honeypot */}
+                    <input
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      aria-hidden="true"
+                      className="hidden"
+                      value={hp}
+                      onChange={(e) => setHp(e.target.value)}
+                    />
+
+                    <label htmlFor="newsletter-email" className="sr-only">
+                      Email
+                    </label>
+
+                    <input
+                      id="newsletter-email"
+                      type="email"
+                      name="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t.newsletterPlaceholder ?? "you@example.com"}
+                      className="w-full rounded-md border px-3 py-2 text-sm"
+                      autoComplete="email"
+                      inputMode="email"
+                      disabled={status === "loading"}
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={status === "loading"}
+                      className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-60"
+                      aria-busy={status === "loading"}
+                    >
+                      {status === "loading" ? "…" : (t.newsletterCta ?? "Subscribe")}
+                    </button>
+                  </form>
+
+                  {status === "err" && msg ? (
+                    <p className="mt-2 text-sm text-red-600" role="status" aria-live="polite">
+                      {msg}
+                    </p>
+                  ) : null}
+                </>
+              )}
             </>
           )}
         </div>
