@@ -532,20 +532,44 @@ const ProfileClient: FC<{ lang: Locale }> = ({ lang }) => {
   const [isHydrated, setIsHydrated] = useState(false);
   useEffect(() => setIsHydrated(true), []);
 
-  // 🔐 hasToken come stato (SSR-safe)
-  const [hasToken, setHasToken] = useState<boolean | null>(null);
-  useEffect(() => {
-    setHasToken(!!getToken());
-  }, []);
+  const [authStatus, setAuthStatus] = useState<"loading" | "authed" | "guest">("loading");
 
-  // redirect solo quando sappiamo che NON c'è token
-  useEffect(() => {
-    if (hasToken === false) {
-      router.replace(
-        `/${lang}/login?redirect=${encodeURIComponent(pathname)}`
-      );
+useEffect(() => {
+  let alive = true;
+
+  (async () => {
+    const raw =
+      (await tryJson<any>("/auth/me")) ||
+      (await tryJson<any>("/user/me")) ||
+      (await tryJson<any>("/me"));
+
+    if (!alive) return;
+
+    const u: User | null = raw?.user ?? raw ?? null;
+
+    if (u && u.id) {
+      setUser(u);
+      setAuthStatus("authed");
+      try {
+        localStorage.setItem("user", JSON.stringify(u));
+      } catch {}
+    } else {
+      setAuthStatus("guest");
     }
-  }, [hasToken, lang, pathname, router]);
+
+    setLoadingUser(false);
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, []);
+
+useEffect(() => {
+  if (authStatus === "guest") {
+    router.replace(`/${lang}/login?redirect=${encodeURIComponent(pathname)}`);
+  }
+}, [authStatus, lang, pathname, router]);
 
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -857,21 +881,20 @@ const visibleBadges = useMemo(() => {
 }, [allBadges, showAllBadges]);
 
   // —— Render: loader SSR-safe
-  if (!isHydrated || hasToken === null || loadingUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
-        <div className="animate-pulse rounded-xl border px-6 py-4 bg-white/70">
-          {getLabel(LBL.loading, lang)}
-        </div>
+if (!isHydrated || loadingUser || authStatus === "loading") {
+  return (
+    <div className="min-h-screen flex items-center justify-center text-lg">
+      <div className="animate-pulse rounded-xl border px-6 py-4 bg-white/70">
+        {getLabel(LBL.loading, lang)}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  // se sappiamo che NON c'è token → redirect in corso
-  if (hasToken === false) {
-    return null;
-  }
-
+// se sappiamo che NON siamo autenticati → redirect in corso
+if (authStatus === "guest") {
+  return null;
+}
   const displayName = user?.username || user?.name || "User";
   const email = user?.email || "—";
 const isPremium = !!user?.premium || user?.role === "admin";
