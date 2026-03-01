@@ -467,7 +467,8 @@ export const getExamHistory = () => apiGet<ExamHistoryRow[]>("/exam-history", tr
 
 // ⚠️ Percorsi corretti: SENZA il prefisso extra '/api'
 export const getUserHistory = () => apiGet<QuizResultRow[]>("/user/user-history", true);
-export const getUserCategoriesProgress = () =>
+
+export const getUserCategoriesProgress = (lang: Locale = "it") =>
   apiGet<
     Array<{
       category_id: number;
@@ -477,7 +478,7 @@ export const getUserCategoriesProgress = () =>
       totalQuestions: number;
       quizTotaliEseguiti: number;
     }>
-  >("/user/user-categories-progress", true);
+  >(`/user/user-categories-progress?lang=${encodeURIComponent(lang)}`, true);
 
 /*─────────────────────────────── BADGES ───────────────────────────────*/
 // ⚠️ Percorsi corretti (niente '/api' duplicato)
