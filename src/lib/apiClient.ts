@@ -274,7 +274,10 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
   if (token) h.set("authorization", `Bearer ${token}`);
 
   const init: RequestInit = { method, headers: h, signal };
-  if (withCredentials) init.credentials = "include";
+
+// ✅ Se auth=true, includi SEMPRE i cookie (rt) per refresh/rotate/sessione stabile
+// Se vuoi forzare include anche su endpoint pubblici, puoi passare withCredentials=true.
+if (auth || withCredentials) init.credentials = "include";
   if (body != null) init.body = isForm ? body : JSON.stringify(body);
 
   const res = await fetch(url, init);
