@@ -143,8 +143,8 @@ export default function QuizEngine({
      - QuizEngine NON legge flags direttamente.
      - Riceve dal caller la decisione finale: context.premiumLocked
   ───────────────────────────────────────────────────────────── */
-  //const isPremiumUser = !!context?.isPremiumUser;
-  const isPremiumUser = false;
+  const isPremiumUser = !!context?.isPremiumUser;
+  //const isPremiumUser = false;
   const premiumLocked = !!context?.premiumLocked;
   const FREE_LIMIT = 20;
 
