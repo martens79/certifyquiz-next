@@ -44,12 +44,19 @@ const AuthCtx = createContext<AuthState | null>(null);
 function toUser(u: MinimalUser | User | null): User | null {
   if (!u) return null;
   const anyU = u as any;
+
+  const premiumRaw = anyU.premium;
+  const premium =
+    premiumRaw === true ||
+    premiumRaw === 1 ||
+    premiumRaw === "1";
+
   return {
     id: Number(anyU.id),
     username: String(anyU.username ?? anyU.name ?? "").trim() || "User",
     email: String(anyU.email ?? "").trim(),
     role: String(anyU.role ?? "user"),
-    premium: Boolean(anyU.premium),
+    premium,
   };
 }
 

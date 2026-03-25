@@ -13,6 +13,7 @@ import { pricingPath } from "@/lib/paths";
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
 import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
+import PremiumQuestionLimitGate from '@/components/premium/PremiumQuestionLimitGate';
 
 
 // ------------------------------------------------------------------
@@ -142,8 +143,10 @@ export default function QuizEngine({
      - QuizEngine NON legge flags direttamente.
      - Riceve dal caller la decisione finale: context.premiumLocked
   ───────────────────────────────────────────────────────────── */
-  const isPremiumUser = !!context?.isPremiumUser;
+  //const isPremiumUser = !!context?.isPremiumUser;
+  const isPremiumUser = false;
   const premiumLocked = !!context?.premiumLocked;
+  const FREE_LIMIT = 20;
 
   // ---------------- Sticky timer (UI-only) ----------------
   const examDurationSec = (durationsByMode?.exam ?? null) ?? (durationSec ?? null);
@@ -773,6 +776,18 @@ const goToFirstUnanswered = () => {
 
   /* --------------------------- UI QUIZ NORMALE ------------------------ */
   const q = questions[idx];
+  const freeLimitReached = !isPremiumUser && idx >= FREE_LIMIT;
+
+  console.log("QUIZ DEBUG", {
+  idx,
+  FREE_LIMIT,
+  isPremiumUser,
+  premiumLocked,
+  freeLimitReached,
+  answeredCount,
+  effectiveMode,
+  context,
+});
 
   const submitFeedback = async () => {
   if (!onFeedback) return;
@@ -808,61 +823,91 @@ const goToFirstUnanswered = () => {
   const canGoNext =
     idx < questions.length - 1 || (effectiveMode === 'training' && reviewPositions.length > 0);
 
-    /* ============================================================
-   TODO(PREMIUM) — GATING SPIEGAZIONI (NON ATTIVO ORA)
+   /* ============================================================
+   PREMIUM — GATING QUIZ + SPIEGAZIONI
 
-   Quando PREMIUM verrà attivato (via ENV):
+   Regole attuali:
    - usare SOLO context.premiumLocked e context.isPremiumUser
-   - NON ricalcolare premium qui
-   - se premiumLocked === true:
-       - mostrare preview + CTA soft
-       - explanation completa SOLO per premium/admin
-   - quiz deve restare SEMPRE giocabile
+   - NON ricalcolare premium dentro QuizEngine
+   - utente free:
+       - può fare fino a FREE_LIMIT domande
+       - alla domanda successiva vede il paywall Premium
+   - utente premium/admin:
+       - nessun blocco sul numero di domande
+       - accesso completo al quiz
+
+   Gating spiegazioni:
+   - premiumLocked arriva dal context (single source of truth)
+   - se il backend locka le spiegazioni per i free:
+       - q.explanation può arrivare null
+   - se q.explanation è presente:
+       - premium/admin: spiegazione completa
+       - free: preview + CTA
+   - il quiz deve restare giocabile fino al limite free
 
    Backend contract:
    - explanation === null quando lock attivo + utente free
    - explanation !== null per premium/admin
 
-   Attivazione prevista:
+   Flags previste:
    - Railway: PREMIUM_ENABLED=1, PREMIUM_LOCK_EXPLANATIONS=1
    - Vercel:  NEXT_PUBLIC_PREMIUM_ENABLED=1,
               NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=1
 ============================================================ */
+
 // ------------------------------------------------------------------
 // PREMIUM (frontend) — single source of truth
-// - premiumLocked: viene dal context (backend/flags + user)
-// - q.explanation: se backend locka, arriva già null per i free
+// - isPremiumUser: viene dal context
+// - premiumLocked: viene dal context
+// - q.explanation: se backend locka, può arrivare null per i free
+// - FREE_LIMIT: blocca il quiz free dopo 20 domande
 // ------------------------------------------------------------------
 
-  const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
-  const explainPreview = explainText ? makePreview(explainText, 260) : '';
+const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
+const explainPreview = explainText ? makePreview(explainText, 260) : '';
 
-   return (
-    <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
-      {/* ===================== TOP (non scrolla) ===================== */}
-      <div className="mobile-safe-top max-w-5xl mx-auto w-full px-3 sm:px-4 pt-3 sm:pt-6">
+if (freeLimitReached) {
+  return (
+    <div className={`min-h-[100dvh] ${gradient}`}>
+      <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
+        <PremiumQuestionLimitGate
+          lang={lang}
+          currentCount={FREE_LIMIT}
+          freeLimit={FREE_LIMIT}
+          mode={effectiveMode}
+          onBack={() => setIdx(FREE_LIMIT - 1)}
+        />
+      </div>
+    </div>
+  );
+}
 
-        {/* header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <div className="text-sm opacity-90">
-            {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
-            {label('answered', lang)} {answeredCount}
+return (
+  <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
+    {/* ===================== TOP (non scrolla) ===================== */}
+    <div className="mobile-safe-top max-w-5xl mx-auto w-full px-3 sm:px-4 pt-3 sm:pt-6">
+
+      {/* header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+        <div className="text-sm opacity-90">
+          {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+          {label('answered', lang)} {answeredCount}
+          <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+            {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+          </span>
+
+          {hideModeSwitch && isExam && (
             <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-              {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+              🧪{' '}
+              {lang === 'it'
+                ? 'Mock Exam'
+                : lang === 'fr'
+                ? 'Mock examen'
+                : lang === 'es'
+                ? 'Simulacro'
+                : 'Mock Exam'}
             </span>
-
-            {hideModeSwitch && isExam && (
-              <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                🧪{' '}
-                {lang === 'it'
-                  ? 'Mock Exam'
-                  : lang === 'fr'
-                  ? 'Mock examen'
-                  : lang === 'es'
-                  ? 'Simulacro'
-                  : 'Mock Exam'}
-              </span>
-            )}
+          )}
 
             {reviewMode && reviewTotal > 0 && (
               <>
@@ -1117,39 +1162,40 @@ const goToFirstUnanswered = () => {
           })}
         </div>
 
-        {/* spiegazione (training) — premium-ready */}
-        {!isExam && chosen != null && q.explanation && (
-          <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-            <b>{label('explain', lang)}</b>{' '}
-            {premiumLocked ? explainPreview : explainText}
+   {/* spiegazione (training) — premium-ready */}
+{!isExam && chosen != null && q.explanation && (
+  <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+    <b>{label('explain', lang)}</b>{' '}
+    {premiumLocked ? explainPreview : explainText}
 
-            {premiumLocked && !isPremiumUser && (
-              <div className="mt-2 text-xs text-white/80">
-                🔒{' '}
-                {lang === 'it'
-                  ? 'Spiegazione completa con Premium.'
-                  : lang === 'fr'
-                  ? 'Explication complète avec Premium.'
-                  : lang === 'es'
-                  ? 'Explicación completa con Premium.'
-                  : 'Full explanation with Premium.'}
+    {premiumLocked && !isPremiumUser && (
+      <div className="mt-2 text-xs text-white/80">
+        🔒{' '}
+        {lang === 'it'
+          ? 'Spiegazione completa con Premium.'
+          : lang === 'fr'
+          ? 'Explication complète avec Premium.'
+          : lang === 'es'
+          ? 'Explicación completa con Premium.'
+          : 'Full explanation with Premium.'}
 
-                <Link
-  href={pricingPath(lang)}
-  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
->
-                  {lang === 'it'
-                    ? 'Scopri Premium'
-                    : lang === 'fr'
-                    ? 'Découvrir Premium'
-                    : lang === 'es'
-                    ? 'Descubrir Premium'
-                    : 'See Premium'}
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
+        <Link
+          href={pricingPath(lang)}
+          className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
+        >
+          {lang === 'it'
+            ? 'Scopri Premium'
+            : lang === 'fr'
+            ? 'Découvrir Premium'
+            : lang === 'es'
+            ? 'Descubrir Premium'
+            : 'See Premium'}
+        </Link>
+      </div>
+    )}
+  </div>
+)}
+      
       </div>
 {/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
