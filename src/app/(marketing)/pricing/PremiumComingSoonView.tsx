@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
+import { authHeader } from "@/lib/auth";
 
 type Lang = "it" | "es" | "en" | "fr";
 
@@ -9,8 +10,8 @@ type Props = {
   forceLang?: Lang;
 };
 
-function getLangFromPathname(pathname: string): Lang {
-  const seg = (pathname.split("/")[1] || "").toLowerCase();
+function getLangFromPathname(pathname: string | null): Lang {
+  const seg = (pathname?.split("/")[1] || "").toLowerCase();
   if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
     return seg as Lang;
   }
@@ -210,6 +211,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
         headers: {
           "Content-Type": "application/json",
           "x-lang": lang,
+          ...authHeader(),
         },
         credentials: "include",
         body: JSON.stringify({ lang }),
