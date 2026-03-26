@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
-import { authHeader } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
 
 type Lang = "it" | "es" | "en" | "fr";
 
@@ -206,14 +206,11 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     try {
       setIsLoading(true);
 
-      const res = await fetch("/api/backend/billing/create-checkout-session", {
+      const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "x-lang": lang,
-          ...authHeader(),
         },
-        credentials: "include",
         body: JSON.stringify({ lang }),
       });
 
