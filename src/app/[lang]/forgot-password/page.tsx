@@ -4,14 +4,14 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { langFromPathname, getLabel, type Locale } from '@/lib/i18n';
+import { langFromPathname, getLabel, withLang, type Locale } from '@/lib/i18n';
 import { backendUrl } from '@/lib/auth';
 
 const isEmail = (v: string) =>
   typeof v === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
 export default function ForgotPasswordPage() {
-  const pathname = usePathname() ?? '/it';
+  const pathname = usePathname() ?? '/';
   const lang = useMemo<Locale>(() => langFromPathname(pathname), [pathname]);
 
   const [email, setEmail] = useState('');
@@ -54,7 +54,6 @@ export default function ForgotPasswordPage() {
         // ignore JSON parse errors
       }
 
-      // Rate limit
       if (!res.ok && res.status === 429) {
         setErr(
           String(
@@ -71,14 +70,12 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      // ✅ Account Google-only (mostra CTA login Google senza rivelare troppo)
       if (data?.code === 'GOOGLE_ONLY') {
         setGoogleOnly(true);
         setSent(false);
         return;
       }
 
-      // Privacy policy: risposta generica (non riveliamo se l'email esiste)
       setSent(true);
     } catch {
       setErr(
@@ -120,11 +117,8 @@ export default function ForgotPasswordPage() {
               )}
             </p>
 
-            {/* Qui puoi aggiungere il bottone Google (stessa logica di login) */}
-            {/* <a href={googleHref} className="...">Continue with Google</a> */}
-
             <Link
-              href={`/${lang}/login`}
+              href={withLang(lang, '/login')}
               className="inline-block mt-3 px-4 py-2 border rounded text-slate-700 hover:bg-slate-50"
             >
               {String(getLabel({ it: 'Vai al login', en: 'Go to login' }, lang))}
@@ -144,7 +138,7 @@ export default function ForgotPasswordPage() {
               )}
             </p>
             <Link
-              href={`/${lang}/login`}
+              href={withLang(lang, '/login')}
               className="inline-block mt-3 px-4 py-2 border rounded text-slate-700 hover:bg-slate-50"
             >
               {String(getLabel({ it: 'Torna al login', en: 'Back to login' }, lang))}
@@ -193,7 +187,7 @@ export default function ForgotPasswordPage() {
 
             <div className="text-center">
               <Link
-                href={`/${lang}/login`}
+                href={withLang(lang, '/login')}
                 className="inline-block mt-3 text-sm text-slate-600 hover:underline"
               >
                 {String(getLabel({ it: 'Ricordi la password? Accedi', en: 'Remember it? Log in' }, lang))}
