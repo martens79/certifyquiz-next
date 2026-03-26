@@ -1,17 +1,11 @@
-// src/app/(marketing)/pricing/PremiumComingSoonView.tsx
 "use client";
 
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
-import PremiumLiveCounter from "./PremiumLiveCounter";
 
 type Lang = "it" | "es" | "en" | "fr";
 
 type Props = {
-  /**
-   * Se passato, forza la lingua (utile per pagine SEO alias tipo /pricing, /fr/prix, /es/precios)
-   * evitando di dedurre la lingua dal pathname.
-   */
   forceLang?: Lang;
 };
 
@@ -20,102 +14,145 @@ function getLangFromPathname(pathname: string): Lang {
   if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
     return seg as Lang;
   }
-  return "en"; // ✅ root (/pricing) = inglese
+  return "en";
 }
 
-const TARGET_INTEREST = 50;
-const INTENT_PRICE_EUR = 9.99;
-
-const COPY: Record<Lang, any> = {
+const COPY: Record<
+  Lang,
+  {
+    badge: string;
+    title: string;
+    subtitle: string;
+    priceLine: string;
+    cta: string;
+    ctaLoading: string;
+    subCta: string;
+    featuresTitle: string;
+    checkoutError: string;
+    features: { h: string; p: string }[];
+  }
+> = {
   it: {
-    badge: "VALIDAZIONE • Non è ancora in vendita",
-    title: "Premium a 9,99€/mese: lo attiviamo solo se interessa davvero",
+    badge: "PREMIUM",
+    title: "Sblocca CertifyQuiz Premium",
     subtitle:
-      "Lascia la tua email. Se raggiungiamo 50 interessati, attiviamo Premium. Zero spam: una sola email quando parte.",
-    priceLine: "Prezzo in test: 9,99€/mese (validazione interesse)",
-    cta: "Voglio il Premium a 9,99€/mese",
-    emailPlaceholder: "La tua email",
-    consent: `Obiettivo: ${TARGET_INTEREST} interessati → attiviamo Premium. Ti invieremo una sola email (niente spam).`,
-    successTitle: "Sei dentro ✅",
-    successBody: "Perfetto. Ti avviseremo appena Premium sarà disponibile.",
-    errorGeneric: "Qualcosa non va. Riprova tra poco.",
-    invalidEmail: "Inserisci una email valida.",
-    featuresTitle: "Cosa includerà Premium",
+      "Continua i quiz senza limiti e preparati davvero ai tuoi esami con spiegazioni complete, modalità esame e ripasso errori.",
+    priceLine: "7€/mese • Disdici quando vuoi",
+    cta: "Sblocca Premium – 7€/mese",
+    ctaLoading: "Apertura checkout...",
+    subCta: "Accesso immediato. Nessun vincolo.",
+    featuresTitle: "Cosa include Premium",
+    checkoutError: "Errore durante l'apertura del checkout. Riprova.",
     features: [
-      { h: "Spiegazioni complete", p: "Sblocco totale delle explanation per capire davvero gli errori." },
-      { h: "Ripasso errori avanzato", p: "Quiz mirati sulle domande sbagliate e sui punti deboli." },
-      { h: "Report personalizzati", p: "Analisi dei pattern di errore e consigli di studio." },
-      { h: "EXAM+ long scenario (in futuro)", p: "Simulazioni lunghe e realistiche stile esame." },
+      {
+        h: "Spiegazioni complete",
+        p: "Sblocca tutte le spiegazioni per capire davvero gli errori e non limitarti a memorizzare.",
+      },
+      {
+        h: "Modalità esame reale",
+        p: "Allenati in modo più vicino all’esperienza d’esame, con un approccio più serio e focalizzato.",
+      },
+      {
+        h: "Ripasso errori",
+        p: "Rivedi le domande sbagliate e concentrati sui punti deboli invece di ripartire ogni volta da zero.",
+      },
+      {
+        h: "Quiz illimitati",
+        p: "Continua ad allenarti senza il limite del piano gratuito e completa davvero il tuo percorso.",
+      },
     ],
   },
   es: {
-    badge: "VALIDACIÓN • Aún no está a la venta",
-    title: "Premium a 9,99€/mes: lo lanzamos solo si de verdad interesa",
+    badge: "PREMIUM",
+    title: "Desbloquea CertifyQuiz Premium",
     subtitle:
-      "Deja tu email. Si llegamos a 50 interesados, activamos Premium. Cero spam: un email cuando salga.",
-    priceLine: "Precio en test: 9,99€/mes (validación de interés)",
-    cta: "Quiero Premium a 9,99€/mes",
-    emailPlaceholder: "Tu email",
-    consent: `Objetivo: ${TARGET_INTEREST} interesados → lanzamos Premium. Solo 1 email (sin spam).`,
-    successTitle: "Listo ✅",
-    successBody: "Perfecto. Te avisaremos cuando Premium esté disponible.",
-    errorGeneric: "Algo salió mal. Inténtalo de nuevo.",
-    invalidEmail: "Introduce un email válido.",
-    featuresTitle: "Qué incluirá Premium",
+      "Continúa los quizzes sin límites y prepárate de verdad para tus exámenes con explicaciones completas, modo examen y repaso de errores.",
+    priceLine: "7€/mes • Cancela cuando quieras",
+    cta: "Desbloquea Premium – 7€/mes",
+    ctaLoading: "Abriendo checkout...",
+    subCta: "Acceso inmediato. Sin compromiso.",
+    featuresTitle: "Qué incluye Premium",
+    checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
     features: [
-      { h: "Explicaciones completas", p: "Acceso total a las explicaciones para entender errores." },
-      { h: "Repaso avanzado de errores", p: "Quizzes enfocados en tus fallos y puntos débiles." },
-      { h: "Reportes personalizados", p: "Patrones de error + consejos de estudio." },
-      { h: "EXAM+ long scenario (futuro)", p: "Simulaciones largas estilo examen." },
+      {
+        h: "Explicaciones completas",
+        p: "Desbloquea todas las explicaciones para entender de verdad tus errores y no solo memorizar.",
+      },
+      {
+        h: "Modo examen real",
+        p: "Entrena de una forma más cercana a la experiencia real del examen, con un enfoque más serio.",
+      },
+      {
+        h: "Repaso de errores",
+        p: "Revisa tus fallos y céntrate en tus puntos débiles en lugar de empezar siempre desde cero.",
+      },
+      {
+        h: "Quizzes ilimitados",
+        p: "Sigue practicando sin el límite del plan gratuito y completa de verdad tu preparación.",
+      },
     ],
   },
   en: {
-    badge: "VALIDATION • Not for sale yet",
-    title: "Premium at €9.99/month: we launch only if people actually want it",
+    badge: "PREMIUM",
+    title: "Unlock CertifyQuiz Premium",
     subtitle:
-      "Leave your email. If we reach 50 interested users, we launch Premium. No spam: one email when it goes live.",
-    priceLine: "Test price: €9.99/month (interest validation)",
-    cta: "I want Premium at €9.99/month",
-    emailPlaceholder: "Your email",
-    consent: `Goal: ${TARGET_INTEREST} interested users → we launch Premium. One email only (no spam).`,
-    successTitle: "You’re in ✅",
-    successBody: "We’ll notify you when Premium is available.",
-    errorGeneric: "Something went wrong. Try again.",
-    invalidEmail: "Please enter a valid email.",
-    featuresTitle: "What Premium will include",
+      "Keep practicing without limits and prepare seriously for your exams with full explanations, exam mode, and error review.",
+    priceLine: "€7/month • Cancel anytime",
+    cta: "Unlock Premium – €7/month",
+    ctaLoading: "Opening checkout...",
+    subCta: "Instant access. No long-term commitment.",
+    featuresTitle: "What Premium includes",
+    checkoutError: "Error while opening checkout. Please try again.",
     features: [
-      { h: "Full explanations", p: "Unlimited explanations to truly understand mistakes." },
-      { h: "Advanced error review", p: "Targeted quizzes based on your weak areas." },
-      { h: "Personalized reports", p: "Error patterns + focused study suggestions." },
-      { h: "EXAM+ long scenarios (future)", p: "Long, realistic exam-style simulations." },
+      {
+        h: "Full explanations",
+        p: "Unlock every explanation so you can actually understand mistakes instead of just memorizing answers.",
+      },
+      {
+        h: "Real exam mode",
+        p: "Practice in a way that feels closer to the real exam experience, with a more focused approach.",
+      },
+      {
+        h: "Error review",
+        p: "Go back over your incorrect answers and focus on weak areas instead of restarting blindly.",
+      },
+      {
+        h: "Unlimited quizzes",
+        p: "Keep training without the Free plan limit and build real consistency in your preparation.",
+      },
     ],
   },
   fr: {
-    badge: "VALIDATION • Pas encore en vente",
-    title: "Premium à 9,99€/mois : on lance seulement si ça intéresse vraiment",
+    badge: "PREMIUM",
+    title: "Débloquez CertifyQuiz Premium",
     subtitle:
-      "Laisse ton email. Si on atteint 50 personnes intéressées, on active Premium. Zéro spam : 1 email au lancement.",
-    priceLine: "Prix en test : 9,99€/mois (validation d’intérêt)",
-    cta: "Je veux Premium à 9,99€/mois",
-    emailPlaceholder: "Votre email",
-    consent: `Objectif : ${TARGET_INTEREST} intéressés → on lance Premium. Un seul email (pas de spam).`,
-    successTitle: "C’est bon ✅",
-    successBody: "On te prévient dès que Premium est disponible.",
-    errorGeneric: "Une erreur est survenue. Réessaie.",
-    invalidEmail: "Entre un email valide.",
-    featuresTitle: "Ce que Premium inclura",
+      "Continuez les quiz sans limite et préparez-vous sérieusement à vos examens avec des explications complètes, le mode examen et la révision des erreurs.",
+    priceLine: "7€/mois • Annulez quand vous voulez",
+    cta: "Débloquez Premium – 7€/mois",
+    ctaLoading: "Ouverture du checkout...",
+    subCta: "Accès immédiat. Sans engagement.",
+    featuresTitle: "Ce que Premium inclut",
+    checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
     features: [
-      { h: "Explications complètes", p: "Accès illimité aux explications pour comprendre tes erreurs." },
-      { h: "Révision avancée des erreurs", p: "Quiz ciblés sur tes points faibles." },
-      { h: "Rapports personnalisés", p: "Patterns d’erreurs + recommandations." },
-      { h: "EXAM+ long scenario (futur)", p: "Simulations longues style examen." },
+      {
+        h: "Explications complètes",
+        p: "Débloquez toutes les explications pour vraiment comprendre vos erreurs au lieu de mémoriser les réponses.",
+      },
+      {
+        h: "Mode examen réel",
+        p: "Entraînez-vous dans des conditions plus proches de l’examen réel, avec une approche plus sérieuse.",
+      },
+      {
+        h: "Révision des erreurs",
+        p: "Revenez sur vos erreurs et concentrez-vous sur vos points faibles au lieu de recommencer au hasard.",
+      },
+      {
+        h: "Quiz illimités",
+        p: "Continuez à vous entraîner sans la limite du plan gratuit et progressez vraiment.",
+      },
     ],
   },
 };
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
 
 function FeatureCard({
   title,
@@ -145,11 +182,16 @@ function FeatureCard({
 
 export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Se siamo su /pricing, /fr/prix, /es/precios, il pathname NON contiene la lingua:
-  // forceLang risolve e rende la pagina “deterministica”.
   const lang = useMemo<Lang>(() => {
-    if (forceLang && (forceLang === "it" || forceLang === "en" || forceLang === "fr" || forceLang === "es")) {
+    if (
+      forceLang &&
+      (forceLang === "it" ||
+        forceLang === "en" ||
+        forceLang === "fr" ||
+        forceLang === "es")
+    ) {
       return forceLang;
     }
     return getLangFromPathname(pathname);
@@ -157,101 +199,83 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
   const t = COPY[lang] || COPY.it;
 
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  async function startPremiumCheckout() {
+    if (isLoading) return;
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    const clean = email.trim().toLowerCase();
-    if (!isValidEmail(clean)) {
-      setStatus("error");
-      setErrorMsg(t.invalidEmail);
-      return;
-    }
-
-    setStatus("loading");
     try {
-      const res = await fetch("/api/backend/premium-waitlist", {
+      setIsLoading(true);
+
+      const res = await fetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: clean,
-          source: "pricing_waitlist",
-          lang,
-          intentPlan: "premium",
-          intentPriceEur: INTENT_PRICE_EUR,
-          targetInterested: TARGET_INTEREST,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-lang": lang,
+        },
+        credentials: "include",
+        body: JSON.stringify({ lang }),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json().catch(() => null);
-      if (!data?.ok) throw new Error("not ok");
+      let data: any = null;
 
-      setStatus("success");
-    } catch {
-      setStatus("error");
-      setErrorMsg(t.errorGeneric);
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || "Failed to create checkout session");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Premium checkout error:", err);
+      alert(t.checkoutError);
+      setIsLoading(false);
     }
   }
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-        <div className="border-b bg-gradient-to-b from-gray-50 to-white px-6 py-6">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs text-gray-700">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
+        <div className="border-b bg-gradient-to-b from-gray-50 to-white px-6 py-8">
+          <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs font-semibold text-gray-700">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" />
             {t.badge}
           </div>
 
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">{t.title}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-gray-700">{t.subtitle}</p>
-          <p className="text-base font-semibold">{t.priceLine}</p>
-          
-          <PremiumLiveCounter lang={lang} />
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+            {t.title}
+          </h1>
+
+          <p className="mt-3 max-w-2xl text-sm text-gray-700 sm:text-base">
+            {t.subtitle}
+          </p>
+
+          <p className="mt-4 text-base font-semibold text-gray-900">
+            {t.priceLine}
+          </p>
         </div>
 
         <div className="grid gap-6 px-6 py-6 lg:grid-cols-2">
-          {/* LEFT: form */}
           <div className="rounded-2xl border p-6">
-            <div className="text-sm text-gray-700">{t.consent}</div>
+            <div className="text-lg font-semibold text-gray-900">{t.title}</div>
+            <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
 
-            {status !== "success" ? (
-              <form onSubmit={onSubmit} className="mt-4 space-y-3">
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder={t.emailPlaceholder}
-                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none focus:ring-2"
-                    type="email"
-                    autoComplete="email"
-                  />
-                  <button
-                    disabled={status === "loading"}
-                    className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
-                    type="submit"
-                  >
-                    {status === "loading" ? "..." : t.cta}
-                  </button>
-                </div>
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={startPremiumCheckout}
+                disabled={isLoading}
+                className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoading ? t.ctaLoading : t.cta}
+              </button>
 
-                {status === "error" && <div className="text-sm text-red-600">{errorMsg}</div>}
-              </form>
-            ) : (
-              <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                <div className="font-semibold">{t.successTitle}</div>
-                <div className="mt-1 text-sm text-gray-700">{t.successBody}</div>
-              </div>
-            )}
-
-           
+              <p className="mt-3 text-sm text-gray-600">{t.subCta}</p>
+            </div>
           </div>
 
-          {/* RIGHT: features */}
           <div>
             <div className="mb-3 text-lg font-semibold">{t.featuresTitle}</div>
 

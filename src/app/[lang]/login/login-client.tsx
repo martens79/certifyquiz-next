@@ -6,7 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import type { Locale } from "@/lib/i18n";
-import { langFromPathname, getLabel } from "@/lib/i18n";
+import { langFromPathname, getLabel, withLang } from "@/lib/i18n";
+
 import {
   backendUrl,
   getToken,
@@ -49,7 +50,7 @@ export default function LoginPageClient({ initialLang }: Props) {
   }, [sp]);
 
     const googleHref = useMemo(() => {
-    const redirectTarget = redirectParam || `/${lang}/profile`;
+    const redirectTarget = redirectParam || withLang(lang, "/profile");
     return `https://api.certifyquiz.com/api/auth/google?redirect=${encodeURIComponent(
       redirectTarget
     )}&remember=${remember ? 1 : 0}`;
@@ -84,7 +85,7 @@ export default function LoginPageClient({ initialLang }: Props) {
           } catch {}
           if (!navigatingRef.current) {
             navigatingRef.current = true;
-            router.replace(redirectParam || `/${lang}/profile`);
+            router.replace(redirectParam || withLang(lang, "/profile"));
           }
         } else if (res.status === 401) {
           clearToken();
@@ -170,7 +171,7 @@ export default function LoginPageClient({ initialLang }: Props) {
       // ✅ redirect finale (una sola volta)
       if (!navigatingRef.current) {
         navigatingRef.current = true;
-        router.replace(redirectParam || `/${lang}/profile`);
+        router.replace(redirectParam || withLang(lang, "/profile"));
       }
     } catch (err: unknown) {
       const msg =
@@ -341,7 +342,7 @@ export default function LoginPageClient({ initialLang }: Props) {
             </label>
 
             <Link
-              href={`/${lang}/forgot-password`}
+              href={withLang(lang, "/forgot-password")}
               className="text-sm text-blue-600 hover:underline"
             >
               {String(
@@ -374,9 +375,9 @@ export default function LoginPageClient({ initialLang }: Props) {
             )
           )}{" "}
           <Link
-            href={`/${lang}/register`}
-            className="text-blue-600 hover:underline font-semibold"
-          >
+  href={withLang(lang, "/register")}
+  className="text-blue-600 hover:underline font-semibold"
+>
             {String(getLabel({ it: "Registrati", en: "Register" }, lang))}
           </Link>
         </p>
