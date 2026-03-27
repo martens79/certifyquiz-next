@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { authFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/quiz-types";
 
 type Props = {
@@ -79,6 +81,12 @@ const COPY = {
     fr: "Débloquez Premium – 7€/mois",
     es: "Desbloquea Premium – 7€/mes",
   },
+  ctaLoading: {
+    it: "Apertura checkout...",
+    en: "Opening checkout...",
+    fr: "Ouverture du checkout...",
+    es: "Abriendo checkout...",
+  },
   cancelNote: {
     it: "Disdici quando vuoi",
     en: "Cancel anytime",
@@ -97,6 +105,12 @@ const COPY = {
     fr: "Retour",
     es: "Volver",
   },
+  checkoutError: {
+    it: "Errore durante l'apertura del checkout. Riprova.",
+    en: "Error while opening checkout. Please try again.",
+    fr: "Erreur lors de l'ouverture du checkout. Réessayez.",
+    es: "Error al abrir el checkout. Inténtalo de nuevo.",
+  },
 } as const;
 
 function safeLang(lang?: Locale): Locale {
@@ -114,20 +128,30 @@ export default function PremiumQuestionLimitGate({
   onBack,
 }: Props) {
   const L = safeLang(lang);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function startPremiumCheckout() {
+    if (isLoading) return;
+
     try {
-      const res = await fetch("/api/backend/billing/create-checkout-session", {
+      setIsLoading(true);
+
+      const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-lang": L,
         },
-        credentials: "include",
         body: JSON.stringify({ lang: L }),
       });
 
-      const data = await res.json();
+      let data: { url?: string; error?: string } | null = null;
+
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Invalid server response");
+      }
 
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || "Failed to create checkout session");
@@ -136,7 +160,8 @@ export default function PremiumQuestionLimitGate({
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);
-      alert("Errore durante l'apertura del checkout. Riprova.");
+      alert(COPY.checkoutError[L]);
+      setIsLoading(false);
     }
   }
 
@@ -184,16 +209,18 @@ export default function PremiumQuestionLimitGate({
         <button
           type="button"
           onClick={startPremiumCheckout}
-          className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+          disabled={isLoading}
+          className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {COPY.cta[L]}
+          {isLoading ? COPY.ctaLoading[L] : COPY.cta[L]}
         </button>
 
         {onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50"
+            disabled={isLoading}
+            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {COPY.back[L]}
           </button>

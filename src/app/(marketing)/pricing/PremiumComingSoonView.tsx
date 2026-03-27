@@ -10,29 +10,35 @@ type Props = {
   forceLang?: Lang;
 };
 
+type FeatureItem = {
+  h: string;
+  p: string;
+};
+
+type CopyEntry = {
+  badge: string;
+  title: string;
+  subtitle: string;
+  priceLine: string;
+  cta: string;
+  ctaLoading: string;
+  subCta: string;
+  featuresTitle: string;
+  checkoutError: string;
+  features: FeatureItem[];
+};
+
 function getLangFromPathname(pathname: string | null): Lang {
   const seg = (pathname?.split("/")[1] || "").toLowerCase();
+
   if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
     return seg as Lang;
   }
+
   return "en";
 }
 
-const COPY: Record<
-  Lang,
-  {
-    badge: string;
-    title: string;
-    subtitle: string;
-    priceLine: string;
-    cta: string;
-    ctaLoading: string;
-    subCta: string;
-    featuresTitle: string;
-    checkoutError: string;
-    features: { h: string; p: string }[];
-  }
-> = {
+const COPY: Record<Lang, CopyEntry> = {
   it: {
     badge: "PREMIUM",
     title: "Sblocca CertifyQuiz Premium",
@@ -63,6 +69,7 @@ const COPY: Record<
       },
     ],
   },
+
   es: {
     badge: "PREMIUM",
     title: "Desbloquea CertifyQuiz Premium",
@@ -93,6 +100,7 @@ const COPY: Record<
       },
     ],
   },
+
   en: {
     badge: "PREMIUM",
     title: "Unlock CertifyQuiz Premium",
@@ -123,6 +131,7 @@ const COPY: Record<
       },
     ],
   },
+
   fr: {
     badge: "PREMIUM",
     title: "Débloquez CertifyQuiz Premium",
@@ -175,7 +184,7 @@ function FeatureCard({
 
   return (
     <div className={`rounded-2xl border p-5 shadow-sm ${variantClass}`}>
-      <div className="text-base font-semibold">{title}</div>
+      <div className="text-base font-semibold text-gray-900">{title}</div>
       <div className="mt-1 text-sm text-gray-700">{desc}</div>
     </div>
   );
@@ -187,18 +196,18 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
   const lang = useMemo<Lang>(() => {
     if (
-      forceLang &&
-      (forceLang === "it" ||
-        forceLang === "en" ||
-        forceLang === "fr" ||
-        forceLang === "es")
+      forceLang === "it" ||
+      forceLang === "es" ||
+      forceLang === "en" ||
+      forceLang === "fr"
     ) {
       return forceLang;
     }
+
     return getLangFromPathname(pathname);
   }, [forceLang, pathname]);
 
-  const t = COPY[lang] || COPY.it;
+  const t = COPY[lang];
 
   async function startPremiumCheckout() {
     if (isLoading) return;
@@ -209,12 +218,13 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-lang": lang,
         },
         body: JSON.stringify({ lang }),
       });
 
-      let data: any = null;
+      let data: { url?: string; error?: string } | null = null;
 
       try {
         data = await res.json();
@@ -236,14 +246,14 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
-      <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-        <div className="border-b bg-gradient-to-b from-gray-50 to-white px-6 py-8">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-white px-3 py-1 text-xs font-semibold text-gray-700">
+      <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             {t.badge}
           </div>
 
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
             {t.title}
           </h1>
 
@@ -254,11 +264,12 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <p className="mt-4 text-base font-semibold text-gray-900">
             {t.priceLine}
           </p>
-        </div>
+        </section>
 
-        <div className="grid gap-6 px-6 py-6 lg:grid-cols-2">
-          <div className="rounded-2xl border p-6">
+        <section className="grid gap-6 px-6 py-6 lg:grid-cols-2">
+          <div className="rounded-2xl border border-gray-200 p-6">
             <div className="text-lg font-semibold text-gray-900">{t.title}</div>
+
             <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
 
             <div className="mt-6">
@@ -276,16 +287,34 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           </div>
 
           <div>
-            <div className="mb-3 text-lg font-semibold">{t.featuresTitle}</div>
+            <div className="mb-3 text-lg font-semibold text-gray-900">
+              {t.featuresTitle}
+            </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <FeatureCard title={t.features[0].h} desc={t.features[0].p} variant="blue" />
-              <FeatureCard title={t.features[1].h} desc={t.features[1].p} variant="purple" />
-              <FeatureCard title={t.features[2].h} desc={t.features[2].p} variant="amber" />
-              <FeatureCard title={t.features[3].h} desc={t.features[3].p} variant="green" />
+              <FeatureCard
+                title={t.features[0].h}
+                desc={t.features[0].p}
+                variant="blue"
+              />
+              <FeatureCard
+                title={t.features[1].h}
+                desc={t.features[1].p}
+                variant="purple"
+              />
+              <FeatureCard
+                title={t.features[2].h}
+                desc={t.features[2].p}
+                variant="amber"
+              />
+              <FeatureCard
+                title={t.features[3].h}
+                desc={t.features[3].p}
+                variant="green"
+              />
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );
