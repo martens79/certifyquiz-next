@@ -6,6 +6,11 @@ import CertificationPracticeBox from "@/components/certifications/CertificationP
 
 type Lang = "it" | "en" | "fr" | "es";
 
+type TopicLinkItem = {
+  title: LocalizedText | string;
+  slug?: Partial<Record<Lang, string>>;
+};
+
 /* -------------------- i18n helpers -------------------- */
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
@@ -23,6 +28,11 @@ function getList<T>(rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined, l
   if (!rec) return [];
   const list = rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
   return Array.isArray(list) ? [...list] : [];
+}
+
+function isTopicLinkItem(value: unknown): value is TopicLinkItem {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  return "title" in value;
 }
 
 /* -------------------- componente -------------------- */
@@ -51,7 +61,43 @@ export default function CertificationPage({
       lang
     ) || "";
 
-  const pageTopics = topics.map((t) => pickLabel(t, lang)).filter(Boolean);
+  // ✅ Supporta sia topic legacy (solo testo) sia topic nuovi (title + slug)
+  const pageTopics = topics
+    .map((t) => {
+      // Caso 1: stringa semplice
+      if (typeof t === "string") {
+        return {
+          label: t,
+          href: null as string | null,
+        };
+      }
+
+      // Caso 2: nuovo formato con title + slug
+      if (isTopicLinkItem(t)) {
+        const label = pickLabel(t.title, lang);
+        const topicSlug =
+          t.slug?.[lang] ?? t.slug?.it ?? t.slug?.en ?? t.slug?.fr ?? t.slug?.es ?? "";
+
+        const href = topicSlug
+          ? lang === "en"
+            ? `/certifications/${data.slug}/${topicSlug}`
+            : `/${lang}/certificazioni/${data.slug}/${topicSlug}`
+          : null;
+
+        return {
+          label,
+          href,
+        };
+      }
+
+      // Caso 3: formato legacy LocalizedText
+      const label = pickLabel(t as LocalizedText, lang);
+      return {
+        label,
+        href: null as string | null,
+      };
+    })
+    .filter((t) => t.label);
 
   const learn = isLocalizedArray<string>(extraContent?.learn)
     ? getList<string>(extraContent!.learn, lang)
@@ -60,7 +106,7 @@ export default function CertificationPage({
     ? getList<string>(extraContent!.whyChoose, lang)
     : [];
 
-  // ✅ NEW: SEO booster block (current certification / 2021 / 2023)
+  // ✅ SEO booster block
   const currentCertification = isLocalizedArray<string>(extraContent?.currentCertification)
     ? getList<string>(extraContent!.currentCertification, lang)
     : [];
@@ -78,16 +124,15 @@ export default function CertificationPage({
   const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
   const examRefs = examRefsRaw.map((r) => ({ text: r?.text ?? "", url: r?.url }));
 
-    const basePath = lang === "en" ? "" : `/${lang}`;
+  const basePath = lang === "en" ? "" : `/${lang}`;
 
-  // ✅ Use quizRoute when provided (fixes cases like SQL Server: slug != quiz slug)
+  // ✅ Usa quizRoute se presente
   const quizHref =
     data.quizRoute?.[lang] ??
     data.quizRoute?.it ??
     `${basePath}/quiz/${data.slug}`;
 
-
-  // (Dev) avvisa se il quizRoute definito nel file non combacia con lo slug
+  // ✅ Warning di sviluppo
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
     if (anyQ && !anyQ.includes(`/quiz/`)) {
@@ -129,7 +174,7 @@ export default function CertificationPage({
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
-        {/* ✅ SEO booster: "current certification / 2021 / 2023" (if present in data file) */}
+        {/* ✅ SEO booster */}
         {currentCertification.length > 0 && (
           <section className="mt-4 mb-4 bg-blue-100 p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-blue-800 mb-2">
@@ -149,7 +194,7 @@ export default function CertificationPage({
           </section>
         )}
 
-        {/* CTA */}
+        {/* CTA quiz */}
         <div className="mt-2 mb-6 text-center">
           <Link
             href={quizHref}
@@ -165,7 +210,7 @@ export default function CertificationPage({
           </Link>
         </div>
 
-        {/* ✅ SEO + UX: practice box under the main CTA (shared across all certifications) */}
+        {/* Practice box */}
         <CertificationPracticeBox
           lang={lang}
           certificationTitle={pageTitle}
@@ -179,12 +224,26 @@ export default function CertificationPage({
           {pageTopics.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {({ it: "Argomenti dell'esame", en: "Exam Topics", fr: "Sujets de l'examen", es: "Temas del examen" } as const)[lang] ??
-                  "Exam Topics"}
+                {({
+                  it: "Argomenti dell'esame",
+                  en: "Exam Topics",
+                  fr: "Sujets de l'examen",
+                  es: "Temas del examen",
+                } as const)[lang] ?? "Exam Topics"}
               </h2>
+
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {pageTopics.map((t, i) => (
-                  <li key={i}>✅ {t}</li>
+                  <li key={i}>
+                    ✅{" "}
+                    {t.href ? (
+                      <Link href={t.href} className="text-blue-700 hover:underline font-medium">
+                        {t.label}
+                      </Link>
+                    ) : (
+                      t.label
+                    )}
+                  </li>
                 ))}
               </ul>
             </div>
