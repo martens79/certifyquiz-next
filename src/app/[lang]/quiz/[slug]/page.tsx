@@ -163,7 +163,30 @@ function pickCertTitle(
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 }
+function shortCertName(slug: string) {
+  const map: Record<string, string> = {
+    "isc2-cc": "ISC2 CC",
+    "comptia-a-plus": "CompTIA A+",
+    "comptia-security-plus": "CompTIA Security+",
+    "comptia-network-plus": "CompTIA Network+",
+    "comptia-itf-plus": "CompTIA ITF+",
+    "comptia-cloud-plus": "CompTIA Cloud+",
+    "aws-cloud-practitioner": "AWS Cloud Practitioner",
+    "aws-solutions-architect": "AWS Solutions Architect",
+    "microsoft-azure-fundamentals": "Azure Fundamentals",
+    "microsoft-ai": "Microsoft AI",
+    "microsoft-csharp": "C#",
+    "microsoft-sql-server": "SQL Server",
+    "ccna": "CCNA",
+    "cissp": "CISSP",
+    "ceh": "CEH",
+    "eipass": "EIPASS",
+    "ecdl": "ECDL",
+    "icdl": "ICDL",
+  };
 
+  return map[slug] ?? titleCase(slug.replace(/-/g, " "));
+}
 // Testi base per SEO pagina topics per cert
 const SEO_BASE: Record<Locale, { quizLabel: string; desc: string }> = {
   it: { quizLabel: "Quiz", desc: "Allenati con i topic ufficiali di questa certificazione." },
@@ -235,7 +258,7 @@ export async function generateMetadata({
 
   const base = SEO_BASE[L];
   const resolvedSlug = resolveQuizSlug(slug);
-  const certName = titleCase(resolvedSlug.replace(/-/g, " "));
+  const certName = shortCertName(resolvedSlug);
   const title = `${base.quizLabel} — ${certName}`;
   const description = base.desc;
 
@@ -280,6 +303,7 @@ export default async function QuizTopicsPage({
 
   const cert = getCertBySlug(resolvedSlug);
   const certId = cert?.id;
+  
 
   if (!certId) {
     const list = [...CERT_SLUGS].slice().sort();
