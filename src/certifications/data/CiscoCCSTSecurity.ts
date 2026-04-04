@@ -2,7 +2,7 @@
 // Data-only per CertificationPage (server). Nessun JSX/Router.
 
 const CISCO_CCST_CYBERSECURITY = {
-  slug: "cisco-ccst-security",
+  slug: "cisco-ccst-cybersecurity",
   imageUrl: "/images/certifications/ccst_cybersecurity.png", // metti il logo in /public/images/certifications/ccst_cybersecurity.png
   officialUrl:
     "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-cybersecurity.html",
@@ -263,12 +263,11 @@ const CISCO_CCST_CYBERSECURITY = {
 
   // rotte localizzate per i pulsanti
   quizRoute: {
-   it: "/it/quiz/cisco-ccst-security",
-    en: "/en/quiz/cisco-ccst-security",
-    fr: "/fr/quiz/cisco-ccst-security",
-    es: "/es/quiz/cisco-ccst-security",
-
-  },
+  it: "/it/quiz/cisco-ccst-cybersecurity",
+  en: "/en/quiz/cisco-ccst-cybersecurity",
+  fr: "/fr/quiz/cisco-ccst-cybersecurity",
+  es: "/es/quiz/cisco-ccst-cybersecurity",
+},
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",
