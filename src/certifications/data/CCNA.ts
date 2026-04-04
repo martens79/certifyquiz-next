@@ -31,38 +31,78 @@ const CCNA = {
   },
 
   // ✅ Topics più “syllabus-like” (più credibili per CCNA 200-301)
-  topics: [
-    {
-      it: "Networking fundamentals (OSI, TCP/IP, switching di base)",
-      en: "Networking Fundamentals (OSI, TCP/IP, basic switching)",
-      fr: "Fondamentaux réseau (OSI, TCP/IP, switching)",
-      es: "Fundamentos de redes (OSI, TCP/IP, switching)",
+ topics: [
+  {
+    title: {
+      it: "Hardware",
+      en: "Hardware",
+      fr: "Matériel",
+      es: "Hardware",
     },
-    {
-      it: "Network access (VLAN, trunk, STP, WLAN)",
-      en: "Network Access (VLANs, trunking, STP, WLAN)",
-      fr: "Accès réseau (VLAN, trunk, STP, WLAN)",
-      es: "Acceso a red (VLAN, trunk, STP, WLAN)",
+    slug: {
+      it: "hardware",
+      en: "hardware",
+      fr: "materiel",
+      es: "hardware",
     },
-    {
-      it: "IP connectivity (routing, OSPF, IPv4/IPv6, subnetting)",
-      en: "IP Connectivity (routing, OSPF, IPv4/IPv6, subnetting)",
-      fr: "Connectivité IP (routage, OSPF, IPv4/IPv6, subnetting)",
-      es: "Conectividad IP (routing, OSPF, IPv4/IPv6, subnetting)",
+  },
+  {
+    title: {
+      it: "Sistemi operativi",
+      en: "Operating Systems",
+      fr: "Systèmes d'exploitation",
+      es: "Sistemas operativos",
     },
-    {
-      it: "IP services (NAT, DHCP, DNS, NTP, QoS di base)",
-      en: "IP Services (NAT, DHCP, DNS, NTP, basic QoS)",
-      fr: "Services IP (NAT, DHCP, DNS, NTP, QoS)",
-      es: "Servicios IP (NAT, DHCP, DNS, NTP, QoS)",
+    slug: {
+      it: "sistemi-operativi",
+      en: "operating-systems",
+      fr: "systemes-dexploitation",
+      es: "sistemas-operativos",
     },
-    {
-      it: "Security & automation (ACL, device hardening, API/automation basics)",
-      en: "Security & Automation (ACLs, hardening, API/automation basics)",
-      fr: "Sécurité & automatisation (ACL, durcissement, bases API/automatisation)",
-      es: "Seguridad y automatización (ACL, hardening, bases de API/automatización)",
+  },
+  {
+    title: {
+      it: "Networking",
+      en: "Networking",
+      fr: "Réseautage",
+      es: "Redes",
     },
-  ],
+    slug: {
+      it: "networking",
+      en: "networking",
+      fr: "reseautage",
+      es: "redes",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza",
+      en: "Security",
+      fr: "Sécurité",
+      es: "Seguridad",
+    },
+    slug: {
+      it: "sicurezza",
+      en: "security",
+      fr: "securite",
+      es: "seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Supporto tecnico",
+      en: "Technical Support",
+      fr: "Support technique",
+      es: "Soporte técnico",
+    },
+    slug: {
+      it: "supporto-tecnico",
+      en: "technical-support",
+      fr: "support-technique",
+      es: "soporte-tecnico",
+    },
+  },
+],
 
   extraContent: {
     learn: {
