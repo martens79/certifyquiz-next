@@ -27,34 +27,74 @@ const AWS_CLOUD_PRACTITIONER = {
 
   topics: [
     {
-      it: "Concetti di base del cloud computing",
-      en: "Cloud Computing Fundamentals",
-      fr: "Notions fondamentales du cloud computing",
-      es: "Conceptos básicos de la computación en la nube",
+      title: {
+        it: "Concetti di base del cloud computing",
+        en: "Cloud Computing Fundamentals",
+        fr: "Notions fondamentales du cloud computing",
+        es: "Conceptos básicos de la computación en la nube",
+      },
+      slug: {
+        it: "concetti-di-base-del-cloud-computing",
+        en: "cloud-computing-fundamentals",
+        fr: "notions-fondamentales-du-cloud-computing",
+        es: "conceptos-basicos-de-la-computacion-en-la-nube",
+      },
     },
     {
-      it: "Servizi principali AWS (EC2, S3, RDS)",
-      en: "Core AWS Services (EC2, S3, RDS)",
-      fr: "Services principaux d'AWS (EC2, S3, RDS)",
-      es: "Servicios principales de AWS (EC2, S3, RDS)",
+      title: {
+        it: "Servizi principali AWS",
+        en: "Core AWS Services",
+        fr: "Services principaux d'AWS",
+        es: "Servicios principales de AWS",
+      },
+      slug: {
+        it: "servizi-principali-aws",
+        en: "core-aws-services",
+        fr: "services-principaux-daws",
+        es: "servicios-principales-de-aws",
+      },
     },
     {
-      it: "Modello di responsabilità condivisa",
-      en: "Shared Responsibility Model",
-      fr: "Modèle de responsabilité partagée",
-      es: "Modelo de responsabilidad compartida",
+      title: {
+        it: "Modello di responsabilità condivisa",
+        en: "Shared Responsibility Model",
+        fr: "Modèle de responsabilité partagée",
+        es: "Modelo de responsabilidad compartida",
+      },
+      slug: {
+        it: "modello-di-responsabilita-condivisa",
+        en: "shared-responsibility-model",
+        fr: "modele-de-responsabilite-partagee",
+        es: "modelo-de-responsabilidad-compartida",
+      },
     },
     {
-      it: "Sicurezza e conformità in AWS",
-      en: "Security and Compliance in AWS",
-      fr: "Sécurité et conformité dans AWS",
-      es: "Seguridad y cumplimiento en AWS",
+      title: {
+        it: "Sicurezza e conformità in AWS",
+        en: "Security and Compliance in AWS",
+        fr: "Sécurité et conformité dans AWS",
+        es: "Seguridad y cumplimiento en AWS",
+      },
+      slug: {
+        it: "sicurezza-e-conformita-in-aws",
+        en: "security-and-compliance-in-aws",
+        fr: "securite-et-conformite-dans-aws",
+        es: "seguridad-y-cumplimiento-en-aws",
+      },
     },
     {
-      it: "Prezzi e supporto AWS",
-      en: "AWS Pricing and Support",
-      fr: "Tarification et support AWS",
-      es: "Precios y soporte de AWS",
+      title: {
+        it: "Prezzi e supporto AWS",
+        en: "AWS Pricing and Support",
+        fr: "Tarification et support AWS",
+        es: "Precios y soporte de AWS",
+      },
+      slug: {
+        it: "prezzi-e-supporto-aws",
+        en: "aws-pricing-and-support",
+        fr: "tarification-et-support-aws",
+        es: "precios-y-soporte-de-aws",
+      },
     },
   ],
 
@@ -77,6 +117,7 @@ const AWS_CLOUD_PRACTITIONER = {
         "Comprenderás el modelo de responsabilidad compartida, los precios, la seguridad y casos de uso comunes.",
       ],
     },
+
     examReference: {
       it: [
         {
