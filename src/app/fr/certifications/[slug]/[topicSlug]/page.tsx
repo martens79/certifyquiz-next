@@ -3,37 +3,27 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 
-type Lang = "en";
-
-function getLabels(lang: Lang) {
+function getLabels() {
   return {
-    back: {
-      en: "← Back to certification",
-    }[lang],
-
-    startQuiz: {
-      en: "🚀 Start quiz",
-    }[lang],
-
-    availableQuestions: {
-      en: "Available questions",
-    }[lang],
-
-    relatedTopics: {
-      en: "Related topics",
-    }[lang],
-
-    whatYouWillLearn: {
-      en: "What you will learn in this topic",
-    }[lang],
-
-    whyItMatters: {
-      en: "Why this topic matters",
-    }[lang],
-
-    practiceIntro: {
-      en: "This topic is part of the",
-    }[lang],
+    back: "← Retour à la certification",
+    startQuiz: "🚀 Commencer le quiz",
+    availableQuestions: "Questions disponibles",
+    relatedTopics: "Sujets liés",
+    whatYouWillLearn: "Ce que vous apprendrez dans ce sujet",
+    whyItMatters: "Pourquoi ce sujet est important",
+    practiceIntro: "Ce sujet fait partie du parcours",
+    learnText1:
+      "Sur cette page, vous pouvez mieux comprendre ce que couvre ce sujet, quels concepts sont les plus importants et pourquoi il est utile de s’exercer avec un quiz dédié avant de passer à l’examen complet ou aux quiz mixtes.",
+    learnText2: "Le quiz sur",
+    learnText3:
+      "vous aide à vous concentrer sur des notions spécifiques, des définitions, des scénarios pratiques et des concepts récurrents qui peuvent apparaître pendant la préparation à la certification.",
+    whyText1: "Bien étudier",
+    whyText2:
+      "est important, car ce sujet contribue à la compréhension globale de la certification",
+    whyText3:
+      "Une bonne préparation sur chaque sujet facilite la gestion des questions théoriques et pratiques, tout en améliorant la confiance et la rapidité de réponse.",
+    whyText4:
+      "S’entraîner sujet par sujet vous permet aussi d’identifier plus précisément vos points faibles, de mieux réviser et de construire une préparation plus solide dans le temps.",
   };
 }
 
@@ -50,13 +40,13 @@ export async function generateMetadata({
   const data = await getTopicPageData({
     certSlug: slug,
     topicSlug,
-    lang: "en",
+    lang: "fr",
   });
 
   if (!data) {
     return {
-      title: "Topic | CertifyQuiz",
-      description: "Practice certification topics on CertifyQuiz.",
+      title: "Sujet | CertifyQuiz",
+      description: "Pratiquez les sujets de certification sur CertifyQuiz.",
     };
   }
 
@@ -64,12 +54,12 @@ export async function generateMetadata({
     title: `${data.topic.title} | ${data.certification.title} | CertifyQuiz`,
     description: data.topic.description,
     alternates: {
-      canonical: `/certifications/${slug}/${topicSlug}`,
+      canonical: `/fr/certifications/${slug}/${topicSlug}`,
     },
   };
 }
 
-export default async function TopicPageEn({
+export default async function TopicPageFr({
   params,
 }: {
   params: Promise<{
@@ -82,17 +72,17 @@ export default async function TopicPageEn({
   const data = await getTopicPageData({
     certSlug: slug,
     topicSlug,
-    lang: "en",
+    lang: "fr",
   });
 
   if (!data) return notFound();
 
-  const labels = getLabels("en");
+  const labels = getLabels();
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <Link
-        href={`/certifications/${slug}`}
+        href={`/fr/certifications/${slug}`}
         className="text-sm text-blue-600 hover:underline"
       >
         {labels.back}
@@ -108,7 +98,7 @@ export default async function TopicPageEn({
         </p>
 
         <Link
-          href={`/quiz/topic/${data.topic.id}`}
+          href={`/fr/quiz/topic/${data.topic.id}`}
           className="inline-block bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 mb-6"
         >
           {labels.startQuiz}
@@ -126,15 +116,12 @@ export default async function TopicPageEn({
           {labels.whatYouWillLearn}
         </h2>
         <p className="text-slate-700 leading-7">
-          {labels.practiceIntro} <strong>{data.certification.title}</strong> path.
-          This page helps you understand what this topic covers, which concepts
-          matter most, and why practicing with a focused quiz can improve your
-          exam preparation.
+          {labels.practiceIntro} <strong>{data.certification.title}</strong>.{" "}
+          {labels.learnText1}
         </p>
         <p className="text-slate-700 leading-7 mt-4">
-          The quiz on <strong>{data.topic.title}</strong> helps you focus on
-          definitions, practical scenarios, recurring concepts, and the kind of
-          knowledge that often appears during certification study and review.
+          {labels.learnText2} <strong>{data.topic.title}</strong>{" "}
+          {labels.learnText3}
         </p>
       </section>
 
@@ -143,17 +130,11 @@ export default async function TopicPageEn({
           {labels.whyItMatters}
         </h2>
         <p className="text-slate-700 leading-7">
-          Studying <strong>{data.topic.title}</strong> properly is important
-          because it strengthens your overall understanding of the{" "}
-          <strong>{data.certification.title}</strong> certification. Good topic-level
-          preparation makes it easier to answer both theoretical and practical
-          questions with more confidence and speed.
+          {labels.whyText1} <strong>{data.topic.title}</strong>{" "}
+          {labels.whyText2} <strong>{data.certification.title}</strong>.{" "}
+          {labels.whyText3}
         </p>
-        <p className="text-slate-700 leading-7 mt-4">
-          Training one topic at a time also helps you identify weak points,
-          review more efficiently, and build a more structured preparation path
-          before moving to mixed quizzes or full exam simulations.
-        </p>
+        <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
       </section>
 
       <section>
@@ -165,7 +146,7 @@ export default async function TopicPageEn({
           {data.relatedTopics.map((t) => (
             <Link
               key={t.id}
-              href={`/certifications/${slug}/${t.slug}`}
+              href={`/fr/certifications/${slug}/${t.slug}`}
               className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
             >
               <div className="font-semibold text-slate-900">{t.title}</div>
