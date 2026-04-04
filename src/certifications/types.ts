@@ -1,5 +1,8 @@
 // src/certifications/types.ts
 
+// Lingue supportate
+export type Lang = "it" | "en" | "fr" | "es";
+
 // Oggetto localizzato immutabile
 export type LocalizedText = Readonly<{
   it: string;
@@ -14,6 +17,18 @@ export type LocalizedRoute = Readonly<{
   fr: string;
   es: string;
 }>;
+
+// ✅ Nuovo formato topic con title + slug
+export type TopicLinkItem = Readonly<{
+  title: LocalizedText | string;
+  slug?: Partial<Record<Lang, string>>;
+}>;
+
+// ✅ Supporta:
+// - formato vecchio: LocalizedText
+// - eventuale stringa semplice
+// - formato nuovo: { title, slug }
+export type CertificationTopic = LocalizedText | string | TopicLinkItem;
 
 export type ExtraContent = {
   // liste immutabili per ogni lingua
@@ -49,8 +64,8 @@ export type CertificationData = {
   level: LocalizedText;
   description: LocalizedText;
 
-  // 👇 accetta array readonly (compatibile con `as const`)
-  topics: ReadonlyArray<LocalizedText>;
+  // ✅ ora accetta sia il vecchio formato sia il nuovo con slug
+  topics: ReadonlyArray<CertificationTopic>;
 
   extraContent?: ExtraContent;
 

@@ -1,7 +1,11 @@
 // src/components/CertificationPage.tsx
 import Image from "next/image";
 import Link from "next/link";
-import type { CertificationData, LocalizedText } from "@/certifications/types";
+import type {
+  CertificationData,
+  LocalizedText,
+  CertificationTopic,
+} from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 
 type Lang = "it" | "en" | "fr" | "es";
@@ -35,6 +39,53 @@ function isTopicLinkItem(value: unknown): value is TopicLinkItem {
   return "title" in value;
 }
 
+function isLocalizedText(value: unknown): value is LocalizedText {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+
+  const rec = value as Record<string, unknown>;
+  return (
+    typeof rec.it === "string" &&
+    typeof rec.en === "string" &&
+    typeof rec.fr === "string" &&
+    typeof rec.es === "string"
+  );
+}
+
+function toLocalizedText(topic: CertificationTopic): LocalizedText {
+  if (typeof topic === "string") {
+    return {
+      it: topic,
+      en: topic,
+      fr: topic,
+      es: topic,
+    };
+  }
+
+  if (isTopicLinkItem(topic)) {
+    if (typeof topic.title === "string") {
+      return {
+        it: topic.title,
+        en: topic.title,
+        fr: topic.title,
+        es: topic.title,
+      };
+    }
+
+    return topic.title;
+  }
+
+  if (isLocalizedText(topic)) {
+    return topic;
+  }
+
+  return {
+    it: "",
+    en: "",
+    fr: "",
+    es: "",
+  };
+}
+
 /* -------------------- componente -------------------- */
 export default function CertificationPage({
   lang,
@@ -61,10 +112,9 @@ export default function CertificationPage({
       lang
     ) || "";
 
-  // ✅ Supporta sia topic legacy (solo testo) sia topic nuovi (title + slug)
+  // ✅ Topic box: supporta sia legacy sia nuovo formato con slug
   const pageTopics = topics
     .map((t) => {
-      // Caso 1: stringa semplice
       if (typeof t === "string") {
         return {
           label: t,
@@ -72,7 +122,6 @@ export default function CertificationPage({
         };
       }
 
-      // Caso 2: nuovo formato con title + slug
       if (isTopicLinkItem(t)) {
         const label = pickLabel(t.title, lang);
         const topicSlug =
@@ -90,35 +139,43 @@ export default function CertificationPage({
         };
       }
 
-      // Caso 3: formato legacy LocalizedText
-      const label = pickLabel(t as LocalizedText, lang);
+      if (isLocalizedText(t)) {
+        return {
+          label: pickLabel(t, lang),
+          href: null as string | null,
+        };
+      }
+
       return {
-        label,
+        label: "",
         href: null as string | null,
       };
     })
     .filter((t) => t.label);
 
+  // ✅ Practice box: normalizza sempre al formato LocalizedText
+  const practiceBoxTopics = topics.map((t) => toLocalizedText(t));
+
   const learn = isLocalizedArray<string>(extraContent?.learn)
-    ? getList<string>(extraContent!.learn, lang)
-    : [];
-  const whyChoose = isLocalizedArray<string>(extraContent?.whyChoose)
-    ? getList<string>(extraContent!.whyChoose, lang)
+    ? getList<string>(extraContent.learn, lang)
     : [];
 
-  // ✅ SEO booster block
+  const whyChoose = isLocalizedArray<string>(extraContent?.whyChoose)
+    ? getList<string>(extraContent.whyChoose, lang)
+    : [];
+
   const currentCertification = isLocalizedArray<string>(extraContent?.currentCertification)
-    ? getList<string>(extraContent!.currentCertification, lang)
+    ? getList<string>(extraContent.currentCertification, lang)
     : [];
 
   type FaqItem = { q: string; a: string };
   const faqRaw = isLocalizedArray<FaqItem>(extraContent?.faq)
-    ? getList<FaqItem>(extraContent!.faq, lang)
+    ? getList<FaqItem>(extraContent.faq, lang)
     : [];
 
   type RefItem = { text: string; url: string };
   const examRefsRaw = isLocalizedArray<RefItem>(extraContent?.examReference)
-    ? getList<RefItem>(extraContent!.examReference, lang)
+    ? getList<RefItem>(extraContent.examReference, lang)
     : [];
 
   const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
@@ -126,13 +183,8 @@ export default function CertificationPage({
 
   const basePath = lang === "en" ? "" : `/${lang}`;
 
-  // ✅ Usa quizRoute se presente
-  const quizHref =
-    data.quizRoute?.[lang] ??
-    data.quizRoute?.it ??
-    `${basePath}/quiz/${data.slug}`;
+  const quizHref = data.quizRoute?.[lang] ?? data.quizRoute?.it ?? `${basePath}/quiz/${data.slug}`;
 
-  // ✅ Warning di sviluppo
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
     if (anyQ && !anyQ.includes(`/quiz/`)) {
@@ -174,7 +226,7 @@ export default function CertificationPage({
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
-        {/* ✅ SEO booster */}
+        {/* SEO booster */}
         {currentCertification.length > 0 && (
           <section className="mt-4 mb-4 bg-blue-100 p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-blue-800 mb-2">
@@ -215,7 +267,7 @@ export default function CertificationPage({
           lang={lang}
           certificationTitle={pageTitle}
           quizHref={quizHref}
-          topics={topics}
+          topics={practiceBoxTopics}
         />
 
         {/* Blocchi */}
