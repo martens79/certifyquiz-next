@@ -11,8 +11,6 @@ import { locales, isLocale, type Locale } from "@/lib/i18n";
 import type { CertificationData } from "@/certifications/types";
 import { categoryPath, type CategoryKey } from "@/lib/paths";
 
-
-
 export const runtime = "nodejs";
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -35,6 +33,12 @@ type TopicRow = {
   description_en?: string;
   description_fr?: string;
   description_es?: string;
+
+  // ✅ nuovi slug topic per linkare la TopicPage SEO
+  slug_it?: string;
+  slug_en?: string;
+  slug_fr?: string;
+  slug_es?: string;
 };
 
 // ─────────────────── Helpers ───────────────────
@@ -94,21 +98,39 @@ function quizMixedPath(lang: Locale, slug: string) {
   return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mixed`;
 }
 
-
 function certPath(lang: Locale, slug: string) {
   const base = lang === "en" ? "" : `/${lang}`;
   const seg = lang === "it" ? "certificazioni" : lang === "es" ? "certificaciones" : "certifications";
   return `${base}/${seg}/${slug}`;
 }
 
+// ✅ builder URL TopicPage SEO
+function topicPagePath(lang: Locale, certSlug: string, topic: TopicRow) {
+  const topicSlug =
+    lang === "en"
+      ? topic.slug_en || topic.slug_it
+      : lang === "fr"
+      ? topic.slug_fr || topic.slug_it
+      : lang === "es"
+      ? topic.slug_es || topic.slug_it
+      : topic.slug_it;
+
+  if (!topicSlug) return null;
+
+  const base = lang === "en" ? "" : `/${lang}`;
+  const seg =
+    lang === "it"
+      ? "certificazioni"
+      : lang === "es"
+      ? "certificaciones"
+      : "certifications";
+
+  return `${base}/${seg}/${certSlug}/${topicSlug}`;
+}
+
 // ✅ builder URL quiz mock exam
 function quizMockExamPath(lang: Locale, slug: string) {
   return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mock-exam`;
-}
-
-// ✅ builder URL quiz topic (per ID topic)
-function quizTopicPath(lang: Locale, topicId: number) {
-  return `${langPrefix(lang)}/quiz/topic/${topicId}`;
 }
 
 // ✅ localizzazione topic: preferisci lingua corrente, fallback su base/it
@@ -132,17 +154,9 @@ function pickCertTitle(
 ) {
   const t = cert?.title;
   if (t) {
-    return (
-      t[lang] ??
-      t.it ??
-      t.en ??
-      t.fr ??
-      t.es ??
-      ""
-    );
+    return t[lang] ?? t.it ?? t.en ?? t.fr ?? t.es ?? "";
   }
 
-  // fallback estremo (se mai manca dal registry)
   return fallbackSlug
     .replace(/-/g, " ")
     .split(" ")
@@ -165,13 +179,9 @@ const ogLocale = (lang: Locale) =>
 function resolveQuizSlug(inputRaw: string): string {
   const input = (inputRaw || "").trim().toLowerCase();
 
-  // Tutte le chiavi DEVONO puntare a slug che ESISTONO nel registry (CERTS)
   const ALIASES: Record<string, string> = {
-    // --- I due che ti rimangono ---
     itfplus: "comptia-itf-plus",
     "cisco-ccna": "ccna",
-
-    // --- screenshot / link vecchi comuni ---
     ecdl: "icdl",
     "mysql-certification": "mysql",
     javascript: "javascript-developer",
@@ -183,17 +193,15 @@ function resolveQuizSlug(inputRaw: string): string {
     "aws-cloud": "aws-cloud-practitioner",
     "ai-fundamentals": "microsoft-ai-fundamentals",
     "azure-fundamentals": "microsoft-azure-fundamentals",
-
-    // (se in giro ti capita anche questa)
     "eipass-basic": "eipass",
   };
 
   return ALIASES[input] ?? input;
 }
+
 function categoryLabel(key: CategoryKey, lang: Locale) {
   const map: Record<CategoryKey, { it: string; en: string; fr: string; es: string }> = {
     default: { it: "Categoria", en: "Category", fr: "Catégorie", es: "Categoría" },
-
     base: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" },
     sicurezza: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
     reti: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" },
@@ -208,6 +216,13 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
   return o[lang] ?? o.it;
 }
 
+function titleCase(s: string) {
+  return s
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 // ─────────────────── Metadata ───────────────────
 export async function generateMetadata({
@@ -219,21 +234,8 @@ export async function generateMetadata({
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const base = SEO_BASE[L];
-
-  // ✅ risolvi slug per canonical/hreflang
   const resolvedSlug = resolveQuizSlug(slug);
-
   const certName = titleCase(resolvedSlug.replace(/-/g, " "));
-
-
- function titleCase(s: string) {
-  return s
-    .split(" ")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
-
   const title = `${base.quizLabel} — ${certName}`;
   const description = base.desc;
 
@@ -274,10 +276,8 @@ export default async function QuizTopicsPage({
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
-  // ✅ risolvi slug (compat) PRIMA di leggere dal registry
   const resolvedSlug = resolveQuizSlug(slug);
 
-  // ✅ ID ricavato dal registry (single source of truth)
   const cert = getCertBySlug(resolvedSlug);
   const certId = cert?.id;
 
@@ -313,38 +313,18 @@ export default async function QuizTopicsPage({
     );
   }
 
-// ✅ categoria e stile basati sullo slug risolto
-const rawCategoryKey = (CERT_CATEGORY_BY_SLUG[resolvedSlug] ?? "default") as CategoryKey;
+  const rawCategoryKey = (CERT_CATEGORY_BY_SLUG[resolvedSlug] ?? "default") as CategoryKey;
+  const styleCategoryKey: CategoryKey = rawCategoryKey === "default" ? "base" : rawCategoryKey;
+  const css = getCategoryStyle(styleCategoryKey);
 
-// per stile: se "default" non è gestito in getCategoryStyle, fallback su "base"
-const styleCategoryKey: CategoryKey = rawCategoryKey === "default" ? "base" : rawCategoryKey;
+  const topics = await fetchTopics(certId);
+  const categoryName = categoryLabel(rawCategoryKey, L);
+  const base = SEO_BASE[L];
+  const categoryHref =
+    rawCategoryKey === "default" ? `${langPrefix(L)}/quiz-home` : categoryPath(L, rawCategoryKey);
 
-const css = getCategoryStyle(styleCategoryKey);
+  const certName = pickCertTitle(cert, L, resolvedSlug);
 
-const topics = await fetchTopics(certId);
-
-// ✅ label categoria tradotta (qui puoi mostrare anche "Categoria" se default)
-const categoryName = categoryLabel(rawCategoryKey, L);
-
-const base = SEO_BASE[L];
-
-// ✅ link: se default, rimanda a quiz-home (localizzato), altrimenti alla categoria
-const categoryHref =
-  rawCategoryKey === "default" ? `${langPrefix(L)}/quiz-home` : categoryPath(L, rawCategoryKey);
-
-
-  function titleCase(s: string) {
-  return s
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
-
- const certName = titleCase(resolvedSlug.replace(/-/g, " "));
-
-
-  // CTA "Quiz misto" label per lingua
   const mixedLabel =
     L === "it" ? "Quiz misto" : L === "en" ? "Mixed quiz" : L === "fr" ? "Quiz mixte" : "Quiz mixto";
 
@@ -366,7 +346,6 @@ const categoryHref =
       ? "Lancer le quiz mixte →"
       : "Iniciar quiz mixto →";
 
-  // CTA "Mock exam"
   const mockLabel = "Mock exam";
   const mockDesc =
     L === "it"
@@ -386,90 +365,84 @@ const categoryHref =
       ? "Démarrer le mock exam 🎯 →"
       : "Iniciar mock exam 🎯 →";
 
-// CTA secondaria: link alla pagina certificazione
-const certBtnLabel =
-  L === "it"
-    ? "Pagina certificazione"
-    : L === "en"
-    ? "View certification"
-    : L === "fr"
-    ? "Voir la certification"
-    : "Ver certificación";
+  const certBtnLabel =
+    L === "it"
+      ? "Pagina certificazione"
+      : L === "en"
+      ? "View certification"
+      : L === "fr"
+      ? "Voir la certification"
+      : "Ver certificación";
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-     <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
-  {/* Desktop (md+): LEFT CTA — CENTER title — RIGHT badge */}
-  <div className="relative hidden md:flex md:items-center md:mb-2">
-    <div className="absolute left-0">
-      <Link
-        href={certPath(L, resolvedSlug)}
-        className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
-        prefetch={false}
-      >
-        {certBtnLabel}
-      </Link>
-    </div>
+      <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
+        {/* Desktop (md+): LEFT CTA — CENTER title — RIGHT badge */}
+        <div className="relative hidden md:flex md:items-center md:mb-2">
+          <div className="absolute left-0">
+            <Link
+              href={certPath(L, resolvedSlug)}
+              className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
+              prefetch={false}
+            >
+              {certBtnLabel}
+            </Link>
+          </div>
 
-    <h1 className="mx-auto text-2xl font-bold text-center">
-      {base.quizLabel} — {certName}
-    </h1>
+          <h1 className="mx-auto text-2xl font-bold text-center">
+            {base.quizLabel} — {certName}
+          </h1>
 
-   <div className="absolute right-0">
-  <Link
-    href={categoryHref}
-    className={`inline-flex items-center gap-2 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm bg-white/80 border hover:bg-white transition ${
-      css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
-    }`}
-    title={categoryName}
-  >
-    <span className="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
-    {categoryName}
-  </Link>
-</div>
+          <div className="absolute right-0">
+            <Link
+              href={categoryHref}
+              className={`inline-flex items-center gap-2 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm bg-white/80 border hover:bg-white transition ${
+                css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
+              }`}
+              title={categoryName}
+            >
+              <span className="inline-block h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+              {categoryName}
+            </Link>
+          </div>
+        </div>
 
-  </div>
+        {/* Mobile (<md): title centered + pills centered below */}
+        <div className="md:hidden">
+          <h1 className="text-2xl font-bold text-center">
+            {base.quizLabel} — {certName}
+          </h1>
 
-  {/* Mobile (<md): title centered + pills centered below */}
-  <div className="md:hidden">
-    <h1 className="text-2xl font-bold text-center">
-      {base.quizLabel} — {certName}
-    </h1>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <Link
+              href={certPath(L, resolvedSlug)}
+              className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
+              prefetch={false}
+            >
+              {certBtnLabel}
+            </Link>
 
-    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-      <Link
-        href={certPath(L, resolvedSlug)}
-        className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
-        prefetch={false}
-      >
-        {certBtnLabel}
-      </Link>
+            <span
+              className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
+                css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
+              }`}
+            >
+              {categoryName}
+            </span>
+          </div>
+        </div>
 
-      <span
-        className={`text-xs font-semibold px-3 py-1 rounded-full shadow-sm bg-white/70 border ${
-          css.header.split(" ").find((c) => c.startsWith("border-")) ?? "border-gray-200"
-        }`}
-      >
-        {categoryName}
-      </span>
-    </div>
-  </div>
-
-  {/* Subtitle */}
-  <p className="text-sm opacity-70 text-center mt-3">
-    {L === "it"
-      ? `${topics.length} topic disponibili`
-      : L === "en"
-      ? `${topics.length} topics available`
-      : L === "fr"
-      ? `${topics.length} sujets disponibles`
-      : `${topics.length} temas disponibles`}
-  </p>
-</header>
-
-
-
-
+        {/* Subtitle */}
+        <p className="text-sm opacity-70 text-center mt-3">
+          {L === "it"
+            ? `${topics.length} topic disponibili`
+            : L === "en"
+            ? `${topics.length} topics available`
+            : L === "fr"
+            ? `${topics.length} sujets disponibles`
+            : `${topics.length} temas disponibles`}
+        </p>
+      </header>
 
       {/* 🔹 BOX QUIZ MISTO + MOCK EXAM (stessa riga) */}
       <section className="mb-8">
@@ -523,6 +496,7 @@ const certBtnLabel =
           {topics.map((t) => {
             const title = pickTopicField(t, L, "title") || `Topic ${t.id}`;
             const desc = pickTopicField(t, L, "description") || "";
+            const topicHref = topicPagePath(L, resolvedSlug, t);
 
             const ctaLabel =
               L === "it"
@@ -541,9 +515,13 @@ const certBtnLabel =
                 <div className="font-semibold">{title}</div>
                 {desc && <div className="text-sm opacity-80 mt-1">{desc}</div>}
 
-                <Link href={quizTopicPath(L, t.id)} className="inline-block mt-3 text-blue-700 underline">
-                  {ctaLabel}
-                </Link>
+                {topicHref ? (
+                  <Link href={topicHref} className="inline-block mt-3 text-blue-700 underline">
+                    {ctaLabel}
+                  </Link>
+                ) : (
+                  <span className="inline-block mt-3 text-gray-400">{ctaLabel}</span>
+                )}
               </li>
             );
           })}
