@@ -30,12 +30,105 @@ const MicrosoftVirtualization = {
   },
 
   topics: [
-    { it: "Installazione di Hyper-V", en: "Installing Hyper-V", fr: "Installation de Hyper-V", es: "Instalación de Hyper-V" },
-    { it: "Creazione di VM", en: "Creating VMs", fr: "Création de VM", es: "Creación de VM" },
-    { it: "Gestione risorse virtuali", en: "Managing virtual resources", fr: "Gestion des ressources virtuelles", es: "Gestión de recursos virtuales" },
-    { it: "Virtualizzazione storage e rete", en: "Storage and network virtualization", fr: "Virtualisation du stockage et du réseau", es: "Virtualización de almacenamiento y red" },
-    { it: "Strumenti avanzati Microsoft", en: "Advanced Microsoft tools", fr: "Outils Microsoft avancés", es: "Herramientas avanzadas de Microsoft" },
-  ],
+  {
+    title: {
+      it: "Introduzione e gestione di Hyper-V",
+      en: "Introduction and Management of Hyper-V",
+      fr: "Introduction et gestion de Hyper-V",
+      es: "Introducción y gestión de Hyper-V",
+    },
+    slug: {
+      it: "introduzione-e-gestione-di-hyper-v",
+      en: "introduction-and-management-of-hyper-v",
+      fr: "introduction-et-gestion-de-hyper-v",
+      es: "introduccion-y-gestion-de-hyper-v",
+    },
+  },
+  {
+    title: {
+      it: "Configurazione di switch virtuali",
+      en: "Configuration of Virtual Switches",
+      fr: "Configuration des commutateurs virtuels",
+      es: "Configuración de switches virtuales",
+    },
+    slug: {
+      it: "configurazione-di-switch-virtuali",
+      en: "configuration-of-virtual-switches",
+      fr: "configuration-des-commutateurs-virtuels",
+      es: "configuracion-de-switches-virtuales",
+    },
+  },
+  {
+    title: {
+      it: "Opzioni di archiviazione in ambienti virtuali",
+      en: "Storage Options in Virtual Environments",
+      fr: "Options de stockage dans les environnements virtuels",
+      es: "Opciones de almacenamiento en entornos virtuales",
+    },
+    slug: {
+      it: "opzioni-di-archiviazione-in-ambienti-virtuali",
+      en: "storage-options-in-virtual-environments",
+      fr: "options-de-stockage-dans-les-environnements-virtuels",
+      es: "opciones-de-almacenamiento-en-entornos-virtuales",
+    },
+  },
+  {
+    title: {
+      it: "Funzionalità di replica per alta disponibilità",
+      en: "Replication Features for High Availability",
+      fr: "Fonctionnalités de réplication pour une haute disponibilité",
+      es: "Funcionalidades de replicación para alta disponibilidad",
+    },
+    slug: {
+      it: "funzionalita-di-replica-per-alta-disponibilita",
+      en: "replication-features-for-high-availability",
+      fr: "fonctionnalites-de-replication-pour-une-haute-disponibilite",
+      es: "funcionalidades-de-replicacion-para-alta-disponibilidad",
+    },
+  },
+  {
+    title: {
+      it: "Creazione e gestione dei checkpoint",
+      en: "Creation and Management of Checkpoints",
+      fr: "Création et gestion des points de contrôle",
+      es: "Creación y gestión de puntos de control",
+    },
+    slug: {
+      it: "creazione-e-gestione-dei-checkpoint",
+      en: "creation-and-management-of-checkpoints",
+      fr: "creation-et-gestion-de-points-de-controle",
+      es: "creacion-y-gestion-de-puntos-de-control",
+    },
+  },
+  {
+    title: {
+      it: "Servizi di integrazione per macchine virtuali",
+      en: "Integration Services for Virtual Machines",
+      fr: "Services d'intégration pour les machines virtuelles",
+      es: "Servicios de integración para máquinas virtuales",
+    },
+    slug: {
+      it: "servizi-di-integrazione-per-macchine-virtuali",
+      en: "integration-services-for-virtual-machines",
+      fr: "services-dintegration-pour-les-machines-virtuelles",
+      es: "servicios-de-integracion-para-maquinas-virtuales",
+    },
+  },
+  {
+    title: {
+      it: "Soluzioni di backup e disaster recovery",
+      en: "Backup and Disaster Recovery Solutions",
+      fr: "Solutions de sauvegarde et de reprise après sinistre",
+      es: "Soluciones de respaldo y recuperación de desastres",
+    },
+    slug: {
+      it: "soluzioni-di-backup-e-disaster-recovery",
+      en: "backup-and-disaster-recovery-solutions",
+      fr: "solutions-de-sauvegarde-et-de-reprise-apres-sinistre",
+      es: "soluciones-de-respaldo-y-recuperacion-de-desastres",
+    },
+  },
+],
 
   extraContent: {
     // ✅ SOLO pagine d’esame ufficiali Microsoft

@@ -28,12 +28,77 @@ const CompTIACloudPlus = {
   },
 
   topics: [
-    { it: "Architettura e modelli di cloud computing", en: "Cloud architecture and models", fr: "Architecture et modèles de cloud computing", es: "Arquitectura y modelos de computación en la nube" },
-    { it: "Implementazione e gestione delle infrastrutture cloud", en: "Cloud infrastructure implementation and management", fr: "Mise en œuvre et gestion de l’infrastructure cloud", es: "Implementación y gestión de infraestructuras cloud" },
-    { it: "Sicurezza e conformità nel cloud", en: "Cloud security and compliance", fr: "Sécurité et conformité dans le cloud", es: "Seguridad y cumplimiento en la nube" },
-    { it: "Risoluzione dei problemi di rete e storage cloud", en: "Cloud network and storage troubleshooting", fr: "Dépannage du réseau et du stockage cloud", es: "Resolución de problemas de red y almacenamiento cloud" },
-    { it: "Monitoraggio e ottimizzazione delle risorse cloud", en: "Cloud resource monitoring and optimization", fr: "Surveillance et optimisation des ressources cloud", es: "Supervisión y optimización de recursos cloud" },
-  ],
+  {
+    title: {
+      it: "Configurazione e distribuzione",
+      en: "Configuration and Deployment",
+      fr: "Configuration et déploiement",
+      es: "Configuración y despliegue",
+    },
+    slug: {
+      it: "configurazione-e-distribuzione",
+      en: "configuration-and-deployment",
+      fr: "configuration-et-deploiement",
+      es: "configuracion-y-despliegue",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza",
+      en: "Security",
+      fr: "Sécurité",
+      es: "Seguridad",
+    },
+    slug: {
+      it: "sicurezza",
+      en: "security",
+      fr: "securite",
+      es: "seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Manutenzione",
+      en: "Maintenance",
+      fr: "Maintenance",
+      es: "Mantenimiento",
+    },
+    slug: {
+      it: "manutenzione",
+      en: "maintenance",
+      fr: "maintenance",
+      es: "mantenimiento",
+    },
+  },
+  {
+    title: {
+      it: "Gestione",
+      en: "Management",
+      fr: "Gestion",
+      es: "Gestión",
+    },
+    slug: {
+      it: "gestione",
+      en: "management",
+      fr: "gestion",
+      es: "gestion",
+    },
+  },
+  {
+    title: {
+      it: "Risoluzione dei problemi",
+      en: "Problem Resolution",
+      fr: "Résolution de problèmes",
+      es: "Resolución de problemas",
+    },
+    slug: {
+      it: "risoluzione-dei-problemi",
+      en: "problem-resolution",
+      fr: "resolution-de-problemes",
+      es: "resolucion-de-problemas",
+    },
+  },
+],
 
   extraContent: {
     learn: {

@@ -30,11 +30,91 @@ const JavaScriptDeveloper = {
   },
 
   topics: [
-    { it: "Sintassi JavaScript", en: "JavaScript Syntax", fr: "Syntaxe JavaScript", es: "Sintaxis de JavaScript" },
-    { it: "DOM e interazione", en: "DOM and interaction", fr: "DOM et interaction", es: "DOM e interacción" },
-    { it: "Funzioni, oggetti, array", en: "Functions, objects, arrays", fr: "Fonctions, objets, tableaux", es: "Funciones, objetos, arreglos" },
-    { it: "AJAX e API", en: "AJAX and APIs", fr: "AJAX et APIs", es: "AJAX y APIs" },
-  ],
+  {
+    title: {
+      it: "Variabili e tipi",
+      en: "Variables and Types in JavaScript",
+      fr: "Variables et types en JavaScript",
+      es: "Variables y tipos en JavaScript",
+    },
+    slug: {
+      it: "variabili-e-tipi",
+      en: "variables-and-types-in-javascript",
+      fr: "variables-et-types-en-javascript",
+      es: "variables-y-tipos-en-javascript",
+    },
+  },
+  {
+    title: {
+      it: "Oggetti e funzioni",
+      en: "Objects and Functions in JavaScript",
+      fr: "Objets et fonctions en JavaScript",
+      es: "Objetos y funciones en JavaScript",
+    },
+    slug: {
+      it: "oggetti-e-funzioni",
+      en: "objects-and-functions-in-javascript",
+      fr: "objets-et-fonctions-en-javascript",
+      es: "objetos-y-funciones-en-javascript",
+    },
+  },
+  {
+    title: {
+      it: "Browser ed eventi",
+      en: "Browser and Events",
+      fr: "Navigateur et événements",
+      es: "Navegador y eventos",
+    },
+    slug: {
+      it: "browser-ed-eventi",
+      en: "browser-and-events",
+      fr: "navigateur-et-evenements",
+      es: "navegador-y-eventos",
+    },
+  },
+  {
+    title: {
+      it: "Debugging ed errori",
+      en: "Debugging and Error Handling",
+      fr: "Débogage et gestion des erreurs",
+      es: "Depuración y manejo de errores",
+    },
+    slug: {
+      it: "debugging-ed-errori",
+      en: "debugging-and-error-handling",
+      fr: "debogage-et-gestion-des-erreurs",
+      es: "depuracion-y-manejo-de-errores",
+    },
+  },
+  {
+    title: {
+      it: "Programmazione asincrona",
+      en: "Asynchronous Programming in JavaScript",
+      fr: "Programmation asynchrone en JavaScript",
+      es: "Programación asíncrona en JavaScript",
+    },
+    slug: {
+      it: "programmazione-asincrona",
+      en: "asynchronous-programming-in-javascript",
+      fr: "programmation-asynchrone-en-javascript",
+      es: "programacion-asincrona-en-javascript",
+    },
+  },
+  {
+    title: {
+      it: "Testing e deployment",
+      en: "Testing and Deployment in JavaScript",
+      fr: "Tests et déploiement en JavaScript",
+      es: "Pruebas y despliegue en JavaScript",
+    },
+    slug: {
+      it: "testing-e-deployment",
+      en: "testing-and-deployment-in-javascript",
+      fr: "tests-et-deploiement-en-javascript",
+      es: "pruebas-y-despliegue-en-javascript",
+    },
+  },
+],
 
   extraContent: {
     examReference: {

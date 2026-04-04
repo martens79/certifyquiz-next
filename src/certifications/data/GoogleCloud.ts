@@ -29,12 +29,63 @@ const GoogleCloud = {
   },
 
   topics: [
-    { it: "Concetti base di cloud computing", en: "Basic cloud computing concepts", fr: "Concepts de base du cloud computing", es: "Conceptos básicos de la computación en la nube" },
-    { it: "Servizi principali di Google Cloud", en: "Core Google Cloud services", fr: "Services principaux de Google Cloud", es: "Servicios principales de Google Cloud" },
-    { it: "Gestione risorse e deployment", en: "Resource management and deployment", fr: "Gestion des ressources et déploiement", es: "Gestión de recursos y despliegue" },
-    { it: "Sicurezza e conformità", en: "Security and compliance", fr: "Sécurité et conformité", es: "Seguridad y cumplimiento" },
-    { it: "Networking e storage su GCP", en: "Networking and storage on GCP", fr: "Réseau et stockage sur GCP", es: "Redes y almacenamiento en GCP" },
-  ],
+  {
+    title: {
+      it: "Trasformazione digitale con Google Cloud",
+      en: "Digital Transformation with Google Cloud",
+      fr: "Transformation numérique avec Google Cloud",
+      es: "Transformación digital con Google Cloud",
+    },
+    slug: {
+      it: "trasformazione-digitale-con-google-cloud",
+      en: "digital-transformation-with-google-cloud",
+      fr: "transformation-numerique-avec-google-cloud",
+      es: "transformacion-digital-con-google-cloud",
+    },
+  },
+  {
+    title: {
+      it: "Innovazione con i dati e Google Cloud",
+      en: "Innovation with Data and Google Cloud",
+      fr: "Innovation avec les données et Google Cloud",
+      es: "Innovación con datos y Google Cloud",
+    },
+    slug: {
+      it: "innovazione-con-i-dati-e-google-cloud",
+      en: "innovation-with-data-and-google-cloud",
+      fr: "innovation-avec-les-donnees-et-google-cloud",
+      es: "innovacion-con-datos-y-google-cloud",
+    },
+  },
+  {
+    title: {
+      it: "Modernizzazione di infrastrutture e applicazioni",
+      en: "Modernization of Infrastructure and Applications",
+      fr: "Modernisation de l'infrastructure et des applications",
+      es: "Modernización de infraestructura y aplicaciones",
+    },
+    slug: {
+      it: "modernizzazione-di-infrastrutture-e-applicazioni",
+      en: "modernization-of-infrastructure-and-applications",
+      fr: "modernisation-de-linfrastructure-et-des-applications",
+      es: "modernizacion-de-infraestructura-y-aplicaciones",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza e operazioni con Google Cloud",
+      en: "Security and Operations with Google Cloud",
+      fr: "Sécurité et opérations avec Google Cloud",
+      es: "Seguridad y operaciones con Google Cloud",
+    },
+    slug: {
+      it: "sicurezza-e-operazioni-con-google-cloud",
+      en: "security-and-operations-with-google-cloud",
+      fr: "securite-et-operations-avec-google-cloud",
+      es: "seguridad-y-operaciones-con-google-cloud",
+    },
+  },
+],
 
   extraContent: {
     examReference: {

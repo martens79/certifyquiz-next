@@ -27,13 +27,147 @@ const CISCO_CCST_NETWORKING = {
   },
 
   topics: [
-    { it: "Fondamenti di rete", en: "Networking fundamentals", fr: "Bases du réseau", es: "Fundamentos de redes" },
-    { it: "Dispositivi e cablaggio", en: "Devices and cabling", fr: "Appareils et câblage", es: "Dispositivos y cableado" },
-    { it: "Protocolli e servizi", en: "Protocols and services", fr: "Protocoles et services", es: "Protocolos y servicios" },
-    { it: "Indirizzamento IP", en: "IP addressing", fr: "Adressage IP", es: "Direcciones IP" },
-    { it: "Sicurezza di rete", en: "Network security", fr: "Sécurité réseau", es: "Seguridad de red" },
-    { it: "Risoluzione dei problemi", en: "Troubleshooting", fr: "Dépannage", es: "Resolución de problemas" },
-  ],
+  {
+    title: {
+      it: "Concetti base delle reti",
+      en: "Networking Basics",
+      fr: "Notions de base sur les réseaux",
+      es: "Conceptos básicos de redes",
+    },
+    slug: {
+      it: "concetti-base-delle-reti",
+      en: "networking-basics",
+      fr: "notions-de-base-sur-les-reseaux",
+      es: "conceptos-basicos-de-redes",
+    },
+  },
+  {
+    title: {
+      it: "Modelli OSI e TCP/IP",
+      en: "OSI and TCP/IP Models",
+      fr: "Modèles OSI et TCP/IP",
+      es: "Modelos OSI y TCP/IP",
+    },
+    slug: {
+      it: "modelli-osi-e-tcp-ip",
+      en: "osi-and-tcp-ip-models",
+      fr: "modeles-osi-et-tcp-ip",
+      es: "modelos-osi-y-tcp-ip",
+    },
+  },
+  {
+    title: {
+      it: "Dispositivi di rete",
+      en: "Network Devices",
+      fr: "Dispositifs réseau",
+      es: "Dispositivos de red",
+    },
+    slug: {
+      it: "dispositivi-di-rete",
+      en: "network-devices",
+      fr: "dispositifs-reseau",
+      es: "dispositivos-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Indirizzamento IP e subnetting",
+      en: "IP Addressing and Subnetting",
+      fr: "Adressage IP et sous-réseaux",
+      es: "Direcciones IP y subnetting",
+    },
+    slug: {
+      it: "indirizzamento-ip-e-subnetting",
+      en: "ip-addressing-and-subnetting",
+      fr: "adressage-ip-et-sous-reseaux",
+      es: "direcciones-ip-y-subnetting",
+    },
+  },
+  {
+    title: {
+      it: "Tipi di reti e topologie",
+      en: "Network Types and Topologies",
+      fr: "Types de réseaux et topologies",
+      es: "Tipos de redes y topologías",
+    },
+    slug: {
+      it: "tipi-di-reti-e-topologie",
+      en: "network-types-and-topologies",
+      fr: "types-de-reseaux-et-topologies",
+      es: "tipos-de-redes-y-topologias",
+    },
+  },
+  {
+    title: {
+      it: "Protocolli di rete e porte comuni",
+      en: "Network Protocols and Common Ports",
+      fr: "Protocoles réseau et ports courants",
+      es: "Protocolos de red y puertos comunes",
+    },
+    slug: {
+      it: "protocolli-di-rete-e-porte-comuni",
+      en: "network-protocols-and-common-ports",
+      fr: "protocoles-reseau-et-ports-courants",
+      es: "protocolos-de-red-y-puertos-comunes",
+    },
+  },
+  {
+    title: {
+      it: "Configurazione base router e switch",
+      en: "Basic Router and Switch Configuration",
+      fr: "Configuration de base des routeurs et commutateurs",
+      es: "Configuración básica de routers y switches",
+    },
+    slug: {
+      it: "configurazione-base-router-e-switch",
+      en: "basic-router-and-switch-configuration",
+      fr: "configuration-de-base-des-routeurs-et-commutateurs",
+      es: "configuracion-basica-de-routers-y-switches",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza di rete",
+      en: "Network Security",
+      fr: "Sécurité réseau",
+      es: "Seguridad de red",
+    },
+    slug: {
+      it: "sicurezza-di-rete",
+      en: "network-security",
+      fr: "securite-reseau",
+      es: "seguridad-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Troubleshooting e diagnostica",
+      en: "Troubleshooting and Diagnostics",
+      fr: "Dépannage et diagnostic",
+      es: "Diagnóstico y resolución de problemas",
+    },
+    slug: {
+      it: "troubleshooting-e-diagnostica",
+      en: "troubleshooting-and-diagnostics",
+      fr: "depannage-et-diagnostic",
+      es: "diagnostico-y-resolucion-de-problemas",
+    },
+  },
+  {
+    title: {
+      it: "Carriere e certificazioni nel networking",
+      en: "Networking Careers and Certifications",
+      fr: "Carrières et certifications réseau",
+      es: "Carreras y certificaciones en redes",
+    },
+    slug: {
+      it: "carriere-e-certificazioni-nel-networking",
+      en: "networking-careers-and-certifications",
+      fr: "carrieres-et-certifications-reseau",
+      es: "carreras-y-certificaciones-en-redes",
+    },
+  },
+],
 
   extraContent: {
     learn: {

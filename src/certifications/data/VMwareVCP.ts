@@ -30,12 +30,91 @@ const VMwareVCP = {
   },
 
   topics: [
-    { it: "Installazione e configurazione di ESXi", en: "ESXi installation and configuration", fr: "Installation et configuration d'ESXi", es: "Instalación y configuración de ESXi" },
-    { it: "Gestione delle VM con vSphere", en: "Managing VMs with vSphere", fr: "Gestion des VM avec vSphere", es: "Gestión de máquinas virtuales con vSphere" },
-    { it: "Storage, networking e vCenter", en: "Storage, networking, and vCenter", fr: "Stockage, réseau et vCenter", es: "Almacenamiento, redes y vCenter" },
-    { it: "Snapshot, backup e HA", en: "Snapshots, backups, and HA", fr: "Snapshots, sauvegardes et HA", es: "Snapshots, copias de seguridad y alta disponibilidad" },
-    { it: "Sicurezza e automazione", en: "Security and automation", fr: "Sécurité et automatisation", es: "Seguridad y automatización" },
-  ],
+  {
+    title: {
+      it: "Infrastruttura vSphere",
+      en: "vSphere Infrastructure",
+      fr: "Infrastructure vSphere",
+      es: "Infraestructura vSphere",
+    },
+    slug: {
+      it: "infrastruttura-vsphere",
+      en: "vsphere-infrastructure",
+      fr: "infrastructure-vsphere",
+      es: "infraestructura-vsphere",
+    },
+  },
+  {
+    title: {
+      it: "Soluzioni di storage",
+      en: "Storage Solutions in vSphere",
+      fr: "Solutions de stockage dans vSphere",
+      es: "Soluciones de almacenamiento en vSphere",
+    },
+    slug: {
+      it: "soluzioni-di-storage",
+      en: "storage-solutions-in-vsphere",
+      fr: "solutions-de-stockage-dans-vsphere",
+      es: "soluciones-de-almacenamiento-en-vsphere",
+    },
+  },
+  {
+    title: {
+      it: "Reti virtuali",
+      en: "Virtual Networks in vSphere",
+      fr: "Réseaux virtuels dans vSphere",
+      es: "Redes virtuales en vSphere",
+    },
+    slug: {
+      it: "reti-virtuali",
+      en: "virtual-networks-in-vsphere",
+      fr: "reseaux-virtuels-dans-vsphere",
+      es: "redes-virtuales-en-vsphere",
+    },
+  },
+  {
+    title: {
+      it: "Macchine virtuali",
+      en: "Virtual Machines Management",
+      fr: "Gestion des machines virtuelles",
+      es: "Gestión de máquinas virtuales",
+    },
+    slug: {
+      it: "macchine-virtuali",
+      en: "virtual-machines-management",
+      fr: "gestion-des-machines-virtuelles",
+      es: "gestion-de-maquinas-virtuales",
+    },
+  },
+  {
+    title: {
+      it: "Backup e ripristino",
+      en: "Backup and Recovery Strategies",
+      fr: "Stratégies de sauvegarde et de restauration",
+      es: "Estrategias de copia de seguridad y recuperación",
+    },
+    slug: {
+      it: "backup-e-ripristino",
+      en: "backup-and-recovery-strategies",
+      fr: "strategies-de-sauvegarde-et-de-restauration",
+      es: "estrategias-de-copia-de-seguridad-y-recuperacion",
+    },
+  },
+  {
+    title: {
+      it: "Ottimizzazione delle prestazioni",
+      en: "Performance Optimization in vSphere",
+      fr: "Optimisation des performances dans vSphere",
+      es: "Optimización del rendimiento en vSphere",
+    },
+    slug: {
+      it: "ottimizzazione-delle-prestazioni",
+      en: "performance-optimization-in-vsphere",
+      fr: "optimisation-des-performances-dans-vsphere",
+      es: "optimizacion-del-rendimiento-en-vsphere",
+    },
+  },
+],
 
   extraContent: {
     learn: {

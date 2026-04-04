@@ -30,12 +30,63 @@ const PEKIT = {
   },
 
   topics: [
-    { it: "Concetti base dell'informatica", en: "Basic IT concepts", fr: "Notions de base en informatique", es: "Conceptos básicos de informática" },
-    { it: "Gestione operativa del PC", en: "PC operation and management", fr: "Gestion opérationnelle de l'ordinateur", es: "Gestión operativa del PC" },
-    { it: "Strumenti digitali per la produttività", en: "Digital productivity tools", fr: "Outils numériques de productivité", es: "Herramientas digitales de productividad" },
-    { it: "Cybersecurity e protezione dei dati", en: "Cybersecurity and data protection", fr: "Cybersécurité et protection des données", es: "Ciberseguridad y protección de datos" },
-    { it: "Programmazione e sviluppo web", en: "Programming and web development", fr: "Programmation et développement web", es: "Programación y desarrollo web" },
-  ],
+  {
+    title: {
+      it: "Cominciare le operazioni",
+      en: "Starting Operations",
+      fr: "Commencer les opérations",
+      es: "Comenzar las operaciones",
+    },
+    slug: {
+      it: "cominciare-le-operazioni",
+      en: "starting-operations",
+      fr: "commencer-les-operations",
+      es: "comenzar-las-operaciones",
+    },
+  },
+  {
+    title: {
+      it: "Esplorare e risolvere",
+      en: "Explore and Resolve",
+      fr: "Explorer et résoudre",
+      es: "Explorar y resolver",
+    },
+    slug: {
+      it: "esplorare-e-risolvere",
+      en: "explore-and-resolve",
+      fr: "explorer-et-resoudre",
+      es: "explorar-y-resolver",
+    },
+  },
+  {
+    title: {
+      it: "Imparare e lavorare",
+      en: "Learn and Work",
+      fr: "Apprendre et travailler",
+      es: "Aprender y trabajar",
+    },
+    slug: {
+      it: "imparare-e-lavorare",
+      en: "learn-and-work",
+      fr: "apprendre-et-travailler",
+      es: "aprender-y-trabajar",
+    },
+  },
+  {
+    title: {
+      it: "Vivere in connessione",
+      en: "Living Connected",
+      fr: "Vivre connecté",
+      es: "Vivir conectado",
+    },
+    slug: {
+      it: "vivere-in-connessione",
+      en: "living-connected",
+      fr: "vivre-connecte",
+      es: "vivir-conectado",
+    },
+  },
+],
 
   extraContent: {
     // 🧠 Cosa si impara

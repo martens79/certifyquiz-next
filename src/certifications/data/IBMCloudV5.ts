@@ -30,11 +30,147 @@ const IBMCloudV5 = {
   },
 
   topics: [
-    { it: "Fondamenti del cloud IBM", en: "IBM Cloud fundamentals", fr: "Fondamentaux du cloud IBM", es: "Fundamentos de IBM Cloud" },
-    { it: "Soluzioni cloud e DevOps", en: "Cloud solutions and DevOps", fr: "Solutions cloud et DevOps", es: "Soluciones cloud y DevOps" },
-    { it: "Sicurezza e identità", en: "Security and identity", fr: "Sécurité et identité", es: "Seguridad e identidad" },
-    { it: "Scalabilità e monitoraggio", en: "Scalability and monitoring", fr: "Scalabilité et surveillance", es: "Escalabilidad y monitorización" },
-  ],
+  {
+    title: {
+      it: "Concetti di cloud e IBM Cloud",
+      en: "Cloud concepts and IBM Cloud",
+      fr: "Concepts de cloud et IBM Cloud",
+      es: "Conceptos de nube e IBM Cloud",
+    },
+    slug: {
+      it: "concetti-di-cloud-e-ibm-cloud",
+      en: "cloud-concepts-and-ibm-cloud",
+      fr: "concepts-de-cloud-et-ibm-cloud",
+      es: "conceptos-de-nube-e-ibm-cloud",
+    },
+  },
+  {
+    title: {
+      it: "Architetture IBM Cloud",
+      en: "IBM Cloud Architectures",
+      fr: "Architectures IBM Cloud",
+      es: "Arquitecturas de IBM Cloud",
+    },
+    slug: {
+      it: "architetture-ibm-cloud",
+      en: "ibm-cloud-architectures",
+      fr: "architectures-ibm-cloud",
+      es: "arquitecturas-de-ibm-cloud",
+    },
+  },
+  {
+    title: {
+      it: "Concetti di hybrid e multicloud",
+      en: "Hybrid and multicloud concepts",
+      fr: "Concepts d'hybride et de multicloud",
+      es: "Conceptos de nube híbrida y multicloud",
+    },
+    slug: {
+      it: "concetti-di-hybrid-e-multicloud",
+      en: "hybrid-and-multicloud-concepts",
+      fr: "concepts-dhybride-et-de-multicloud",
+      es: "conceptos-de-nube-hibrida-y-multicloud",
+    },
+  },
+  {
+    title: {
+      it: "Architetture IT e modelli di riferimento",
+      en: "IT Architectures and Reference Models",
+      fr: "Architectures IT et modèles de référence",
+      es: "Arquitecturas de TI y modelos de referencia",
+    },
+    slug: {
+      it: "architetture-it-e-modelli-di-riferimento",
+      en: "it-architectures-and-reference-models",
+      fr: "architectures-it-et-modeles-de-reference",
+      es: "arquitecturas-de-ti-y-modelos-de-referencia",
+    },
+  },
+  {
+    title: {
+      it: "DevOps e SRE",
+      en: "DevOps and SRE",
+      fr: "DevOps et SRE",
+      es: "DevOps y SRE",
+    },
+    slug: {
+      it: "devops-e-sre",
+      en: "devops-and-sre",
+      fr: "devops-et-sre",
+      es: "devops-y-sre",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza e conformità nel cloud",
+      en: "Security and compliance in the cloud",
+      fr: "Sécurité et conformité dans le cloud",
+      es: "Seguridad y cumplimiento en la nube",
+    },
+    slug: {
+      it: "sicurezza-e-conformita-nel-cloud",
+      en: "security-and-compliance-in-the-cloud",
+      fr: "securite-et-conformite-dans-le-cloud",
+      es: "seguridad-y-cumplimiento-en-la-nube",
+    },
+  },
+  {
+    title: {
+      it: "Migrazione e modernizzazione cloud",
+      en: "Cloud migration and modernization",
+      fr: "Migration et modernisation du cloud",
+      es: "Migración y modernización en la nube",
+    },
+    slug: {
+      it: "migrazione-e-modernizzazione-cloud",
+      en: "cloud-migration-and-modernization",
+      fr: "migration-et-modernisation-du-cloud",
+      es: "migracion-y-modernizacion-en-la-nube",
+    },
+  },
+  {
+    title: {
+      it: "Gestione dei costi nel cloud",
+      en: "Cost management in the cloud",
+      fr: "Gestion des coûts dans le cloud",
+      es: "Gestión de costos en la nube",
+    },
+    slug: {
+      it: "gestione-dei-costi-nel-cloud",
+      en: "cost-management-in-the-cloud",
+      fr: "gestion-des-couts-dans-le-cloud",
+      es: "gestion-de-costos-en-la-nube",
+    },
+  },
+  {
+    title: {
+      it: "Governance e gestione dei rischi",
+      en: "Governance and risk management",
+      fr: "Gouvernance et gestion des risques",
+      es: "Gobernanza y gestión de riesgos",
+    },
+    slug: {
+      it: "governance-e-gestione-dei-rischi",
+      en: "governance-and-risk-management",
+      fr: "gouvernance-et-gestion-des-risques",
+      es: "gobernanza-y-gestion-de-riesgos",
+    },
+  },
+  {
+    title: {
+      it: "Monitoraggio e osservabilità",
+      en: "Monitoring and observability",
+      fr: "Surveillance et observabilité",
+      es: "Monitoreo y observabilidad",
+    },
+    slug: {
+      it: "monitoraggio-e-osservabilita",
+      en: "monitoring-and-observability",
+      fr: "surveillance-et-observabilite",
+      es: "monitoreo-y-observabilidad",
+    },
+  },
+],
 
   extraContent: {
     // 🔗 SOLO pagine ufficiali IBM (esami specifici v5)

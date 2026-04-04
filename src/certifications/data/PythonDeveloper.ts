@@ -30,12 +30,77 @@ const PythonDeveloper = {
   },
 
   topics: [
-    { it: "Sintassi e strutture dati di base", en: "Syntax and basic data structures", fr: "Syntaxe et structures de données de base", es: "Sintaxis y estructuras de datos básicas" },
-    { it: "Funzioni e moduli", en: "Functions and modules", fr: "Fonctions et modules", es: "Funciones y módulos" },
-    { it: "Lavorare con file e dati", en: "Working with files and data", fr: "Travail avec les fichiers et les données", es: "Trabajo con archivos y datos" },
-    { it: "Programmazione ad oggetti", en: "Object-oriented programming", fr: "Programmation orientée objet", es: "Programación orientada a objetos" },
-    { it: "Librerie standard e framework", en: "Standard libraries and frameworks", fr: "Bibliothèques standard et frameworks", es: "Bibliotecas estándar y frameworks" },
-  ],
+  {
+    title: {
+      it: "Moduli e pacchetti",
+      en: "Modules and packages",
+      fr: "Modules et paquets",
+      es: "Módulos y paquetes",
+    },
+    slug: {
+      it: "moduli-e-pacchetti",
+      en: "modules-and-packages",
+      fr: "modules-et-paquets",
+      es: "modulos-y-paquetes",
+    },
+  },
+  {
+    title: {
+      it: "Programmazione orientata agli oggetti",
+      en: "Object-oriented programming",
+      fr: "Programmation orientée objet",
+      es: "Programación orientada a objetos",
+    },
+    slug: {
+      it: "programmazione-orientata-agli-oggetti",
+      en: "object-oriented-programming",
+      fr: "programmation-orientee-objet",
+      es: "programacion-orientada-a-objetos",
+    },
+  },
+  {
+    title: {
+      it: "Gestione file ed eccezioni",
+      en: "File and exception handling",
+      fr: "Gestion des fichiers et des exceptions",
+      es: "Gestión de archivos y excepciones",
+    },
+    slug: {
+      it: "gestione-file-ed-eccezioni",
+      en: "file-and-exception-handling",
+      fr: "gestion-des-fichiers-et-des-exceptions",
+      es: "gestion-de-archivos-y-excepciones",
+    },
+  },
+  {
+    title: {
+      it: "Comprehension e lambda",
+      en: "Comprehensions and lambda functions",
+      fr: "Compréhensions et fonctions lambda",
+      es: "Comprensiones y funciones lambda",
+    },
+    slug: {
+      it: "comprehension-e-lambda",
+      en: "comprehensions-and-lambda-functions",
+      fr: "comprehensions-et-fonctions-lambda",
+      es: "comprensiones-y-funciones-lambda",
+    },
+  },
+  {
+    title: {
+      it: "Operazioni I/O",
+      en: "I/O operations",
+      fr: "Opérations d’E/S",
+      es: "Operaciones de entrada/salida",
+    },
+    slug: {
+      it: "operazioni-i-o",
+      en: "i-o-operations",
+      fr: "operations-de-s",
+      es: "operaciones-de-entrada-salida",
+    },
+  },
+],
 
   extraContent: {
     learn: {

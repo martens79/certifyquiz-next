@@ -27,20 +27,134 @@ const CompTIAAPlus = {
     es: "Prepárate para CompTIA A+ (Core 1 220-1201 y Core 2 220-1202) con quizzes tipo examen, modo entrenamiento y simulaciones realistas. Ideal para help desk: hardware, redes, sistemas operativos, seguridad y troubleshooting.",
   },
 
-  topics: [
-    {
-      it: "Core 1 (220-1201): Dispositivi mobili, Reti, Hardware, Virtualizzazione & Cloud, Troubleshooting hardware",
-      en: "Core 1 (220-1201): Mobile Devices, Networking, Hardware, Virtualization & Cloud, Hardware Troubleshooting",
-      fr: "Core 1 (220-1201) : Appareils mobiles, Réseaux, Matériel, Virtualisation & Cloud, Dépannage matériel",
-      es: "Core 1 (220-1201): Dispositivos móviles, Redes, Hardware, Virtualización & Cloud, Troubleshooting de hardware",
+ topics: [
+  {
+    title: {
+      it: "Hardware",
+      en: "Hardware",
+      fr: "Matériel",
+      es: "Hardware",
     },
-    {
-      it: "Core 2 (220-1202): Sistemi operativi, Sicurezza, Troubleshooting software, Procedure operative",
-      en: "Core 2 (220-1202): Operating Systems, Security, Software Troubleshooting, Operational Procedures",
-      fr: "Core 2 (220-1202) : Systèmes d’exploitation, Sécurité, Dépannage logiciel, Procédures opérationnelles",
-      es: "Core 2 (220-1202): Sistemas operativos, Seguridad, Troubleshooting de software, Procedimientos operativos",
+    slug: {
+      it: "hardware",
+      en: "hardware",
+      fr: "materiel",
+      es: "hardware",
     },
-  ],
+  },
+  {
+    title: {
+      it: "Risoluzione problemi hardware e rete",
+      en: "Hardware and Network Problem Resolution",
+      fr: "Résolution de problèmes matériels et réseau",
+      es: "Resolución de problemas de hardware y red",
+    },
+    slug: {
+      it: "risoluzione-problemi-hardware-e-rete",
+      en: "hardware-and-network-problem-resolution",
+      fr: "resolution-de-problemes-materiels-et-reseau",
+      es: "resolucion-de-problemas-de-hardware-y-red",
+    },
+  },
+  {
+    title: {
+      it: "Dispositivi mobili",
+      en: "Mobile Devices",
+      fr: "Appareils mobiles",
+      es: "Dispositivos móviles",
+    },
+    slug: {
+      it: "dispositivi-mobili",
+      en: "mobile-devices",
+      fr: "appareils-mobiles",
+      es: "dispositivos-moviles",
+    },
+  },
+  {
+    title: {
+      it: "Reti",
+      en: "Networks",
+      fr: "Réseaux",
+      es: "Redes",
+    },
+    slug: {
+      it: "reti",
+      en: "networks",
+      fr: "reseaux",
+      es: "redes",
+    },
+  },
+  {
+    title: {
+      it: "Sistemi operativi",
+      en: "Operating Systems",
+      fr: "Systèmes d'exploitation",
+      es: "Sistemas operativos",
+    },
+    slug: {
+      it: "sistemi-operativi",
+      en: "operating-systems",
+      fr: "systemes-dexploitation",
+      es: "sistemas-operativos",
+    },
+  },
+  {
+    title: {
+      it: "Procedure operative",
+      en: "Operational Procedures",
+      fr: "Procédures opérationnelles",
+      es: "Procedimientos operativos",
+    },
+    slug: {
+      it: "procedure-operative",
+      en: "operational-procedures",
+      fr: "procedures-operationnelles",
+      es: "procedimientos-operativos",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza",
+      en: "Security",
+      fr: "Sécurité",
+      es: "Seguridad",
+    },
+    slug: {
+      it: "sicurezza",
+      en: "security",
+      fr: "securite",
+      es: "seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Risoluzione problemi software",
+      en: "Software Problem Resolution",
+      fr: "Résolution de problèmes logiciels",
+      es: "Resolución de problemas de software",
+    },
+    slug: {
+      it: "risoluzione-problemi-software",
+      en: "software-problem-resolution",
+      fr: "resolution-de-problemes-logiciels",
+      es: "resolucion-de-problemas-de-software",
+    },
+  },
+  {
+    title: {
+      it: "Virtualizzazione e cloud computing",
+      en: "Virtualization and Cloud Computing",
+      fr: "Virtualisation et cloud computing",
+      es: "Virtualización y computación en la nube",
+    },
+    slug: {
+      it: "virtualizzazione-e-cloud-computing",
+      en: "virtualization-and-cloud-computing",
+      fr: "virtualisation-et-cloud-computing",
+      es: "virtualizacion-y-computacion-en-la-nube",
+    },
+  },
+],
 
   extraContent: {
     learn: {

@@ -30,12 +30,91 @@ const MySQLCertification = {
   },
 
   topics: [
-    { it: "Concetti base di database", en: "Basic Database Concepts", fr: "Concepts de base des bases de données", es: "Conceptos básicos de bases de datos" },
-    { it: "Scrittura di query SQL", en: "Writing SQL Queries", fr: "Écriture de requêtes SQL", es: "Escritura de consultas SQL" },
-    { it: "Ottimizzazione delle prestazioni", en: "Performance Optimization", fr: "Optimisation des performances", es: "Optimización del rendimiento" },
-    { it: "Stored procedure e trigger", en: "Stored Procedures and Triggers", fr: "Procédures stockées et déclencheurs", es: "Procedimientos almacenados y desencadenadores" },
-    { it: "Gestione utenti e permessi", en: "User and Permission Management", fr: "Gestion des utilisateurs et des permissions", es: "Gestión de usuarios y permisos" },
-  ],
+  {
+    title: {
+      it: "Definizione e manipolazione dati",
+      en: "Data Definition and Manipulation",
+      fr: "Définition et manipulation des données",
+      es: "Definición y manipulación de datos",
+    },
+    slug: {
+      it: "definizione-e-manipolazione-dati",
+      en: "data-definition-and-manipulation",
+      fr: "definition-et-manipulation-des-donnees",
+      es: "definicion-y-manipulacion-de-datos",
+    },
+  },
+  {
+    title: {
+      it: "Transazioni e concorrenza",
+      en: "Transactions and Concurrency",
+      fr: "Transactions et concurrence",
+      es: "Transacciones y concurrencia",
+    },
+    slug: {
+      it: "transazioni-e-concorrenza",
+      en: "transactions-and-concurrency",
+      fr: "transactions-et-concurrence",
+      es: "transacciones-y-concurrencia",
+    },
+  },
+  {
+    title: {
+      it: "Stored procedures e funzioni",
+      en: "Stored Procedures and Functions",
+      fr: "Procédures stockées et fonctions",
+      es: "Procedimientos almacenados y funciones",
+    },
+    slug: {
+      it: "stored-procedures-e-funzioni",
+      en: "stored-procedures-and-functions",
+      fr: "procedures-stockees-et-fonctions",
+      es: "procedimientos-almacenados-y-funciones",
+    },
+  },
+  {
+    title: {
+      it: "Trigger ed eventi",
+      en: "Triggers and Events",
+      fr: "Déclencheurs et événements",
+      es: "Disparadores y eventos",
+    },
+    slug: {
+      it: "trigger-ed-eventi",
+      en: "triggers-and-events",
+      fr: "declencheurs-et-evenements",
+      es: "disparadores-y-eventos",
+    },
+  },
+  {
+    title: {
+      it: "Ottimizzazione performance",
+      en: "Performance Optimization",
+      fr: "Optimisation des performances",
+      es: "Optimización del rendimiento",
+    },
+    slug: {
+      it: "ottimizzazione-performance",
+      en: "performance-optimization",
+      fr: "optimisation-des-performances",
+      es: "optimizacion-del-rendimiento",
+    },
+  },
+  {
+    title: {
+      it: "Gestione utenti e sicurezza",
+      en: "User management and security",
+      fr: "Gestion des utilisateurs et sécurité",
+      es: "Gestión de usuarios y seguridad",
+    },
+    slug: {
+      it: "gestione-utenti-e-sicurezza",
+      en: "user-management-and-security",
+      fr: "gestion-des-utilisateurs-et-securite",
+      es: "gestion-de-usuarios-y-seguridad",
+    },
+  },
+],
 
   extraContent: {
     // ✅ SOLO esami ufficiali (Oracle)

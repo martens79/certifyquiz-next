@@ -20,13 +20,120 @@ const CISSP = {
     es: "La certificación CISSP valida habilidades avanzadas en gestión de seguridad de la información y es un estándar global.",
   },
 
-  topics: [
-    { it: "Gestione della sicurezza", en: "Security Management", fr: "Gestion de la sécurité", es: "Gestión de la seguridad" },
-    { it: "Sicurezza delle reti", en: "Network Security", fr: "Sécurité des réseaux", es: "Seguridad de redes" },
-    { it: "Controlli di accesso", en: "Access Control", fr: "Contrôle d'accès", es: "Control de acceso" },
-    { it: "Sicurezza nello sviluppo software", en: "Software Development Security", fr: "Sécurité du développement logiciel", es: "Seguridad en el desarrollo de software" },
-    { it: "Business continuity e disaster recovery", en: "Business Continuity and Disaster Recovery", fr: "Continuité d'activité et reprise après sinistre", es: "Continuidad del negocio y recuperación" },
-  ],
+ topics: [
+  {
+    title: {
+      it: "Security and Risk Management",
+      en: "Security and Risk Management",
+      fr: "Gestion des risques et sécurité",
+      es: "Gestión de riesgos y seguridad",
+    },
+    slug: {
+      it: "security-and-risk-management",
+      en: "security-and-risk-management",
+      fr: "gestion-des-risques-et-securite",
+      es: "gestion-de-riesgos-y-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Identity and Access Management (IAM)",
+      en: "Identity and Access Management (IAM)",
+      fr: "Gestion des identités et des accès (IAM)",
+      es: "Gestión de identidades y accesos (IAM)",
+    },
+    slug: {
+      it: "identity-and-access-management-iam",
+      en: "identity-and-access-management-iam",
+      fr: "gestion-des-identites-et-des-acces-iam",
+      es: "gestion-de-identidades-y-accesos-iam",
+    },
+  },
+  {
+    title: {
+      it: "Asset Security",
+      en: "Asset Security",
+      fr: "Sécurité des actifs",
+      es: "Seguridad de activos",
+    },
+    slug: {
+      it: "asset-security",
+      en: "asset-security",
+      fr: "securite-des-actifs",
+      es: "seguridad-de-activos",
+    },
+  },
+  {
+    title: {
+      it: "Communication and Network Security",
+      en: "Communication and Network Security",
+      fr: "Sécurité des communications et des réseaux",
+      es: "Seguridad de comunicaciones y redes",
+    },
+    slug: {
+      it: "communication-and-network-security",
+      en: "communication-and-network-security",
+      fr: "securite-des-communications-et-des-reseaux",
+      es: "seguridad-de-comunicaciones-y-redes",
+    },
+  },
+  {
+    title: {
+      it: "Security Assessment and Testing",
+      en: "Security Assessment and Testing",
+      fr: "Évaluation et tests de sécurité",
+      es: "Evaluación y pruebas de seguridad",
+    },
+    slug: {
+      it: "security-assessment-and-testing",
+      en: "security-assessment-and-testing",
+      fr: "evaluation-et-tests-de-securite",
+      es: "evaluacion-y-pruebas-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Security Architecture and Engineering",
+      en: "Security Architecture and Engineering",
+      fr: "Architecture et ingénierie de la sécurité",
+      es: "Arquitectura e ingeniería de seguridad",
+    },
+    slug: {
+      it: "security-architecture-and-engineering",
+      en: "security-architecture-and-engineering",
+      fr: "architecture-et-ingenierie-de-la-securite",
+      es: "arquitectura-e-ingenieria-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Security Operations",
+      en: "Security Operations",
+      fr: "Opérations de sécurité",
+      es: "Operaciones de seguridad",
+    },
+    slug: {
+      it: "security-operations",
+      en: "security-operations",
+      fr: "operations-de-securite",
+      es: "operaciones-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Software Development Security",
+      en: "Software Development Security",
+      fr: "Sécurité du développement logiciel",
+      es: "Seguridad en el desarrollo de software",
+    },
+    slug: {
+      it: "software-development-security",
+      en: "software-development-security",
+      fr: "securite-du-developpement-logiciel",
+      es: "seguridad-en-el-desarrollo-de-software",
+    },
+  },
+],
 
   extraContent: {
     learn: {

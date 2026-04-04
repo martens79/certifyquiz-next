@@ -29,38 +29,63 @@ const CSharpAzureDeveloper = {
   },
 
   topics: [
-    {
-      it: "Sviluppare soluzioni di calcolo su Azure (App Service, Functions, container)",
-      en: "Develop Azure compute solutions (App Service, Functions, containers)",
-      fr: "Développer des solutions de calcul Azure (App Service, Functions, conteneurs)",
-      es: "Desarrollar soluciones de cómputo en Azure (App Service, Functions, contenedores)",
+  {
+    title: {
+      it: "Sintassi e costrutti C#",
+      en: "C# syntax and constructs",
+      fr: "Syntaxe et constructions C#",
+      es: "Sintaxis y construcciones de C#",
     },
-    {
-      it: "Sviluppare per l’archiviazione Azure (Blob, Cosmos DB, dati relazionali)",
-      en: "Develop for Azure storage (Blob, Cosmos DB, relational data)",
-      fr: "Développer pour le stockage Azure (Blob, Cosmos DB, données relationnelles)",
-      es: "Desarrollar para el almacenamiento de Azure (Blob, Cosmos DB, datos relacionales)",
+    slug: {
+      it: "sintassi-e-costrutti-c",
+      en: "c-syntax-and-constructs",
+      fr: "syntaxe-et-constructions-c",
+      es: "sintaxis-y-construcciones-de-c",
     },
-    {
-      it: "Implementare la sicurezza (Entra ID, Key Vault, managed identities)",
-      en: "Implement security (Entra ID, Key Vault, managed identities)",
-      fr: "Implémenter la sécurité (Entra ID, Key Vault, identités gérées)",
-      es: "Implementar seguridad (Entra ID, Key Vault, identidades administradas)",
+  },
+  {
+    title: {
+      it: "Programmazione orientata agli oggetti",
+      en: "Object-oriented programming",
+      fr: "Programmation orientée objet",
+      es: "Programación orientada a objetos",
     },
-    {
-      it: "Monitorare, fare troubleshooting e ottimizzare (Logs, Application Insights, scalabilità)",
-      en: "Monitor, troubleshoot, and optimize (Logs, Application Insights, scalability)",
-      fr: "Surveiller, dépanner et optimiser (journaux, Application Insights, scalabilité)",
-      es: "Supervisar, resolver problemas y optimizar (registros, Application Insights, escalabilidad)",
+    slug: {
+      it: "programmazione-orientata-agli-oggetti",
+      en: "object-oriented-programming",
+      fr: "programmation-orientee-objet",
+      es: "programacion-orientada-a-objetos",
     },
-    {
-      it: "Integrare servizi e API (SDK/REST, API Management, Event Grid/Service Bus/Event Hubs)",
-      en: "Connect to and consume services & APIs (SDK/REST, API Management, Event Grid/Service Bus/Event Hubs)",
-      fr: "Connecter et consommer des services & API (SDK/REST, API Management, Event Grid/Service Bus/Event Hubs)",
-      es: "Conectar y consumir servicios y API (SDK/REST, API Management, Event Grid/Service Bus/Event Hubs)",
+  },
+  {
+    title: {
+      it: "Gestione degli errori e debugging",
+      en: "Error handling and debugging",
+      fr: "Gestion des erreurs et débogage",
+      es: "Gestión de errores y depuración",
     },
-  ],
-
+    slug: {
+      it: "gestione-degli-errori-e-debugging",
+      en: "error-handling-and-debugging",
+      fr: "gestion-des-erreurs-et-debogage",
+      es: "gestion-de-errores-y-depuracion",
+    },
+  },
+  {
+    title: {
+      it: "Dati e collezioni",
+      en: "Data and collections",
+      fr: "Données et collections",
+      es: "Datos y colecciones",
+    },
+    slug: {
+      it: "dati-e-collezioni",
+      en: "data-and-collections",
+      fr: "donnees-et-collections",
+      es: "datos-y-colecciones",
+    },
+  },
+],
   extraContent: {
     learn: {
       it: [

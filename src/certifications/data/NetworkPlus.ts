@@ -30,12 +30,105 @@ const NetworkPlus = {
   },
 
   topics: [
-    { it: "Fondamenti di networking", en: "Networking fundamentals", fr: "Fondamentaux du réseau", es: "Fundamentos de redes" },
-    { it: "Modelli OSI e TCP/IP", en: "OSI and TCP/IP models", fr: "Modèles OSI et TCP/IP", es: "Modelos OSI y TCP/IP" },
-    { it: "Configurazione dispositivi di rete", en: "Network device configuration", fr: "Configuration des dispositifs réseau", es: "Configuración de dispositivos de red" },
-    { it: "Tecnologie wireless e avanzate", en: "Wireless and advanced technologies", fr: "Technologies sans fil et avancées", es: "Tecnologías inalámbricas y avanzadas" },
-    { it: "Sicurezza e troubleshooting", en: "Network security and troubleshooting", fr: "Sécurité réseau et dépannage", es: "Seguridad de red y resolución de problemas" },
-  ],
+  {
+    title: {
+      it: "Concetti di rete",
+      en: "Network Concepts",
+      fr: "Concepts des réseaux",
+      es: "Conceptos de redes",
+    },
+    slug: {
+      it: "concetti-di-rete",
+      en: "network-concepts",
+      fr: "concepts-des-reseaux",
+      es: "conceptos-de-redes",
+    },
+  },
+  {
+    title: {
+      it: "Dispositivi e topologie di rete",
+      en: "Network Devices and Topologies",
+      fr: "Périphériques et topologies réseau",
+      es: "Dispositivos y topologías de red",
+    },
+    slug: {
+      it: "dispositivi-e-topologie-di-rete",
+      en: "network-devices-and-topologies",
+      fr: "peripheriques-et-topologies-reseau",
+      es: "dispositivos-y-topologias-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Tecnologie e connessioni",
+      en: "Technologies and Connections",
+      fr: "Technologies et connexions",
+      es: "Tecnologías y conexiones",
+    },
+    slug: {
+      it: "tecnologie-e-connessioni",
+      en: "technologies-and-connections",
+      fr: "technologies-et-connexions",
+      es: "tecnologias-y-conexiones",
+    },
+  },
+  {
+    title: {
+      it: "Strumenti e diagnostica",
+      en: "Network Tools and Diagnostics",
+      fr: "Outils et diagnostic réseau",
+      es: "Herramientas y diagnóstico de red",
+    },
+    slug: {
+      it: "strumenti-e-diagnostica",
+      en: "network-tools-and-diagnostics",
+      fr: "outils-et-diagnostic-reseau",
+      es: "herramientas-y-diagnostico-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza delle reti",
+      en: "Network Security",
+      fr: "Sécurité des réseaux",
+      es: "Seguridad de redes",
+    },
+    slug: {
+      it: "sicurezza-delle-reti",
+      en: "network-security",
+      fr: "securite-des-reseaux",
+      es: "seguridad-de-redes",
+    },
+  },
+  {
+    title: {
+      it: "Gestione e monitoraggio",
+      en: "Network Management and Monitoring",
+      fr: "Gestion et supervision du réseau",
+      es: "Gestión y monitoreo de redes",
+    },
+    slug: {
+      it: "gestione-e-monitoraggio",
+      en: "network-management-and-monitoring",
+      fr: "gestion-et-supervision-du-reseau",
+      es: "gestion-y-monitoreo-de-redes",
+    },
+  },
+  {
+    title: {
+      it: "Risoluzione dei problemi di rete",
+      en: "Network Troubleshooting",
+      fr: "Dépannage réseau",
+      es: "Solución de problemas de red",
+    },
+    slug: {
+      it: "risoluzione-dei-problemi-di-rete",
+      en: "network-troubleshooting",
+      fr: "depannage-reseau",
+      es: "solucion-de-problemas-de-red",
+    },
+  },
+],
 
   extraContent: {
     // ✅ Esame ufficiale (aggiornato N10-009)

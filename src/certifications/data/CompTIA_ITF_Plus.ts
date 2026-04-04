@@ -21,14 +21,106 @@ const ITFPlus = {
     es: "Tech+ evoluciona ITF+ y cubre fundamentos de TI con enfoque práctico (infraestructura, aplicaciones, desarrollo básico, datos, seguridad).",
   },
 
-  topics: [
-    { it: "Concetti e terminologia IT", en: "Tech Concepts & Terminology", fr: "Concepts et terminologie IT", es: "Conceptos y terminología de TI" },
-    { it: "Infrastruttura (HW, dispositivi, virtualizzazione, cloud)", en: "Infrastructure (HW, devices, virtualization, cloud)", fr: "Infrastructure (matériel, virtualisation, cloud)", es: "Infraestructura (HW, virtualización, nube)" },
-    { it: "Applicazioni e software (OS, browser, strumenti)", en: "Applications & Software (OS, browsers, tools)", fr: "Applications & logiciels (OS, navigateurs, outils)", es: "Aplicaciones y software (SO, navegadores, herramientas)" },
-    { it: "Concetti base di sviluppo software", en: "Basic Software Development Concepts", fr: "Concepts de base du développement", es: "Conceptos básicos de desarrollo" },
-    { it: "Dati e database (fondamenti)", en: "Data & Database Fundamentals", fr: "Données & bases de données", es: "Datos y fundamentos de bases de datos" },
-    { it: "Sicurezza e reti (principi, buone pratiche)", en: "Security & Networking (principles, best practices)", fr: "Sécurité & réseau (principes, bonnes pratiques)", es: "Seguridad y redes (principios, buenas prácticas)" },
-  ],
+ topics: [
+  {
+    title: {
+      it: "Sistemi operativi e applicazioni",
+      en: "Operating Systems & Applications",
+      fr: "Systèmes d’exploitation & applications",
+      es: "Sistemas operativos y aplicaciones",
+    },
+    slug: {
+      it: "sistemi-operativi-e-applicazioni",
+      en: "operating-systems-and-applications",
+      fr: "systemes-dexploitation-and-applications",
+      es: "sistemas-operativos-y-aplicaciones",
+    },
+  },
+  {
+    title: {
+      it: "Dispositivi e mobilità (smartphone, tablet, IoT)",
+      en: "Devices & Mobility (smartphone, tablet, IoT)",
+      fr: "Appareils & mobilité (smartphone, tablette, IoT)",
+      es: "Dispositivos y movilidad (smartphone, tablet, IoT)",
+    },
+    slug: {
+      it: "dispositivi-e-mobilita-smartphone-tablet-iot",
+      en: "devices-and-mobility-smartphone-tablet-iot",
+      fr: "appareils-and-mobilite-smartphone-tablette-iot",
+      es: "dispositivos-y-movilidad-smartphone-tablet-iot",
+    },
+  },
+  {
+    title: {
+      it: "Infrastruttura hardware, periferiche e virtualizzazione",
+      en: "Hardware Infrastructure, Peripherals & Virtualization",
+      fr: "Infrastructure matérielle, périphériques & virtualisation",
+      es: "Infraestructura hardware, periféricos y virtualización",
+    },
+    slug: {
+      it: "infrastruttura-hardware-periferiche-e-virtualizzazione",
+      en: "hardware-infrastructure-peripherals-and-virtualization",
+      fr: "infrastructure-materielle-peripheriques-and-virtualisation",
+      es: "infraestructura-hardware-perifericos-y-virtualizacion",
+    },
+  },
+  {
+    title: {
+      it: "Reti e connettività",
+      en: "Networking & Connectivity",
+      fr: "Réseaux & connectivité",
+      es: "Redes y conectividad",
+    },
+    slug: {
+      it: "reti-e-connettivita",
+      en: "networking-and-connectivity",
+      fr: "reseaux-and-connectivite",
+      es: "redes-y-conectividad",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza informatica di base",
+      en: "Fundamentals of Cybersecurity",
+      fr: "Notions de cybersécurité",
+      es: "Fundamentos de ciberseguridad",
+    },
+    slug: {
+      it: "sicurezza-informatica-di-base",
+      en: "fundamentals-of-cybersecurity",
+      fr: "notions-de-cybersecurite",
+      es: "fundamentos-de-ciberseguridad",
+    },
+  },
+  {
+    title: {
+      it: "Concetti di cloud e servizi online",
+      en: "Cloud Concepts & Online Services",
+      fr: "Concepts du cloud & services en ligne",
+      es: "Conceptos de nube y servicios en línea",
+    },
+    slug: {
+      it: "concetti-di-cloud-e-servizi-online",
+      en: "cloud-concepts-and-online-services",
+      fr: "concepts-du-cloud-and-services-en-ligne",
+      es: "conceptos-de-nube-y-servicios-en-linea",
+    },
+  },
+  {
+    title: {
+      it: "Risoluzione problemi e troubleshooting pratico",
+      en: "Troubleshooting & Practical Support",
+      fr: "Dépannage & support pratique",
+      es: "Resolución de problemas y soporte práctico",
+    },
+    slug: {
+      it: "risoluzione-problemi-e-troubleshooting-pratico",
+      en: "troubleshooting-and-practical-support",
+      fr: "depannage-and-support-pratique",
+      es: "resolucion-de-problemas-y-soporte-practico",
+    },
+  },
+],
 
   extraContent: {
     // Avviso transizione ITF+ → Tech+

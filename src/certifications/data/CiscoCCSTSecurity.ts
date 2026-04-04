@@ -21,14 +21,134 @@ const CISCO_CCST_CYBERSECURITY = {
     es: "La certificación Cisco CCST Cybersecurity valida habilidades esenciales para proteger sistemas informáticos, identificar amenazas y comprender los fundamentos de la seguridad de redes y dispositivos.",
   },
 
-  topics: [
-    { it: "Concetti di sicurezza informatica", en: "Cybersecurity concepts", fr: "Notions de cybersécurité", es: "Conceptos de ciberseguridad" },
-    { it: "Minacce e vulnerabilità", en: "Threats and vulnerabilities", fr: "Menaces et vulnérabilités", es: "Amenazas y vulnerabilidades" },
-    { it: "Sicurezza della rete", en: "Network security", fr: "Sécurité réseau", es: "Seguridad de red" },
-    { it: "Sicurezza dei dispositivi", en: "Device security", fr: "Sécurité des dispositifs", es: "Seguridad de dispositivos" },
-    { it: "Risposta agli incidenti", en: "Incident response", fr: "Réponse aux incidents", es: "Respuesta a incidentes" },
-    { it: "Fondamenti di cybersecurity operativa", en: "Operational cybersecurity fundamentals", fr: "Notions fondamentales de cybersécurité opérationnelle", es: "Fundamentos de ciberseguridad operativa" },
-  ],
+ topics: [
+  {
+    title: {
+      it: "Raccolta informazioni e footprinting",
+      en: "Information Gathering and Footprinting",
+      fr: "Collecte d'informations et footprinting",
+      es: "Recopilación de información y footprinting",
+    },
+    slug: {
+      it: "raccolta-informazioni-e-footprinting",
+      en: "information-gathering-and-footprinting",
+      fr: "collecte-dinformations-et-footprinting",
+      es: "recopilacion-de-informacion-y-footprinting",
+    },
+  },
+  {
+    title: {
+      it: "Tecniche di scansione di rete e porte",
+      en: "Network and Port Scanning Techniques",
+      fr: "Techniques de scan de réseau et de port",
+      es: "Técnicas de escaneo de red y puertos",
+    },
+    slug: {
+      it: "tecniche-di-scansione-di-rete-e-porte",
+      en: "network-and-port-scanning-techniques",
+      fr: "techniques-de-scan-de-reseau-et-de-port",
+      es: "tecnicas-de-escaneo-de-red-y-puertos",
+    },
+  },
+  {
+    title: {
+      it: "Enumerazione di servizi e utenti",
+      en: "Service and User Enumeration",
+      fr: "Énumération de services et d'utilisateurs",
+      es: "Enumeración de servicios y usuarios",
+    },
+    slug: {
+      it: "enumerazione-di-servizi-e-utenti",
+      en: "service-and-user-enumeration",
+      fr: "enumeration-de-services-et-dutilisateurs",
+      es: "enumeracion-de-servicios-y-usuarios",
+    },
+  },
+  {
+    title: {
+      it: "Identificazione delle vulnerabilità",
+      en: "Vulnerability Identification",
+      fr: "Identification des vulnérabilités",
+      es: "Identificación de vulnerabilidades",
+    },
+    slug: {
+      it: "identificazione-delle-vulnerabilita",
+      en: "vulnerability-identification",
+      fr: "identification-des-vulnerabilites",
+      es: "identificacion-de-vulnerabilidades",
+    },
+  },
+  {
+    title: {
+      it: "Accesso e mantenimento sui sistemi",
+      en: "Access and Maintenance on Systems",
+      fr: "Accès et maintenance sur les systèmes",
+      es: "Acceso y mantenimiento en sistemas",
+    },
+    slug: {
+      it: "accesso-e-mantenimento-sui-sistemi",
+      en: "access-and-maintenance-on-systems",
+      fr: "acces-et-maintenance-sur-les-systemes",
+      es: "acceso-y-mantenimiento-en-sistemas",
+    },
+  },
+  {
+    title: {
+      it: "Tipi e comportamenti dei malware",
+      en: "Types and Behaviors of Malware",
+      fr: "Types et comportements des malwares",
+      es: "Tipos y comportamientos de malware",
+    },
+    slug: {
+      it: "tipi-e-comportamenti-dei-malware",
+      en: "types-and-behaviors-of-malware",
+      fr: "types-et-comportements-des-malwares",
+      es: "tipos-y-comportamientos-de-malware",
+    },
+  },
+  {
+    title: {
+      it: "Intercettazione e dirottamento sessioni",
+      en: "Session Interception and Hijacking",
+      fr: "Interception et détournement de sessions",
+      es: "Intercepción y secuestro de sesiones",
+    },
+    slug: {
+      it: "intercettazione-e-dirottamento-sessioni",
+      en: "session-interception-and-hijacking",
+      fr: "interception-et-detournement-de-sessions",
+      es: "intercepcion-y-secuestro-de-sesiones",
+    },
+  },
+  {
+    title: {
+      it: "Tecniche di ingegneria sociale",
+      en: "Social Engineering Techniques",
+      fr: "Techniques d'ingénierie sociale",
+      es: "Técnicas de ingeniería social",
+    },
+    slug: {
+      it: "tecniche-di-ingegneria-sociale",
+      en: "social-engineering-techniques",
+      fr: "techniques-dingenierie-sociale",
+      es: "tecnicas-de-ingenieria-social",
+    },
+  },
+  {
+    title: {
+      it: "Attacchi alle applicazioni web",
+      en: "Web Application Attacks",
+      fr: "Attaques sur les applications web",
+      es: "Ataques a aplicaciones web",
+    },
+    slug: {
+      it: "attacchi-alle-applicazioni-web",
+      en: "web-application-attacks",
+      fr: "attaques-sur-les-applications-web",
+      es: "ataques-a-aplicaciones-web",
+    },
+  },
+],
 
   extraContent: {
     learn: {

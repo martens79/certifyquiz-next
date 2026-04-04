@@ -30,12 +30,105 @@ const EIPASS = {
   },
 
   topics: [
-    { it: "Fondamenti ICT", en: "ICT Fundamentals", fr: "Fondamentaux TIC", es: "Fundamentos TIC" },
-    { it: "Strumenti di produttività digitale", en: "Digital Productivity Tools", fr: "Outils de productivité numérique", es: "Herramientas de productividad digital" },
-    { it: "Sicurezza e privacy", en: "Security and Privacy", fr: "Sécurité et vie privée", es: "Seguridad y privacidad" },
-    { it: "Web e social media", en: "Web and Social Media", fr: "Web et réseaux sociaux", es: "Web y redes sociales" },
-    { it: "Gestione dei dati", en: "Data Management", fr: "Gestion des données", es: "Gestión de datos" },
-  ],
+  {
+    title: {
+      it: "Fondamenti del computer",
+      en: "Computer Essentials",
+      fr: "Notions de base sur l’ordinateur",
+      es: "Fundamentos del ordenador",
+    },
+    slug: {
+      it: "fondamenti-del-computer",
+      en: "computer-essentials",
+      fr: "notions-de-base-sur-lordinateur",
+      es: "fundamentos-del-ordenador",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza informatica",
+      en: "IT Security",
+      fr: "Sécurité informatique",
+      es: "Seguridad informática",
+    },
+    slug: {
+      it: "sicurezza-informatica",
+      en: "it-security",
+      fr: "securite-informatique",
+      es: "seguridad-informatica",
+    },
+  },
+  {
+    title: {
+      it: "Collaborazione online",
+      en: "Online Collaboration",
+      fr: "Collaboration en ligne",
+      es: "Colaboración en línea",
+    },
+    slug: {
+      it: "collaborazione-online",
+      en: "online-collaboration",
+      fr: "collaboration-en-ligne",
+      es: "colaboracion-en-linea",
+    },
+  },
+  {
+    title: {
+      it: "Navigazione e comunicazione",
+      en: "Online Essentials",
+      fr: "Navigation et communication",
+      es: "Navegación y comunicación",
+    },
+    slug: {
+      it: "navigazione-e-comunicazione",
+      en: "online-essentials",
+      fr: "navigation-et-communication",
+      es: "navegacion-y-comunicacion",
+    },
+  },
+  {
+    title: {
+      it: "Strumenti di presentazione",
+      en: "Presentation",
+      fr: "Présentation",
+      es: "Presentación",
+    },
+    slug: {
+      it: "strumenti-di-presentazione",
+      en: "presentation",
+      fr: "presentation",
+      es: "presentacion",
+    },
+  },
+  {
+    title: {
+      it: "Fogli di calcolo",
+      en: "Spreadsheets",
+      fr: "Tableurs",
+      es: "Hojas de cálculo",
+    },
+    slug: {
+      it: "fogli-di-calcolo",
+      en: "spreadsheets",
+      fr: "tableurs",
+      es: "hojas-de-calculo",
+    },
+  },
+  {
+    title: {
+      it: "Elaborazione testi",
+      en: "Word Processing",
+      fr: "Traitement de texte",
+      es: "Procesamiento de textos",
+    },
+    slug: {
+      it: "elaborazione-testi",
+      en: "word-processing",
+      fr: "traitement-de-texte",
+      es: "procesamiento-de-textos",
+    },
+  },
+],
 
   extraContent: {
     // 🔗 Pagine ufficiali (moduli/overview)

@@ -26,14 +26,92 @@ const SecurityPlus = {
     fr: "Préparez l’examen CompTIA Security+ (SY0-701) avec des quiz type examen, un mode entraînement et une simulation chronométrée. Banque de questions en croissance.",
     es: "Prepárate para el examen CompTIA Security+ (SY0-701) con quizzes tipo examen, modo entrenamiento y simulación con temporizador. Banco de preguntas en expansión.",
   },
-
-  topics: [
-    { it: "Minacce, attacchi e vulnerabilità", en: "Threats, Attacks & Vulnerabilities", fr: "Menaces, attaques et vulnérabilités", es: "Amenazas, ataques y vulnerabilidades" },
-    { it: "Architettura e design sicuro", en: "Secure Architecture & Design", fr: "Architecture et conception sécurisées", es: "Arquitectura y diseño seguros" },
-    { it: "Implementazione della sicurezza", en: "Security Implementation", fr: "Mise en œuvre de la sécurité", es: "Implementación de seguridad" },
-    { it: "Operazioni e risposta agli incidenti", en: "Operations & Incident Response", fr: "Opérations et réponse aux incidents", es: "Operaciones y respuesta a incidentes" },
-    { it: "Governance, rischio e compliance", en: "Governance, Risk & Compliance", fr: "Gouvernance, risque et conformité", es: "Gobernanza, riesgo y cumplimiento" },
-  ],
+topics: [
+  {
+    title: {
+      it: "Fondamenti di sicurezza",
+      en: "Security Fundamentals",
+      fr: "Fondamentaux de la sécurité",
+      es: "Fundamentos de seguridad",
+    },
+    slug: {
+      it: "fondamenti-di-sicurezza",
+      en: "security-fundamentals",
+      fr: "fondamentaux-de-la-securite",
+      es: "fundamentos-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Concetti di rete",
+      en: "Network Concepts",
+      fr: "Concepts de réseau",
+      es: "Conceptos de red",
+    },
+    slug: {
+      it: "concetti-di-rete",
+      en: "network-concepts",
+      fr: "concepts-de-reseau",
+      es: "conceptos-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Procedure di sicurezza",
+      en: "Security Procedures",
+      fr: "Procédures de sécurité",
+      es: "Procedimientos de seguridad",
+    },
+    slug: {
+      it: "procedure-di-sicurezza",
+      en: "security-procedures",
+      fr: "procedures-de-securite",
+      es: "procedimientos-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Risposta agli incidenti",
+      en: "Incident Response",
+      fr: "Réponse aux incidents",
+      es: "Respuesta a incidentes",
+    },
+    slug: {
+      it: "risposta-agli-incidenti",
+      en: "incident-response",
+      fr: "reponse-aux-incidents",
+      es: "respuesta-a-incidentes",
+    },
+  },
+  {
+    title: {
+      it: "Strumenti di sicurezza",
+      en: "Security Tools",
+      fr: "Outils de sécurité",
+      es: "Herramientas de seguridad",
+    },
+    slug: {
+      it: "strumenti-di-sicurezza",
+      en: "security-tools",
+      fr: "outils-de-securite",
+      es: "herramientas-de-seguridad",
+    },
+  },
+  {
+    title: {
+      it: "Security Monitoring & Threat Detection",
+      en: "Security Monitoring & Threat Detection",
+      fr: "Surveillance de sécurité & détection des menaces",
+      es: "Monitoreo de seguridad y detección de amenazas",
+    },
+    slug: {
+      it: "security-monitoring-and-threat-detection",
+      en: "security-monitoring-and-threat-detection",
+      fr: "surveillance-de-securite-and-detection-des-menaces",
+      es: "monitoreo-de-seguridad-y-deteccion-de-amenazas",
+    },
+  },
+],
 
   extraContent: {
     learn: {

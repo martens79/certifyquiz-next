@@ -29,12 +29,50 @@ const MicrosoftAzureFundamentals = {
     fr: "Introduction à l'informatique en nuage avec Azure.",
     es: "Introducción a la computación en la nube con Azure.",
   },
-
-  topics: [
-    { it: "Cloud computing", en: "Cloud computing", fr: "Cloud computing", es: "Computación en la nube" },
-    { it: "Servizi Azure", en: "Azure Services", fr: "Services Azure", es: "Servicios de Azure" },
-    { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
-  ],
+topics: [
+  {
+    title: {
+      it: "Concetti di cloud",
+      en: "Cloud concepts",
+      fr: "Concepts de cloud",
+      es: "Conceptos de nube",
+    },
+    slug: {
+      it: "concetti-di-cloud",
+      en: "cloud-concepts",
+      fr: "concepts-de-cloud",
+      es: "conceptos-de-nube",
+    },
+  },
+  {
+    title: {
+      it: "Architettura e servizi Azure",
+      en: "Azure architecture and services",
+      fr: "Architecture et services Azure",
+      es: "Arquitectura y servicios de Azure",
+    },
+    slug: {
+      it: "architettura-e-servizi-azure",
+      en: "azure-architecture-and-services",
+      fr: "architecture-et-services-azure",
+      es: "arquitectura-y-servicios-de-azure",
+    },
+  },
+  {
+    title: {
+      it: "Gestione e governance di Azure",
+      en: "Azure management and governance",
+      fr: "Gestion et gouvernance d'Azure",
+      es: "Gestión y gobernanza de Azure",
+    },
+    slug: {
+      it: "gestione-e-governance-di-azure",
+      en: "azure-management-and-governance",
+      fr: "gestion-et-gouvernance-dazure",
+      es: "gestion-y-gobernanza-de-azure",
+    },
+  },
+],
 
   extraContent: {
     // ✅ SOLO pagine d’esame ufficiali

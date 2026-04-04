@@ -29,12 +29,77 @@ const GoogleTensorFlowDeveloper = {
   },
 
   topics: [
-    { it: "Fondamenti di machine learning", en: "Machine learning fundamentals", fr: "Fondamentaux du machine learning", es: "Fundamentos del aprendizaje automático" },
-    { it: "TensorFlow e Keras", en: "TensorFlow and Keras", fr: "TensorFlow et Keras", es: "TensorFlow y Keras" },
-    { it: "Costruzione e addestramento modelli", en: "Model building and training", fr: "Construction et entraînement des modèles", es: "Construcción y entrenamiento de modelos" },
-    { it: "Validazione e valutazione", en: "Validation and evaluation", fr: "Validation et évaluation", es: "Validación y evaluación" },
-    { it: "Deployment in produzione", en: "Production deployment", fr: "Déploiement en production", es: "Despliegue en producción" },
-  ],
+  {
+    title: {
+      it: "Fondamenti di TensorFlow",
+      en: "TensorFlow Fundamentals",
+      fr: "Fondamentaux de TensorFlow",
+      es: "Fundamentos de TensorFlow",
+    },
+    slug: {
+      it: "fondamenti-di-tensorflow",
+      en: "tensorflow-fundamentals",
+      fr: "fondamentaux-de-tensorflow",
+      es: "fundamentos-de-tensorflow",
+    },
+  },
+  {
+    title: {
+      it: "Reti neurali",
+      en: "Neural Networks",
+      fr: "Réseaux neuronaux",
+      es: "Redes neuronales",
+    },
+    slug: {
+      it: "reti-neurali",
+      en: "neural-networks",
+      fr: "reseaux-neuronaux",
+      es: "redes-neuronales",
+    },
+  },
+  {
+    title: {
+      it: "Classificazione immagini",
+      en: "Image Classification",
+      fr: "Classification d'images",
+      es: "Clasificación de imágenes",
+    },
+    slug: {
+      it: "classificazione-immagini",
+      en: "image-classification",
+      fr: "classification-dimages",
+      es: "clasificacion-de-imagenes",
+    },
+  },
+  {
+    title: {
+      it: "NLP",
+      en: "NLP",
+      fr: "NLP",
+      es: "NLP",
+    },
+    slug: {
+      it: "nlp",
+      en: "nlp",
+      fr: "nlp",
+      es: "nlp",
+    },
+  },
+  {
+    title: {
+      it: "Previsioni su serie temporali",
+      en: "Time Series Forecasting",
+      fr: "Prévisions de séries temporelles",
+      es: "Predicciones de series temporales",
+    },
+    slug: {
+      it: "previsioni-su-serie-temporali",
+      en: "time-series-forecasting",
+      fr: "previsions-de-series-temporelles",
+      es: "predicciones-de-series-temporales",
+    },
+  },
+],
 
   extraContent: {
     // 🔗 Solo pagina ufficiale

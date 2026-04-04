@@ -31,13 +31,49 @@ const OracleDatabaseSQL = {
   },
 
   topics: [
-    { it: "Comandi SQL di base", en: "Basic SQL commands", fr: "Commandes SQL de base", es: "Comandos SQL básicos" },
-    { it: "Gestione di tabelle e indici", en: "Table and index management", fr: "Gestion des tables et des index", es: "Gestión de tablas e índices" },
-    { it: "Query complesse e JOIN", en: "Complex queries and JOINs", fr: "Requêtes complexes et JOIN", es: "Consultas complejas y JOINs" },
-    { it: "Funzioni e subquery", en: "Functions and subqueries", fr: "Fonctions et sous-requêtes", es: "Funciones y subconsultas" },
-    { it: "Sicurezza e autorizzazioni", en: "Security and permissions", fr: "Sécurité et autorisations", es: "Seguridad y permisos" },
-  ],
-
+  {
+    title: {
+      it: "Fondamenti di SQL",
+      en: "SQL fundamentals",
+      fr: "Fondamentaux de SQL",
+      es: "Fundamentos de SQL",
+    },
+    slug: {
+      it: "fondamenti-di-sql",
+      en: "sql-fundamentals",
+      fr: "fondamentaux-de-sql",
+      es: "fundamentos-de-sql",
+    },
+  },
+  {
+    title: {
+      it: "Modellazione dei dati",
+      en: "Data modeling",
+      fr: "Modélisation des données",
+      es: "Modelado de datos",
+    },
+    slug: {
+      it: "modellazione-dei-dati",
+      en: "data-modeling",
+      fr: "modelisation-des-donnees",
+      es: "modelado-de-datos",
+    },
+  },
+  {
+    title: {
+      it: "Gestione degli oggetti di database",
+      en: "Database object management",
+      fr: "Gestion des objets de base de données",
+      es: "Gestión de objetos de base de datos",
+    },
+    slug: {
+      it: "gestione-degli-oggetti-di-database",
+      en: "database-object-management",
+      fr: "gestion-des-objets-de-base-de-donnees",
+      es: "gestion-de-objetos-de-base-de-datos",
+    },
+  },
+],
   extraContent: {
     // ✅ SOLO pagine d’esame ufficiali
     examReference: {

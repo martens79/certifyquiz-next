@@ -29,11 +29,91 @@ const JavaSE = {
   },
 
   topics: [
-    { it: "Sintassi e OOP", en: "Syntax and OOP", fr: "Syntaxe et POO", es: "Sintaxis y POO" },
-    { it: "Gestione eccezioni", en: "Exception handling", fr: "Gestion des exceptions", es: "Manejo de excepciones" },
-    { it: "Collezioni e JDBC", en: "Collections and JDBC", fr: "Collections et JDBC", es: "Colecciones y JDBC" },
-  ],
-
+  {
+    title: {
+      it: "Sintassi di base Java",
+      en: "Java basic syntax",
+      fr: "Syntaxe de base de Java",
+      es: "Sintaxis básica de Java",
+    },
+    slug: {
+      it: "sintassi-di-base-java",
+      en: "java-basic-syntax",
+      fr: "syntaxe-de-base-de-java",
+      es: "sintaxis-basica-de-java",
+    },
+  },
+  {
+    title: {
+      it: "Programmazione orientata agli oggetti",
+      en: "Object-oriented programming",
+      fr: "Programmation orientée objet",
+      es: "Programación orientada a objetos",
+    },
+    slug: {
+      it: "programmazione-orientata-agli-oggetti",
+      en: "object-oriented-programming",
+      fr: "programmation-orientee-objet",
+      es: "programacion-orientada-a-objetos",
+    },
+  },
+  {
+    title: {
+      it: "Progettazione di classi",
+      en: "Class design",
+      fr: "Conception de classes",
+      es: "Diseño de clases",
+    },
+    slug: {
+      it: "progettazione-di-classi",
+      en: "class-design",
+      fr: "conception-de-classes",
+      es: "diseno-de-clases",
+    },
+  },
+  {
+    title: {
+      it: "Generics e collezioni",
+      en: "Generics and collections",
+      fr: "Generics et collections",
+      es: "Generics y colecciones",
+    },
+    slug: {
+      it: "generics-e-collezioni",
+      en: "generics-and-collections",
+      fr: "generics-et-collections",
+      es: "generics-y-colecciones",
+    },
+  },
+  {
+    title: {
+      it: "Concorrenza e multithreading",
+      en: "Concurrency and multithreading",
+      fr: "Concurrence et multithreading",
+      es: "Concurrencia y multithreading",
+    },
+    slug: {
+      it: "concorrenza-e-multithreading",
+      en: "concurrency-and-multithreading",
+      fr: "concurrence-et-multithreading",
+      es: "concurrencia-y-multithreading",
+    },
+  },
+  {
+    title: {
+      it: "JDBC e database",
+      en: "JDBC and databases",
+      fr: "JDBC et bases de données",
+      es: "JDBC y bases de datos",
+    },
+    slug: {
+      it: "jdbc-e-database",
+      en: "jdbc-and-databases",
+      fr: "jdbc-et-bases-de-donnees",
+      es: "jdbc-y-bases-de-datos",
+    },
+  },
+],
   extraContent: {
     // 🔗 SOLO pagine d’esame Oracle ufficiali
     examReference: {

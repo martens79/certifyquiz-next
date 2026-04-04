@@ -30,13 +30,77 @@ const MongoDBDeveloper = {
   },
 
   topics: [
-    { it: "Comandi MongoDB e CRUD", en: "MongoDB Commands and CRUD", fr: "Commandes MongoDB et CRUD", es: "Comandos MongoDB y CRUD" },
-    { it: "Modellazione dei documenti", en: "Document Modeling", fr: "Modélisation de documents", es: "Modelado de documentos" },
-    { it: "Query e aggregazioni avanzate", en: "Advanced Queries and Aggregations", fr: "Requêtes et agrégations avancées", es: "Consultas y agregaciones avanzadas" },
-    { it: "Replica set e sharding", en: "Replica Sets and Sharding", fr: "Replica sets et sharding", es: "Replica sets y sharding" },
-    { it: "Sicurezza e backup", en: "Security and Backup", fr: "Sécurité et sauvegarde", es: "Seguridad y respaldo" },
-  ],
-
+  {
+    title: {
+      it: "Operazioni CRUD",
+      en: "CRUD Operations",
+      fr: "Opérations CRUD",
+      es: "Operaciones CRUD",
+    },
+    slug: {
+      it: "operazioni-crud",
+      en: "crud-operations",
+      fr: "operations-crud",
+      es: "operaciones-crud",
+    },
+  },
+  {
+    title: {
+      it: "Modellazione dei dati",
+      en: "Data Modeling",
+      fr: "Modélisation des données",
+      es: "Modelado de datos",
+    },
+    slug: {
+      it: "modellazione-dei-dati",
+      en: "data-modeling",
+      fr: "modelisation-des-donnees",
+      es: "modelado-de-datos",
+    },
+  },
+  {
+    title: {
+      it: "Indici e aggregazioni",
+      en: "Indexes and Aggregations",
+      fr: "Indices et agrégations",
+      es: "Índices y agregaciones",
+    },
+    slug: {
+      it: "indici-e-aggregazioni",
+      en: "indexes-and-aggregations",
+      fr: "indices-et-agregations",
+      es: "indices-y-agregaciones",
+    },
+  },
+  {
+    title: {
+      it: "Replica e sharding",
+      en: "Replication and Sharding",
+      fr: "Réplication et sharding",
+      es: "Replicación y fragmentación",
+    },
+    slug: {
+      it: "replica-e-sharding",
+      en: "replication-and-sharding",
+      fr: "replication-et-sharding",
+      es: "replicacion-y-fragmentacion",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza e backup",
+      en: "Security and Backup",
+      fr: "Sécurité et sauvegarde",
+      es: "Seguridad y respaldo",
+    },
+    slug: {
+      it: "sicurezza-e-backup",
+      en: "security-and-backup",
+      fr: "securite-et-sauvegarde",
+      es: "seguridad-y-respaldo",
+    },
+  },
+],
   extraContent: {
     // ✅ SOLO pagine d’esame ufficiali
     examReference: {

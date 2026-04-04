@@ -31,10 +31,77 @@ const MicrosoftAIFundamentals = {
   },
 
   topics: [
-    { it: "AI di base", en: "Basic AI", fr: "IA de base", es: "IA básica" },
-    { it: "Machine Learning", en: "Machine Learning", fr: "Apprentissage automatique", es: "Aprendizaje automático" },
-    { it: "Etica e AI", en: "AI Ethics", fr: "Éthique de l'IA", es: "Ética de la IA" },
-  ],
+  {
+    title: {
+      it: "Concetti di AI",
+      en: "AI Concepts",
+      fr: "Concepts de l’IA",
+      es: "Conceptos de IA",
+    },
+    slug: {
+      it: "concetti-di-ai",
+      en: "ai-concepts",
+      fr: "concepts-de-lia",
+      es: "conceptos-de-ia",
+    },
+  },
+  {
+    title: {
+      it: "Machine learning su Azure",
+      en: "Machine Learning on Azure",
+      fr: "Apprentissage automatique sur Azure",
+      es: "Aprendizaje automático en Azure",
+    },
+    slug: {
+      it: "machine-learning-su-azure",
+      en: "machine-learning-on-azure",
+      fr: "apprentissage-automatique-sur-azure",
+      es: "aprendizaje-automatico-en-azure",
+    },
+  },
+  {
+    title: {
+      it: "Visione artificiale",
+      en: "Computer Vision",
+      fr: "Vision par ordinateur",
+      es: "Visión por computadora",
+    },
+    slug: {
+      it: "visione-artificiale",
+      en: "computer-vision",
+      fr: "vision-par-ordinateur",
+      es: "vision-por-computadora",
+    },
+  },
+  {
+    title: {
+      it: "Elaborazione del linguaggio naturale",
+      en: "Natural Language Processing",
+      fr: "Traitement du langage naturel",
+      es: "Procesamiento de lenguaje natural",
+    },
+    slug: {
+      it: "elaborazione-del-linguaggio-naturale",
+      en: "natural-language-processing",
+      fr: "traitement-du-langage-naturel",
+      es: "procesamiento-de-lenguaje-natural",
+    },
+  },
+  {
+    title: {
+      it: "AI generativa",
+      en: "Generative AI",
+      fr: "IA générative",
+      es: "IA generativa",
+    },
+    slug: {
+      it: "ai-generativa",
+      en: "generative-ai",
+      fr: "ia-generative",
+      es: "ia-generativa",
+    },
+  },
+],
 
   extraContent: {
     learn: {

@@ -32,13 +32,92 @@ const MicrosoftSQLServer = {
     es: "Practica SQL y Microsoft SQL Server con quizzes y preguntas prácticas: consultas, modelado, procedimientos almacenados, rendimiento, backup/restauración y seguridad. Banco de preguntas en crecimiento.",
   },
 
-  topics: [
-    { it: "Fondamenti di SQL (SELECT, JOIN, GROUP BY)", en: "SQL Fundamentals (SELECT, JOIN, GROUP BY)", fr: "Bases SQL (SELECT, JOIN, GROUP BY)", es: "Fundamentos de SQL (SELECT, JOIN, GROUP BY)" },
-    { it: "Modellazione e progettazione database", en: "Database Modeling & Design", fr: "Modélisation et conception", es: "Modelado y diseño de BD" },
-    { it: "Stored procedure, funzioni e viste", en: "Stored Procedures, Functions & Views", fr: "Procédures stockées, fonctions et vues", es: "Procedimientos, funciones y vistas" },
-    { it: "Performance e ottimizzazione query", en: "Performance & Query Optimization", fr: "Performances et optimisation", es: "Rendimiento y optimización" },
-    { it: "Backup, restore e sicurezza", en: "Backup, Restore & Security", fr: "Sauvegarde, restauration et sécurité", es: "Backup, restauración y seguridad" },
-  ],
+ topics: [
+  {
+    title: {
+      it: "Fondamenti di database relazionali",
+      en: "Fundamentals of Relational Databases",
+      fr: "Fondamentaux des bases de données relationnelles",
+      es: "Fundamentos de bases de datos relacionales",
+    },
+    slug: {
+      it: "fondamenti-di-database-relazionali",
+      en: "fundamentals-of-relational-databases",
+      fr: "fondamentaux-des-bases-de-donnees-relationnelles",
+      es: "fundamentos-de-bases-de-datos-relacionales",
+    },
+  },
+  {
+    title: {
+      it: "Linguaggio SQL e T-SQL",
+      en: "SQL and T-SQL Language",
+      fr: "Langage SQL et T-SQL",
+      es: "Lenguaje SQL y T-SQL",
+    },
+    slug: {
+      it: "linguaggio-sql-e-t-sql",
+      en: "sql-and-t-sql-language",
+      fr: "langage-sql-et-t-sql",
+      es: "lenguaje-sql-y-t-sql",
+    },
+  },
+  {
+    title: {
+      it: "Gestione degli oggetti di database",
+      en: "Management of Database Objects",
+      fr: "Gestion des objets de base de données",
+      es: "Gestión de objetos de base de datos",
+    },
+    slug: {
+      it: "gestione-degli-oggetti-di-database",
+      en: "management-of-database-objects",
+      fr: "gestion-des-objets-de-base-de-donnees",
+      es: "gestion-de-objetos-de-base-de-datos",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza e gestione degli accessi",
+      en: "Security and Access Management",
+      fr: "Sécurité et gestion des accès",
+      es: "Seguridad y gestión de accesos",
+    },
+    slug: {
+      it: "sicurezza-e-gestione-degli-accessi",
+      en: "security-and-access-management",
+      fr: "securite-et-gestion-des-acces",
+      es: "seguridad-y-gestion-de-accesos",
+    },
+  },
+  {
+    title: {
+      it: "Backup e ripristino dei dati",
+      en: "Data Backup and Recovery",
+      fr: "Sauvegarde et récupération des données",
+      es: "Respaldo y recuperación de datos",
+    },
+    slug: {
+      it: "backup-e-ripristino-dei-dati",
+      en: "data-backup-and-recovery",
+      fr: "sauvegarde-et-recuperation-des-donnees",
+      es: "respaldo-y-recuperacion-de-datos",
+    },
+  },
+  {
+    title: {
+      it: "Ottimizzazione delle prestazioni",
+      en: "Performance Optimization",
+      fr: "Optimisation des performances",
+      es: "Optimización del rendimiento",
+    },
+    slug: {
+      it: "ottimizzazione-delle-prestazioni",
+      en: "performance-optimization",
+      fr: "optimisation-des-performances",
+      es: "optimizacion-del-rendimiento",
+    },
+  },
+],
 
   extraContent: {
     // ✅ SOLO pagine d’esame ufficiali (percorsi moderni Azure Data)

@@ -29,11 +29,78 @@ const JNCIE = {
     es: "Certificación de nivel experto para redes basadas en Juniper.",
   },
 
-  topics: [
-    { it: "Routing avanzato", en: "Advanced Routing", fr: "Routage avancé", es: "Enrutamiento avanzado" },
-    { it: "Dispositivi Juniper", en: "Juniper Devices", fr: "Appareils Juniper", es: "Dispositivos Juniper" },
-    { it: "Sicurezza di rete", en: "Network Security", fr: "Sécurité réseau", es: "Seguridad de red" },
-  ],
+topics: [
+  {
+    title: {
+      it: "Routing avanzato",
+      en: "Advanced Routing",
+      fr: "Routage avancé",
+      es: "Enrutamiento avanzado",
+    },
+    slug: {
+      it: "routing-avanzato",
+      en: "advanced-routing",
+      fr: "routage-avance",
+      es: "enrutamiento-avanzado",
+    },
+  },
+  {
+    title: {
+      it: "Switching e VLAN",
+      en: "Switching and VLAN",
+      fr: "Commutation et VLAN",
+      es: "Conmutación y VLAN",
+    },
+    slug: {
+      it: "switching-e-vlan",
+      en: "switching-and-vlan",
+      fr: "commutation-et-vlan",
+      es: "conmutacion-y-vlan",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza di rete",
+      en: "Network Security",
+      fr: "Sécurité du réseau",
+      es: "Seguridad de red",
+    },
+    slug: {
+      it: "sicurezza-di-rete",
+      en: "network-security",
+      fr: "securite-du-reseau",
+      es: "seguridad-de-red",
+    },
+  },
+  {
+    title: {
+      it: "Servizi MPLS e VPN",
+      en: "MPLS and VPN Services",
+      fr: "Services MPLS et VPN",
+      es: "Servicios MPLS y VPN",
+    },
+    slug: {
+      it: "servizi-mpls-e-vpn",
+      en: "mpls-and-vpn-services",
+      fr: "services-mpls-et-vpn",
+      es: "servicios-mpls-y-vpn",
+    },
+  },
+  {
+    title: {
+      it: "Troubleshooting avanzato",
+      en: "Advanced Troubleshooting",
+      fr: "Dépannage avancé",
+      es: "Solución de problemas avanzada",
+    },
+    slug: {
+      it: "troubleshooting-avanzato",
+      en: "advanced-troubleshooting",
+      fr: "depannage-avance",
+      es: "solucion-de-problemas-avanzada",
+    },
+  },
+],
 
   extraContent: {
     // 🔗 SOLO pagine d’esame Juniper (lab)

@@ -38,38 +38,120 @@ const CEH = {
   },
 
   // Se i topic DB sono questi 5, lasciali così (meglio coerenza con quizRoute/topic mapping).
-  topics: [
-    {
-      it: "Metodologie di hacking etico",
-      en: "Ethical Hacking Methodologies",
-      fr: "Méthodologies de hacking éthique",
-      es: "Metodologías de hacking ético",
+ topics: [
+  {
+    title: {
+      it: "Accesso non autorizzato",
+      en: "Gaining Unauthorized Access",
+      fr: "Accès non autorisé",
+      es: "Acceso no autorizado",
     },
-    {
-      it: "Penetration Testing",
-      en: "Penetration Testing",
-      fr: "Tests de pénétration",
-      es: "Pruebas de penetración",
+    slug: {
+      it: "accesso-non-autorizzato",
+      en: "gaining-unauthorized-access",
+      fr: "acces-non-autorise",
+      es: "acceso-no-autorizado",
     },
-    {
-      it: "Sicurezza delle reti",
-      en: "Network Security",
-      fr: "Sécurité des réseaux",
-      es: "Seguridad de redes",
+  },
+  {
+    title: {
+      it: "Mantenimento dell’accesso",
+      en: "Maintaining Access",
+      fr: "Maintien de l’accès",
+      es: "Mantenimiento del acceso",
     },
-    {
-      it: "Malware ed Exploit",
-      en: "Malware & Exploits",
-      fr: "Malwares et exploits",
-      es: "Malware y exploits",
+    slug: {
+      it: "mantenimento-dellaccesso",
+      en: "maintaining-access",
+      fr: "maintien-de-lacces",
+      es: "mantenimiento-del-acceso",
     },
-    {
-      it: "Criptografia e Social Engineering",
-      en: "Cryptography & Social Engineering",
-      fr: "Cryptographie et ingénierie sociale",
-      es: "Criptografía e ingeniería social",
+  },
+  {
+    title: {
+      it: "Copertura delle tracce e forense",
+      en: "Covering Tracks and Forensics",
+      fr: "Masquage des traces et criminalistique",
+      es: "Ocultación de huellas y análisis forense",
     },
-  ],
+    slug: {
+      it: "copertura-delle-tracce-e-forense",
+      en: "covering-tracks-and-forensics",
+      fr: "masquage-des-traces-et-criminalistique",
+      es: "ocultacion-de-huellas-y-analisis-forense",
+    },
+  },
+  {
+    title: {
+      it: "Fondamenti di ethical hacking",
+      en: "Ethical Hacking Fundamentals",
+      fr: "Fondamentaux du hacking éthique",
+      es: "Fundamentos del hacking ético",
+    },
+    slug: {
+      it: "fondamenti-di-ethical-hacking",
+      en: "ethical-hacking-fundamentals",
+      fr: "fondamentaux-du-hacking-ethique",
+      es: "fundamentos-del-hacking-etico",
+    },
+  },
+  {
+    title: {
+      it: "Tipi di attacchi e minacce",
+      en: "Types of Attacks and Threats",
+      fr: "Types d’attaques et menaces",
+      es: "Tipos de ataques y amenazas",
+    },
+    slug: {
+      it: "tipi-di-attacchi-e-minacce",
+      en: "types-of-attacks-and-threats",
+      fr: "types-dattaques-et-menaces",
+      es: "tipos-de-ataques-y-amenazas",
+    },
+  },
+  {
+    title: {
+      it: "Tecniche di raccolta informazioni",
+      en: "Information Gathering Techniques",
+      fr: "Techniques de collecte d’informations",
+      es: "Técnicas de recopilación de información",
+    },
+    slug: {
+      it: "tecniche-di-raccolta-informazioni",
+      en: "information-gathering-techniques",
+      fr: "techniques-de-collecte-dinformations",
+      es: "tecnicas-de-recopilacion-de-informacion",
+    },
+  },
+  {
+    title: {
+      it: "Scansione delle vulnerabilità e exploit",
+      en: "Vulnerability Scanning and Exploitation",
+      fr: "Analyse des vulnérabilités et exploitation",
+      es: "Análisis de vulnerabilidades y explotación",
+    },
+    slug: {
+      it: "scansione-delle-vulnerabilita-e-exploit",
+      en: "vulnerability-scanning-and-exploitation",
+      fr: "analyse-des-vulnerabilites-et-exploitation",
+      es: "analisis-de-vulnerabilidades-y-explotacion",
+    },
+  },
+  {
+    title: {
+      it: "Attacchi su applicazioni Web",
+      en: "Web Application Attacks",
+      fr: "Attaques sur les applications Web",
+      es: "Ataques a aplicaciones web",
+    },
+    slug: {
+      it: "attacchi-su-applicazioni-web",
+      en: "web-application-attacks",
+      fr: "attaques-sur-les-applications-web",
+      es: "ataques-a-aplicaciones-web",
+    },
+  },
+],
 
   extraContent: {
     // “Cosa imparerai” deve essere concreto + orientato ai task d’esame.
