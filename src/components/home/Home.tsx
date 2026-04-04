@@ -266,7 +266,7 @@ const TRENDING_CERTS: Array<{
       fr: "Bases cyber : menaces, contrôles, sensibilisation et réponse.",
       es: "Bases cyber: amenazas, controles, concienciación y respuesta.",
     },
-    path: "/quiz/cisco-ccst-security", // ✅ verifica: potrebbe essere /quiz/ccst-cybersecurity
+    path: "/quiz/cisco-ccst-cybersecurity", // ✅ verifica: potrebbe essere /quiz/ccst-cybersecurity
   },
   {
     key: "ceh",
