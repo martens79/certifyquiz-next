@@ -257,10 +257,10 @@ export async function generateMetadata({
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
   const base = SEO_BASE[L];
-  const resolvedSlug = resolveQuizSlug(slug);
-  const certName = shortCertName(resolvedSlug);
-  const title = `${base.quizLabel} — ${certName}`;
-  const description = base.desc;
+const resolvedSlug = resolveQuizSlug(slug);
+const certName = shortCertName(resolvedSlug);
+const title = `${base.quizLabel} — ${certName}`;
+const description = base.desc;
 
   const canonicalPath = quizCertPath(L, resolvedSlug);
   const canonical = `${SITE}${canonicalPath}`;
@@ -303,6 +303,9 @@ export default async function QuizTopicsPage({
 
   const cert = getCertBySlug(resolvedSlug);
   const certId = cert?.id;
+
+  // ✅ QUI IL FIX IMPORTANTE
+  const certName = shortCertName(resolvedSlug);
   
 
   if (!certId) {
@@ -347,7 +350,7 @@ export default async function QuizTopicsPage({
   const categoryHref =
     rawCategoryKey === "default" ? `${langPrefix(L)}/quiz-home` : categoryPath(L, rawCategoryKey);
 
-  const certName = pickCertTitle(cert, L, resolvedSlug);
+ 
 
   const mixedLabel =
     L === "it" ? "Quiz misto" : L === "en" ? "Mixed quiz" : L === "fr" ? "Quiz mixte" : "Quiz mixto";
