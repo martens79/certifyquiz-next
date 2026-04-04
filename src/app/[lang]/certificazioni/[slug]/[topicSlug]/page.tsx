@@ -53,7 +53,56 @@ function getLabels(lang: Lang) {
       it: "Questo argomento fa parte del percorso",
       en: "This topic is part of the",
       fr: "Ce sujet fait partie du parcours",
-      es: "Este tema forma parte del parcours",
+      es: "Este tema forma parte del recorrido",
+    }[lang],
+
+    learnText1: {
+      it: "In questa pagina puoi capire meglio cosa copre questo argomento, quali concetti vengono richiesti e perché è utile esercitarti con un quiz dedicato prima di passare all’esame completo o ai quiz misti.",
+      en: "On this page you can better understand what this topic covers, which concepts are most important, and why practicing with a dedicated quiz is useful before moving on to a full exam or mixed quizzes.",
+      fr: "Sur cette page, vous pouvez mieux comprendre ce que couvre ce sujet, quels concepts sont les plus importants et pourquoi il est utile de s’exercer avec un quiz dédié avant de passer à l’examen complet ou aux quiz mixtes.",
+      es: "En esta página puedes comprender mejor qué cubre este tema, qué conceptos son más importantes y por qué es útil practicar con un cuestionario específico antes de pasar al examen completo o a cuestionarios mixtos.",
+    }[lang],
+
+    learnText2: {
+      it: "Il quiz su",
+      en: "The quiz on",
+      fr: "Le quiz sur",
+      es: "El quiz sobre",
+    }[lang],
+
+    learnText3: {
+      it: "ti aiuta a concentrarti su nozioni specifiche, definizioni, scenari pratici e concetti ricorrenti che possono comparire durante la preparazione alla certificazione.",
+      en: "helps you focus on specific concepts, definitions, practical scenarios, and recurring ideas that may appear during certification preparation.",
+      fr: "vous aide à vous concentrer sur des notions spécifiques, des définitions, des scénarios pratiques et des concepts récurrents qui peuvent apparaître pendant la préparation à la certification.",
+      es: "te ayuda a centrarte en conceptos específicos, definiciones, escenarios prácticos e ideas recurrentes que pueden aparecer durante la preparación para la certificación.",
+    }[lang],
+
+    whyText1: {
+      it: "Studiare bene",
+      en: "Studying",
+      fr: "Bien étudier",
+      es: "Estudiar bien",
+    }[lang],
+
+    whyText2: {
+      it: "è importante perché questo argomento contribuisce alla comprensione generale della certificazione",
+      en: "is important because this topic contributes to the overall understanding of the",
+      fr: "est important, car ce sujet contribue à la compréhension globale de la certification",
+      es: "es importante porque este tema contribuye a la comprensión general de la certificación",
+    }[lang],
+
+    whyText3: {
+      it: "Una buona preparazione sui singoli topic rende più semplice affrontare sia le domande teoriche sia quelle applicative, migliorando la sicurezza e la rapidità nel rispondere.",
+      en: "Good preparation on individual topics makes it easier to handle both theoretical and practical questions, improving confidence and speed when answering.",
+      fr: "Une bonne préparation sur chaque sujet facilite la gestion des questions théoriques et pratiques, tout en améliorant la confiance et la rapidité de réponse.",
+      es: "Una buena preparación en cada tema facilita afrontar tanto las preguntas teóricas como las prácticas, mejorando la seguridad y la rapidez al responder.",
+    }[lang],
+
+    whyText4: {
+      it: "Allenarti topic per topic ti permette anche di individuare con precisione i tuoi punti deboli, ripassare meglio e costruire una preparazione più solida nel tempo.",
+      en: "Training topic by topic also helps you identify weak areas more precisely, review more effectively, and build a stronger preparation over time.",
+      fr: "S’entraîner sujet par sujet vous permet aussi d’identifier plus précisément vos points faibles, de mieux réviser et de construire une préparation plus solide dans le temps.",
+      es: "Practicar tema por tema también te permite identificar con mayor precisión tus puntos débiles, repasar mejor y construir una preparación más sólida con el tiempo.",
     }[lang],
   };
 }
@@ -89,7 +138,7 @@ export async function generateMetadata({
       canonical:
         lang === "en"
           ? `/certifications/${slug}/${topicSlug}`
-          : `/${lang}/certificazioni/${slug}/${topicSlug}`,
+          : `/${lang}/certifications/${slug}/${topicSlug}`,
     },
   };
 }
@@ -118,7 +167,7 @@ export default async function TopicPage({
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <Link
-        href={lang === "en" ? `/certifications/${slug}` : `/${lang}/certificazioni/${slug}`}
+        href={lang === "en" ? `/certifications/${slug}` : `/${lang}/certifications/${slug}`}
         className="text-sm text-blue-600 hover:underline"
       >
         {labels.back}
@@ -152,14 +201,11 @@ export default async function TopicPage({
           {labels.whatYouWillLearn}
         </h2>
         <p className="text-slate-700 leading-7">
-          {labels.practiceIntro} <strong>{data.certification.title}</strong>. In questa pagina puoi
-          capire meglio cosa copre questo argomento, quali concetti vengono richiesti e perché è utile
-          esercitarti con un quiz dedicato prima di passare all’esame completo o ai quiz misti.
+          {labels.practiceIntro} <strong>{data.certification.title}</strong>.{" "}
+          {labels.learnText1}
         </p>
         <p className="text-slate-700 leading-7 mt-4">
-          Il quiz su <strong>{data.topic.title}</strong> ti aiuta a concentrarti su nozioni specifiche,
-          definizioni, scenari pratici e concetti ricorrenti che possono comparire durante la preparazione
-          alla certificazione.
+          {labels.learnText2} <strong>{data.topic.title}</strong> {labels.learnText3}
         </p>
       </section>
 
@@ -168,15 +214,10 @@ export default async function TopicPage({
           {labels.whyItMatters}
         </h2>
         <p className="text-slate-700 leading-7">
-          Studiare bene <strong>{data.topic.title}</strong> è importante perché questo argomento contribuisce
-          alla comprensione generale della certificazione <strong>{data.certification.title}</strong>. Una buona
-          preparazione sui singoli topic rende più semplice affrontare sia le domande teoriche sia quelle
-          applicative, migliorando la sicurezza e la rapidità nel rispondere.
+          {labels.whyText1} <strong>{data.topic.title}</strong> {labels.whyText2}{" "}
+          <strong>{data.certification.title}</strong>. {labels.whyText3}
         </p>
-        <p className="text-slate-700 leading-7 mt-4">
-          Allenarti topic per topic ti permette anche di individuare con precisione i tuoi punti deboli,
-          ripassare meglio e costruire una preparazione più solida nel tempo.
-        </p>
+        <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
       </section>
 
       <section>
@@ -191,7 +232,7 @@ export default async function TopicPage({
               href={
                 lang === "en"
                   ? `/certifications/${slug}/${t.slug}`
-                  : `/${lang}/certificazioni/${slug}/${t.slug}`
+                  : `/${lang}/certifications/${slug}/${t.slug}`
               }
               className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
             >
