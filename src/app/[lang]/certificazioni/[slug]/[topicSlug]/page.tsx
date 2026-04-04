@@ -138,7 +138,7 @@ export async function generateMetadata({
       canonical:
         lang === "en"
           ? `/certifications/${slug}/${topicSlug}`
-          : `/${lang}/certifications/${slug}/${topicSlug}`,
+          : `/${lang}/certificazioni/${slug}/${topicSlug}`,
     },
   };
 }
@@ -167,7 +167,11 @@ export default async function TopicPage({
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <Link
-        href={lang === "en" ? `/certifications/${slug}` : `/${lang}/certifications/${slug}`}
+        href={
+          lang === "en"
+            ? `/certifications/${slug}`
+            : `/${lang}/certificazioni/${slug}`
+        }
         className="text-sm text-blue-600 hover:underline"
       >
         {labels.back}
@@ -183,7 +187,11 @@ export default async function TopicPage({
         </p>
 
         <Link
-          href={lang === "en" ? `/quiz/topic/${data.topic.id}` : `/${lang}/quiz/topic/${data.topic.id}`}
+          href={
+            lang === "en"
+              ? `/quiz/topic/${data.topic.id}`
+              : `/${lang}/quiz/topic/${data.topic.id}`
+          }
           className="inline-block bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 mb-6"
         >
           {labels.startQuiz}
@@ -205,7 +213,8 @@ export default async function TopicPage({
           {labels.learnText1}
         </p>
         <p className="text-slate-700 leading-7 mt-4">
-          {labels.learnText2} <strong>{data.topic.title}</strong> {labels.learnText3}
+          {labels.learnText2} <strong>{data.topic.title}</strong>{" "}
+          {labels.learnText3}
         </p>
       </section>
 
@@ -214,8 +223,9 @@ export default async function TopicPage({
           {labels.whyItMatters}
         </h2>
         <p className="text-slate-700 leading-7">
-          {labels.whyText1} <strong>{data.topic.title}</strong> {labels.whyText2}{" "}
-          <strong>{data.certification.title}</strong>. {labels.whyText3}
+          {labels.whyText1} <strong>{data.topic.title}</strong>{" "}
+          {labels.whyText2} <strong>{data.certification.title}</strong>.{" "}
+          {labels.whyText3}
         </p>
         <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
       </section>
@@ -232,7 +242,7 @@ export default async function TopicPage({
               href={
                 lang === "en"
                   ? `/certifications/${slug}/${t.slug}`
-                  : `/${lang}/certifications/${slug}/${t.slug}`
+                  : `/${lang}/certificazioni/${slug}/${t.slug}`
               }
               className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
             >
