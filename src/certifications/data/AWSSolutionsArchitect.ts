@@ -26,37 +26,63 @@ const AWS_SOLUTIONS_ARCHITECT = {
   },
 
   topics: [
-    {
-      it: "Principi di architettura cloud AWS",
-      en: "AWS Cloud Architecture Principles",
-      fr: "Principes d’architecture cloud AWS",
-      es: "Principios de arquitectura en la nube de AWS",
+  {
+    title: {
+      it: "Accesso sicuro alle risorse AWS",
+      en: "Secure access to AWS resources",
+      fr: "Accès sécurisé aux ressources AWS",
+      es: "Acceso seguro a los recursos de AWS",
     },
-    {
-      it: "Progettazione di applicazioni scalabili",
-      en: "Designing Scalable Applications",
-      fr: "Conception d’applications évolutives",
-      es: "Diseño de aplicaciones escalables",
+    slug: {
+      it: "accesso-sicuro-alle-risorse-aws",
+      en: "secure-access-to-aws-resources",
+      fr: "acces-securise-aux-ressources-aws",
+      es: "acceso-seguro-a-los-recursos-de-aws",
     },
-    {
-      it: "Sicurezza e best practice su AWS",
-      en: "AWS Security and Best Practices",
-      fr: "Sécurité AWS et bonnes pratiques",
-      es: "Seguridad y buenas prácticas en AWS",
+  },
+  {
+    title: {
+      it: "Architetture resilienti",
+      en: "Resilient architectures",
+      fr: "Architectures résilientes",
+      es: "Arquitecturas resilientes",
     },
-    {
-      it: "Networking e storage su AWS",
-      en: "Networking and Storage in AWS",
-      fr: "Réseau et stockage sur AWS",
-      es: "Redes y almacenamiento en AWS",
+    slug: {
+      it: "architetture-resilienti",
+      en: "resilient-architectures",
+      fr: "architectures-resilientes",
+      es: "arquitecturas-resilientes",
     },
-    {
-      it: "Monitoraggio e ottimizzazione performance",
-      en: "Monitoring and Performance Optimization",
-      fr: "Surveillance et optimisation des performances",
-      es: "Supervisión y optimización del rendimiento",
+  },
+  {
+    title: {
+      it: "Architetture ad alte prestazioni",
+      en: "High performance architectures",
+      fr: "Architectures haute performance",
+      es: "Arquitecturas de alto rendimiento",
     },
-  ],
+    slug: {
+      it: "architetture-ad-alte-prestazioni",
+      en: "high-performance-architectures",
+      fr: "architectures-haute-performance",
+      es: "arquitecturas-de-alto-rendimiento",
+    },
+  },
+  {
+    title: {
+      it: "Architetture ottimizzate per i costi",
+      en: "Cost-optimized architectures",
+      fr: "Architectures optimisées pour les coûts",
+      es: "Arquitecturas optimizadas por costos",
+    },
+    slug: {
+      it: "architetture-ottimizzate-per-i-costi",
+      en: "cost-optimized-architectures",
+      fr: "architectures-optimisees-pour-les-couts",
+      es: "arquitecturas-optimizadas-por-costos",
+    },
+  },
+],
 
   extraContent: {
     learn: {
