@@ -24,6 +24,8 @@ function getLabels() {
       "Una buena preparación en cada tema facilita afrontar tanto las preguntas teóricas como las prácticas, mejorando la seguridad y la rapidez al responder.",
     whyText4:
       "Practicar tema por tema también te permite identificar con mayor precisión tus puntos débiles, repasar mejor y construir una preparación más sólida con el tiempo.",
+    faqTitle: "Preguntas frecuentes",
+    contentTitle: "Guía rápida",
   };
 }
 
@@ -50,9 +52,18 @@ export async function generateMetadata({
     };
   }
 
+  const title =
+    data.topic.seoTitle ||
+    `${data.topic.title} | ${data.certification.title} | CertifyQuiz`;
+
+  const description =
+    data.topic.seoDescription ||
+    data.topic.description ||
+    "Practica este tema de certificación en CertifyQuiz.";
+
   return {
-    title: `${data.topic.title} | ${data.certification.title} | CertifyQuiz`,
-    description: data.topic.description,
+    title,
+    description,
     alternates: {
       canonical: `/es/certificaciones/${slug}/${topicSlug}`,
     },
@@ -93,9 +104,15 @@ export default async function TopicPageEs({
           {data.topic.title}
         </h1>
 
-        <p className="text-lg text-slate-700 max-w-3xl mb-6">
+        <p className="text-lg text-slate-700 max-w-3xl mb-4">
           {data.topic.description}
         </p>
+
+        {data.topic.intro && (
+          <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+            <p>{data.topic.intro}</p>
+          </div>
+        )}
 
         <Link
           href={`/es/quiz/topic/${data.topic.id}`}
@@ -136,6 +153,34 @@ export default async function TopicPageEs({
         </p>
         <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
       </section>
+
+      {data.topic.content && (
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
+            {labels.contentTitle}
+          </h2>
+          <div className="text-slate-700 leading-7 whitespace-pre-line">
+            {data.topic.content}
+          </div>
+        </section>
+      )}
+
+      {data.topic.faq && data.topic.faq.length > 0 && (
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+            {labels.faqTitle}
+          </h2>
+
+          <div className="space-y-5">
+            {data.topic.faq.map((item, index) => (
+              <div key={`${item.q}-${index}`}>
+                <h3 className="font-semibold text-slate-900">{item.q}</h3>
+                <p className="text-slate-700 mt-2 leading-7">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="text-2xl font-semibold text-slate-900 mb-4">

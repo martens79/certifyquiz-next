@@ -34,6 +34,14 @@ function getLabels(lang: Lang) {
     practiceIntro: {
       en: "This topic is part of the",
     }[lang],
+
+    contentTitle: {
+      en: "Quick guide",
+    }[lang],
+
+    faqTitle: {
+      en: "FAQ",
+    }[lang],
   };
 }
 
@@ -60,9 +68,18 @@ export async function generateMetadata({
     };
   }
 
+  const title =
+    data.topic.seoTitle ||
+    `${data.topic.title} | ${data.certification.title} | CertifyQuiz`;
+
+  const description =
+    data.topic.seoDescription ||
+    data.topic.description ||
+    "Practice certification topics on CertifyQuiz.";
+
   return {
-    title: `${data.topic.title} | ${data.certification.title} | CertifyQuiz`,
-    description: data.topic.description,
+    title,
+    description,
     alternates: {
       canonical: `/certifications/${slug}/${topicSlug}`,
     },
@@ -103,9 +120,15 @@ export default async function TopicPageEn({
           {data.topic.title}
         </h1>
 
-        <p className="text-lg text-slate-700 max-w-3xl mb-6">
+        <p className="text-lg text-slate-700 max-w-3xl mb-4">
           {data.topic.description}
         </p>
+
+        {data.topic.intro && (
+          <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+            <p>{data.topic.intro}</p>
+          </div>
+        )}
 
         <Link
           href={`/quiz/topic/${data.topic.id}`}
@@ -145,9 +168,9 @@ export default async function TopicPageEn({
         <p className="text-slate-700 leading-7">
           Studying <strong>{data.topic.title}</strong> properly is important
           because it strengthens your overall understanding of the{" "}
-          <strong>{data.certification.title}</strong> certification. Good topic-level
-          preparation makes it easier to answer both theoretical and practical
-          questions with more confidence and speed.
+          <strong>{data.certification.title}</strong> certification. Good
+          topic-level preparation makes it easier to answer both theoretical and
+          practical questions with more confidence and speed.
         </p>
         <p className="text-slate-700 leading-7 mt-4">
           Training one topic at a time also helps you identify weak points,
@@ -155,6 +178,34 @@ export default async function TopicPageEn({
           before moving to mixed quizzes or full exam simulations.
         </p>
       </section>
+
+      {data.topic.content && (
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
+            {labels.contentTitle}
+          </h2>
+          <div className="text-slate-700 leading-7 whitespace-pre-line">
+            {data.topic.content}
+          </div>
+        </section>
+      )}
+
+      {data.topic.faq && data.topic.faq.length > 0 && (
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+            {labels.faqTitle}
+          </h2>
+
+          <div className="space-y-5">
+            {data.topic.faq.map((item, index) => (
+              <div key={`${item.q}-${index}`}>
+                <h3 className="font-semibold text-slate-900">{item.q}</h3>
+                <p className="text-slate-700 mt-2 leading-7">{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <h2 className="text-2xl font-semibold text-slate-900 mb-4">
