@@ -154,24 +154,14 @@ export default async function TopicPageFr({
         <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
       </section>
 
-      {data.topic.content && (
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.contentTitle}
-          </h2>
-         {data.topic.content && (
+     {data.topic.content && (
   <section className="bg-white border rounded-2xl p-6 mb-8">
-    <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-      {labels.contentTitle}
-    </h2>
     <div
       className="prose max-w-none text-slate-700"
       dangerouslySetInnerHTML={{ __html: data.topic.content }}
     />
   </section>
 )}
-        </section>
-      )}
 
       {data.topic.faq && data.topic.faq.length > 0 && (
         <section className="bg-white border rounded-2xl p-6 mb-8">
