@@ -184,9 +184,17 @@ export default async function TopicPageEn({
           <h2 className="text-2xl font-semibold text-slate-900 mb-3">
             {labels.contentTitle}
           </h2>
-          <div className="text-slate-700 leading-7 whitespace-pre-line">
-            {data.topic.content}
-          </div>
+          {data.topic.content && (
+  <section className="bg-white border rounded-2xl p-6 mb-8">
+    <h2 className="text-2xl font-semibold text-slate-900 mb-3">
+      {labels.contentTitle}
+    </h2>
+    <div
+      className="prose max-w-none text-slate-700"
+      dangerouslySetInnerHTML={{ __html: data.topic.content }}
+    />
+  </section>
+)}
         </section>
       )}
 
