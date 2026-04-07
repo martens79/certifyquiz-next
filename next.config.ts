@@ -172,7 +172,18 @@ const nextConfig: NextConfig = {
       // ---------------------------------------------------------------------
       // ✅ Slug legacy / alias (visti nei 404)
       // ---------------------------------------------------------------------
+            // CompTIA Security+ legacy -> canonical
+      { source: "/certifications/comptia-security-plus", destination: "/certifications/security-plus", permanent: true },
+      { source: "/certifications/comptia-security-plus/:path*", destination: "/certifications/security-plus/:path*", permanent: true },
 
+      { source: "/it/certificazioni/comptia-security-plus", destination: "/it/certificazioni/security-plus", permanent: true },
+      { source: "/it/certificazioni/comptia-security-plus/:path*", destination: "/it/certificazioni/security-plus/:path*", permanent: true },
+
+      { source: "/fr/certifications/comptia-security-plus", destination: "/fr/certifications/security-plus", permanent: true },
+      { source: "/fr/certifications/comptia-security-plus/:path*", destination: "/fr/certifications/security-plus/:path*", permanent: true },
+
+      { source: "/es/certificaciones/comptia-security-plus", destination: "/es/certificaciones/security-plus", permanent: true },
+      { source: "/es/certificaciones/comptia-security-plus/:path*", destination: "/es/certificaciones/security-plus/:path*", permanent: true },
       // Tensorflow
       { source: "/certifications/tensorflow-developer", destination: "/certifications/tensorflow", permanent: true },
       { source: "/it/certificazioni/tensorflow-developer", destination: "/it/certificazioni/tensorflow", permanent: true },
