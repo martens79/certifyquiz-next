@@ -25,6 +25,9 @@ type CopyEntry = {
   subCta: string;
   featuresTitle: string;
   checkoutError: string;
+  pizzaLine: string;
+  urgencyLine: string;
+  finalLine: string;
   features: FeatureItem[];
 };
 
@@ -44,12 +47,18 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Sblocca CertifyQuiz Premium",
     subtitle:
       "Continua i quiz senza limiti e preparati davvero ai tuoi esami con spiegazioni complete, modalità esame e ripasso errori.",
-    priceLine: "7€/mese • Disdici quando vuoi",
-    cta: "Sblocca Premium – 7€/mese",
+    priceLine: "9,99€/mese • Disdici quando vuoi",
+    cta: "Sblocca Premium – 9,99€/mese",
     ctaLoading: "Apertura checkout...",
     subCta: "Accesso immediato. Nessun vincolo.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
+    pizzaLine:
+      "Al prezzo di una pizza, sblocchi una preparazione più seria, continua e completa.",
+    urgencyLine:
+      "Molti si fermano dopo qualche quiz. Quelli che continuano sono quelli che arrivano preparati davvero.",
+    finalLine:
+      "Chi supera l’esame non è sempre il più bravo. Spesso è quello che non si ferma.",
     features: [
       {
         h: "Spiegazioni complete",
@@ -75,12 +84,18 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Desbloquea CertifyQuiz Premium",
     subtitle:
       "Continúa los quizzes sin límites y prepárate de verdad para tus exámenes con explicaciones completas, modo examen y repaso de errores.",
-    priceLine: "7€/mes • Cancela cuando quieras",
-    cta: "Desbloquea Premium – 7€/mes",
+    priceLine: "9,99€/mes • Cancela cuando quieras",
+    cta: "Desbloquea Premium – 9,99€/mes",
     ctaLoading: "Abriendo checkout...",
     subCta: "Acceso inmediato. Sin compromiso.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
+    pizzaLine:
+      "Por el precio de una pizza, desbloqueas una preparación más seria, constante y completa.",
+    urgencyLine:
+      "Muchos se detienen después de unos pocos quizzes. Los que siguen son los que llegan realmente preparados.",
+    finalLine:
+      "Quien aprueba no siempre es el más brillante. Muchas veces es quien no se detiene.",
     features: [
       {
         h: "Explicaciones completas",
@@ -106,12 +121,18 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Unlock CertifyQuiz Premium",
     subtitle:
       "Keep practicing without limits and prepare seriously for your exams with full explanations, exam mode, and error review.",
-    priceLine: "€7/month • Cancel anytime",
-    cta: "Unlock Premium – €7/month",
+    priceLine: "€9.99/month • Cancel anytime",
+    cta: "Unlock Premium – €9.99/month",
     ctaLoading: "Opening checkout...",
     subCta: "Instant access. No long-term commitment.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
+    pizzaLine:
+      "For the price of a pizza, you unlock a more serious, consistent, and complete way to prepare.",
+    urgencyLine:
+      "Many people stop after a few quizzes. The ones who keep going are the ones who show up prepared.",
+    finalLine:
+      "The one who passes is not always the smartest. Often, it’s the one who doesn’t stop.",
     features: [
       {
         h: "Full explanations",
@@ -137,12 +158,18 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Débloquez CertifyQuiz Premium",
     subtitle:
       "Continuez les quiz sans limite et préparez-vous sérieusement à vos examens avec des explications complètes, le mode examen et la révision des erreurs.",
-    priceLine: "7€/mois • Annulez quand vous voulez",
-    cta: "Débloquez Premium – 7€/mois",
+    priceLine: "9,99€/mois • Annulez quand vous voulez",
+    cta: "Débloquez Premium – 9,99€/mois",
     ctaLoading: "Ouverture du checkout...",
     subCta: "Accès immédiat. Sans engagement.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
+    pizzaLine:
+      "Pour le prix d’une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
+    urgencyLine:
+      "Beaucoup s’arrêtent après quelques quiz. Ceux qui continuent sont ceux qui arrivent vraiment préparés.",
+    finalLine:
+      "Celui qui réussit n’est pas toujours le plus fort. Souvent, c’est celui qui ne s’arrête pas.",
     features: [
       {
         h: "Explications complètes",
@@ -264,6 +291,15 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <p className="mt-4 text-base font-semibold text-gray-900">
             {t.priceLine}
           </p>
+
+          <div className="mt-5 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-900 sm:text-base">
+              {t.urgencyLine}
+            </p>
+            <p className="mt-2 text-sm text-amber-800 sm:text-base">
+              {t.pizzaLine}
+            </p>
+          </div>
         </section>
 
         <section className="grid gap-6 px-6 py-6 lg:grid-cols-2">
@@ -283,6 +319,9 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
               </button>
 
               <p className="mt-3 text-sm text-gray-600">{t.subCta}</p>
+              <p className="mt-4 text-sm font-medium text-gray-900">
+                {t.finalLine}
+              </p>
             </div>
           </div>
 

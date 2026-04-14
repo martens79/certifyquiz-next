@@ -16,32 +16,44 @@ const COPY = {
   badge: {
     it: "Limite gratuito raggiunto",
     en: "Free limit reached",
-    fr: "Limite de la version gratuite atteinte",
+    fr: "Limite gratuit atteinte",
     es: "Límite gratuito alcanzado",
   },
   title: {
-    it: "Hai completato {limit} domande 🎯",
-    en: "You’ve completed {limit} questions 🎯",
-    fr: "Vous avez complété {limit} questions 🎯",
-    es: "Has completado {limit} preguntas 🎯",
+    it: "Ti sei fermato a {limit} domande 🎯",
+    en: "You’ve reached {limit} questions 🎯",
+    fr: "Vous êtes arrivé à {limit} questions 🎯",
+    es: "Has llegado a {limit} preguntas 🎯",
   },
   subtitle: {
-    it: "Vuoi continuare il quiz?",
-    en: "Want to keep going?",
-    fr: "Vous voulez continuer ?",
-    es: "¿Quieres continuar el quiz?",
+    it: "Ed è proprio qui che molti si fermano.",
+    en: "And this is exactly where many people stop.",
+    fr: "Et c’est exactement ici que beaucoup s’arrêtent.",
+    es: "Y es justo aquí donde muchos se detienen.",
   },
   progress: {
-    it: "Sei arrivato a {current}/{limit} domande gratuite.",
-    en: "You’ve reached {current}/{limit} free questions.",
-    fr: "Vous avez atteint {current}/{limit} questions gratuites.",
-    es: "Has llegado a {current}/{limit} preguntas gratuitas.",
+    it: "Hai completato {current}/{limit} domande gratuite.",
+    en: "You’ve completed {current}/{limit} free questions.",
+    fr: "Vous avez complété {current}/{limit} questions gratuites.",
+    es: "Has completado {current}/{limit} preguntas gratuitas.",
   },
   text: {
-    it: "La versione gratuita si ferma qui. Con Premium sblocchi l’esperienza completa e continui senza interruzioni.",
-    en: "The free version stops here. Premium unlocks the full experience so you can keep going without interruptions.",
-    fr: "La version gratuite s’arrête ici. Premium débloque l’expérience complète pour continuer sans interruption.",
-    es: "La versión gratuita termina aquí. Premium desbloquea la experiencia completa para seguir sin interrupciones.",
+    it: "La differenza la fa chi continua. Con Premium sblocchi l’esperienza completa, studi con più continuità e trasformi il quiz in una preparazione vera, non in una semplice prova veloce.",
+    en: "The difference is made by the people who keep going. With Premium, you unlock the full experience, study with more consistency, and turn the quiz into real preparation instead of a quick test.",
+    fr: "La différence, ce sont ceux qui continuent. Avec Premium, vous débloquez l’expérience complète, étudiez avec plus de régularité et transformez le quiz en vraie préparation.",
+    es: "La diferencia la marca quien sigue adelante. Con Premium desbloqueas la experiencia completa, estudias con más constancia y conviertes el quiz en una preparación real.",
+  },
+  urgencyLine: {
+    it: "Hai già iniziato bene. Fermarti adesso sarebbe il momento peggiore.",
+    en: "You’ve already started well. Stopping now would be the worst moment.",
+    fr: "Vous avez déjà bien commencé. S’arrêter maintenant serait le pire moment.",
+    es: "Ya empezaste bien. Detenerte ahora sería el peor momento.",
+  },
+  pizzaLine: {
+    it: "Al prezzo di una pizza, continui senza limiti e ti prepari davvero alla certificazione.",
+    en: "For the price of a pizza, you keep going without limits and prepare seriously for your certification.",
+    fr: "Pour le prix d’une pizza, vous continuez sans limites et vous vous préparez vraiment à la certification.",
+    es: "Por el precio de una pizza, sigues sin límites y te preparas de verdad para la certificación.",
   },
   featuresTitle: {
     it: "Con Premium sblocchi:",
@@ -53,7 +65,7 @@ const COPY = {
     it: [
       "Quiz illimitati",
       "Modalità esame reale",
-      "Ripasso degli errori",
+      "Ripasso errori",
       "Spiegazioni complete per ogni domanda",
     ],
     en: [
@@ -76,10 +88,10 @@ const COPY = {
     ],
   },
   cta: {
-    it: "Sblocca Premium – 7€/mese",
-    en: "Unlock Premium – €7/month",
-    fr: "Débloquez Premium – 7€/mois",
-    es: "Desbloquea Premium – 7€/mes",
+    it: "Sblocca Premium – 9,99€/mese",
+    en: "Unlock Premium – €9.99/month",
+    fr: "Débloquez Premium – 9,99€/mois",
+    es: "Desbloquea Premium – 9,99€/mes",
   },
   ctaLoading: {
     it: "Apertura checkout...",
@@ -88,16 +100,16 @@ const COPY = {
     es: "Abriendo checkout...",
   },
   cancelNote: {
-    it: "Disdici quando vuoi",
-    en: "Cancel anytime",
-    fr: "Annulez quand vous voulez",
-    es: "Cancela cuando quieras",
+    it: "Disdici quando vuoi. Nessun vincolo.",
+    en: "Cancel anytime. No commitment.",
+    fr: "Annulez quand vous voulez. Aucun engagement.",
+    es: "Cancela cuando quieras. Sin compromiso.",
   },
   finalLine: {
-    it: "Hai già iniziato. Non fermarti proprio adesso.",
-    en: "You’re already in. Don’t stop now.",
-    fr: "Vous avez déjà commencé. Ne vous arrêtez pas maintenant.",
-    es: "Ya empezaste. No te detengas ahora.",
+    it: "Chi passa l’esame non è sempre il più bravo. Spesso è quello che non si ferma.",
+    en: "The one who passes is not always the smartest. Often, it’s the one who doesn’t stop.",
+    fr: "Celui qui réussit n’est pas toujours le plus fort. Souvent, c’est celui qui ne s’arrête pas.",
+    es: "Quien aprueba no siempre es el más brillante. Muchas veces es quien no se detiene.",
   },
   back: {
     it: "Torna indietro",
@@ -175,7 +187,7 @@ export default function PremiumQuestionLimitGate({
         {interpolate(COPY.title[L], { limit: freeLimit })}
       </h2>
 
-      <p className="mb-4 text-base font-medium text-gray-900 sm:text-lg">
+      <p className="mb-3 text-base font-semibold text-gray-900 sm:text-lg">
         {COPY.subtitle[L]}
       </p>
 
@@ -186,9 +198,18 @@ export default function PremiumQuestionLimitGate({
         })}
       </p>
 
-      <p className="mb-6 text-sm text-gray-600 sm:text-base">
+      <p className="mb-4 text-sm text-gray-700 sm:text-base">
         {COPY.text[L]}
       </p>
+
+      <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <p className="text-sm font-semibold text-amber-900 sm:text-base">
+          {COPY.urgencyLine[L]}
+        </p>
+        <p className="mt-2 text-sm text-amber-800 sm:text-base">
+          {COPY.pizzaLine[L]}
+        </p>
+      </div>
 
       <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
         <p className="mb-3 text-sm font-semibold text-gray-900">
@@ -210,7 +231,7 @@ export default function PremiumQuestionLimitGate({
           type="button"
           onClick={startPremiumCheckout}
           disabled={isLoading}
-          className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isLoading ? COPY.ctaLoading[L] : COPY.cta[L]}
         </button>
@@ -220,7 +241,7 @@ export default function PremiumQuestionLimitGate({
             type="button"
             onClick={onBack}
             disabled={isLoading}
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {COPY.back[L]}
           </button>
