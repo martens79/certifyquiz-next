@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
+import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
 
-type Lang = "it" | "en" | "fr" | "es";
+type Lang = Locale;
 
 function getLabels(lang: Lang) {
   return {
@@ -158,10 +159,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical:
-        lang === "en"
-          ? `/certifications/${slug}/${topicSlug}`
-          : `/${lang}/certificazioni/${slug}/${topicSlug}`,
+      canonical: topicSeoPath(lang, slug, topicSlug),
     },
   };
 }
@@ -190,11 +188,7 @@ export default async function TopicPage({
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <Link
-        href={
-          lang === "en"
-            ? `/certifications/${slug}`
-            : `/${lang}/certificazioni/${slug}`
-        }
+        href={certSeoPath(lang, slug)}
         className="text-sm text-blue-600 hover:underline"
       >
         {labels.back}
@@ -216,11 +210,7 @@ export default async function TopicPage({
         )}
 
         <Link
-          href={
-            lang === "en"
-              ? `/quiz/topic/${data.topic.id}`
-              : `/${lang}/quiz/topic/${data.topic.id}`
-          }
+          href={lang === "en" ? `/quiz/topic/${data.topic.id}` : `/${lang}/quiz/topic/${data.topic.id}`}
           className="inline-block bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 mb-6"
         >
           {labels.startQuiz}
@@ -260,13 +250,13 @@ export default async function TopicPage({
       </section>
 
       {data.topic.content && (
-  <section className="bg-white border rounded-2xl p-6 mb-8">
-    <div
-      className="prose max-w-none text-slate-700"
-      dangerouslySetInnerHTML={{ __html: data.topic.content }}
-    />
-  </section>
-)}
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <div
+            className="prose max-w-none text-slate-700"
+            dangerouslySetInnerHTML={{ __html: data.topic.content }}
+          />
+        </section>
+      )}
 
       {data.topic.faq && data.topic.faq.length > 0 && (
         <section className="bg-white border rounded-2xl p-6 mb-8">
@@ -294,11 +284,7 @@ export default async function TopicPage({
           {data.relatedTopics.map((t) => (
             <Link
               key={t.id}
-              href={
-                lang === "en"
-                  ? `/certifications/${slug}/${t.slug}`
-                  : `/${lang}/certificazioni/${slug}/${t.slug}`
-              }
+              href={topicSeoPath(lang, slug, t.slug)}
               className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
             >
               <div className="font-semibold text-slate-900">{t.title}</div>

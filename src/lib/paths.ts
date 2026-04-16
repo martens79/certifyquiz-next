@@ -74,6 +74,23 @@ export const certificationsPath = (lang: Locale): string => {
   }
 };
 
+export const certSeoPath = (lang: Locale, certSlug: string): string => {
+  if (lang === "en") return `/certifications/${certSlug}`;
+  if (lang === "it") return `/it/certificazioni/${certSlug}`;
+  if (lang === "fr") return `/fr/certifications/${certSlug}`;
+  return `/es/certificaciones/${certSlug}`;
+};
+
+export const topicSeoPath = (
+  lang: Locale,
+  certSlug: string,
+  topicSlug: string
+): string => {
+  if (lang === "en") return `/certifications/${certSlug}/${topicSlug}`;
+  if (lang === "it") return `/it/certificazioni/${certSlug}/${topicSlug}`;
+  if (lang === "fr") return `/fr/certifications/${certSlug}/${topicSlug}`;
+  return `/es/certificaciones/${certSlug}/${topicSlug}`;
+};
 /* ------------------------------------------------------------------ */
 /* CATEGORIES (SEO)                                                     */
 /* ------------------------------------------------------------------ */
