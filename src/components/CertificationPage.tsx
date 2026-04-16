@@ -7,7 +7,7 @@ import type {
   CertificationTopic,
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
-
+import { certPath } from "@/lib/paths";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -112,9 +112,10 @@ export default function CertificationPage({
       lang
     ) || "";
 
-  // ✅ Topic box: supporta sia legacy sia nuovo formato con slug
+   // ✅ Topic box: supporta legacy, LocalizedText e nuovo formato con slug
   const pageTopics = topics
     .map((t) => {
+      // 👉 Caso legacy: stringa semplice
       if (typeof t === "string") {
         return {
           label: t,
@@ -122,15 +123,20 @@ export default function CertificationPage({
         };
       }
 
+      // 👉 Caso nuovo: oggetto con slug
       if (isTopicLinkItem(t)) {
         const label = pickLabel(t.title, lang);
+
         const topicSlug =
-          t.slug?.[lang] ?? t.slug?.it ?? t.slug?.en ?? t.slug?.fr ?? t.slug?.es ?? "";
+          t.slug?.[lang] ??
+          t.slug?.it ??
+          t.slug?.en ??
+          t.slug?.fr ??
+          t.slug?.es ??
+          "";
 
         const href = topicSlug
-          ? lang === "en"
-            ? `/certifications/${data.slug}/${topicSlug}`
-            : `/${lang}/certificazioni/${data.slug}/${topicSlug}`
+          ? `${certPath(lang, data.slug)}/${topicSlug}`
           : null;
 
         return {
@@ -139,6 +145,7 @@ export default function CertificationPage({
         };
       }
 
+      // 👉 Caso LocalizedText
       if (isLocalizedText(t)) {
         return {
           label: pickLabel(t, lang),
@@ -146,13 +153,13 @@ export default function CertificationPage({
         };
       }
 
+      // 👉 fallback sicurezza
       return {
         label: "",
         href: null as string | null,
       };
     })
     .filter((t) => t.label);
-
   // ✅ Practice box: normalizza sempre al formato LocalizedText
   const practiceBoxTopics = topics.map((t) => toLocalizedText(t));
 
