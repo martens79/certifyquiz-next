@@ -42,6 +42,10 @@ function getLabels(lang: Lang) {
     faqTitle: {
       en: "FAQ",
     }[lang],
+
+    mobileHint: {
+      en: "🎯 Quick quiz on this topic",
+    }[lang],
   };
 }
 
@@ -105,124 +109,144 @@ export default async function TopicPageEn({
   if (!data) return notFound();
 
   const labels = getLabels("en");
+  const quizHref = `/quiz/topic/${data.topic.id}`;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <Link
-        href={`/certifications/${slug}`}
-        className="text-sm text-blue-600 hover:underline"
-      >
-        {labels.back}
-      </Link>
-
-      <section className="mt-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-          {data.topic.title}
-        </h1>
-
-        <p className="text-lg text-slate-700 max-w-3xl mb-4">
-          {data.topic.description}
-        </p>
-
-        {data.topic.intro && (
-          <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-            <p>{data.topic.intro}</p>
-          </div>
-        )}
-
+    <>
+      <div className="max-w-5xl mx-auto px-4 py-8 md:py-10 pb-28 md:pb-10">
         <Link
-          href={`/quiz/topic/${data.topic.id}`}
-          className="inline-block bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 mb-6"
+          href={`/certifications/${slug}`}
+          className="text-sm text-blue-600 hover:underline"
         >
-          {labels.startQuiz}
+          {labels.back}
         </Link>
 
-        {data.questionCount !== null && (
-          <p className="text-sm text-slate-500 mb-8">
-            {labels.availableQuestions}: {data.questionCount}
+        <section className="mt-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            {data.topic.title}
+          </h1>
+
+          <p className="text-base md:text-lg text-slate-700 max-w-3xl mb-4">
+            {data.topic.description}
           </p>
-        )}
-      </section>
 
-      <section className="bg-white border rounded-2xl p-6 mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-          {labels.whatYouWillLearn}
-        </h2>
-        <p className="text-slate-700 leading-7">
-          {labels.practiceIntro} <strong>{data.certification.title}</strong> path.
-          This page helps you understand what this topic covers, which concepts
-          matter most, and why practicing with a focused quiz can improve your
-          exam preparation.
-        </p>
-        <p className="text-slate-700 leading-7 mt-4">
-          The quiz on <strong>{data.topic.title}</strong> helps you focus on
-          definitions, practical scenarios, recurring concepts, and the kind of
-          knowledge that often appears during certification study and review.
-        </p>
-      </section>
+          {/* CTA spostata più in alto: visibile prima su mobile */}
+          <div className="mb-6">
+            <Link
+              href={quizHref}
+              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
+            >
+              {labels.startQuiz}
+            </Link>
 
-      <section className="bg-white border rounded-2xl p-6 mb-8">
-        <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-          {labels.whyItMatters}
-        </h2>
-        <p className="text-slate-700 leading-7">
-          Studying <strong>{data.topic.title}</strong> properly is important
-          because it strengthens your overall understanding of the{" "}
-          <strong>{data.certification.title}</strong> certification. Good
-          topic-level preparation makes it easier to answer both theoretical and
-          practical questions with more confidence and speed.
-        </p>
-        <p className="text-slate-700 leading-7 mt-4">
-          Training one topic at a time also helps you identify weak points,
-          review more efficiently, and build a more structured preparation path
-          before moving to mixed quizzes or full exam simulations.
-        </p>
-      </section>
+            {data.questionCount !== null && (
+              <p className="text-sm text-slate-500 mt-3">
+                {labels.availableQuestions}: {data.questionCount}
+              </p>
+            )}
+          </div>
 
-     {data.topic.content && (
-  <section className="bg-white border rounded-2xl p-6 mb-8">
-    <div
-      className="prose max-w-none text-slate-700"
-      dangerouslySetInnerHTML={{ __html: data.topic.content }}
-    />
-  </section>
-)}
+          {/* Intro SEO lasciata sotto la CTA */}
+          {data.topic.intro && (
+            <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+              <p>{data.topic.intro}</p>
+            </div>
+          )}
+        </section>
 
-      {data.topic.faq && data.topic.faq.length > 0 && (
         <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
+            {labels.whatYouWillLearn}
+          </h2>
+          <p className="text-slate-700 leading-7">
+            {labels.practiceIntro} <strong>{data.certification.title}</strong> path.
+            This page helps you understand what this topic covers, which concepts
+            matter most, and why practicing with a focused quiz can improve your
+            exam preparation.
+          </p>
+          <p className="text-slate-700 leading-7 mt-4">
+            The quiz on <strong>{data.topic.title}</strong> helps you focus on
+            definitions, practical scenarios, recurring concepts, and the kind of
+            knowledge that often appears during certification study and review.
+          </p>
+        </section>
+
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
+            {labels.whyItMatters}
+          </h2>
+          <p className="text-slate-700 leading-7">
+            Studying <strong>{data.topic.title}</strong> properly is important
+            because it strengthens your overall understanding of the{" "}
+            <strong>{data.certification.title}</strong> certification. Good
+            topic-level preparation makes it easier to answer both theoretical and
+            practical questions with more confidence and speed.
+          </p>
+          <p className="text-slate-700 leading-7 mt-4">
+            Training one topic at a time also helps you identify weak points,
+            review more efficiently, and build a more structured preparation path
+            before moving to mixed quizzes or full exam simulations.
+          </p>
+        </section>
+
+        {data.topic.content && (
+          <section className="bg-white border rounded-2xl p-6 mb-8">
+            <div
+              className="prose max-w-none text-slate-700"
+              dangerouslySetInnerHTML={{ __html: data.topic.content }}
+            />
+          </section>
+        )}
+
+        {data.topic.faq && data.topic.faq.length > 0 && (
+          <section className="bg-white border rounded-2xl p-6 mb-8">
+            <h2 className="text-2xl font-semibold text-slate-900 mb-4">
+              {labels.faqTitle}
+            </h2>
+
+            <div className="space-y-5">
+              {data.topic.faq.map((item, index) => (
+                <div key={`${item.q}-${index}`}>
+                  <h3 className="font-semibold text-slate-900">{item.q}</h3>
+                  <p className="text-slate-700 mt-2 leading-7">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section>
           <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-            {labels.faqTitle}
+            {labels.relatedTopics}
           </h2>
 
-          <div className="space-y-5">
-            {data.topic.faq.map((item, index) => (
-              <div key={`${item.q}-${index}`}>
-                <h3 className="font-semibold text-slate-900">{item.q}</h3>
-                <p className="text-slate-700 mt-2 leading-7">{item.a}</p>
-              </div>
+          <div className="grid gap-4">
+            {data.relatedTopics.map((t) => (
+              <Link
+                key={t.id}
+                href={`/certifications/${slug}/${t.slug}`}
+                className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
+              >
+                <div className="font-semibold text-slate-900">{t.title}</div>
+                <div className="text-sm text-slate-600 mt-2">{t.description}</div>
+              </Link>
             ))}
           </div>
         </section>
-      )}
+      </div>
 
-      <section>
-        <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-          {labels.relatedTopics}
-        </h2>
-
-        <div className="grid gap-4">
-          {data.relatedTopics.map((t) => (
-            <Link
-              key={t.id}
-              href={`/certifications/${slug}/${t.slug}`}
-              className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
-            >
-              <div className="font-semibold text-slate-900">{t.title}</div>
-              <div className="text-sm text-slate-600 mt-2">{t.description}</div>
-            </Link>
-          ))}
+      {/* CTA sticky mobile: sopra la bottom nav */}
+      <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
+        <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
+          <div className="text-xs text-slate-500 mb-2">{labels.mobileHint}</div>
+          <Link
+            href={quizHref}
+            className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-5 py-3 rounded-full font-semibold text-slate-900"
+          >
+            {labels.startQuiz}
+          </Link>
         </div>
-      </section>
-    </div>
+      </div>
+    </>
   );
 }
