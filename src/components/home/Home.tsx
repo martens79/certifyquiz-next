@@ -240,76 +240,76 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       ),
     },
   ];
-const TRENDING_CERTS: Array<{
-  key: string;
-  title: string;
-  desc: { it: string; en: string; fr: string; es: string };
-  path: string; // path “base” senza prefisso lingua
-}> = [
-  {
-    key: "cissp",
-    title: "CISSP",
-    desc: {
-      it: "Avanzato: architettura, risk, IAM, operations e compliance.",
-      en: "Advanced: architecture, risk, IAM, operations and compliance.",
-      fr: "Avancé : architecture, risque, IAM, opérations et conformité.",
-      es: "Avanzado: arquitectura, riesgo, IAM, operaciones y cumplimiento.",
-    },
-    path: "/quiz/cissp", // ✅ verifica che esista
-  },
-  {
-    key: "ccst-cyber",
-    title: "Cisco CCST Cyber",
-    desc: {
-      it: "Fondamenti cyber: minacce, controlli, awareness e risposta base.",
-      en: "Cyber basics: threats, controls, awareness and basic response.",
-      fr: "Bases cyber : menaces, contrôles, sensibilisation et réponse.",
-      es: "Bases cyber: amenazas, controles, concienciación y respuesta.",
-    },
-    path: "/quiz/cisco-ccst-cybersecurity", // ✅ verifica: potrebbe essere /quiz/ccst-cybersecurity
-  },
-  {
-    key: "ceh",
-    title: "CEH",
-    desc: {
-      it: "Pensa come un hacker. Allenati con domande realistiche.",
-      en: "Think like a hacker. Train with real exam questions.",
-      fr: "Pensez comme un hacker. Entraînez-vous avec de vraies questions.",
-      es: "Piensa como un hacker. Practica con preguntas reales.",
-    },
-    path: "/quiz/ceh",
-  },
-  {
-    key: "securityplus",
-    title: "Security+",
-    desc: {
-      it: "Costruisci solide basi di sicurezza informatica.",
-      en: "Build strong cybersecurity foundations.",
-      fr: "Construisez des bases solides en cybersécurité.",
-      es: "Construye bases sólidas en ciberseguridad.",
-    },
-    path: "/quiz/security-plus",
-  },
-  {
-    key: "isc2cc",
-    title: "ISC2 CC",
-    desc: {
-      it: "Il primo passo nel mondo della cybersecurity.",
-      en: "Your first step into cybersecurity.",
-      fr: "Votre premier pas en cybersécurité.",
-      es: "Tu primer paso en ciberseguridad.",
-    },
-    path: "/quiz/isc2-cc",
-  },
-];
 
-  // ✅ helper hub href (coerente con la tua regola EN root)
+  const TRENDING_CERTS: Array<{
+    key: string;
+    title: string;
+    desc: { it: string; en: string; fr: string; es: string };
+    path: string;
+  }> = [
+    {
+      key: "cissp",
+      title: "CISSP",
+      desc: {
+        it: "Avanzato: architettura, risk, IAM, operations e compliance.",
+        en: "Advanced: architecture, risk, IAM, operations and compliance.",
+        fr: "Avancé : architecture, risque, IAM, opérations et conformité.",
+        es: "Avanzado: arquitectura, riesgo, IAM, operaciones y cumplimiento.",
+      },
+      path: "/quiz/cissp",
+    },
+    {
+      key: "ccst-cyber",
+      title: "Cisco CCST Cyber",
+      desc: {
+        it: "Fondamenti cyber: minacce, controlli, awareness e risposta base.",
+        en: "Cyber basics: threats, controls, awareness and basic response.",
+        fr: "Bases cyber : menaces, contrôles, sensibilisation et réponse.",
+        es: "Bases cyber: amenazas, controles, concienciación y respuesta.",
+      },
+      path: "/quiz/cisco-ccst-cybersecurity",
+    },
+    {
+      key: "ceh",
+      title: "CEH",
+      desc: {
+        it: "Pensa come un hacker. Allenati con domande realistiche.",
+        en: "Think like a hacker. Train with real exam questions.",
+        fr: "Pensez comme un hacker. Entraînez-vous avec de vraies questions.",
+        es: "Piensa como un hacker. Practica con preguntas reales.",
+      },
+      path: "/quiz/ceh",
+    },
+    {
+      key: "securityplus",
+      title: "Security+",
+      desc: {
+        it: "Costruisci solide basi di sicurezza informatica.",
+        en: "Build strong cybersecurity foundations.",
+        fr: "Construisez des bases solides en cybersécurité.",
+        es: "Construye bases sólidas en ciberseguridad.",
+      },
+      path: "/quiz/security-plus",
+    },
+    {
+      key: "isc2cc",
+      title: "ISC2 CC",
+      desc: {
+        it: "Il primo passo nel mondo della cybersecurity.",
+        en: "Your first step into cybersecurity.",
+        fr: "Votre premier pas en cybersécurité.",
+        es: "Tu primer paso en ciberseguridad.",
+      },
+      path: "/quiz/isc2-cc",
+    },
+  ];
+
   const hubHref = (slug: string) =>
     safeLang === "en" ? `/hub/${slug}` : `/${safeLang}/hub/${slug}`;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 overflow-x-hidden min-h-[100dvh]">
-      {/* HERO (più compatta) */}
+      {/* HERO */}
       <header className="text-center max-w-3xl mx-auto">
         <div className="flex justify-center items-center gap-3 mb-2">
           <Image
@@ -349,7 +349,6 @@ const TRENDING_CERTS: Array<{
           )}
         </p>
 
-        {/* CTA */}
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
           <Link
             href={`/${safeLang}/quiz-home`}
@@ -384,7 +383,6 @@ const TRENDING_CERTS: Array<{
           )}
         </div>
 
-        {/* Stats (compatte) */}
         {stats && (
           <p className="mt-3 text-xs md:text-sm text-slate-600">
             {L(
@@ -420,160 +418,229 @@ const TRENDING_CERTS: Array<{
         </p>
       </header>
 
-   {/* TRENDING + VENDOR (più bassi e “simili” tra loro) */}
-<section className="mt-4 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
-  {/* TRENDING CYBERSECURITY */}
-  <div aria-label="Trending cybersecurity">
-    <div className="rounded-2xl border border-red-200 border-t-4 border-t-red-500 bg-white p-2.5 md:p-3 shadow-sm h-full">
-      <div className="flex items-center justify-between mb-1.5">
-        <h2 className="text-base md:text-lg font-extrabold text-slate-800 flex items-center">
-          🔥{" "}
-          {L(
-            {
-              it: "Trending Cybersecurity Exams",
-              en: "Trending Cybersecurity Exams",
-              fr: "Examens Cybersecurity en Tendance",
-              es: "Exámenes de Ciberseguridad en Tendencia",
-            },
-            safeLang
-          )}
-          <span className="ml-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-semibold tracking-wide">
-            HOT
-          </span>
-        </h2>
-      </div>
-
-      <p className="text-[11px] md:text-xs text-slate-600 mb-2 line-clamp-2">
-        {L(
-          {
-            it: "Le certificazioni che stanno generando più interesse in questo periodo.",
-            en: "The certifications getting the most attention right now.",
-            fr: "Les certifications qui attirent le plus d’intérêt en ce moment.",
-            es: "Las certificaciones que más interés stanno generando ora.",
-          },
-          safeLang
-        )}
-      </p>
-
-      {/* carosello “più basso” */}
-      <div className="flex gap-2 overflow-x-auto pb-1 pr-1 snap-x snap-mandatory">
-        {TRENDING_CERTS.map((c) => (
-          <Link
-            key={c.key}
-            href={withLang(safeLang as any, c.path)}
-            className="min-w-[190px] bg-slate-50 border border-red-200 rounded-xl p-2.5 hover:shadow-md transition snap-start"
-          >
-            <div className="font-bold text-sm text-slate-800 mb-0.5">{c.title}</div>
-            <div className="text-[11px] text-slate-600 line-clamp-2">
-              {L(c.desc, safeLang)}
+      {/* TRENDING + VENDOR */}
+      <section className="mt-4 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* TRENDING CYBERSECURITY */}
+        <div aria-label="Trending cybersecurity">
+          <div className="rounded-2xl border border-red-200 border-t-4 border-t-red-500 bg-white p-2.5 md:p-3 shadow-sm h-full">
+            <div className="flex items-center justify-between mb-1.5">
+              <h2 className="text-base md:text-lg font-extrabold text-slate-800 flex items-center">
+                🔥{" "}
+                {L(
+                  {
+                    it: "Trending Cybersecurity Exams",
+                    en: "Trending Cybersecurity Exams",
+                    fr: "Examens Cybersecurity en Tendance",
+                    es: "Exámenes de Ciberseguridad en Tendencia",
+                  },
+                  safeLang
+                )}
+                <span className="ml-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-semibold tracking-wide">
+                  HOT
+                </span>
+              </h2>
             </div>
-          </Link>
-        ))}
-      </div>
 
-      <div className="mt-1.5 text-right">
-        <Link
-          href={categoryPath(safeLang, "sicurezza")}
-          className="text-[11px] md:text-xs font-semibold text-red-700 hover:underline"
-        >
-          {L(
-            {
-              it: "Vedi tutta la categoria Sicurezza →",
-              en: "See the full Security category →",
-              fr: "Voir toute la catégorie Sécurité →",
-              es: "Ver toda la categoría Seguridad →",
-            },
-            safeLang
-          )}
-        </Link>
-      </div>
-    </div>
-  </div>
+            <p className="text-[11px] md:text-xs text-slate-600 mb-2 line-clamp-2">
+              {L(
+                {
+                  it: "Le certificazioni che stanno generando più interesse in questo periodo.",
+                  en: "The certifications getting the most attention right now.",
+                  fr: "Les certifications qui attirent le plus d’intérêt en ce moment.",
+                  es: "Las certificaciones que más interés stanno generando ora.",
+                },
+                safeLang
+              )}
+            </p>
 
-{/* VENDOR / PATHS (più pieno + con ISC2) */}
-<div aria-label="Paths">
-  <div className="rounded-2xl border border-blue-200 border-t-4 border-t-blue-500 bg-white p-3 md:p-4 shadow-sm h-full">
+            <div className="flex gap-2 overflow-x-auto pb-1 pr-1 snap-x snap-mandatory">
+              {TRENDING_CERTS.map((c) => (
+                <Link
+                  key={c.key}
+                  href={withLang(safeLang as any, c.path)}
+                  className="min-w-[190px] bg-slate-50 border border-red-200 rounded-xl p-2.5 hover:shadow-md transition snap-start"
+                >
+                  <div className="font-bold text-sm text-slate-800 mb-0.5">{c.title}</div>
+                  <div className="text-[11px] text-slate-600 line-clamp-2">
+                    {L(c.desc, safeLang)}
+                  </div>
+                </Link>
+              ))}
+            </div>
 
-    {/* Header */}
-    <div className="flex items-center justify-between">
-      <div>
-        <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
-          🧭{" "}
-          {L(
-            { it: "Trending Paths", en: "Trending Paths", fr: "Parcours tendance", es: "Rutas en tendencia" },
-            safeLang
-          )}
+            <div className="mt-1.5 text-right">
+              <Link
+                href={categoryPath(safeLang, "sicurezza")}
+                className="text-[11px] md:text-xs font-semibold text-red-700 hover:underline"
+              >
+                {L(
+                  {
+                    it: "Vedi tutta la categoria Sicurezza →",
+                    en: "See the full Security category →",
+                    fr: "Voir toute la catégorie Sécurité →",
+                    es: "Ver toda la categoría Seguridad →",
+                  },
+                  safeLang
+                )}
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <div className="text-base md:text-lg font-extrabold text-slate-800">
-          {L(
-            {
-              it: "Percorsi certificazioni",
-              en: "Certification Paths",
-              fr: "Parcours de certifications",
-              es: "Rutas de certificación",
-            },
-            safeLang
-          )}
+        {/* VENDOR / PATHS */}
+        <div aria-label="Paths">
+          <div className="rounded-2xl border border-blue-200 border-t-4 border-t-blue-500 bg-white p-3 md:p-4 shadow-sm h-full">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
+                  🧭{" "}
+                  {L(
+                    {
+                      it: "Trending Paths",
+                      en: "Trending Paths",
+                      fr: "Parcours tendance",
+                      es: "Rutas en tendencia",
+                    },
+                    safeLang
+                  )}
+                </div>
+
+                <div className="text-base md:text-lg font-extrabold text-slate-800">
+                  {L(
+                    {
+                      it: "Percorsi certificazioni",
+                      en: "Certification Paths",
+                      fr: "Parcours de certifications",
+                      es: "Rutas de certificación",
+                    },
+                    safeLang
+                  )}
+                </div>
+              </div>
+
+              <Link
+                href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
+                className="text-[11px] md:text-xs font-bold text-blue-700 hover:underline whitespace-nowrap"
+              >
+                {L(
+                  {
+                    it: "Vedi tutti →",
+                    en: "See all →",
+                    fr: "Voir tout →",
+                    es: "Ver todos →",
+                  },
+                  safeLang
+                )}
+              </Link>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { name: "ISC2", slug: "isc2" },
+                { name: "AWS", slug: "aws" },
+                { name: "Microsoft", slug: "microsoft" },
+                { name: "Google", slug: "google" },
+              ].map((v) => (
+                <Link
+                  key={v.slug}
+                  href={hubHref(v.slug)}
+                  className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-100 transition"
+                >
+                  {v.name}
+                </Link>
+              ))}
+            </div>
+
+            <div className="my-4 h-px bg-neutral-100" />
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: "Cisco", slug: "cisco" },
+                { name: "CompTIA", slug: "comptia" },
+                { name: "IBM", slug: "ibm" },
+                { name: "Oracle", slug: "oracle" },
+              ].map((v) => (
+                <Link
+                  key={v.slug}
+                  href={hubHref(v.slug)}
+                  className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
+                >
+                  {v.name}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <Link
-        href={safeLang === "en" ? "/hub/vendors" : `/${safeLang}/hub/vendors`}
-        className="text-[11px] md:text-xs font-bold text-blue-700 hover:underline whitespace-nowrap"
-      >
-        {L(
-          { it: "Vedi tutti →", en: "See all →", fr: "Voir tout →", es: "Ver todos →" },
-          safeLang
-        )}
-      </Link>
-    </div>
+      {/* BLOG SECTION — spostata più in alto e resa più visibile */}
+      <section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <div className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide">
+                📝{" "}
+                {L(
+                  {
+                    it: "Dal blog",
+                    en: "From the blog",
+                    fr: "Depuis le blog",
+                    es: "Del blog",
+                  },
+                  safeLang
+                )}
+              </div>
 
-    {/* Trending vendors */}
-    <div className="mt-4 flex flex-wrap gap-2">
-      {[
-        { name: "ISC2", slug: "isc2" },
-        { name: "AWS", slug: "aws" },
-        { name: "Microsoft", slug: "microsoft" },
-        { name: "Google", slug: "google" },
-      ].map((v) => (
-        <Link
-          key={v.slug}
-          href={safeLang === "en" ? `/hub/${v.slug}` : `/${safeLang}/hub/${v.slug}`}
-          className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-blue-100 transition"
-        >
-          {v.name}
-        </Link>
-      ))}
-    </div>
+              <h2 className="text-lg md:text-xl font-extrabold text-slate-800">
+                {L(
+                  {
+                    it: "Guide e articoli per imparare meglio",
+                    en: "Guides and articles to learn faster",
+                    fr: "Guides et articles pour mieux apprendre",
+                    es: "Guías y artículos para aprender mejor",
+                  },
+                  safeLang
+                )}
+              </h2>
 
-    {/* Divider */}
-    <div className="my-4 h-px bg-neutral-100" />
+              <p className="text-xs md:text-sm text-slate-600 mt-1">
+                {L(
+                  {
+                    it: "Approfondimenti pratici collegati ai topic e alle certificazioni del sito.",
+                    en: "Practical articles connected to your certification topics and quiz paths.",
+                    fr: "Articles pratiques liés aux sujets et parcours de certification du site.",
+                    es: "Artículos prácticos conectados con los temas y rutas de certificación del sitio.",
+                  },
+                  safeLang
+                )}
+              </p>
+            </div>
 
-    {/* Other vendors */}
-    <div className="flex flex-wrap gap-2">
-      {[
-        { name: "Cisco", slug: "cisco" },
-        { name: "CompTIA", slug: "comptia" },
-        { name: "IBM", slug: "ibm" },
-        { name: "Oracle", slug: "oracle" },
-      ].map((v) => (
-        <Link
-          key={v.slug}
-          href={safeLang === "en" ? `/hub/${v.slug}` : `/${safeLang}/hub/${v.slug}`}
-          className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition"
-        >
-          {v.name}
-        </Link>
-      ))}
-    </div>
+            <Link
+              href={withLang(safeLang as any, "/blog")}
+              className="text-sm font-semibold text-blue-700 hover:underline whitespace-nowrap"
+            >
+              {L(
+                {
+                  it: "Vedi tutti →",
+                  en: "See all →",
+                  fr: "Voir tout →",
+                  es: "Ver todos →",
+                },
+                safeLang
+              )}
+            </Link>
+          </div>
 
-  </div>
-</div>
-</section>
+          <BlogTeaser
+            lang={safeLang as any}
+            variant="default"
+            className="border-0 shadow-none w-full bg-transparent"
+          />
+        </div>
+      </section>
 
-
-      {/* CATEGORIE (core) — margine ridotto per rientrare “sopra la piega” */}
+      {/* CATEGORIE */}
       <section className="mt-5 md:mt-6" aria-label="Categories">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {allCategories.map((cat) => {
@@ -596,7 +663,6 @@ const TRENDING_CERTS: Array<{
           })}
         </div>
 
-        {/* Link suggeriti */}
         <div className="text-center mt-5">
           <Link
             href={withLang(safeLang as any, "/quiz-suggeriti")}
@@ -614,19 +680,7 @@ const TRENDING_CERTS: Array<{
             )}
           </Link>
         </div>
-        
       </section>
-{/* BLOG SECTION */}
-<section className="mt-10 max-w-3xl mx-auto">
-  <div className="rounded-xl border bg-slate-50 border-slate-200 p-4">
-    <BlogTeaser
-      lang={safeLang as any}
-      variant="default"
-      className="border-0 shadow-none w-full"
-    />
-  </div>
-</section>
-
-     
-    </div>);
-} 
+    </div>
+  );
+}
