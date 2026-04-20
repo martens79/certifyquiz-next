@@ -633,10 +633,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           </div>
 
           <BlogTeaser
-            lang={safeLang as any}
-            variant="default"
-            className="border-0 shadow-none w-full bg-transparent"
-          />
+  lang={safeLang as any}
+  variant="home"
+  limit={2}
+/>
         </div>
       </section>
 

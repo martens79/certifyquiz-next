@@ -14,27 +14,6 @@ type Article = {
   coverUrl?: string;
 };
 
-const LBL_FROM_BLOG: Record<Locale, string> = {
-  it: "Dal blog",
-  en: "From the blog",
-  fr: "Du blog",
-  es: "Del blog",
-};
-
-const LBL_READ: Record<Locale, string> = {
-  it: "Leggi",
-  en: "Read",
-  fr: "Lire",
-  es: "Leer",
-};
-
-const LBL_ALL_POSTS: Record<Locale, string> = {
-  it: "Tutti",
-  en: "All",
-  fr: "Tous",
-  es: "Todos",
-};
-
 function cx(...parts: Array<string | undefined | false | null>) {
   return parts.filter(Boolean).join(" ");
 }
@@ -62,179 +41,180 @@ export default function BlogTeaser({
   lang,
   className,
   variant = "default",
+  limit = 1,
 }: {
   lang: Locale;
   className?: string;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "home";
+  limit?: number;
 }) {
-  const [article, setArticle] = useState<Article | null>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+  let cancelled = false;
 
-    (async () => {
-      try {
-        const res = await fetch(`/api/blog/latest?lang=${lang}`, {
-          cache: "no-store",
-        });
+  (async () => {
+    try {
+      const res = await fetch(`/api/blog/latest?lang=${lang}&limit=${limit}`, {
+        cache: "no-store",
+      });
 
-        if (!res.ok) {
-          if (!cancelled) setArticle(null);
-          return;
-        }
-
-        const data = await res.json();
-        if (!cancelled) setArticle(data?.article ?? null);
-      } catch {
-        if (!cancelled) setArticle(null);
-      } finally {
-        if (!cancelled) setLoaded(true);
+      if (!res.ok) {
+        if (!cancelled) setArticles([]);
+        return;
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [lang]);
+      const data = await res.json();
 
-  const isCompact = variant === "compact";
-  const imageSize = isCompact ? 72 : 112;
+      if (!cancelled) {
+        if (Array.isArray(data?.articles)) {
+          setArticles(data.articles);
+        } else if (data?.article) {
+          setArticles([data.article]);
+        } else {
+          setArticles([]);
+        }
+      }
+    } catch {
+      if (!cancelled) setArticles([]);
+    } finally {
+      if (!cancelled) setLoaded(true);
+    }
+  })();
 
-  const thumbUrl =
-    article?.coverUrl ? sanityThumb(article.coverUrl, imageSize * 2, imageSize * 2) : null;
+  return () => {
+    cancelled = true;
+  };
+}, [lang, limit]);
 
-  if (!loaded) return null;
-  if (!article?.slug) return null;
+  if (!loaded || articles.length === 0) return null;
 
   const base = blogIndexPath(lang);
-  const href = blogPath(lang, article.slug);
-  const dateLabel = formatDate(lang, article.publishedAt);
-  const excerpt = (article.excerpt ?? "").trim();
 
+  /* ---------------- SINGLE CARD (vecchio comportamento) ---------------- */
+  if (articles.length === 1) {
+    const article = articles[0];
+    const href = blogPath(lang, article.slug);
+    const date = formatDate(lang, article.publishedAt);
+    const thumb = article.coverUrl
+      ? sanityThumb(article.coverUrl, 200, 200)
+      : null;
+
+    return (
+      <div
+        className={cx(
+          "rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition",
+          className
+        )}
+      >
+        <div className="flex gap-4 items-center">
+          {/* image */}
+          <Link href={href}>
+            <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100">
+              {thumb && (
+                <Image
+                  src={thumb}
+                  alt={article.title}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </div>
+          </Link>
+
+          {/* text */}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-zinc-500">
+              From the blog {date && `· ${date}`}
+            </p>
+
+            <h3 className="font-semibold text-sm md:text-base truncate">
+              <Link href={href} className="hover:underline">
+                {article.title}
+              </Link>
+            </h3>
+
+            {article.excerpt && (
+              <p className="text-xs md:text-sm text-zinc-600 line-clamp-2 mt-1">
+                {article.excerpt}
+              </p>
+            )}
+          </div>
+
+          <Link
+            href={href}
+            className="bg-blue-600 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-semibold"
+          >
+            Read →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------- GRID (HOME VERSION) ---------------- */
   return (
-    <section
+    <div
       className={cx(
-        "rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300 hover:shadow-md",
+        "grid gap-4",
+        "grid-cols-1 md:grid-cols-2",
         className
       )}
     >
-      <div
-        className={cx(
-          "flex gap-4",
-          isCompact
-            ? "items-center p-3"
-            : "flex-col sm:flex-row sm:items-center p-4 md:p-5"
-        )}
-      >
-        {/* Thumbnail */}
-        <Link
-          href={href}
-          className={cx(
-            "shrink-0 overflow-hidden rounded-2xl bg-zinc-100",
-            isCompact ? "h-[72px] w-[72px]" : "h-[96px] w-full sm:h-[112px] sm:w-[112px]"
-          )}
-          aria-label={article.title}
-        >
-          {thumbUrl ? (
-            <Image
-              src={thumbUrl}
-              alt={article.title}
-              width={imageSize}
-              height={imageSize}
-              sizes={isCompact ? "72px" : "(max-width: 640px) 100vw, 112px"}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          ) : null}
-        </Link>
+      {articles.map((article, i) => {
+        const href = blogPath(lang, article.slug);
+        const date = formatDate(lang, article.publishedAt);
+        const thumb = article.coverUrl
+          ? sanityThumb(article.coverUrl, 400, 300)
+          : null;
 
-        {/* Content */}
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className={cx("text-zinc-500", isCompact ? "text-[11px]" : "text-xs md:text-sm")}>
-              {LBL_FROM_BLOG[lang]}
-              {dateLabel ? <span className="ml-2 text-zinc-400">· {dateLabel}</span> : null}
-            </p>
-
-            <div className="flex items-center gap-2">
-              <span
-                className={cx(
-                  "rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-zinc-700",
-                  isCompact ? "text-[10px]" : "text-[11px]"
-                )}
-              >
-                {lang.toUpperCase()}
-              </span>
-
-              <Link
-                href={base}
-                className={cx(
-                  "font-medium text-zinc-600 hover:underline",
-                  isCompact ? "text-[11px]" : "text-xs md:text-sm"
-                )}
-                title={lang === "it" ? "Tutti gli articoli" : "All posts"}
-              >
-                {LBL_ALL_POSTS[lang]}
-              </Link>
-            </div>
-          </div>
-
-          <h3
+        return (
+          <Link
+            key={article.slug}
+            href={href}
             className={cx(
-              "mt-1 font-bold text-zinc-900 leading-tight",
-              isCompact ? "text-sm line-clamp-2" : "text-base md:text-xl line-clamp-2"
+              "rounded-xl border bg-white overflow-hidden shadow-sm hover:shadow-md transition",
+              i === 0 ? "md:col-span-1" : ""
             )}
           >
-            <Link href={href} className="hover:underline">
-              {article.title}
-            </Link>
-          </h3>
+            {/* image */}
+            {thumb && (
+              <div className="h-40 bg-zinc-100">
+                <Image
+                  src={thumb}
+                  alt={article.title}
+                  width={400}
+                  height={300}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
-          {excerpt ? (
-            <p
-              className={cx(
-                "mt-2 text-zinc-600 leading-relaxed",
-                isCompact
-                  ? "text-xs line-clamp-2"
-                  : "text-sm md:text-base line-clamp-3"
+            {/* content */}
+            <div className="p-4">
+              <p className="text-xs text-zinc-500">
+                From the blog {date && `· ${date}`}
+              </p>
+
+              <h3 className="font-bold text-base md:text-lg mt-1 line-clamp-2">
+                {article.title}
+              </h3>
+
+              {article.excerpt && (
+                <p className="text-sm text-zinc-600 mt-2 line-clamp-3">
+                  {article.excerpt}
+                </p>
               )}
-            >
-              {excerpt}
-            </p>
-          ) : null}
 
-          {!isCompact && (
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <Link
-                href={base}
-                className="text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:underline"
-              >
-                {LBL_ALL_POSTS[lang]} →
-              </Link>
-
-              <Link
-                href={href}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-              >
-                {LBL_READ[lang]} <span aria-hidden>→</span>
-              </Link>
+              <div className="mt-3 text-blue-600 font-semibold text-sm">
+                Read →
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* CTA compact */}
-        {isCompact && (
-          <div className="shrink-0">
-            <Link
-              href={href}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
-            >
-              {LBL_READ[lang]} <span aria-hidden>→</span>
-            </Link>
-          </div>
-        )}
-      </div>
-    </section>
+          </Link>
+        );
+      })}
+    </div>
   );
 }

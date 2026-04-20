@@ -10,15 +10,32 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const lang = (searchParams.get("lang") || "en") as any;
 
-    const items = await sanityServerClient.fetch<any[]>(articlesListByLang, { lang });
-    const first = items?.[0] ?? null;
+    const rawLimit = Number(searchParams.get("limit") || "1");
+    const limit = Number.isFinite(rawLimit)
+      ? Math.max(1, Math.min(rawLimit, 6))
+      : 1;
 
-    return NextResponse.json({ article: first }, { status: 200 });
-  } catch (err: any) {
-    // così vedi l’errore in console server
-    console.error("API /api/blog/latest error:", err?.message || err);
+    const items = await sanityServerClient.fetch<any[]>(articlesListByLang, { lang });
+
+    const articles = Array.isArray(items) ? items.slice(0, limit) : [];
+    const first = articles[0] ?? null;
+
     return NextResponse.json(
-      { article: null, error: err?.message || "Sanity request failed" },
+      {
+        article: first,
+        articles,
+      },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    console.error("API /api/blog/latest error:", err?.message || err);
+
+    return NextResponse.json(
+      {
+        article: null,
+        articles: [],
+        error: err?.message || "Sanity request failed",
+      },
       { status: 200 }
     );
   }
