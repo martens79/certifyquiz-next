@@ -92,59 +92,50 @@ export default function BlogTeaser({
 
   /* ---------------- HOME GRID ---------------- */
   if (variant === "home") {
-    return (
-      <div className={cx("grid gap-3 grid-cols-1 md:grid-cols-2", className)}>
-        {articles.map((article) => {
-          const href = blogPath(lang, article.slug);
-          const date = formatDate(lang, article.publishedAt);
-          const thumb = article.coverUrl
-            ? sanityThumb(article.coverUrl, 400, 220)
-            : null;
+  return (
+    <div className={cx("grid gap-2 grid-cols-1 md:grid-cols-2", className)}>
+      {articles.map((article) => {
+        const href = blogPath(lang, article.slug);
+        const date = formatDate(lang, article.publishedAt);
+        const thumb = article.coverUrl
+          ? sanityThumb(article.coverUrl, 120, 120)
+          : null;
 
-          return (
-            <Link
-              key={article.slug}
-              href={href}
-              className="rounded-xl border bg-white overflow-hidden shadow-sm hover:shadow-md transition"
-            >
+        return (
+          <Link
+            key={article.slug}
+            href={href}
+            className="flex items-center gap-3 rounded-xl border bg-white p-2.5 shadow-sm hover:shadow-md transition"
+          >
+            {/* mini image */}
+            <div className="w-14 h-14 rounded-md overflow-hidden bg-zinc-100 shrink-0">
               {thumb && (
-                <div className="h-28 md:h-32 bg-zinc-100">
-                  <Image
-                    src={thumb}
-                    alt={article.title}
-                    width={400}
-                    height={220}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+                <Image
+                  src={thumb}
+                  alt={article.title}
+                  width={56}
+                  height={56}
+                  className="w-full h-full object-cover"
+                />
               )}
+            </div>
 
-              <div className="p-3">
-                <p className="text-xs text-zinc-500">
-                  From the blog {date && `· ${date}`}
-                </p>
+            {/* text */}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] text-zinc-500">
+                {date}
+              </p>
 
-                <h3 className="font-semibold text-sm md:text-base mt-1 line-clamp-2 text-zinc-900">
-                  {article.title}
-                </h3>
-
-                {article.excerpt && (
-                  <p className="text-xs md:text-sm text-zinc-600 mt-1 line-clamp-2">
-                    {article.excerpt}
-                  </p>
-                )}
-
-                <div className="mt-2 text-blue-600 font-semibold text-sm">
-                  Read →
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    );
-  }
-
+              <h3 className="text-sm font-semibold text-zinc-900 line-clamp-2 leading-tight">
+                {article.title}
+              </h3>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
   /* ---------------- SINGLE CARD ---------------- */
   const article = articles[0];
   const href = blogPath(lang, article.slug);
