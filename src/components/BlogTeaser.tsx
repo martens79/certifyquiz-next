@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
-import { blogIndexPath, blogPath } from "@/lib/paths";
+import { blogPath } from "@/lib/paths";
 
 type Article = {
   slug: string;
@@ -52,169 +52,154 @@ export default function BlogTeaser({
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-  let cancelled = false;
+    let cancelled = false;
 
-  (async () => {
-    try {
-      const res = await fetch(`/api/blog/latest?lang=${lang}&limit=${limit}`, {
-        cache: "no-store",
-      });
+    (async () => {
+      try {
+        const res = await fetch(`/api/blog/latest?lang=${lang}&limit=${limit}`, {
+          cache: "no-store",
+        });
 
-      if (!res.ok) {
-        if (!cancelled) setArticles([]);
-        return;
-      }
-
-      const data = await res.json();
-
-      if (!cancelled) {
-        if (Array.isArray(data?.articles)) {
-          setArticles(data.articles);
-        } else if (data?.article) {
-          setArticles([data.article]);
-        } else {
-          setArticles([]);
+        if (!res.ok) {
+          if (!cancelled) setArticles([]);
+          return;
         }
-      }
-    } catch {
-      if (!cancelled) setArticles([]);
-    } finally {
-      if (!cancelled) setLoaded(true);
-    }
-  })();
 
-  return () => {
-    cancelled = true;
-  };
-}, [lang, limit]);
+        const data = await res.json();
+
+        if (!cancelled) {
+          if (Array.isArray(data?.articles)) {
+            setArticles(data.articles);
+          } else if (data?.article) {
+            setArticles([data.article]);
+          } else {
+            setArticles([]);
+          }
+        }
+      } catch {
+        if (!cancelled) setArticles([]);
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lang, limit]);
 
   if (!loaded || articles.length === 0) return null;
 
-  const base = blogIndexPath(lang);
-
-  /* ---------------- SINGLE CARD (vecchio comportamento) ---------------- */
-  if (articles.length === 1) {
-    const article = articles[0];
-    const href = blogPath(lang, article.slug);
-    const date = formatDate(lang, article.publishedAt);
-    const thumb = article.coverUrl
-      ? sanityThumb(article.coverUrl, 200, 200)
-      : null;
-
+  /* ---------------- HOME GRID ---------------- */
+  if (variant === "home") {
     return (
-      <div
-        className={cx(
-          "rounded-xl border bg-white p-4 shadow-sm hover:shadow-md transition",
-          className
-        )}
-      >
-        <div className="flex gap-4 items-center">
-          {/* image */}
-          <Link href={href}>
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-100">
+      <div className={cx("grid gap-3 grid-cols-1 md:grid-cols-2", className)}>
+        {articles.map((article) => {
+          const href = blogPath(lang, article.slug);
+          const date = formatDate(lang, article.publishedAt);
+          const thumb = article.coverUrl
+            ? sanityThumb(article.coverUrl, 400, 220)
+            : null;
+
+          return (
+            <Link
+              key={article.slug}
+              href={href}
+              className="rounded-xl border bg-white overflow-hidden shadow-sm hover:shadow-md transition"
+            >
               {thumb && (
-                <Image
-                  src={thumb}
-                  alt={article.title}
-                  width={80}
-                  height={80}
-                  className="w-full h-full object-cover"
-                />
+                <div className="h-28 md:h-32 bg-zinc-100">
+                  <Image
+                    src={thumb}
+                    alt={article.title}
+                    width={400}
+                    height={220}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               )}
-            </div>
-          </Link>
 
-          {/* text */}
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-zinc-500">
-              From the blog {date && `· ${date}`}
-            </p>
+              <div className="p-3">
+                <p className="text-xs text-zinc-500">
+                  From the blog {date && `· ${date}`}
+                </p>
 
-            <h3 className="font-semibold text-sm md:text-base truncate">
-              <Link href={href} className="hover:underline">
-                {article.title}
-              </Link>
-            </h3>
+                <h3 className="font-semibold text-sm md:text-base mt-1 line-clamp-2 text-zinc-900">
+                  {article.title}
+                </h3>
 
-            {article.excerpt && (
-              <p className="text-xs md:text-sm text-zinc-600 line-clamp-2 mt-1">
-                {article.excerpt}
-              </p>
-            )}
-          </div>
+                {article.excerpt && (
+                  <p className="text-xs md:text-sm text-zinc-600 mt-1 line-clamp-2">
+                    {article.excerpt}
+                  </p>
+                )}
 
-          <Link
-            href={href}
-            className="bg-blue-600 text-white text-xs md:text-sm px-3 py-2 rounded-lg font-semibold"
-          >
-            Read →
-          </Link>
-        </div>
+                <div className="mt-2 text-blue-600 font-semibold text-sm">
+                  Read →
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     );
   }
 
-  /* ---------------- GRID (HOME VERSION) ---------------- */
+  /* ---------------- SINGLE CARD ---------------- */
+  const article = articles[0];
+  const href = blogPath(lang, article.slug);
+  const date = formatDate(lang, article.publishedAt);
+  const thumb = article.coverUrl
+    ? sanityThumb(article.coverUrl, 160, 160)
+    : null;
+
   return (
     <div
       className={cx(
-        "grid gap-4",
-        "grid-cols-1 md:grid-cols-2",
+        "rounded-xl border bg-white p-3 shadow-sm hover:shadow-md transition",
         className
       )}
     >
-      {articles.map((article, i) => {
-        const href = blogPath(lang, article.slug);
-        const date = formatDate(lang, article.publishedAt);
-        const thumb = article.coverUrl
-          ? sanityThumb(article.coverUrl, 400, 300)
-          : null;
-
-        return (
-          <Link
-            key={article.slug}
-            href={href}
-            className={cx(
-              "rounded-xl border bg-white overflow-hidden shadow-sm hover:shadow-md transition",
-              i === 0 ? "md:col-span-1" : ""
-            )}
-          >
-            {/* image */}
+      <div className="flex gap-3 items-center">
+        <Link href={href}>
+          <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-lg overflow-hidden bg-zinc-100">
             {thumb && (
-              <div className="h-40 bg-zinc-100">
-                <Image
-                  src={thumb}
-                  alt={article.title}
-                  width={400}
-                  height={300}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <Image
+                src={thumb}
+                alt={article.title}
+                width={72}
+                height={72}
+                className="w-full h-full object-cover"
+              />
             )}
+          </div>
+        </Link>
 
-            {/* content */}
-            <div className="p-4">
-              <p className="text-xs text-zinc-500">
-                From the blog {date && `· ${date}`}
-              </p>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-zinc-500">
+            From the blog {date && `· ${date}`}
+          </p>
 
-              <h3 className="font-bold text-base md:text-lg mt-1 line-clamp-2">
-                {article.title}
-              </h3>
+          <h3 className="font-semibold text-sm md:text-base line-clamp-2">
+            <Link href={href} className="hover:underline">
+              {article.title}
+            </Link>
+          </h3>
 
-              {article.excerpt && (
-                <p className="text-sm text-zinc-600 mt-2 line-clamp-3">
-                  {article.excerpt}
-                </p>
-              )}
+          {article.excerpt && variant !== "compact" && (
+            <p className="text-xs text-zinc-600 line-clamp-2 mt-1">
+              {article.excerpt}
+            </p>
+          )}
+        </div>
 
-              <div className="mt-3 text-blue-600 font-semibold text-sm">
-                Read →
-              </div>
-            </div>
-          </Link>
-        );
-      })}
+        <Link
+          href={href}
+          className="bg-blue-600 text-white text-xs px-3 py-2 rounded-lg font-semibold shrink-0"
+        >
+          Read →
+        </Link>
+      </div>
     </div>
   );
 }
