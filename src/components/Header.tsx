@@ -27,6 +27,7 @@ const UI: Record<
   {
     home: string;
     certifications: string;
+    paths: string;
     blog: string;
     pricing: string;
     quiz: string;
@@ -45,6 +46,7 @@ const UI: Record<
   it: {
     home: "Home",
     certifications: "Certificazioni",
+    paths: "Percorsi",
     blog: "Blog",
     pricing: "Premium",
     quiz: "Quiz",
@@ -62,6 +64,7 @@ const UI: Record<
   en: {
     home: "Home",
     certifications: "Certifications",
+    paths: "Paths",
     blog: "Blog",
     pricing: "Premium",
     quiz: "Quizzes",
@@ -79,6 +82,7 @@ const UI: Record<
   fr: {
     home: "Accueil",
     certifications: "Certifications",
+    paths: "Parcours",
     blog: "Blog",
     pricing: "Premium",
     quiz: "Quiz",
@@ -96,6 +100,7 @@ const UI: Record<
   es: {
     home: "Inicio",
     certifications: "Certificaciones",
+    paths: "Rutas",
     blog: "Blog",
     pricing: "Premium",
     quiz: "Cuestionarios",
@@ -285,6 +290,15 @@ export default function Header({ lang }: Props) {
   const pricingHref = pricingPath(lang);
   const certsHref = certificationsPath(lang);
   const quizHomeHref = quizHomePath(lang);
+  const pathsHref =
+  lang === "en"
+    ? "/paths"
+    : lang === "fr"
+    ? "/fr/parcours"
+    : lang === "es"
+    ? "/es/rutas"
+    : "/it/percorsi";
+
   const suggestedHref =
     lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
 
@@ -313,36 +327,51 @@ export default function Header({ lang }: Props) {
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
   const quick = useMemo<QuickItem[]>(() => {
-    return [
-      { href: homeHref, label: ui.home, icon: <IconHome /> },
-      {
-        href: certsHref,
-        label: t.certifications ?? ui.certifications,
-        icon: <IconCerts />,
-      },
-      { href: `${certsHref}?search=1`, label: "Search", icon: <IconSearch /> },
-      { href: blogHref, label: t.blog ?? ui.blog, icon: <IconBlog /> },
-      { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
-      { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
-      { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
-    ];
-  }, [
-    blogHref,
-    certsHref,
-    homeHref,
-    pricingHref,
-    quizHomeHref,
-    suggestedHref,
-    t.blog,
-    t.certifications,
-    t.pricing,
-    ui.blog,
-    ui.certifications,
-    ui.home,
-    ui.pricing,
-    ui.quiz,
-    ui.suggested,
-  ]);
+  return [
+    { href: homeHref, label: ui.home, icon: <IconHome /> },
+
+    {
+      href: certsHref,
+      label: t.certifications ?? ui.certifications,
+      icon: <IconCerts />,
+    },
+
+    // 🔥 NUOVA VOCE PERCORSI
+    {
+      href: pathsHref,
+      label: ui.paths,
+      icon: <IconSuggested />,
+    },
+
+    { href: `${certsHref}?search=1`, label: "Search", icon: <IconSearch /> },
+
+    { href: blogHref, label: t.blog ?? ui.blog, icon: <IconBlog /> },
+
+    { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
+
+    { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
+
+    { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
+  ];
+}, [
+  blogHref,
+  certsHref,
+  homeHref,
+  pathsHref,   // 👈 IMPORTANTISSIMO
+  pricingHref,
+  quizHomeHref,
+  suggestedHref,
+  t.blog,
+  t.certifications,
+  t.pricing,
+  ui.blog,
+  ui.certifications,
+  ui.home,
+  ui.paths,    // 👈 IMPORTANTISSIMO
+  ui.pricing,
+  ui.quiz,
+  ui.suggested,
+]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
 
 useEffect(() => {
