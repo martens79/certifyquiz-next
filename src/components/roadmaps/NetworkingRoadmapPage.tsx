@@ -2,14 +2,40 @@ import Link from "next/link";
 
 type Locale = "it" | "en" | "es" | "fr";
 
+type NetQuizSlug =
+  | "cisco-ccst-networking"
+  | "comptia-network-plus"
+  | "ccna"
+  | "jncie"
+  | "f5";
+
+type NetCertSlug =
+  | "cisco-ccst-networking"
+  | "comptia-network-plus"
+  | "ccna"
+  | "jncie"
+  | "f5";
+
 export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
   const t = CONTENT[lang];
 
-  // Quiz SEMPRE con /{lang} (EN incluso)
-  const quiz = (slug: "network-plus" | "ccna") => `/${lang}/quiz/${slug}`;
+  const quiz = (slug: NetQuizSlug) => `/${lang}/quiz/${slug}`;
 
-  // Hub non localizzati (come hai impostato tu)
-  const hubNetworking = "/hub/networking";
+  const cert = (slug: NetCertSlug) => {
+    if (lang === "it") return `/it/certificazioni/${slug}`;
+    if (lang === "fr") return `/fr/certifications/${slug}`;
+    if (lang === "es") return `/es/certificaciones/${slug}`;
+    return `/certifications/${slug}`;
+  };
+
+  const categoryNet =
+    lang === "en"
+      ? "/categories/networking"
+      : lang === "it"
+      ? "/it/categorie/reti"
+      : lang === "es"
+      ? "/es/categorias/redes"
+      : "/fr/categories/reseaux";
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10">
@@ -20,17 +46,11 @@ export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
         <p className="mt-5 text-slate-700 leading-relaxed">{t.intro}</p>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link
-            href={quiz("network-plus")}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
-          >
+          <Link href={quiz("comptia-network-plus")} className="btn-primary">
             {t.ctaPrimary}
           </Link>
 
-          <Link
-            href={hubNetworking}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition"
-          >
+          <Link href={categoryNet} className="btn-secondary">
             {t.ctaSecondary}
           </Link>
         </div>
@@ -57,14 +77,25 @@ export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
               </p>
             ) : null}
 
-            {lvl.ctaQuizSlug ? (
-              <div className="mt-4">
-                <Link
-                  href={quiz(lvl.ctaQuizSlug)}
-                  className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                >
-                  {lvl.ctaText ?? t.practiceCta}
-                </Link>
+            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
+              <div className="mt-4 flex flex-col items-start gap-2">
+                {lvl.ctaQuizSlug && (
+                  <Link
+                    href={quiz(lvl.ctaQuizSlug)}
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
+                  >
+                    {lvl.ctaPrimaryText ?? t.practiceCta}
+                  </Link>
+                )}
+
+                {lvl.ctaCertSlug && (
+                  <Link
+                    href={cert(lvl.ctaCertSlug)}
+                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                  >
+                    {lvl.ctaSecondaryText ?? t.certCta}
+                  </Link>
+                )}
               </div>
             ) : null}
           </div>
@@ -97,28 +128,26 @@ export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
           <table className="w-full border-collapse">
             <thead>
               <tr className="text-left">
-                <th className="border-b border-slate-200 py-2 pr-4"></th>
-                <th className="border-b border-slate-200 py-2 pr-4 font-bold">{t.compareLeftTitle}</th>
-                <th className="border-b border-slate-200 py-2 font-bold">{t.compareRightTitle}</th>
+                <th></th>
+                <th className="font-bold">{t.compareLeftTitle}</th>
+                <th className="font-bold">{t.compareRightTitle}</th>
               </tr>
             </thead>
             <tbody>
               {t.compareRows.map((row) => (
-                <tr key={row.label} className="align-top">
-                  <td className="border-b border-slate-100 py-3 pr-4 font-semibold text-slate-700">
-                    {row.label}
-                  </td>
-                  <td className="border-b border-slate-100 py-3 pr-4 text-slate-700">{row.left}</td>
-                  <td className="border-b border-slate-100 py-3 text-slate-700">{row.right}</td>
+                <tr key={row.label}>
+                  <td className="font-semibold">{row.label}</td>
+                  <td>{row.left}</td>
+                  <td>{row.right}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-slate-800">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="font-semibold">{t.compareRecommendationTitle}</p>
-          <p className="mt-1">{t.compareRecommendationBody}</p>
+          <p>{t.compareRecommendationBody}</p>
         </div>
       </section>
 
@@ -139,17 +168,13 @@ export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
       <section className="mt-10 rounded-2xl border border-blue-200 bg-blue-50 p-5">
         <h2 className="text-xl font-extrabold text-slate-900">{t.finalCtaTitle}</h2>
         <p className="mt-2 text-slate-700">{t.finalCtaBody}</p>
+
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href={quiz("network-plus")}
-            className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
-          >
+          <Link href={quiz("comptia-network-plus")} className="btn-primary">
             {t.ctaPrimary}
           </Link>
-          <Link
-            href={hubNetworking}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition"
-          >
+
+          <Link href={categoryNet} className="btn-secondary">
             {t.ctaSecondary}
           </Link>
         </div>
@@ -157,7 +182,6 @@ export default function NetworkingRoadmapPage({ lang }: { lang: Locale }) {
     </main>
   );
 }
-
 const CONTENT: Record<
   Locale,
   {
@@ -167,6 +191,7 @@ const CONTENT: Record<
 
     ctaPrimary: string;
     ctaSecondary: string;
+    certCta: string;
 
     goalLabel: string;
     practiceCta: string;
@@ -176,8 +201,10 @@ const CONTENT: Record<
       body: string;
       recommended?: string[];
       goal?: string;
-      ctaQuizSlug?: "network-plus" | "ccna";
-      ctaText?: string;
+      ctaQuizSlug?: NetQuizSlug;
+      ctaCertSlug?: NetCertSlug;
+      ctaPrimaryText?: string;
+      ctaSecondaryText?: string;
     }>;
 
     salaryTitle: string;
@@ -200,117 +227,15 @@ const CONTENT: Record<
     finalCtaBody: string;
   }
 > = {
-  en: {
-    title: "Networking Certification Roadmap 2026",
-    subtitle: "From beginner to job-ready networking skills",
-    intro:
-      "Want a real networking path (not random certifications)? This roadmap gives you a practical order—from IT basics to CCNA and specialization. The goal: become someone who can troubleshoot networks in the real world.",
-
-    ctaPrimary: "Start with Network+ quiz",
-    ctaSecondary: "Browse networking certifications",
-
-    goalLabel: "Goal:",
-    practiceCta: "Practice now",
-
-    levels: [
-      {
-        title: "🟢 Level 0 — No IT background",
-        body:
-          "If you’re new to IT, start with fundamentals. Networking makes more sense when you understand devices, OS basics, and troubleshooting.",
-        recommended: ["CompTIA ITF+ (or equivalent IT basics)", "Basic OS troubleshooting skills"],
-        goal: "Build a solid base before diving into networking details.",
-      },
-      {
-        title: "🟡 Level 1 — Core networking fundamentals",
-        body:
-          "Learn IP addressing, subnetting basics, DNS, DHCP, routing, switching, and Wi-Fi fundamentals. This is your foundation.",
-        recommended: ["CompTIA Network+", "Cisco CCST (Networking)"],
-        goal: "Be able to troubleshoot connectivity and core services.",
-        ctaQuizSlug: "network-plus",
-        ctaText: "Practice Network+ quiz",
-      },
-      {
-        title: "🟠 Level 2 — Cisco track (hands-on)",
-        body:
-          "If you want a stronger practical/enterprise path, move to Cisco and do labs. CCNA gives depth in routing/switching and real scenarios.",
-        recommended: ["CCNA"],
-        goal: "Improve hands-on skills with labs and configuration tasks.",
-        ctaQuizSlug: "ccna",
-        ctaText: "Practice CCNA quiz",
-      },
-      {
-        title: "🔴 Level 3 — Specialization",
-        body:
-          "Now pick a direction: network security, cloud networking, load balancing (F5), Juniper, wireless, or automation.",
-        recommended: [
-          "Security+ (baseline security)",
-          "Cloud networking (AWS/Azure/GCP)",
-          "F5 / ADC fundamentals",
-          "Juniper (advanced routing paths)",
-          "Network automation basics",
-        ],
-        goal: "Add depth in one direction while keeping fundamentals solid.",
-      },
-    ],
-
-    salaryTitle: "💰 Networking salary outlook (2026)",
-    salaryIntro:
-      "Typical global ranges (highly dependent on country, experience, and company). Use this as orientation, not a promise.",
-    salaryRanges: [
-      { label: "Entry-level", range: "$45k–$65k" },
-      { label: "Mid-level", range: "$70k–$100k" },
-      { label: "Senior / Specialist", range: "$110k+" },
-    ],
-    salaryDisclaimer:
-      "Disclaimer: ranges vary widely. Certifications help most when combined with labs and consistent practice.",
-
-    compareTitle: "🔍 Network+ vs CCNA — which one should you do first?",
-    compareIntro:
-      "Both are great. Network+ is broader and easier to start with. CCNA is more hands-on and deeper, especially for Cisco environments.",
-    compareLeftTitle: "Network+",
-    compareRightTitle: "CCNA",
-    compareRows: [
-      { label: "Best for", left: "Broad foundations", right: "Hands-on enterprise depth" },
-      { label: "Difficulty", left: "Beginner to intermediate", right: "Intermediate (more lab-heavy)" },
-      { label: "Recommended order", left: "Start here if unsure", right: "Do after fundamentals" },
-    ],
-    compareRecommendationTitle: "Recommendation",
-    compareRecommendationBody:
-      "Start with Network+ if you want the clean foundation. Choose CCNA next if you want a stronger hands-on track.",
-
-    faqTitle: "FAQ",
-    faq: [
-      {
-        q: "Do I need Network+ before CCNA?",
-        a: "Not mandatory, but recommended if you’re new. It makes CCNA concepts easier to digest.",
-      },
-      {
-        q: "Is subnetting still important in 2026?",
-        a: "Yes. Even in cloud environments, networking basics (IP, routing, DNS) remain critical.",
-      },
-      {
-        q: "How do I get practical experience without a job?",
-        a: "Use labs (Packet Tracer, GNS3, home lab) and practice troubleshooting scenarios regularly.",
-      },
-      {
-        q: "Is networking still a good career path?",
-        a: "Yes—especially when combined with cloud and security. Strong troubleshooting skills are always needed.",
-      },
-    ],
-
-    finalCtaTitle: "🚀 Start now (the practical way)",
-    finalCtaBody:
-      "Read the roadmap once, then act. Consistent practice beats endless planning—start with the Network+ quiz and build from there.",
-  },
-
   it: {
-    title: "Roadmap Certificazioni Networking 2026",
-    subtitle: "Da principiante a competenze di rete spendibili",
+    title: "Roadmap Networking 2026",
+    subtitle: "Da zero a networking professionale (senza perdere anni)",
     intro:
-      "Vuoi un percorso networking vero (non certificazioni a caso)? Questa roadmap propone un ordine pratico: dalle basi IT fino a CCNA e specializzazioni. Obiettivo: diventare una persona che sa fare troubleshooting di rete sul serio.",
+      "Il networking è la base di tutto: cloud, cybersecurity, sistemi. Se non capisci come funzionano le reti, qualsiasi altra skill IT resta superficiale. Questa roadmap ti guida passo dopo passo: dalle basi fino a diventare davvero operativo, evitando gli errori più comuni che fanno perdere mesi (o anni).",
 
-    ctaPrimary: "Inizia col quiz Network+",
-    ctaSecondary: "Vedi le certificazioni Networking",
+    ctaPrimary: "Inizia con Network+",
+    ctaSecondary: "Vedi tutte le certificazioni Networking",
+    certCta: "Scopri certificazione",
 
     goalLabel: "Obiettivo:",
     practiceCta: "Allenati ora",
@@ -319,272 +244,378 @@ const CONTENT: Record<
       {
         title: "🟢 Livello 0 — Nessuna base IT",
         body:
-          "Se parti da zero, fai prima fondamenta IT. Il networking diventa molto più chiaro quando sai come funzionano dispositivi e sistemi operativi.",
-        recommended: ["CompTIA ITF+ (o basi equivalenti)", "Troubleshooting OS di base"],
-        goal: "Costruire una base solida prima di entrare nei dettagli di rete.",
+          "Se parti da zero, il primo errore è saltare subito sulle certificazioni. Il networking senza basi è solo teoria incomprensibile. Prima devi capire cosa succede davvero quando un dispositivo si connette a internet: indirizzi IP, DNS, gateway, e perché a volte 'non funziona'. Questo livello serve a costruire una mentalità tecnica, non a memorizzare concetti.",
+        recommended: [
+          "Concetti base IT (hardware e sistemi operativi)",
+          "Differenza tra rete locale e internet",
+          "DNS, IP e gateway spiegati davvero",
+        ],
+        goal:
+          "Capire cosa succede quando una rete smette di funzionare, senza andare a tentativi.",
       },
       {
-        title: "🟡 Livello 1 — Fondamenti networking",
+        title: "🟡 Livello 1 — Fondamenta Networking reali",
         body:
-          "IP, subnetting base, DNS, DHCP, routing, switching e Wi-Fi: questa è la base.",
-        recommended: ["CompTIA Network+", "Cisco CCST (Networking)"],
-        goal: "Saper diagnosticare connettività e servizi fondamentali.",
-        ctaQuizSlug: "network-plus",
-        ctaText: "Quiz Network+",
+          "Qui costruisci le fondamenta vere del networking. IP addressing, subnetting, DNS, DHCP, routing e switching non sono teoria: sono gli strumenti base per capire e risolvere problemi reali. Questo è il livello più importante di tutta la roadmap: se lo fai bene, tutto il resto diventa molto più semplice. Se lo fai male, ti porterai confusione avanti per anni.",
+        recommended: [
+          "Cisco CCST Networking",
+          "CompTIA Network+",
+        ],
+        goal:
+          "Essere in grado di diagnosticare problemi di rete base senza indovinare.",
+        ctaQuizSlug: "comptia-network-plus",
+        ctaCertSlug: "comptia-network-plus",
+        ctaPrimaryText: "Inizia il quiz Network+",
+        ctaSecondaryText: "Scopri Network+",
       },
       {
-        title: "🟠 Livello 2 — Percorso Cisco (pratico)",
+        title: "🟠 Livello 2 — Networking operativo (CCNA)",
         body:
-          "Se vuoi più pratica e valore enterprise, passa a Cisco e fai lab. CCNA ti dà profondità su routing/switching e scenari reali.",
+          "Qui smetti di essere teorico e inizi a lavorare davvero. CCNA è il punto di svolta: configurazioni, VLAN, routing reale, troubleshooting serio. Non basta capire i concetti, devi applicarli. Questo è il livello in cui inizi a diventare 'job-ready'. Chi arriva qui con basi solide fa un salto enorme rispetto alla media.",
         recommended: ["CCNA"],
-        goal: "Aumentare le skill hands-on con lab e configurazioni.",
+        goal:
+          "Diventare operativo nel networking con configurazioni e troubleshooting reale.",
         ctaQuizSlug: "ccna",
-        ctaText: "Quiz CCNA",
+        ctaCertSlug: "ccna",
+        ctaPrimaryText: "Inizia il quiz CCNA",
+        ctaSecondaryText: "Scopri CCNA",
       },
       {
         title: "🔴 Livello 3 — Specializzazione",
         body:
-          "Scegli una direzione: network security, cloud networking, load balancing (F5), Juniper, wireless o automazione.",
+          "A questo punto hai le basi per scegliere una direzione. Qui si differenziano le carriere: networking enterprise, load balancing, cloud networking, automazione. Non serve fare tutto: serve diventare forte in una direzione. Questo è il livello in cui inizi a diventare davvero competitivo sul mercato.",
         recommended: [
-          "Security+ (base sicurezza)",
+          "F5 (load balancing e ADC)",
+          "Juniper JNCIE (routing avanzato)",
           "Cloud networking (AWS/Azure/GCP)",
-          "F5 / ADC fundamentals",
-          "Juniper (routing avanzato)",
-          "Network automation basics",
         ],
-        goal: "Diventare forte in un’area senza perdere le fondamenta.",
+        goal:
+          "Diventare uno specialista e aumentare il proprio valore sul mercato.",
+        ctaQuizSlug: "jncie",
+        ctaCertSlug: "jncie",
+        ctaPrimaryText: "Vai su JNCIE",
+        ctaSecondaryText: "Scopri JNCIE",
       },
     ],
 
-    salaryTitle: "💰 Salary outlook Networking (2026)",
+    salaryTitle: "💰 Quanto si guadagna nel networking (2026)",
     salaryIntro:
-      "Range globali indicativi (dipendono molto da paese, esperienza e azienda). Orientamento, non promessa.",
+      "Il networking è una delle skill più richieste nel mondo IT. I range variano molto per paese ed esperienza, ma chi ha skill reali di troubleshooting e configurazione guadagna significativamente sopra la media.",
     salaryRanges: [
-      { label: "Entry-level", range: "$45k–$65k" },
-      { label: "Mid-level", range: "$70k–$100k" },
-      { label: "Senior / Specialist", range: "$110k+" },
+      { label: "Entry-level", range: "€30k–€45k" },
+      { label: "Mid-level", range: "€50k–€80k" },
+      { label: "Senior / Specialist", range: "€90k+" },
     ],
     salaryDisclaimer:
-      "Nota: i range variano molto. Le certificazioni rendono di più se abbinate a lab e pratica costante.",
+      "Nota: le certificazioni aiutano, ma la differenza reale la fa la pratica.",
 
-    compareTitle: "🔍 Network+ vs CCNA — quale prima?",
+    compareTitle: "🔍 Network+ vs CCNA — quale scegliere?",
     compareIntro:
-      "Entrambe ottime. Network+ è più “basi e panoramica”. CCNA è più pratica e profonda, soprattutto in ambienti Cisco.",
+      "Errore classico: iniziare direttamente da CCNA senza basi. Le due certificazioni servono in momenti diversi del percorso.",
     compareLeftTitle: "Network+",
     compareRightTitle: "CCNA",
     compareRows: [
-      { label: "Ideale per", left: "Fondamenta ampie", right: "Profondità enterprise hands-on" },
-      { label: "Difficoltà", left: "Base → intermedio", right: "Intermedio (molte lab)" },
-      { label: "Ordine consigliato", left: "Parti qui se sei incerto", right: "Dopo le fondamenta" },
+      {
+        label: "Obiettivo",
+        left: "Fondamenta networking",
+        right: "Networking pratico e operativo",
+      },
+      {
+        label: "Difficoltà",
+        left: "Base → intermedio",
+        right: "Intermedio (molta pratica)",
+      },
+      {
+        label: "Quando farla",
+        left: "All’inizio",
+        right: "Dopo le basi",
+      },
     ],
     compareRecommendationTitle: "Consiglio pratico",
     compareRecommendationBody:
-      "Se vuoi un percorso pulito: Network+ prima. Poi CCNA se vuoi un track più pratico e forte.",
+      "Se parti da zero: Network+ prima, CCNA dopo. Saltare questo ordine è uno degli errori più comuni.",
 
     faqTitle: "FAQ",
     faq: [
       {
-        q: "Serve Network+ prima di CCNA?",
-        a: "Non obbligatoria, ma consigliata se sei all’inizio: rende CCNA molto più chiara.",
+        q: "Serve davvero il networking oggi?",
+        a: "Sì. Cloud, cybersecurity e sistemi si basano tutti sul networking.",
       },
       {
-        q: "Il subnetting conta ancora nel 2026?",
-        a: "Sì. Anche nel cloud, basi di rete (IP, routing, DNS) sono fondamentali.",
+        q: "Posso saltare Network+?",
+        a: "Solo se hai già basi solide. Altrimenti rischi di bloccarti su CCNA.",
       },
       {
-        q: "Come faccio pratica senza lavoro?",
-        a: "Lab (Packet Tracer, GNS3, home lab) + scenari di troubleshooting costanti.",
+        q: "Serve pratica?",
+        a: "Senza pratica il networking non esiste. Devi fare troubleshooting.",
       },
       {
-        q: "Il networking è ancora una buona carriera?",
-        a: "Sì, soprattutto se lo unisci a cloud e security: il troubleshooting forte serve sempre.",
+        q: "È ancora una buona carriera?",
+        a: "Sì, soprattutto se combinata con cloud e sicurezza.",
       },
     ],
 
-    finalCtaTitle: "🚀 Parti adesso (modo pratico)",
+    finalCtaTitle: "🚀 Parti adesso (sul serio)",
     finalCtaBody:
-      "Leggi la roadmap una volta, poi agisci. La pratica costante batte l’overthinking: inizia dal quiz Network+.",
+      "Non leggere 10 roadmap diverse. Parti e basta. Il primo passo è il quiz Network+: è lì che inizi davvero.",
   },
+  en: {
+  title: "Networking Roadmap 2026",
+  subtitle: "From zero to real networking skills (without wasting years)",
+  intro:
+    "Networking is the foundation of everything: cloud, cybersecurity, systems. If you don’t understand networks, every other IT skill stays superficial. This roadmap gives you a practical path from zero to real job-ready skills, avoiding the most common mistakes that slow people down.",
 
-  es: {
-    title: "Ruta de Certificaciones de Networking 2026",
-    subtitle: "De principiante a habilidades de red útiles",
-    intro:
-      "¿Quieres un camino de redes real (no certificaciones al azar)? Esta ruta propone un orden práctico: desde fundamentos IT hasta CCNA y especializaciones. Objetivo: aprender troubleshooting de red de verdad.",
+  ctaPrimary: "Start with Network+",
+  ctaSecondary: "Browse Networking certifications",
+  certCta: "Explore certification",
 
-    ctaPrimary: "Empezar con el quiz Network+",
-    ctaSecondary: "Ver certificaciones de Networking",
+  goalLabel: "Goal:",
+  practiceCta: "Practice now",
 
-    goalLabel: "Objetivo:",
-    practiceCta: "Practicar ahora",
+  levels: [
+    {
+      title: "🟢 Level 0 — No IT background",
+      body:
+        "If you’re starting from zero, jumping straight into certifications is a mistake. Networking without fundamentals feels confusing and abstract. First you need to understand what actually happens when a device connects to the internet: IPs, DNS, gateways, and why things break.",
+      recommended: [
+        "Basic IT concepts (hardware and OS)",
+        "How networks actually work",
+        "IP, DNS, and gateway basics",
+      ],
+      goal:
+        "Understand what’s really happening when a network fails, without guessing.",
+    },
+    {
+      title: "🟡 Level 1 — Core networking fundamentals",
+      body:
+        "This is where you build the real foundation: IP addressing, subnetting, DNS, DHCP, routing, and switching. This is the most important stage of the entire roadmap. If you get this right, everything else becomes easier. If you rush it, confusion will follow you for years.",
+      recommended: ["Cisco CCST Networking", "CompTIA Network+"],
+      goal:
+        "Be able to troubleshoot basic network issues confidently.",
+      ctaQuizSlug: "comptia-network-plus",
+      ctaCertSlug: "comptia-network-plus",
+      ctaPrimaryText: "Start Network+ quiz",
+      ctaSecondaryText: "Explore Network+",
+    },
+    {
+      title: "🟠 Level 2 — Real networking (CCNA)",
+      body:
+        "This is where theory becomes practice. CCNA is the turning point: configuration, VLANs, routing, and real troubleshooting. You’re no longer just understanding — you’re doing. This is where you become job-ready.",
+      recommended: ["CCNA"],
+      goal:
+        "Become operational with real network configuration and troubleshooting.",
+      ctaQuizSlug: "ccna",
+      ctaCertSlug: "ccna",
+      ctaPrimaryText: "Start CCNA quiz",
+      ctaSecondaryText: "Explore CCNA",
+    },
+    {
+      title: "🔴 Level 3 — Specialization",
+      body:
+        "At this point, you choose your direction. Enterprise networking, load balancing, cloud networking, automation. You don’t need to learn everything — you need to go deep in one direction.",
+      recommended: [
+        "F5 (load balancing)",
+        "Juniper JNCIE",
+        "Cloud networking",
+      ],
+      goal:
+        "Become a specialist and increase your market value.",
+      ctaQuizSlug: "jncie",
+      ctaCertSlug: "jncie",
+      ctaPrimaryText: "Go to JNCIE",
+      ctaSecondaryText: "Explore JNCIE",
+    },
+  ],
 
-    levels: [
-      {
-        title: "🟢 Nivel 0 — Sin base IT",
-        body:
-          "Si empiezas de cero, construye fundamentos IT. Redes es más fácil cuando entiendes dispositivos y sistemas operativos.",
-        recommended: ["CompTIA ITF+ (o equivalentes)", "Troubleshooting básico de SO"],
-        goal: "Crear una base sólida antes de entrar en detalles de red.",
-      },
-      {
-        title: "🟡 Nivel 1 — Fundamentos de redes",
-        body:
-          "IP, subnetting básico, DNS, DHCP, routing, switching y Wi-Fi: esta es la base.",
-        recommended: ["CompTIA Network+", "Cisco CCST (Networking)"],
-        goal: "Resolver conectividad y servicios esenciales.",
-        ctaQuizSlug: "network-plus",
-        ctaText: "Practicar Network+",
-      },
-      {
-        title: "🟠 Nivel 2 — Ruta Cisco (práctica)",
-        body:
-          "Si quieres un camino más práctico y enterprise, pasa a Cisco y haz labs. CCNA te da profundidad real.",
-        recommended: ["CCNA"],
-        goal: "Ganar habilidad hands-on con labs y configuración.",
-        ctaQuizSlug: "ccna",
-        ctaText: "Practicar CCNA",
-      },
-      {
-        title: "🔴 Nivel 3 — Especialización",
-        body:
-          "Elige una dirección: seguridad, cloud networking, balanceo (F5), Juniper, wireless o automatización.",
-        recommended: [
-          "Security+ (base)",
-          "Cloud networking (AWS/Azure/GCP)",
-          "F5 / ADC fundamentals",
-          "Juniper (routing avanzado)",
-          "Network automation basics",
-        ],
-        goal: "Profundizar en un área sin perder la base.",
-      },
-    ],
+  salaryTitle: "💰 Networking salary outlook (2026)",
+  salaryIntro:
+    "Networking remains one of the most valuable IT skills. Salaries vary widely, but strong troubleshooting skills are consistently rewarded.",
+  salaryRanges: [
+    { label: "Entry-level", range: "$40k–$65k" },
+    { label: "Mid-level", range: "$70k–$100k" },
+    { label: "Senior / Specialist", range: "$110k+" },
+  ],
+  salaryDisclaimer:
+    "Certifications help, but real skills matter more.",
 
-    salaryTitle: "💰 Salary outlook Networking (2026)",
-    salaryIntro:
-      "Rangos globales orientativos (dependen del país, experiencia y empresa). Guía, no promesa.",
-    salaryRanges: [
-      { label: "Entry-level", range: "$45k–$65k" },
-      { label: "Mid-level", range: "$70k–$100k" },
-      { label: "Senior / Specialist", range: "$110k+" },
-    ],
-    salaryDisclaimer:
-      "Aviso: los rangos varían mucho. Certificaciones + labs + práctica constante es lo que más ayuda.",
+  compareTitle: "🔍 Network+ vs CCNA — which one first?",
+  compareIntro:
+    "Common mistake: jumping directly into CCNA without foundations.",
+  compareLeftTitle: "Network+",
+  compareRightTitle: "CCNA",
+  compareRows: [
+    {
+      label: "Purpose",
+      left: "Foundations",
+      right: "Hands-on networking",
+    },
+    {
+      label: "Difficulty",
+      left: "Beginner → intermediate",
+      right: "Intermediate",
+    },
+    {
+      label: "When to take",
+      left: "Start here",
+      right: "After fundamentals",
+    },
+  ],
+  compareRecommendationTitle: "Recommendation",
+  compareRecommendationBody:
+    "Start with Network+, then move to CCNA. This path is the most effective.",
 
-    compareTitle: "🔍 Network+ vs CCNA — ¿cuál primero?",
-    compareIntro:
-      "Network+ es más amplio y accesible. CCNA es más profundo y práctico, especialmente en entornos Cisco.",
-    compareLeftTitle: "Network+",
-    compareRightTitle: "CCNA",
-    compareRows: [
-      { label: "Mejor para", left: "Fundamentos amplios", right: "Profundidad enterprise hands-on" },
-      { label: "Dificultad", left: "Básico → intermedio", right: "Intermedio (más labs)" },
-      { label: "Orden recomendado", left: "Primero si no estás seguro", right: "Después de la base" },
-    ],
-    compareRecommendationTitle: "Recomendación",
-    compareRecommendationBody:
-      "Empieza con Network+. Luego CCNA si quieres un camino más práctico y fuerte.",
+  faqTitle: "FAQ",
+  faq: [
+    {
+      q: "Is networking still relevant?",
+      a: "Yes. Everything in IT relies on networking.",
+    },
+    {
+      q: "Can I skip Network+?",
+      a: "Only if you already understand networking basics well.",
+    },
+    {
+      q: "Do I need hands-on practice?",
+      a: "Absolutely. Networking is learned by doing.",
+    },
+  ],
 
-    faqTitle: "FAQ",
-    faq: [
-      { q: "¿Necesito Network+ antes de CCNA?", a: "No es obligatorio, pero recomendable si estás empezando." },
-      { q: "¿Subnetting sigue importando en 2026?", a: "Sí. Incluso en cloud, IP/routing/DNS siguen siendo clave." },
-      { q: "¿Cómo practico sin trabajo?", a: "Labs (Packet Tracer, GNS3) + escenarios de troubleshooting." },
-      { q: "¿Networking sigue siendo buena carrera?", a: "Sí, sobre todo combinado con cloud y security." },
-    ],
+  finalCtaTitle: "🚀 Start now",
+  finalCtaBody:
+    "Don’t overthink it. Start with Network+ and build from there.",
+},
+es: {
+  title: "Ruta Networking 2026",
+  subtitle: "De cero a habilidades reales de redes",
+  intro:
+    "El networking es la base de todo: cloud, ciberseguridad y sistemas. Si no entiendes las redes, todo lo demás se queda superficial.",
 
-    finalCtaTitle: "🚀 Empieza ahora (forma práctica)",
-    finalCtaBody:
-      "Lee la ruta una vez y actúa. Empieza con el quiz Network+ y avanza paso a paso.",
-  },
+  ctaPrimary: "Empieza con Network+",
+  ctaSecondary: "Ver certificaciones",
+  certCta: "Ver certificación",
 
-  fr: {
-    title: "Parcours Certifications Réseaux 2026",
-    subtitle: "De débutant à des compétences réseau utiles",
-    intro:
-      "Vous voulez un vrai parcours réseau (pas des certifs au hasard) ? Ce parcours donne un ordre pratique : des fondamentaux IT à CCNA et aux spécialisations. Objectif : apprendre le dépannage réseau pour de vrai.",
+  goalLabel: "Objetivo:",
+  practiceCta: "Practicar ahora",
 
-    ctaPrimary: "Commencer avec le quiz Network+",
-    ctaSecondary: "Voir les certifications Réseaux",
+  levels: [
+    {
+      title: "🟢 Nivel 0 — Sin base IT",
+      body:
+        "Si empiezas desde cero, necesitas entender cómo funciona internet antes de estudiar certificaciones.",
+      recommended: ["IP básico", "DNS", "conceptos de red"],
+      goal: "Entender lo esencial.",
+    },
+    {
+      title: "🟡 Nivel 1 — Fundamentos",
+      body:
+        "Aquí construyes la base real del networking.",
+      recommended: ["CCST", "Network+"],
+      goal: "Resolver problemas básicos.",
+      ctaQuizSlug: "comptia-network-plus",
+      ctaCertSlug: "comptia-network-plus",
+    },
+    {
+      title: "🟠 Nivel 2 — CCNA",
+      body:
+        "Empiezas a trabajar de verdad con redes.",
+      recommended: ["CCNA"],
+      goal: "Ser operativo.",
+      ctaQuizSlug: "ccna",
+      ctaCertSlug: "ccna",
+    },
+    {
+      title: "🔴 Nivel 3 — Especialización",
+      body:
+        "Eliges una dirección profesional.",
+      recommended: ["F5", "JNCIE"],
+      goal: "Convertirte en especialista.",
+    },
+  ],
 
-    goalLabel: "Objectif :",
-    practiceCta: "S’entraîner",
+  salaryTitle: "💰 Salario networking",
+  salaryIntro: "Rangos aproximados.",
+  salaryRanges: [
+    { label: "Junior", range: "$40k–$60k" },
+    { label: "Mid", range: "$65k–$95k" },
+    { label: "Senior", range: "$100k+" },
+  ],
+  salaryDisclaimer: "Depende de experiencia.",
 
-    levels: [
-      {
-        title: "🟢 Niveau 0 — Aucune base IT",
-        body:
-          "Si vous démarrez de zéro, construisez d’abord des fondamentaux IT. Le réseau devient plus clair avec des bases OS et troubleshooting.",
-        recommended: ["CompTIA ITF+ (ou équivalent)", "Dépannage OS de base"],
-        goal: "Construire une base solide avant les détails réseau.",
-      },
-      {
-        title: "🟡 Niveau 1 — Fondamentaux réseau",
-        body:
-          "IP, subnetting de base, DNS, DHCP, routage, switching et Wi-Fi : la base se construit ici.",
-        recommended: ["CompTIA Network+", "Cisco CCST (Networking)"],
-        goal: "Dépanner la connectivité et les services essentiels.",
-        ctaQuizSlug: "network-plus",
-        ctaText: "S’entraîner Network+",
-      },
-      {
-        title: "🟠 Niveau 2 — Parcours Cisco (pratique)",
-        body:
-          "Pour plus de pratique et une valeur enterprise, passez sur Cisco et faites des labs. CCNA donne une vraie profondeur.",
-        recommended: ["CCNA"],
-        goal: "Gagner du hands-on avec des labs et de la config.",
-        ctaQuizSlug: "ccna",
-        ctaText: "S’entraîner CCNA",
-      },
-      {
-        title: "🔴 Niveau 3 — Spécialisation",
-        body:
-          "Choisissez : sécurité, cloud networking, load balancing (F5), Juniper, wireless ou automatisation.",
-        recommended: [
-          "Security+ (base)",
-          "Cloud networking (AWS/Azure/GCP)",
-          "F5 / ADC fundamentals",
-          "Juniper (routage avancé)",
-          "Network automation basics",
-        ],
-        goal: "Approfondir un domaine sans perdre les bases.",
-      },
-    ],
+  compareTitle: "Network+ vs CCNA",
+  compareIntro: "No empieces por CCNA sin base.",
+  compareLeftTitle: "Network+",
+  compareRightTitle: "CCNA",
+  compareRows: [
+    { label: "Base", left: "Sí", right: "No" },
+    { label: "Orden", left: "Primero", right: "Después" },
+  ],
+  compareRecommendationTitle: "Recomendación",
+  compareRecommendationBody:
+    "Network+ primero, CCNA después.",
 
-    salaryTitle: "💰 Salary outlook Réseaux (2026)",
-    salaryIntro:
-      "Fourchettes mondiales indicatives (dépend du pays, expérience, entreprise).",
-    salaryRanges: [
-      { label: "Entry-level", range: "$45k–$65k" },
-      { label: "Mid-level", range: "$70k–$100k" },
-      { label: "Senior / Specialist", range: "$110k+" },
-    ],
-    salaryDisclaimer:
-      "Note : ça varie beaucoup. Les certifs aident surtout avec des labs et une pratique régulière.",
+  faqTitle: "FAQ",
+  faq: [
+    { q: "¿Networking sigue siendo útil?", a: "Sí, es fundamental." },
+  ],
 
-    compareTitle: "🔍 Network+ vs CCNA — laquelle en premier ?",
-    compareIntro:
-      "Network+ est plus large et accessible. CCNA est plus深/plus pratique, surtout en environnements Cisco.",
-    compareLeftTitle: "Network+",
-    compareRightTitle: "CCNA",
-    compareRows: [
-      { label: "Idéal pour", left: "Fondamentaux larges", right: "Profondeur enterprise hands-on" },
-      { label: "Difficulté", left: "Débutant → intermédiaire", right: "Intermédiaire (plus de labs)" },
-      { label: "Ordre conseillé", left: "D’abord si vous hésitez", right: "Après les bases" },
-    ],
-    compareRecommendationTitle: "Recommandation",
-    compareRecommendationBody:
-      "Commencez par Network+. Puis CCNA si vous voulez un parcours plus pratique et solide.",
+  finalCtaTitle: "🚀 Empieza ahora",
+  finalCtaBody: "Empieza con Network+.",
+},
+fr: {
+  title: "Parcours Networking 2026",
+  subtitle: "De débutant à compétences réseau réelles",
+  intro:
+    "Le networking est la base de tout en IT.",
 
-    faqTitle: "FAQ",
-    faq: [
-      { q: "Network+ avant CCNA ?", a: "Pas obligatoire, mais recommandé si vous débutez." },
-      { q: "Le subnetting est encore important ?", a: "Oui. Même en cloud, IP/routing/DNS restent essentiels." },
-      { q: "Comment pratiquer sans job ?", a: "Labs (Packet Tracer, GNS3) + scénarios de dépannage." },
-      { q: "Le réseau est encore une bonne carrière ?", a: "Oui, surtout combiné avec cloud et security." },
-    ],
+  ctaPrimary: "Commencer avec Network+",
+  ctaSecondary: "Voir certifications",
+  certCta: "Voir certification",
 
-    finalCtaTitle: "🚀 Commencez maintenant (concret)",
-    finalCtaBody:
-      "Lisez le parcours une fois, puis passez à l’action. Commencez avec le quiz Network+.",
-  },
+  goalLabel: "Objectif:",
+  practiceCta: "S’entraîner",
+
+  levels: [
+    {
+      title: "🟢 Niveau 0",
+      body: "Comprendre les bases réseau.",
+      goal: "Bases solides.",
+    },
+    {
+      title: "🟡 Niveau 1",
+      body: "Construire les fondamentaux.",
+      ctaQuizSlug: "comptia-network-plus",
+    },
+    {
+      title: "🟠 Niveau 2",
+      body: "Passer à CCNA.",
+      ctaQuizSlug: "ccna",
+    },
+    {
+      title: "🔴 Niveau 3",
+      body: "Spécialisation.",
+    },
+  ],
+
+  salaryTitle: "Salaire",
+  salaryIntro: "Indicatif.",
+  salaryRanges: [
+    { label: "Junior", range: "$40k–$60k" },
+    { label: "Senior", range: "$100k+" },
+  ],
+  salaryDisclaimer: "",
+
+  compareTitle: "Comparaison",
+  compareIntro: "",
+  compareLeftTitle: "Network+",
+  compareRightTitle: "CCNA",
+  compareRows: [],
+  compareRecommendationTitle: "",
+  compareRecommendationBody: "",
+
+  faqTitle: "FAQ",
+  faq: [],
+
+  finalCtaTitle: "Commencer",
+  finalCtaBody: "Commencez maintenant.",
+},
 };

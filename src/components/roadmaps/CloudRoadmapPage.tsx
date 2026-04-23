@@ -2,17 +2,33 @@ import Link from "next/link";
 
 type Locale = "it" | "en" | "es" | "fr";
 
-// Slug quiz (quiz SEMPRE con /{lang} anche per EN)
 type CloudQuizSlug =
   | "aws-cloud-practitioner"
   | "microsoft-azure-fundamentals"
   | "google-cloud"
-  | "comptia-cloud-plus";
+  | "comptia-cloud-plus"
+  | "aws-solutions-architect";
+
+type CloudCertSlug =
+  | "aws-cloud-practitioner"
+  | "microsoft-azure-fundamentals"
+  | "google-cloud"
+  | "comptia-cloud-plus"
+  | "aws-solutions-architect"
+  | "ibm-cloud-v5";
 
 export default function CloudRoadmapPage({ lang }: { lang: Locale }) {
   const t = CONTENT[lang];
 
   const quiz = (slug: CloudQuizSlug) => `/${lang}/quiz/${slug}`;
+
+const cert = (slug: CloudCertSlug) => {
+  if (lang === "it") return `/it/certificazioni/${slug}`;
+  if (lang === "fr") return `/fr/certifications/${slug}`;
+  if (lang === "es") return `/es/certificaciones/${slug}`;
+  return `/certifications/${slug}`;
+};
+
 
   // Category page (NO hub): path diverso per lingua
   const categoryCloud =
@@ -73,16 +89,27 @@ export default function CloudRoadmapPage({ lang }: { lang: Locale }) {
               </p>
             ) : null}
 
-            {lvl.ctaQuizSlug ? (
-              <div className="mt-4">
-                <Link
-                  href={quiz(lvl.ctaQuizSlug)}
-                  className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                >
-                  {lvl.ctaText ?? t.practiceCta}
-                </Link>
-              </div>
-            ) : null}
+           {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
+  <div className="mt-4 flex flex-col items-start gap-2">
+    {lvl.ctaQuizSlug ? (
+      <Link
+        href={quiz(lvl.ctaQuizSlug)}
+        className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
+      >
+        {lvl.ctaPrimaryText ?? t.practiceCta}
+      </Link>
+    ) : null}
+
+    {lvl.ctaCertSlug ? (
+      <Link
+        href={cert(lvl.ctaCertSlug)}
+        className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+      >
+        {lvl.ctaSecondaryText ?? t.certCta}
+      </Link>
+    ) : null}
+  </div>
+) : null}
           </div>
         ))}
       </section>
@@ -197,6 +224,7 @@ const CONTENT: Record<
 
     ctaPrimary: string;
     ctaSecondary: string;
+    certCta: string;
 
     goalLabel: string;
     practiceCta: string;
@@ -207,7 +235,9 @@ const CONTENT: Record<
       recommended?: string[];
       goal?: string;
       ctaQuizSlug?: CloudQuizSlug;
-      ctaText?: string;
+      ctaCertSlug?: CloudCertSlug;
+      ctaPrimaryText?: string;
+      ctaSecondaryText?: string;
     }>;
 
     salaryTitle: string;
@@ -231,390 +261,566 @@ const CONTENT: Record<
   }
 > = {
   en: {
-    title: "Cloud Certification Roadmap 2026",
-    subtitle: "From cloud beginner to job-ready skills",
-    intro:
-      "Cloud is not just “learn AWS”. You need core concepts (networking, security, cost), then a solid entry certification, and only after that you go deeper into architecture and operations. This roadmap gives you a practical order.",
+  title: "Cloud Certification Roadmap 2026",
+  subtitle: "From cloud beginner to job-ready skills",
+  intro:
+    "Cloud is not just “learn AWS”. You need core concepts first, then an entry certification, then deeper architecture and operations skills. This roadmap gives you a practical order based on the certifications already available on CertifyQuiz.",
 
-    ctaPrimary: "Start with AWS Cloud Practitioner quiz",
-    ctaSecondary: "Browse cloud certifications",
+  ctaPrimary: "Start with AWS Cloud Practitioner quiz",
+  ctaSecondary: "Browse cloud certifications",
+  certCta: "Explore certification",
 
-    goalLabel: "Goal:",
-    practiceCta: "Practice now",
+  goalLabel: "Goal:",
+  practiceCta: "Practice now",
 
-    levels: [
-      {
-        title: "🟢 Level 0 — No IT basics",
-        body:
-          "If you’re new to IT, don’t jump into cloud services menus. First, understand what a network is, what DNS does, and why security matters.",
-        recommended: ["IT basics (devices/OS)", "Basic networking (IP, DNS, routing)", "Basic security concepts"],
-        goal: "Be able to understand cloud services without guessing.",
-      },
-      {
-        title: "🟡 Level 1 — Cloud fundamentals (entry)",
-        body:
-          "Start with one entry-level certification that explains cloud models, shared responsibility, basic services, and pricing.",
-        recommended: ["AWS Cloud Practitioner", "Microsoft Azure Fundamentals (AZ-900)"],
-        goal: "Understand cloud concepts, pricing, identity basics, and core services.",
-        ctaQuizSlug: "aws-cloud-practitioner",
-        ctaText: "Practice Cloud Practitioner quiz",
-      },
-      {
-        title: "🟠 Level 2 — Pick a vendor track (go deeper)",
-        body:
-          "Choose ONE vendor to go deeper (AWS OR Azure OR Google Cloud). Depth beats scattered badges.",
-        recommended: [
-          "AWS Solutions Architect (next step after Practitioner)",
-          "Azure track after AZ-900",
-          "Google Cloud fundamentals path",
-        ],
-        goal: "Build real skills: architecture patterns, storage, networking, IAM, and cost control.",
-        ctaQuizSlug: "microsoft-azure-fundamentals",
-        ctaText: "Practice Azure Fundamentals quiz",
-      },
-      {
-        title: "🔴 Level 3 — Operations & multi-cloud (advanced)",
-        body:
-          "After fundamentals, learn ops: deployment, monitoring, troubleshooting, governance, and multi-cloud basics.",
-        recommended: ["CompTIA Cloud+ (operations)", "Cloud security basics", "CI/CD & automation fundamentals"],
-        goal: "Become job-ready for cloud operations and real-world troubleshooting.",
-        ctaQuizSlug: "comptia-cloud-plus",
-        ctaText: "Practice Cloud+ quiz",
-      },
-    ],
+  levels: [
+    {
+      title: "🟢 Level 0 — No IT basics",
+      body:
+        "If you’re new to IT, don’t jump into cloud dashboards yet. First understand networking basics, DNS, identity, and core security concepts.",
+      recommended: [
+        "IT basics (devices/OS)",
+        "Basic networking (IP, DNS, routing)",
+        "Basic security concepts",
+      ],
+      goal: "Understand cloud services without guessing.",
+    },
+    {
+      title: "🟡 Level 1 — First cloud entry point",
+      body:
+        "Start with a practical entry-level certification that explains cloud models, pricing, shared responsibility, and core services.",
+      recommended: ["AWS Cloud Practitioner"],
+      goal: "Build your first real cloud foundation.",
+      ctaQuizSlug: "aws-cloud-practitioner",
+      ctaCertSlug: "aws-cloud-practitioner",
+      ctaPrimaryText: "Start AWS Cloud Practitioner quiz",
+      ctaSecondaryText: "Explore AWS Cloud Practitioner certification",
+    },
+    {
+      title: "🟠 Level 2 — Second vendor foundation",
+      body:
+        "Once your first cloud base is clear, expand into another major ecosystem to compare services, identity models, and pricing approaches.",
+      recommended: ["Microsoft Azure Fundamentals"],
+      goal: "Understand a second major cloud ecosystem.",
+      ctaQuizSlug: "microsoft-azure-fundamentals",
+      ctaCertSlug: "microsoft-azure-fundamentals",
+      ctaPrimaryText: "Start Azure Fundamentals quiz",
+      ctaSecondaryText: "Explore Azure Fundamentals certification",
+    },
+    {
+      title: "🔴 Level 3 — Architecture depth",
+      body:
+        "Now go deeper into architecture patterns, storage decisions, IAM, resilience, networking, and cost-aware design.",
+      recommended: ["AWS Solutions Architect"],
+      goal: "Move from cloud basics to real architecture thinking.",
+      ctaQuizSlug: "aws-solutions-architect",
+      ctaCertSlug: "aws-solutions-architect",
+      ctaPrimaryText: "Start AWS Solutions Architect quiz",
+      ctaSecondaryText: "Explore AWS Solutions Architect certification",
+    },
+    {
+      title: "🟣 Level 4 — Multi-vendor expansion",
+      body:
+        "After building depth, expand your view with another major vendor and strengthen your broader cloud understanding.",
+      recommended: ["Google Cloud"],
+      goal: "Build broader cloud awareness across ecosystems.",
+      ctaQuizSlug: "google-cloud",
+      ctaCertSlug: "google-cloud",
+      ctaPrimaryText: "Start Google Cloud quiz",
+      ctaSecondaryText: "Explore Google Cloud certification",
+    },
+    {
+      title: "⚫ Level 5 — Operations & troubleshooting",
+      body:
+        "At this point, move toward operations, troubleshooting, governance, deployment, monitoring, and real-world maintenance.",
+      recommended: ["CompTIA Cloud+"],
+      goal: "Become more job-ready for cloud operations roles.",
+      ctaQuizSlug: "comptia-cloud-plus",
+      ctaCertSlug: "comptia-cloud-plus",
+      ctaPrimaryText: "Start Cloud+ quiz",
+      ctaSecondaryText: "Explore Cloud+ certification",
+    },
+    {
+      title: "⚪ Optional track — IBM Cloud",
+      body:
+        "IBM Cloud can be useful as an additional ecosystem, but it should stay secondary compared to the main roadmap above.",
+      recommended: ["IBM Cloud+ v5"],
+      goal: "Explore a niche cloud path if relevant to your goals.",
+      ctaCertSlug: "ibm-cloud-v5",
+      ctaSecondaryText: "Explore IBM Cloud certification",
+    },
+  ],
 
-    salaryTitle: "💰 Cloud salary outlook (2026)",
-    salaryIntro:
-      "Typical global ranges (highly dependent on country, experience, and company). Use this as orientation, not a promise.",
-    salaryRanges: [
-      { label: "Entry-level", range: "$55k–$80k" },
-      { label: "Mid-level", range: "$85k–$120k" },
-      { label: "Senior / Architect", range: "$130k+" },
-    ],
-    salaryDisclaimer:
-      "Disclaimer: ranges vary widely. Certifications help most when combined with labs, projects, and consistent practice.",
+  salaryTitle: "💰 Cloud salary outlook (2026)",
+  salaryIntro:
+    "Typical global ranges vary a lot depending on country, experience, and company. Use this as orientation, not as a promise.",
+  salaryRanges: [
+    { label: "Entry-level", range: "$55k–$80k" },
+    { label: "Mid-level", range: "$85k–$120k" },
+    { label: "Senior / Architect", range: "$130k+" },
+  ],
+  salaryDisclaimer:
+    "Disclaimer: ranges vary widely. Certifications help most when combined with labs, projects, and consistent practice.",
 
-    compareTitle: "🔍 AWS vs Azure vs Google Cloud — which one should you pick?",
-    compareIntro:
-      "All are valuable. The best choice depends on your market and goals. The key: pick one and go deep first.",
-    compareLeftTitle: "One vendor (deep)",
-    compareRightTitle: "Many vendors (shallow)",
-    compareRows: [
-      { label: "Learning speed", left: "Faster progress", right: "Slower progress" },
-      { label: "Job readiness", left: "Stronger skills", right: "More confusion" },
-      { label: "Best approach", left: "Pick 1 → then expand", right: "Don’t start here" },
-    ],
-    compareRecommendationTitle: "Recommendation",
-    compareRecommendationBody:
-      "Start with Cloud Practitioner or AZ-900, then choose one vendor track to go deeper. Add multi-cloud later.",
+  compareTitle: "🔍 AWS vs Azure vs Google Cloud — which one should you pick?",
+  compareIntro:
+    "All are valuable. The best choice depends on your market and goals. The key is to go deep in one path before spreading too wide.",
+  compareLeftTitle: "One vendor (deep)",
+  compareRightTitle: "Many vendors (shallow)",
+  compareRows: [
+    { label: "Learning speed", left: "Faster progress", right: "Slower progress" },
+    { label: "Job readiness", left: "Stronger skills", right: "More confusion" },
+    { label: "Best approach", left: "Pick 1 → then expand", right: "Don't start here" },
+  ],
+  compareRecommendationTitle: "Recommendation",
+  compareRecommendationBody:
+    "Start with AWS Cloud Practitioner, add Azure Fundamentals, then go deeper with architecture and operations.",
 
-    faqTitle: "FAQ",
-    faq: [
-      {
-        q: "Do I need networking before cloud?",
-        a: "You don’t need to be a network engineer, but you must understand IP/DNS/routing basics. Otherwise cloud stays confusing.",
-      },
-      {
-        q: "Is Cloud Practitioner useful in 2026?",
-        a: "Yes, as an entry point. It helps you learn the language of cloud and the pricing/security basics.",
-      },
-      {
-        q: "Should I do AWS and Azure together?",
-        a: "Not at the beginning. Start with one vendor track, build depth, then expand later.",
-      },
-      {
-        q: "What matters most for getting hired?",
-        a: "Certifications + hands-on labs + small projects (deployments, IAM setup, monitoring, cost review).",
-      },
-    ],
+  faqTitle: "FAQ",
+  faq: [
+    {
+      q: "Do I need networking before cloud?",
+      a: "You don't need to be a network engineer, but you should understand IP, DNS, and routing basics.",
+    },
+    {
+      q: "Should I learn AWS and Azure together?",
+      a: "Not at the very start. Build a solid base first, then expand carefully.",
+    },
+    {
+      q: "Where does Cloud+ fit?",
+      a: "Cloud+ fits better after you already understand cloud fundamentals and want stronger operations skills.",
+    },
+    {
+      q: "What matters most for getting hired?",
+      a: "Certifications + labs + small practical projects like deployments, IAM setup, monitoring, and cost review.",
+    },
+  ],
 
-    finalCtaTitle: "🚀 Start now (the practical way)",
-    finalCtaBody:
-      "Read the roadmap once, then act. Start with an entry cloud quiz and practice consistently—skills beat planning.",
-  },
+  finalCtaTitle: "🚀 Start now (the practical way)",
+  finalCtaBody:
+    "Don't overthink it. Start with AWS Cloud Practitioner, then build step by step into deeper cloud skills.",
+},
 
-  it: {
-    title: "Roadmap Certificazioni Cloud 2026",
-    subtitle: "Da principiante a competenze cloud spendibili",
-    intro:
-      "Cloud non significa solo “imparo AWS”. Servono concetti chiave (reti, security, costi), poi una certificazione entry, e solo dopo si va su architettura e operations. Questa roadmap ti dà un ordine pratico.",
+it: {
+  title: "Roadmap Certificazioni Cloud 2026",
+  subtitle: "Da principiante a competenze cloud spendibili",
+  intro:
+    "Cloud non significa solo “imparo AWS”. Servono prima i concetti chiave, poi una certificazione entry, poi skill più profonde su architettura e operations. Questa roadmap ti dà un ordine pratico basato sulle certificazioni già presenti su CertifyQuiz.",
 
-    ctaPrimary: "Inizia col quiz AWS Cloud Practitioner",
-    ctaSecondary: "Vedi le certificazioni Cloud",
+  ctaPrimary: "Inizia col quiz AWS Cloud Practitioner",
+  ctaSecondary: "Vedi le certificazioni Cloud",
+  certCta: "Scopri la certificazione",
 
-    goalLabel: "Obiettivo:",
-    practiceCta: "Allenati ora",
+  goalLabel: "Obiettivo:",
+  practiceCta: "Allenati ora",
 
-    levels: [
-      {
-        title: "🟢 Livello 0 — Nessuna base IT",
-        body:
-          "Se parti da zero, non saltare subito nei servizi cloud. Prima capisci reti base, DNS e concetti di sicurezza.",
-        recommended: ["Basi IT (dispositivi/OS)", "Reti base (IP, DNS, routing)", "Concetti base di sicurezza"],
-        goal: "Capire i servizi cloud senza andare a tentativi.",
-      },
-      {
-        title: "🟡 Livello 1 — Fondamenti Cloud (entry)",
-        body:
-          "Scegli una certificazione entry che spiega modelli cloud, shared responsibility, servizi base e pricing.",
-        recommended: ["AWS Cloud Practitioner", "Microsoft Azure Fundamentals (AZ-900)"],
-        goal: "Capire concetti cloud, prezzi, identity base e servizi principali.",
-        ctaQuizSlug: "aws-cloud-practitioner",
-        ctaText: "Quiz Cloud Practitioner",
-      },
-      {
-        title: "🟠 Livello 2 — Scegli un vendor e vai in profondità",
-        body:
-          "Scegli UN vendor (AWS o Azure o Google Cloud). La profondità vale più di badge sparsi.",
-        recommended: [
-          "AWS Solutions Architect (step dopo Practitioner)",
-          "Percorso Azure dopo AZ-900",
-          "Percorso Google Cloud fundamentals",
-        ],
-        goal: "Costruire skill reali: architetture, storage, networking, IAM e cost control.",
-        ctaQuizSlug: "microsoft-azure-fundamentals",
-        ctaText: "Quiz Azure Fundamentals",
-      },
-      {
-        title: "🔴 Livello 3 — Operations & multi-cloud (avanzato)",
-        body:
-          "Dopo le basi, passa alle operations: deploy, monitoring, troubleshooting, governance e basi multi-cloud.",
-        recommended: ["CompTIA Cloud+ (operations)", "Cloud security basics", "CI/CD & automazione base"],
-        goal: "Diventare job-ready per ruoli cloud operations e troubleshooting reale.",
-        ctaQuizSlug: "comptia-cloud-plus",
-        ctaText: "Quiz Cloud+",
-      },
-    ],
+  levels: [
+    {
+      title: "🟢 Livello 0 — Nessuna base IT",
+      body:
+        "Se parti da zero, non saltare subito nei pannelli cloud. Prima capisci reti base, DNS, identità e concetti essenziali di sicurezza.",
+      recommended: [
+        "Basi IT (dispositivi/OS)",
+        "Reti base (IP, DNS, routing)",
+        "Concetti base di sicurezza",
+      ],
+      goal: "Capire i servizi cloud senza andare a tentativi.",
+    },
+    {
+      title: "🟡 Livello 1 — Primo ingresso nel cloud",
+      body:
+        "Parti con una certificazione entry pratica che spiega modelli cloud, pricing, shared responsibility e servizi principali.",
+      recommended: ["AWS Cloud Practitioner"],
+      goal: "Costruire la tua prima vera base cloud.",
+      ctaQuizSlug: "aws-cloud-practitioner",
+      ctaCertSlug: "aws-cloud-practitioner",
+      ctaPrimaryText: "Inizia il quiz AWS Cloud Practitioner",
+      ctaSecondaryText: "Scopri la certificazione AWS Cloud Practitioner",
+    },
+    {
+      title: "🟠 Livello 2 — Seconda base vendor",
+      body:
+        "Quando la prima base cloud è chiara, espanditi su un altro ecosistema importante per confrontare servizi, identità e logiche di pricing.",
+      recommended: ["Microsoft Azure Fundamentals"],
+      goal: "Capire un secondo grande ecosistema cloud.",
+      ctaQuizSlug: "microsoft-azure-fundamentals",
+      ctaCertSlug: "microsoft-azure-fundamentals",
+      ctaPrimaryText: "Inizia il quiz Azure Fundamentals",
+      ctaSecondaryText: "Scopri la certificazione Azure Fundamentals",
+    },
+    {
+      title: "🔴 Livello 3 — Architettura più profonda",
+      body:
+        "Ora vai più a fondo su pattern architetturali, storage, IAM, resilienza, networking e progettazione attenta ai costi.",
+      recommended: ["AWS Solutions Architect"],
+      goal: "Passare dalle basi cloud a un vero ragionamento architetturale.",
+      ctaQuizSlug: "aws-solutions-architect",
+      ctaCertSlug: "aws-solutions-architect",
+      ctaPrimaryText: "Inizia il quiz AWS Solutions Architect",
+      ctaSecondaryText: "Scopri la certificazione AWS Solutions Architect",
+    },
+    {
+      title: "🟣 Livello 4 — Espansione multi-vendor",
+      body:
+        "Dopo aver costruito profondità, allarga la visione con un altro vendor importante e rafforza la comprensione generale del cloud.",
+      recommended: ["Google Cloud"],
+      goal: "Costruire una visione cloud più ampia tra ecosistemi diversi.",
+      ctaQuizSlug: "google-cloud",
+      ctaCertSlug: "google-cloud",
+      ctaPrimaryText: "Inizia il quiz Google Cloud",
+      ctaSecondaryText: "Scopri la certificazione Google Cloud",
+    },
+    {
+      title: "⚫ Livello 5 — Operations & troubleshooting",
+      body:
+        "A questo punto passa su operations, troubleshooting, governance, deploy, monitoring e manutenzione reale.",
+      recommended: ["CompTIA Cloud+"],
+      goal: "Diventare più job-ready per ruoli cloud operations.",
+      ctaQuizSlug: "comptia-cloud-plus",
+      ctaCertSlug: "comptia-cloud-plus",
+      ctaPrimaryText: "Inizia il quiz Cloud+",
+      ctaSecondaryText: "Scopri la certificazione Cloud+",
+    },
+    {
+      title: "⚪ Track opzionale — IBM Cloud",
+      body:
+        "IBM Cloud può essere utile come ecosistema aggiuntivo, ma deve restare secondario rispetto alla roadmap principale qui sopra.",
+      recommended: ["IBM Cloud+ v5"],
+      goal: "Esplorare un percorso cloud più di nicchia se utile ai tuoi obiettivi.",
+      ctaCertSlug: "ibm-cloud-v5",
+      ctaSecondaryText: "Scopri la certificazione IBM Cloud",
+    },
+  ],
 
-    salaryTitle: "💰 Salary outlook Cloud (2026)",
-    salaryIntro:
-      "Range globali indicativi (dipendono molto da paese, esperienza e azienda). Orientamento, non promessa.",
-    salaryRanges: [
-      { label: "Entry-level", range: "$55k–$80k" },
-      { label: "Mid-level", range: "$85k–$120k" },
-      { label: "Senior / Architect", range: "$130k+" },
-    ],
-    salaryDisclaimer:
-      "Nota: i range variano molto. Le certificazioni rendono di più con lab, progetti e pratica costante.",
+  salaryTitle: "💰 Salary outlook Cloud (2026)",
+  salaryIntro:
+    "I range globali cambiano molto in base a paese, esperienza e azienda. Usali come orientamento, non come promessa.",
+  salaryRanges: [
+    { label: "Entry-level", range: "$55k–$80k" },
+    { label: "Mid-level", range: "$85k–$120k" },
+    { label: "Senior / Architect", range: "$130k+" },
+  ],
+  salaryDisclaimer:
+    "Nota: i range variano molto. Le certificazioni aiutano di più se combinate con lab, progetti e pratica costante.",
 
-    compareTitle: "🔍 AWS vs Azure vs Google Cloud — quale scegliere?",
-    compareIntro:
-      "Tutti validi. La scelta migliore dipende dal mercato e dagli obiettivi. La cosa fondamentale: scegline uno e vai in profondità prima.",
-    compareLeftTitle: "Un vendor (profondo)",
-    compareRightTitle: "Tanti vendor (superficiale)",
-    compareRows: [
-      { label: "Velocità", left: "Progressi più rapidi", right: "Progressi più lenti" },
-      { label: "Skill reali", left: "Più solidi", right: "Più confusione" },
-      { label: "Approccio", left: "1 vendor → poi espandi", right: "Non iniziare così" },
-    ],
-    compareRecommendationTitle: "Consiglio pratico",
-    compareRecommendationBody:
-      "Parti da Cloud Practitioner o AZ-900, poi scegli un vendor track e vai in profondità. Il multi-cloud viene dopo.",
+  compareTitle: "🔍 AWS vs Azure vs Google Cloud — quale scegliere?",
+  compareIntro:
+    "Tutti sono validi. La scelta migliore dipende dal mercato e dai tuoi obiettivi. La chiave è andare in profondità su un percorso prima di allargarti troppo.",
+  compareLeftTitle: "Un vendor (profondo)",
+  compareRightTitle: "Tanti vendor (superficiale)",
+  compareRows: [
+    { label: "Velocità", left: "Progressi più rapidi", right: "Progressi più lenti" },
+    { label: "Job readiness", left: "Skill più forti", right: "Più confusione" },
+    { label: "Approccio migliore", left: "1 vendor → poi espandi", right: "Non partire così" },
+  ],
+  compareRecommendationTitle: "Consiglio pratico",
+  compareRecommendationBody:
+    "Parti da AWS Cloud Practitioner, aggiungi Azure Fundamentals, poi vai più a fondo con architettura e operations.",
 
-    faqTitle: "FAQ",
-    faq: [
-      {
-        q: "Serve networking prima del cloud?",
-        a: "Non devi essere un network engineer, ma IP/DNS/routing base sì: altrimenti il cloud resta confuso.",
-      },
-      {
-        q: "Cloud Practitioner vale nel 2026?",
-        a: "Sì, come entry point: ti insegna lingua del cloud, prezzi e basi di security.",
-      },
-      {
-        q: "Faccio AWS e Azure insieme?",
-        a: "All’inizio no. Parti con un vendor, fai profondità, poi espandi.",
-      },
-      {
-        q: "Cosa conta di più per farsi assumere?",
-        a: "Certificazioni + lab hands-on + piccoli progetti (deploy, IAM, monitoring, cost review).",
-      },
-    ],
+  faqTitle: "FAQ",
+  faq: [
+    {
+      q: "Serve networking prima del cloud?",
+      a: "Non devi essere un network engineer, ma dovresti capire IP, DNS e routing di base.",
+    },
+    {
+      q: "Ha senso fare AWS e Azure insieme?",
+      a: "Non subito. Prima costruisci una base solida, poi espandi con criterio.",
+    },
+    {
+      q: "Dove si colloca Cloud+?",
+      a: "Cloud+ ha più senso dopo che hai già capito bene i fondamenti cloud e vuoi rafforzare la parte operations.",
+    },
+    {
+      q: "Cosa conta di più per essere assunto?",
+      a: "Certificazioni + lab + piccoli progetti pratici come deploy, IAM, monitoring e revisione dei costi.",
+    },
+  ],
 
-    finalCtaTitle: "🚀 Parti adesso (modo pratico)",
-    finalCtaBody:
-      "Leggi la roadmap una volta, poi agisci. Inizia con un quiz cloud entry e fai pratica costante.",
-  },
+  finalCtaTitle: "🚀 Parti adesso (in modo pratico)",
+  finalCtaBody:
+    "Non pensarci troppo. Parti da AWS Cloud Practitioner, poi costruisci passo dopo passo competenze cloud più profonde.",
+},
 
-  es: {
-    title: "Ruta de Certificaciones Cloud 2026",
-    subtitle: "De principiante a habilidades cloud útiles",
-    intro:
-      "Cloud no es solo “aprender AWS”. Necesitas conceptos clave (redes, seguridad, costes), luego una certificación de entrada y después arquitectura/operaciones. Esta ruta te da un orden práctico.",
+es: {
+  title: "Ruta de Certificaciones Cloud 2026",
+  subtitle: "De principiante a habilidades cloud útiles",
+  intro:
+    "Cloud no es solo “aprender AWS”. Primero necesitas conceptos clave, luego una certificación de entrada y después habilidades más profundas de arquitectura y operaciones. Esta ruta te da un orden práctico basado en las certificaciones ya presentes en CertifyQuiz.",
 
-    ctaPrimary: "Empezar con AWS Cloud Practitioner",
-    ctaSecondary: "Ver certificaciones Cloud",
+  ctaPrimary: "Empezar con el quiz AWS Cloud Practitioner",
+  ctaSecondary: "Ver certificaciones Cloud",
+  certCta: "Ver certificación",
 
-    goalLabel: "Objetivo:",
-    practiceCta: "Practicar ahora",
+  goalLabel: "Objetivo:",
+  practiceCta: "Practicar ahora",
 
-    levels: [
-      {
-        title: "🟢 Nivel 0 — Sin base IT",
-        body:
-          "Si empiezas de cero, primero entiende redes básicas, DNS y conceptos de seguridad antes de meterte en servicios cloud.",
-        recommended: ["Fundamentos IT", "Redes básicas (IP, DNS, routing)", "Conceptos básicos de seguridad"],
-        goal: "Entender cloud sin ir a ciegas.",
-      },
-      {
-        title: "🟡 Nivel 1 — Fundamentos Cloud (entrada)",
-        body:
-          "Elige una certificación de entrada que explique modelos cloud, responsabilidad compartida, servicios básicos y precios.",
-        recommended: ["AWS Cloud Practitioner", "Microsoft Azure Fundamentals (AZ-900)"],
-        goal: "Entender conceptos cloud, pricing, identidad básica y servicios principales.",
-        ctaQuizSlug: "aws-cloud-practitioner",
-        ctaText: "Practicar Cloud Practitioner",
-      },
-      {
-        title: "🟠 Nivel 2 — Elige un vendor y profundiza",
-        body:
-          "Elige UN vendor (AWS o Azure o Google Cloud). Profundidad > badges dispersos.",
-        recommended: [
-          "AWS Solutions Architect (después de Practitioner)",
-          "Ruta Azure después de AZ-900",
-          "Ruta Google Cloud fundamentals",
-        ],
-        goal: "Construir habilidades reales: arquitectura, storage, networking, IAM y control de costes.",
-        ctaQuizSlug: "microsoft-azure-fundamentals",
-        ctaText: "Practicar Azure Fundamentals",
-      },
-      {
-        title: "🔴 Nivel 3 — Operaciones y multi-cloud (avanzado)",
-        body:
-          "Después de la base, aprende ops: despliegues, monitorización, troubleshooting, governance y multi-cloud básico.",
-        recommended: ["CompTIA Cloud+ (operaciones)", "Cloud security basics", "CI/CD y automatización básica"],
-        goal: "Ser job-ready para cloud ops y troubleshooting real.",
-        ctaQuizSlug: "comptia-cloud-plus",
-        ctaText: "Practicar Cloud+",
-      },
-    ],
+  levels: [
+    {
+      title: "🟢 Nivel 0 — Sin base IT",
+      body:
+        "Si empiezas de cero, no entres directamente en paneles cloud. Primero entiende redes básicas, DNS, identidad y conceptos esenciales de seguridad.",
+      recommended: [
+        "Fundamentos IT",
+        "Redes básicas (IP, DNS, routing)",
+        "Conceptos básicos de seguridad",
+      ],
+      goal: "Entender los servicios cloud sin ir a ciegas.",
+    },
+    {
+      title: "🟡 Nivel 1 — Primera entrada al cloud",
+      body:
+        "Empieza con una certificación de entrada práctica que explique modelos cloud, pricing, responsabilidad compartida y servicios principales.",
+      recommended: ["AWS Cloud Practitioner"],
+      goal: "Construir tu primera base cloud real.",
+      ctaQuizSlug: "aws-cloud-practitioner",
+      ctaCertSlug: "aws-cloud-practitioner",
+      ctaPrimaryText: "Empezar quiz AWS Cloud Practitioner",
+      ctaSecondaryText: "Ver certificación AWS Cloud Practitioner",
+    },
+    {
+      title: "🟠 Nivel 2 — Segunda base de vendor",
+      body:
+        "Cuando la primera base cloud esté clara, amplía hacia otro gran ecosistema para comparar servicios, identidad y enfoques de pricing.",
+      recommended: ["Microsoft Azure Fundamentals"],
+      goal: "Entender un segundo gran ecosistema cloud.",
+      ctaQuizSlug: "microsoft-azure-fundamentals",
+      ctaCertSlug: "microsoft-azure-fundamentals",
+      ctaPrimaryText: "Empezar quiz Azure Fundamentals",
+      ctaSecondaryText: "Ver certificación Azure Fundamentals",
+    },
+    {
+      title: "🔴 Nivel 3 — Más profundidad en arquitectura",
+      body:
+        "Ahora profundiza en patrones de arquitectura, storage, IAM, resiliencia, networking y diseño atento a costes.",
+      recommended: ["AWS Solutions Architect"],
+      goal: "Pasar de bases cloud a una visión real de arquitectura.",
+      ctaQuizSlug: "aws-solutions-architect",
+      ctaCertSlug: "aws-solutions-architect",
+      ctaPrimaryText: "Empezar quiz AWS Solutions Architect",
+      ctaSecondaryText: "Ver certificación AWS Solutions Architect",
+    },
+    {
+      title: "🟣 Nivel 4 — Expansión multi-vendor",
+      body:
+        "Después de construir profundidad, amplía tu visión con otro vendor importante y refuerza tu comprensión global del cloud.",
+      recommended: ["Google Cloud"],
+      goal: "Construir una visión cloud más amplia entre ecosistemas.",
+      ctaQuizSlug: "google-cloud",
+      ctaCertSlug: "google-cloud",
+      ctaPrimaryText: "Empezar quiz Google Cloud",
+      ctaSecondaryText: "Ver certificación Google Cloud",
+    },
+    {
+      title: "⚫ Nivel 5 — Operaciones y troubleshooting",
+      body:
+        "En este punto pasa a operaciones, troubleshooting, governance, despliegue, monitorización y mantenimiento real.",
+      recommended: ["CompTIA Cloud+"],
+      goal: "Estar más preparado para roles de cloud operations.",
+      ctaQuizSlug: "comptia-cloud-plus",
+      ctaCertSlug: "comptia-cloud-plus",
+      ctaPrimaryText: "Empezar quiz Cloud+",
+      ctaSecondaryText: "Ver certificación Cloud+",
+    },
+    {
+      title: "⚪ Track opcional — IBM Cloud",
+      body:
+        "IBM Cloud puede ser útil como ecosistema adicional, pero debe quedarse como track secundario frente a la ruta principal.",
+      recommended: ["IBM Cloud+ v5"],
+      goal: "Explorar un camino cloud más de nicho si encaja con tus objetivos.",
+      ctaCertSlug: "ibm-cloud-v5",
+      ctaSecondaryText: "Ver certificación IBM Cloud",
+    },
+  ],
 
-    salaryTitle: "💰 Salary outlook Cloud (2026)",
-    salaryIntro:
-      "Rangos globales orientativos (varía por país, experiencia y empresa). Guía, no promesa.",
-    salaryRanges: [
-      { label: "Entry-level", range: "$55k–$80k" },
-      { label: "Mid-level", range: "$85k–$120k" },
-      { label: "Senior / Architect", range: "$130k+" },
-    ],
-    salaryDisclaimer:
-      "Aviso: los rangos varían mucho. Certificaciones + labs + proyectos marcan la diferencia.",
+  salaryTitle: "💰 Salary outlook Cloud (2026)",
+  salaryIntro:
+    "Los rangos globales cambian mucho según país, experiencia y empresa. Úsalos como orientación, no como promesa.",
+  salaryRanges: [
+    { label: "Entry-level", range: "$55k–$80k" },
+    { label: "Mid-level", range: "$85k–$120k" },
+    { label: "Senior / Architect", range: "$130k+" },
+  ],
+  salaryDisclaimer:
+    "Aviso: los rangos varían mucho. Las certificaciones ayudan más cuando se combinan con labs, proyectos y práctica constante.",
 
-    compareTitle: "🔍 AWS vs Azure vs Google Cloud — ¿cuál elegir?",
-    compareIntro:
-      "Todos valen. La mejor elección depende del mercado y objetivos. Clave: elige uno y profundiza primero.",
-    compareLeftTitle: "Un vendor (profundo)",
-    compareRightTitle: "Muchos vendors (superficial)",
-    compareRows: [
-      { label: "Velocidad", left: "Progreso más rápido", right: "Progreso más lento" },
-      { label: "Skill reales", left: "Más sólidas", right: "Más confusión" },
-      { label: "Estrategia", left: "1 vendor → luego expandir", right: "No empezar así" },
-    ],
-    compareRecommendationTitle: "Recomendación",
-    compareRecommendationBody:
-      "Empieza con Cloud Practitioner o AZ-900, luego elige un vendor track y profundiza. Multi-cloud viene después.",
+  compareTitle: "🔍 AWS vs Azure vs Google Cloud — ¿cuál elegir?",
+  compareIntro:
+    "Todos son valiosos. La mejor elección depende del mercado y de tus objetivos. La clave es profundizar primero en un camino antes de abrir demasiado el foco.",
+  compareLeftTitle: "Un vendor (profundo)",
+  compareRightTitle: "Muchos vendors (superficial)",
+  compareRows: [
+    { label: "Velocidad", left: "Progreso más rápido", right: "Progreso más lento" },
+    { label: "Preparación laboral", left: "Habilidades más fuertes", right: "Más confusión" },
+    { label: "Mejor enfoque", left: "1 vendor → luego expandir", right: "No empezar así" },
+  ],
+  compareRecommendationTitle: "Recomendación",
+  compareRecommendationBody:
+    "Empieza con AWS Cloud Practitioner, añade Azure Fundamentals y luego profundiza con arquitectura y operaciones.",
 
-    faqTitle: "FAQ",
-    faq: [
-      { q: "¿Necesito redes antes de cloud?", a: "No ser experto, pero IP/DNS/routing básico sí." },
-      { q: "¿Cloud Practitioner vale en 2026?", a: "Sí, como puerta de entrada a conceptos, costes y security básica." },
-      { q: "¿AWS y Azure a la vez?", a: "Al inicio no. Primero uno, luego expandes." },
-      { q: "¿Qué ayuda para ser contratado?", a: "Certs + labs + mini proyectos (deploy, IAM, monitoring, costes)." },
-    ],
+  faqTitle: "FAQ",
+  faq: [
+    {
+      q: "¿Necesito redes antes de cloud?",
+      a: "No necesitas ser experto, pero sí entender IP, DNS y routing básicos.",
+    },
+    {
+      q: "¿Tiene sentido hacer AWS y Azure al mismo tiempo?",
+      a: "No al principio. Primero construye una base sólida y luego amplía con criterio.",
+    },
+    {
+      q: "¿Dónde encaja Cloud+?",
+      a: "Cloud+ encaja mejor después de que ya entiendas bien los fundamentos cloud y quieras reforzar la parte de operaciones.",
+    },
+    {
+      q: "¿Qué importa más para que te contraten?",
+      a: "Certificaciones + labs + pequeños proyectos prácticos como despliegues, IAM, monitorización y revisión de costes.",
+    },
+  ],
 
-    finalCtaTitle: "🚀 Empieza ahora (forma práctica)",
-    finalCtaBody:
-      "Lee la ruta una vez y actúa. Empieza con un quiz cloud de entrada y practica de forma constante.",
-  },
+  finalCtaTitle: "🚀 Empieza ahora (de forma práctica)",
+  finalCtaBody:
+    "No lo pienses demasiado. Empieza con AWS Cloud Practitioner y construye paso a paso habilidades cloud más profundas.",
+},
 
-  fr: {
-    title: "Parcours Certifications Cloud 2026",
-    subtitle: "De débutant à des compétences cloud utiles",
-    intro:
-      "Le cloud n’est pas seulement “apprendre AWS”. Il faut des bases (réseau, sécurité, coûts), puis une certif d’entrée, puis architecture/ops. Ce parcours donne un ordre pratique.",
+fr: {
+  title: "Parcours Certifications Cloud 2026",
+  subtitle: "De débutant à des compétences cloud utiles",
+  intro:
+    "Le cloud n’est pas seulement “apprendre AWS”. Il faut d’abord les concepts clés, puis une certification d’entrée, puis des compétences plus profondes en architecture et operations. Ce parcours donne un ordre pratique basé sur les certifications déjà présentes sur CertifyQuiz.",
 
-    ctaPrimary: "Commencer avec AWS Cloud Practitioner",
-    ctaSecondary: "Voir les certifications Cloud",
+  ctaPrimary: "Commencer avec le quiz AWS Cloud Practitioner",
+  ctaSecondary: "Voir les certifications Cloud",
+  certCta: "Voir la certification",
 
-    goalLabel: "Objectif :",
-    practiceCta: "S’entraîner",
+  goalLabel: "Objectif :",
+  practiceCta: "S’entraîner",
 
-    levels: [
-      {
-        title: "🟢 Niveau 0 — Aucune base IT",
-        body:
-          "Si vous débutez, comprenez d’abord le réseau de base, DNS et les concepts de sécurité avant les services cloud.",
-        recommended: ["Fondamentaux IT", "Réseau de base (IP, DNS, routage)", "Sécurité de base"],
-        goal: "Comprendre le cloud sans naviguer au hasard.",
-      },
-      {
-        title: "🟡 Niveau 1 — Fondamentaux Cloud (entrée)",
-        body:
-          "Choisissez une certif d’entrée qui explique modèles cloud, responsabilité partagée, services de base et pricing.",
-        recommended: ["AWS Cloud Practitioner", "Microsoft Azure Fundamentals (AZ-900)"],
-        goal: "Comprendre concepts cloud, prix, identité de base et services principaux.",
-        ctaQuizSlug: "aws-cloud-practitioner",
-        ctaText: "S’entraîner Cloud Practitioner",
-      },
-      {
-        title: "🟠 Niveau 2 — Choisissez un vendor et approfondissez",
-        body:
-          "Choisissez UN vendor (AWS ou Azure ou Google Cloud). La profondeur bat les badges dispersés.",
-        recommended: [
-          "AWS Solutions Architect (après Practitioner)",
-          "Parcours Azure après AZ-900",
-          "Parcours Google Cloud fundamentals",
-        ],
-        goal: "Développer de vraies compétences : architecture, storage, réseau, IAM, coûts.",
-        ctaQuizSlug: "microsoft-azure-fundamentals",
-        ctaText: "S’entraîner Azure Fundamentals",
-      },
-      {
-        title: "🔴 Niveau 3 — Ops & multi-cloud (avancé)",
-        body:
-          "Après la base, apprenez les ops : déploiement, monitoring, troubleshooting, gouvernance, multi-cloud de base.",
-        recommended: ["CompTIA Cloud+ (ops)", "Cloud security basics", "CI/CD & automatisation (bases)"],
-        goal: "Être job-ready pour cloud ops et dépannage réel.",
-        ctaQuizSlug: "comptia-cloud-plus",
-        ctaText: "S’entraîner Cloud+",
-      },
-    ],
+  levels: [
+    {
+      title: "🟢 Niveau 0 — Aucune base IT",
+      body:
+        "Si vous partez de zéro, n’entrez pas tout de suite dans les consoles cloud. Comprenez d’abord le réseau de base, DNS, l’identité et les concepts essentiels de sécurité.",
+      recommended: [
+        "Fondamentaux IT",
+        "Réseau de base (IP, DNS, routage)",
+        "Sécurité de base",
+      ],
+      goal: "Comprendre les services cloud sans avancer au hasard.",
+    },
+    {
+      title: "🟡 Niveau 1 — Première entrée dans le cloud",
+      body:
+        "Commencez par une certification d’entrée pratique qui explique les modèles cloud, le pricing, la responsabilité partagée et les services principaux.",
+      recommended: ["AWS Cloud Practitioner"],
+      goal: "Construire votre première vraie base cloud.",
+      ctaQuizSlug: "aws-cloud-practitioner",
+      ctaCertSlug: "aws-cloud-practitioner",
+      ctaPrimaryText: "Commencer le quiz AWS Cloud Practitioner",
+      ctaSecondaryText: "Voir la certification AWS Cloud Practitioner",
+    },
+    {
+      title: "🟠 Niveau 2 — Deuxième base vendor",
+      body:
+        "Quand votre première base cloud est claire, élargissez vers un autre grand écosystème pour comparer services, identité et logique de pricing.",
+      recommended: ["Microsoft Azure Fundamentals"],
+      goal: "Comprendre un deuxième grand écosystème cloud.",
+      ctaQuizSlug: "microsoft-azure-fundamentals",
+      ctaCertSlug: "microsoft-azure-fundamentals",
+      ctaPrimaryText: "Commencer le quiz Azure Fundamentals",
+      ctaSecondaryText: "Voir la certification Azure Fundamentals",
+    },
+    {
+      title: "🔴 Niveau 3 — Plus de profondeur en architecture",
+      body:
+        "Approfondissez maintenant les patterns d’architecture, le storage, IAM, la résilience, le réseau et la conception attentive aux coûts.",
+      recommended: ["AWS Solutions Architect"],
+      goal: "Passer des bases cloud à une vraie logique d’architecture.",
+      ctaQuizSlug: "aws-solutions-architect",
+      ctaCertSlug: "aws-solutions-architect",
+      ctaPrimaryText: "Commencer le quiz AWS Solutions Architect",
+      ctaSecondaryText: "Voir la certification AWS Solutions Architect",
+    },
+    {
+      title: "🟣 Niveau 4 — Expansion multi-vendor",
+      body:
+        "Après avoir construit de la profondeur, élargissez votre vision avec un autre vendor important et renforcez votre compréhension globale du cloud.",
+      recommended: ["Google Cloud"],
+      goal: "Construire une vision cloud plus large entre plusieurs écosystèmes.",
+      ctaQuizSlug: "google-cloud",
+      ctaCertSlug: "google-cloud",
+      ctaPrimaryText: "Commencer le quiz Google Cloud",
+      ctaSecondaryText: "Voir la certification Google Cloud",
+    },
+    {
+      title: "⚫ Niveau 5 — Operations et troubleshooting",
+      body:
+        "À ce stade, passez vers les operations, le troubleshooting, la gouvernance, le déploiement, le monitoring et la maintenance réelle.",
+      recommended: ["CompTIA Cloud+"],
+      goal: "Être plus prêt pour des rôles cloud operations.",
+      ctaQuizSlug: "comptia-cloud-plus",
+      ctaCertSlug: "comptia-cloud-plus",
+      ctaPrimaryText: "Commencer le quiz Cloud+",
+      ctaSecondaryText: "Voir la certification Cloud+",
+    },
+    {
+      title: "⚪ Track optionnel — IBM Cloud",
+      body:
+        "IBM Cloud peut être utile comme écosystème supplémentaire, mais il doit rester secondaire par rapport au parcours principal.",
+      recommended: ["IBM Cloud+ v5"],
+      goal: "Explorer une voie cloud plus niche si elle correspond à vos objectifs.",
+      ctaCertSlug: "ibm-cloud-v5",
+      ctaSecondaryText: "Voir la certification IBM Cloud",
+    },
+  ],
 
-    salaryTitle: "💰 Salary outlook Cloud (2026)",
-    salaryIntro:
-      "Fourchettes mondiales indicatives (selon pays, expérience, entreprise).",
-    salaryRanges: [
-      { label: "Entry-level", range: "$55k–$80k" },
-      { label: "Mid-level", range: "$85k–$120k" },
-      { label: "Senior / Architect", range: "$130k+" },
-    ],
-    salaryDisclaimer:
-      "Note : ça varie beaucoup. Certifs + labs + projets font la différence.",
+  salaryTitle: "💰 Salary outlook Cloud (2026)",
+  salaryIntro:
+    "Les fourchettes mondiales varient beaucoup selon le pays, l’expérience et l’entreprise. Utilisez-les comme repère, pas comme promesse.",
+  salaryRanges: [
+    { label: "Entry-level", range: "$55k–$80k" },
+    { label: "Mid-level", range: "$85k–$120k" },
+    { label: "Senior / Architect", range: "$130k+" },
+  ],
+  salaryDisclaimer:
+    "Note : les fourchettes varient beaucoup. Les certifications aident surtout lorsqu’elles sont combinées avec des labs, des projets et une pratique régulière.",
 
-    compareTitle: "🔍 AWS vs Azure vs Google Cloud — lequel choisir ?",
-    compareIntro:
-      "Tous sont pertinents. Le meilleur choix dépend du marché et de vos objectifs. Clé : en choisir un et approfondir d’abord.",
-    compareLeftTitle: "Un vendor (profond)",
-    compareRightTitle: "Plusieurs vendors (superficiel)",
-    compareRows: [
-      { label: "Vitesse", left: "Progression plus rapide", right: "Progression plus lente" },
-      { label: "Compétences", left: "Plus solides", right: "Plus de confusion" },
-      { label: "Approche", left: "1 vendor → puis étendre", right: "Ne pas commencer ainsi" },
-    ],
-    compareRecommendationTitle: "Recommandation",
-    compareRecommendationBody:
-      "Commencez par Cloud Practitioner ou AZ-900, puis choisissez un vendor track et approfondissez. Multi-cloud ensuite.",
+  compareTitle: "🔍 AWS vs Azure vs Google Cloud — lequel choisir ?",
+  compareIntro:
+    "Tous sont utiles. Le meilleur choix dépend du marché et de vos objectifs. La clé est d’approfondir un parcours avant de trop vous disperser.",
+  compareLeftTitle: "Un vendor (profond)",
+  compareRightTitle: "Plusieurs vendors (superficiel)",
+  compareRows: [
+    { label: "Vitesse", left: "Progression plus rapide", right: "Progression plus lente" },
+    { label: "Préparation à l’emploi", left: "Compétences plus fortes", right: "Plus de confusion" },
+    { label: "Meilleure approche", left: "1 vendor → puis élargir", right: "Ne pas commencer ainsi" },
+  ],
+  compareRecommendationTitle: "Recommandation",
+  compareRecommendationBody:
+    "Commencez par AWS Cloud Practitioner, ajoutez Azure Fundamentals, puis approfondissez avec architecture et operations.",
 
-    faqTitle: "FAQ",
-    faq: [
-      { q: "Faut-il le réseau avant le cloud ?", a: "Pas besoin d’être expert, mais IP/DNS/routage de base oui." },
-      { q: "Cloud Practitioner vaut en 2026 ?", a: "Oui, comme entrée : concepts, coûts et sécurité de base." },
-      { q: "AWS et Azure en même temps ?", a: "Au début non. D’abord un, puis vous élargissez." },
-      { q: "Qu’est-ce qui aide à être recruté ?", a: "Certifs + labs + mini projets (déploiement, IAM, monitoring, coûts)." },
-    ],
+  faqTitle: "FAQ",
+  faq: [
+    {
+      q: "Faut-il le réseau avant le cloud ?",
+      a: "Pas besoin d’être expert, mais il faut comprendre IP, DNS et le routage de base.",
+    },
+    {
+      q: "Est-ce utile de faire AWS et Azure en même temps ?",
+      a: "Pas au début. Construisez d’abord une base solide, puis élargissez avec méthode.",
+    },
+    {
+      q: "Où se place Cloud+ ?",
+      a: "Cloud+ a plus de sens après avoir bien compris les fondamentaux cloud et si vous voulez renforcer la partie operations.",
+    },
+    {
+      q: "Qu’est-ce qui compte le plus pour être recruté ?",
+      a: "Certifications + labs + petits projets pratiques comme déploiements, IAM, monitoring et revue des coûts.",
+    },
+  ],
 
-    finalCtaTitle: "🚀 Commencez maintenant (concret)",
-    finalCtaBody:
-      "Lisez le parcours une fois, puis passez à l’action. Commencez par un quiz cloud d’entrée et pratiquez régulièrement.",
-  },
+  finalCtaTitle: "🚀 Commencez maintenant (de façon pratique)",
+  finalCtaBody:
+    "Ne réfléchissez pas trop. Commencez par AWS Cloud Practitioner puis construisez étape par étape des compétences cloud plus profondes.",
+},
 };

@@ -3,12 +3,25 @@ import Link from "next/link";
 type Locale = "it" | "en" | "es" | "fr";
 
 type QuizSlug =
-  | "mysql"
+  | "mysql-certification"
+  | "mongodb-developer"
+  | "microsoft-sql-server"
+  | "oracle-database-sql";
+
+type CertSlug =
+  | "mysql-certification"
   | "mongodb-developer"
   | "microsoft-sql-server"
   | "oracle-database-sql";
 
 const quiz = (lang: Locale, slug: QuizSlug) => `/${lang}/quiz/${slug}`;
+
+const cert = (lang: Locale, slug: CertSlug) => {
+  if (lang === "it") return `/it/certificazioni/${slug}`;
+  if (lang === "fr") return `/fr/certifications/${slug}`;
+  if (lang === "es") return `/es/certificaciones/${slug}`;
+  return `/certifications/${slug}`;
+};
 
 export default function DatabasesRoadmapPage({ lang }: { lang: Locale }) {
   const t = CONTENT[lang];
@@ -25,14 +38,14 @@ export default function DatabasesRoadmapPage({ lang }: { lang: Locale }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href={quiz(lang, "mysql")}
+            href={quiz(lang, "mysql-certification")}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
           >
             {t.ctaPrimary}
           </Link>
 
           <Link
-            href={quiz(lang, "microsoft-sql-server")}
+            href={cert(lang, "microsoft-sql-server")}
             className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition"
           >
             {t.ctaSecondary}
@@ -64,14 +77,25 @@ export default function DatabasesRoadmapPage({ lang }: { lang: Locale }) {
               </p>
             ) : null}
 
-            {lvl.ctaQuizSlug ? (
-              <div className="mt-4">
-                <Link
-                  href={quiz(lang, lvl.ctaQuizSlug)}
-                  className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                >
-                  {lvl.ctaText ?? t.practiceCta}
-                </Link>
+            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
+              <div className="mt-4 flex flex-col items-start gap-2">
+                {lvl.ctaQuizSlug ? (
+                  <Link
+                    href={quiz(lang, lvl.ctaQuizSlug)}
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
+                  >
+                    {lvl.ctaPrimaryText ?? t.practiceCta}
+                  </Link>
+                ) : null}
+
+                {lvl.ctaCertSlug ? (
+                  <Link
+                    href={cert(lang, lvl.ctaCertSlug)}
+                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                  >
+                    {lvl.ctaSecondaryText ?? t.certCta}
+                  </Link>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -164,13 +188,13 @@ export default function DatabasesRoadmapPage({ lang }: { lang: Locale }) {
         <p className="mt-2 text-slate-700">{t.finalCtaBody}</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
-            href={quiz(lang, "mysql")}
+            href={quiz(lang, "mysql-certification")}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
           >
             {t.ctaPrimary}
           </Link>
           <Link
-            href={quiz(lang, "microsoft-sql-server")}
+            href={cert(lang, "microsoft-sql-server")}
             className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50 transition"
           >
             {t.ctaSecondary}
@@ -190,6 +214,7 @@ const CONTENT: Record<
 
     ctaPrimary: string;
     ctaSecondary: string;
+    certCta: string;
 
     goalLabel: string;
     practiceCta: string;
@@ -200,7 +225,9 @@ const CONTENT: Record<
       recommended?: string[];
       goal?: string;
       ctaQuizSlug?: QuizSlug;
-      ctaText?: string;
+      ctaCertSlug?: CertSlug;
+      ctaPrimaryText?: string;
+      ctaSecondaryText?: string;
     }>;
 
     salaryTitle: string;
@@ -227,10 +254,11 @@ const CONTENT: Record<
     title: "Database Certification Roadmap 2026",
     subtitle: "From SQL basics to real-world database skills",
     intro:
-      "Databases are everywhere: websites, apps, analytics, cloud, AI. This roadmap helps you build a practical database foundation—starting with SQL, then choosing a direction (MySQL, SQL Server, Oracle, MongoDB).",
+      "Databases are everywhere: websites, apps, analytics, cloud, and AI. This roadmap helps you grow step by step: first SQL, then stronger relational skills, then administration and performance, and finally NoSQL.",
 
     ctaPrimary: "Start with MySQL quiz",
-    ctaSecondary: "Or practice SQL Server",
+    ctaSecondary: "Explore SQL Server certification",
+    certCta: "Explore certification",
 
     goalLabel: "Goal:",
     practiceCta: "Practice now",
@@ -239,85 +267,125 @@ const CONTENT: Record<
       {
         title: "🟢 Level 0 — SQL fundamentals",
         body:
-          "Start with core SQL: SELECT, JOIN, GROUP BY, subqueries, constraints, indexes, and basic normalization. This is the universal base.",
-        recommended: ["MySQL (SQL basics)", "SQL fundamentals in practice"],
-        goal: "Write queries confidently and understand how tables relate.",
-        ctaQuizSlug: "mysql",
-        ctaText: "Practice MySQL",
+          "Start with the universal base: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subqueries, constraints, indexes, and basic normalization.",
+        recommended: ["MySQL", "SQL fundamentals in practice"],
+        goal: "Write SQL queries with confidence and understand how tables relate.",
+        ctaQuizSlug: "mysql-certification",
+        ctaCertSlug: "mysql-certification",
+        ctaPrimaryText: "Start MySQL quiz",
+        ctaSecondaryText: "Explore MySQL certification",
       },
       {
-        title: "🟡 Level 1 — Relational databases (pick your ecosystem)",
+        title: "🟡 Level 1 — Relational databases (choose your path)",
         body:
-          "Now choose a path based on where you want to work: enterprise (SQL Server/Oracle) or general web/business (MySQL).",
-        recommended: ["Microsoft SQL Server", "Oracle Database SQL", "MySQL"],
-        goal: "Learn transactions, locks, execution plans, and performance basics.",
+          "Once SQL basics are clear, choose a relational ecosystem: MySQL for broad practical use, SQL Server for Microsoft and enterprise environments, or Oracle for classic enterprise database work.",
+        recommended: ["MySQL", "Microsoft SQL Server", "Oracle Database SQL"],
+        goal: "Understand transactions, locks, execution plans, and performance basics.",
         ctaQuizSlug: "microsoft-sql-server",
-        ctaText: "Practice SQL Server",
+        ctaCertSlug: "microsoft-sql-server",
+        ctaPrimaryText: "Start SQL Server quiz",
+        ctaSecondaryText: "Explore SQL Server certification",
       },
       {
-        title: "🟠 Level 2 — Performance, reliability & admin mindset",
+        title: "🟠 Level 2 — Administration, reliability & enterprise depth",
         body:
-          "Real jobs require more than queries: backups, permissions, monitoring, indexing strategy, and troubleshooting slow queries.",
-        recommended: ["Indexing & query optimization", "Backups & recovery", "Roles/permissions"],
-        goal: "Keep a database fast, safe, and recoverable.",
+          "Go beyond queries: indexing strategy, permissions, backups, monitoring, recovery, and a more enterprise-oriented database mindset.",
+        recommended: [
+          "Oracle Database SQL",
+          "Query optimization",
+          "Backups & recovery",
+          "Roles and permissions",
+        ],
+        goal: "Keep a database fast, safe, recoverable, and enterprise-ready.",
+        ctaQuizSlug: "oracle-database-sql",
+        ctaCertSlug: "oracle-database-sql",
+        ctaPrimaryText: "Start Oracle Database SQL quiz",
+        ctaSecondaryText: "Explore Oracle Database SQL certification",
       },
       {
-        title: "🔴 Level 3 — NoSQL & modern data needs",
+        title: "🔴 Level 3 — NoSQL & modern application mindset",
         body:
-          "When you understand relational well, you can add NoSQL. MongoDB is common for flexible data models and modern apps.",
+          "After you understand relational models well, add NoSQL. MongoDB is useful for flexible schemas, document-based modeling, and modern application data patterns.",
         recommended: ["MongoDB Developer"],
-        goal: "Know when NoSQL fits—and how to model documents properly.",
+        goal: "Understand when NoSQL fits and how to model documents properly.",
         ctaQuizSlug: "mongodb-developer",
-        ctaText: "Practice MongoDB",
+        ctaCertSlug: "mongodb-developer",
+        ctaPrimaryText: "Start MongoDB quiz",
+        ctaSecondaryText: "Explore MongoDB certification",
       },
     ],
 
     salaryTitle: "💰 Database salary outlook (2026)",
     salaryIntro:
-      "Global ranges vary a lot by country and role. Use as orientation.",
+      "Global salary ranges vary by country, company, and specialization. Use them as orientation, not as a promise.",
     salaryRanges: [
       { label: "Junior", range: "$45k–$70k" },
       { label: "Mid-level", range: "$75k–$110k" },
       { label: "Senior / DBA", range: "$120k+" },
     ],
     salaryDisclaimer:
-      "The fastest growth usually comes from combining SQL + performance + a real project (not only theory).",
+      "The fastest growth usually comes from combining SQL skills, performance knowledge, and a real project portfolio.",
 
     compareTitle: "🔍 SQL vs NoSQL — which one first?",
     compareIntro:
-      "Most people should start with SQL. NoSQL makes more sense after you understand relational models.",
+      "Most people should start with SQL. NoSQL makes more sense after you understand relational thinking well.",
     compareLeftTitle: "SQL (Relational)",
     compareRightTitle: "NoSQL (MongoDB)",
     compareRows: [
-      { label: "Best for", left: "Structured data, reporting, consistency", right: "Flexible models, rapid iteration" },
-      { label: "Common use", left: "Business apps, enterprise systems", right: "Modern apps, event-like data" },
-      { label: "Start here?", left: "Yes (recommended)", right: "After SQL basics" },
+      {
+        label: "Best for",
+        left: "Structured data, reporting, consistency",
+        right: "Flexible models, rapid iteration",
+      },
+      {
+        label: "Common use",
+        left: "Business apps, enterprise systems",
+        right: "Modern apps, document-heavy systems",
+      },
+      {
+        label: "Start here?",
+        left: "Yes (recommended)",
+        right: "After SQL basics",
+      },
     ],
     compareRecommendationTitle: "Recommendation",
     compareRecommendationBody:
-      "Start with SQL (MySQL/SQL Server). Add MongoDB later when you can explain normalization and joins without pain.",
+      "Start with SQL first. Build confidence with MySQL or SQL Server, then add MongoDB later.",
 
     faqTitle: "FAQ",
     faq: [
-      { q: "Which database should I learn first?", a: "Start with SQL fundamentals. MySQL is a great entry point." },
-      { q: "Do I need Oracle?", a: "Only if you aim for enterprise environments where Oracle is common." },
-      { q: "Is MongoDB enough to work?", a: "It helps, but SQL is still the most requested baseline." },
-      { q: "How do I get job-ready fast?", a: "Build a small project: schema + queries + indexes + backup plan. Show it." },
+      {
+        q: "Which database should I learn first?",
+        a: "Start with SQL fundamentals. MySQL is usually the easiest and most practical entry point.",
+      },
+      {
+        q: "Do I need Oracle?",
+        a: "Only if you aim at enterprise environments where Oracle is common. It is useful, but not mandatory for everyone.",
+      },
+      {
+        q: "Is MongoDB enough to get hired?",
+        a: "It helps, but SQL is still the more universal baseline employers expect.",
+      },
+      {
+        q: "How do I become job-ready faster?",
+        a: "Build a real mini project: schema, queries, indexes, backup plan, and performance reasoning.",
+      },
     ],
 
-    finalCtaTitle: "🚀 Start now (practical plan)",
+    finalCtaTitle: "🚀 Start now (practical path)",
     finalCtaBody:
-      "Learn SQL first. Practice daily. Then pick an ecosystem (SQL Server/Oracle/MySQL) and add MongoDB when you’re stable.",
+      "Start with SQL first. Practice every day. Then strengthen your relational path and add MongoDB only when the basics feel natural.",
   },
 
   it: {
     title: "Roadmap Certificazioni Database 2026",
-    subtitle: "Dalle basi SQL a competenze reali da database",
+    subtitle: "Dalle basi SQL a competenze reali sui database",
     intro:
-      "I database sono ovunque: siti, app, analytics, cloud, AI. Questa roadmap ti guida in modo pratico: prima SQL, poi scegli un percorso (MySQL, SQL Server, Oracle, MongoDB).",
+      "I database sono ovunque: siti, app, analytics, cloud e AI. Questa roadmap ti fa crescere passo dopo passo: prima SQL, poi relazionale più forte, poi amministrazione e performance, infine NoSQL.",
 
     ctaPrimary: "Inizia con il quiz MySQL",
-    ctaSecondary: "Oppure allenati con SQL Server",
+    ctaSecondary: "Scopri la certificazione SQL Server",
+    certCta: "Scopri la certificazione",
 
     goalLabel: "Obiettivo:",
     practiceCta: "Allenati ora",
@@ -326,168 +394,252 @@ const CONTENT: Record<
       {
         title: "🟢 Livello 0 — Fondamenti SQL",
         body:
-          "Parti da SQL: SELECT, JOIN, GROUP BY, subquery, vincoli, indici e normalizzazione base. È la base universale.",
-        recommended: ["MySQL (basi SQL)", "SQL in pratica"],
+          "Parti dalla base universale: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subquery, vincoli, indici e normalizzazione base.",
+        recommended: ["MySQL", "SQL in pratica"],
         goal: "Scrivere query con sicurezza e capire le relazioni tra tabelle.",
-        ctaQuizSlug: "mysql",
-        ctaText: "Quiz MySQL",
+        ctaQuizSlug: "mysql-certification",
+        ctaCertSlug: "mysql-certification",
+        ctaPrimaryText: "Inizia il quiz MySQL",
+        ctaSecondaryText: "Scopri la certificazione MySQL",
       },
       {
-        title: "🟡 Livello 1 — Relazionali (scegli ecosistema)",
+        title: "🟡 Livello 1 — Relazionali (scegli il tuo percorso)",
         body:
-          "Scegli in base al contesto: enterprise (SQL Server/Oracle) oppure web/business (MySQL).",
-        recommended: ["Microsoft SQL Server", "Oracle Database SQL", "MySQL"],
+          "Quando le basi SQL sono chiare, scegli un ecosistema relazionale: MySQL per uso ampio e pratico, SQL Server per ambienti Microsoft/enterprise, o Oracle per contesti enterprise classici.",
+        recommended: ["MySQL", "Microsoft SQL Server", "Oracle Database SQL"],
         goal: "Capire transazioni, lock, execution plan e performance base.",
         ctaQuizSlug: "microsoft-sql-server",
-        ctaText: "Quiz SQL Server",
+        ctaCertSlug: "microsoft-sql-server",
+        ctaPrimaryText: "Inizia il quiz SQL Server",
+        ctaSecondaryText: "Scopri la certificazione SQL Server",
       },
       {
-        title: "🟠 Livello 2 — Performance, affidabilità, mentalità da DBA",
+        title: "🟠 Livello 2 — Amministrazione, affidabilità e profondità enterprise",
         body:
-          "Nel lavoro servono anche: backup, permessi, monitoraggio, strategia indici e troubleshooting query lente.",
-        recommended: ["Ottimizzazione query", "Backup & recovery", "Ruoli e permessi"],
-        goal: "Tenere un database veloce, sicuro e ripristinabile.",
+          "Vai oltre le query: strategia indici, permessi, backup, monitoraggio, recovery e mentalità da database enterprise.",
+        recommended: [
+          "Oracle Database SQL",
+          "Ottimizzazione query",
+          "Backup & recovery",
+          "Ruoli e permessi",
+        ],
+        goal: "Tenere un database veloce, sicuro, ripristinabile e pronto per contesti enterprise.",
+        ctaQuizSlug: "oracle-database-sql",
+        ctaCertSlug: "oracle-database-sql",
+        ctaPrimaryText: "Inizia il quiz Oracle Database SQL",
+        ctaSecondaryText: "Scopri la certificazione Oracle Database SQL",
       },
       {
-        title: "🔴 Livello 3 — NoSQL e bisogni moderni",
+        title: "🔴 Livello 3 — NoSQL e mentalità moderna",
         body:
-          "Quando hai capito bene il relazionale, aggiungi NoSQL. MongoDB è comune per modelli flessibili e app moderne.",
+          "Quando hai capito bene il relazionale, aggiungi NoSQL. MongoDB è utile per schemi flessibili, documenti e app moderne.",
         recommended: ["MongoDB Developer"],
         goal: "Capire quando NoSQL ha senso e modellare documenti correttamente.",
         ctaQuizSlug: "mongodb-developer",
-        ctaText: "Quiz MongoDB",
+        ctaCertSlug: "mongodb-developer",
+        ctaPrimaryText: "Inizia il quiz MongoDB",
+        ctaSecondaryText: "Scopri la certificazione MongoDB",
       },
     ],
 
     salaryTitle: "💰 Salary outlook Database (2026)",
     salaryIntro:
-      "Range globali indicativi (variano molto per paese e ruolo).",
+      "I range globali cambiano in base a paese, azienda e specializzazione. Usali come orientamento, non come promessa.",
     salaryRanges: [
       { label: "Junior", range: "$45k–$70k" },
       { label: "Mid-level", range: "$75k–$110k" },
       { label: "Senior / DBA", range: "$120k+" },
     ],
     salaryDisclaimer:
-      "Cresci più velocemente se unisci SQL + performance + un progetto reale (non solo teoria).",
+      "La crescita più veloce arriva spesso da SQL + performance + progetto reale, non solo teoria.",
 
     compareTitle: "🔍 SQL vs NoSQL — cosa studiare prima?",
     compareIntro:
-      "Quasi tutti dovrebbero partire da SQL. NoSQL ha più senso dopo aver capito bene il relazionale.",
+      "Quasi tutti dovrebbero partire da SQL. NoSQL ha molto più senso dopo aver capito bene il relazionale.",
     compareLeftTitle: "SQL (Relazionale)",
     compareRightTitle: "NoSQL (MongoDB)",
     compareRows: [
-      { label: "Ideale per", left: "Dati strutturati, report, consistenza", right: "Modelli flessibili, iterazione rapida" },
-      { label: "Uso tipico", left: "Business ed enterprise", right: "App moderne, dati evento" },
-      { label: "Parto da qui?", left: "Sì (consigliato)", right: "Dopo le basi SQL" },
+      {
+        label: "Ideale per",
+        left: "Dati strutturati, report, consistenza",
+        right: "Modelli flessibili, iterazione rapida",
+      },
+      {
+        label: "Uso tipico",
+        left: "Business app, sistemi enterprise",
+        right: "App moderne, sistemi orientati a documenti",
+      },
+      {
+        label: "Parto da qui?",
+        left: "Sì (consigliato)",
+        right: "Dopo le basi SQL",
+      },
     ],
     compareRecommendationTitle: "Consiglio pratico",
     compareRecommendationBody:
-      "Parti da SQL (MySQL/SQL Server). Aggiungi MongoDB dopo, quando normalizzazione e join non ti spaventano.",
+      "Parti da SQL. Costruisci sicurezza con MySQL o SQL Server, poi aggiungi MongoDB più avanti.",
 
     faqTitle: "FAQ",
     faq: [
-      { q: "Che database studio per primo?", a: "Basi SQL. MySQL è un ottimo punto di partenza." },
-      { q: "Mi serve Oracle?", a: "Solo se punti a contesti enterprise dove Oracle è diffuso." },
-      { q: "MongoDB basta per lavorare?", a: "Aiuta, ma SQL resta la baseline più richiesta." },
-      { q: "Come divento spendibile più in fretta?", a: "Fai un progetto: schema + query + indici + backup plan." },
+      {
+        q: "Che database studio per primo?",
+        a: "Parti dalle basi SQL. MySQL è di solito il punto di ingresso più semplice e pratico.",
+      },
+      {
+        q: "Mi serve Oracle?",
+        a: "Solo se punti a contesti enterprise dove Oracle è diffuso. È utile, ma non obbligatorio per tutti.",
+      },
+      {
+        q: "MongoDB basta per lavorare?",
+        a: "Aiuta, ma SQL resta la baseline più universale e richiesta.",
+      },
+      {
+        q: "Come divento spendibile più in fretta?",
+        a: "Fai un mini progetto reale: schema, query, indici, backup plan e ragionamento sulle performance.",
+      },
     ],
 
-    finalCtaTitle: "🚀 Parti ora (piano pratico)",
+    finalCtaTitle: "🚀 Parti ora (percorso pratico)",
     finalCtaBody:
-      "Impara SQL prima. Allenati ogni giorno. Poi scegli ecosistema (SQL Server/Oracle/MySQL) e aggiungi MongoDB quando sei stabile.",
+      "Impara prima SQL. Allenati ogni giorno. Poi rafforza il relazionale e aggiungi MongoDB solo quando le basi ti vengono naturali.",
   },
 
   es: {
     title: "Ruta de Certificaciones de Bases de Datos 2026",
-    subtitle: "De SQL básico a habilidades reales",
+    subtitle: "De SQL básico a habilidades reales sobre bases de datos",
     intro:
-      "Las bases de datos están en todas partes. Esta ruta es práctica: primero SQL, luego eliges un camino (MySQL, SQL Server, Oracle, MongoDB).",
+      "Las bases de datos están en todas partes: webs, apps, analítica, cloud e IA. Esta ruta te hace crecer paso a paso: primero SQL, luego una base relacional más fuerte, después administración y rendimiento, y finalmente NoSQL.",
 
-    ctaPrimary: "Empieza con MySQL",
-    ctaSecondary: "O practica SQL Server",
+    ctaPrimary: "Empezar con el quiz MySQL",
+    ctaSecondary: "Ver certificación SQL Server",
+    certCta: "Ver certificación",
 
     goalLabel: "Objetivo:",
-    practiceCta: "Practicar",
+    practiceCta: "Practicar ahora",
 
     levels: [
       {
-        title: "🟢 Nivel 0 — Fundamentos de SQL",
+        title: "🟢 Nivel 0 — Fundamentos SQL",
         body:
-          "SELECT, JOIN, GROUP BY, subconsultas, constraints, índices y normalización básica.",
-        recommended: ["MySQL (SQL básico)"],
-        goal: "Escribir consultas con confianza.",
-        ctaQuizSlug: "mysql",
-        ctaText: "Quiz MySQL",
+          "Empieza por la base universal: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subconsultas, constraints, índices y normalización básica.",
+        recommended: ["MySQL", "SQL en práctica"],
+        goal: "Escribir consultas con confianza y entender las relaciones entre tablas.",
+        ctaQuizSlug: "mysql-certification",
+        ctaCertSlug: "mysql-certification",
+        ctaPrimaryText: "Empezar quiz MySQL",
+        ctaSecondaryText: "Ver certificación MySQL",
       },
       {
-        title: "🟡 Nivel 1 — Relacional (elige ecosistema)",
+        title: "🟡 Nivel 1 — Relacional (elige tu camino)",
         body:
-          "Enterprise (SQL Server/Oracle) o web/business (MySQL).",
-        recommended: ["Microsoft SQL Server", "Oracle Database SQL", "MySQL"],
-        goal: "Transacciones, locks y performance básica.",
+          "Cuando las bases SQL estén claras, elige un ecosistema relacional: MySQL para uso amplio, SQL Server para entornos Microsoft/enterprise, u Oracle para contextos enterprise clásicos.",
+        recommended: ["MySQL", "Microsoft SQL Server", "Oracle Database SQL"],
+        goal: "Entender transacciones, locks, execution plans y rendimiento básico.",
         ctaQuizSlug: "microsoft-sql-server",
-        ctaText: "Quiz SQL Server",
+        ctaCertSlug: "microsoft-sql-server",
+        ctaPrimaryText: "Empezar quiz SQL Server",
+        ctaSecondaryText: "Ver certificación SQL Server",
       },
       {
-        title: "🟠 Nivel 2 — Performance y fiabilidad",
+        title: "🟠 Nivel 2 — Administración, fiabilidad y profundidad enterprise",
         body:
-          "Backups, permisos, monitoreo, estrategia de índices y troubleshooting.",
-        recommended: ["Optimización", "Backup & recovery", "Roles/permisos"],
-        goal: "Mantener el DB rápido y seguro.",
+          "Ve más allá de las consultas: estrategia de índices, permisos, backups, monitorización, recovery y mentalidad de base de datos enterprise.",
+        recommended: [
+          "Oracle Database SQL",
+          "Optimización de consultas",
+          "Backup & recovery",
+          "Roles y permisos",
+        ],
+        goal: "Mantener una base de datos rápida, segura, recuperable y preparada para entornos enterprise.",
+        ctaQuizSlug: "oracle-database-sql",
+        ctaCertSlug: "oracle-database-sql",
+        ctaPrimaryText: "Empezar quiz Oracle Database SQL",
+        ctaSecondaryText: "Ver certificación Oracle Database SQL",
       },
       {
-        title: "🔴 Nivel 3 — NoSQL (MongoDB)",
+        title: "🔴 Nivel 3 — NoSQL y mentalidad moderna",
         body:
-          "Después de SQL, añade MongoDB para modelos flexibles.",
+          "Cuando entiendas bien el mundo relacional, añade NoSQL. MongoDB es útil para esquemas flexibles, documentos y aplicaciones modernas.",
         recommended: ["MongoDB Developer"],
-        goal: "Saber cuándo NoSQL encaja.",
+        goal: "Entender cuándo NoSQL encaja y cómo modelar documentos correctamente.",
         ctaQuizSlug: "mongodb-developer",
-        ctaText: "Quiz MongoDB",
+        ctaCertSlug: "mongodb-developer",
+        ctaPrimaryText: "Empezar quiz MongoDB",
+        ctaSecondaryText: "Ver certificación MongoDB",
       },
     ],
 
     salaryTitle: "💰 Salary outlook DB (2026)",
-    salaryIntro: "Rangos orientativos globales.",
+    salaryIntro:
+      "Los rangos globales cambian según país, empresa y especialización. Úsalos como orientación, no como promesa.",
     salaryRanges: [
       { label: "Junior", range: "$45k–$70k" },
       { label: "Mid-level", range: "$75k–$110k" },
       { label: "Senior / DBA", range: "$120k+" },
     ],
-    salaryDisclaimer: "SQL + performance + proyecto real = más valor.",
+    salaryDisclaimer:
+      "El crecimiento más rápido suele venir de combinar SQL + rendimiento + un proyecto real, no solo teoría.",
 
-    compareTitle: "🔍 SQL vs NoSQL — ¿qué primero?",
-    compareIntro: "Empieza con SQL. NoSQL después.",
-    compareLeftTitle: "SQL",
+    compareTitle: "🔍 SQL vs NoSQL — ¿qué estudiar primero?",
+    compareIntro:
+      "Casi todo el mundo debería empezar por SQL. NoSQL tiene mucho más sentido después de entender bien el modelo relacional.",
+    compareLeftTitle: "SQL (Relacional)",
     compareRightTitle: "NoSQL (MongoDB)",
     compareRows: [
-      { label: "Mejor para", left: "Estructura y consistencia", right: "Flexibilidad" },
-      { label: "Uso típico", left: "Enterprise y negocio", right: "Apps modernas" },
-      { label: "Empezar", left: "Sí", right: "Después de SQL" },
+      {
+        label: "Ideal para",
+        left: "Datos estructurados, reporting, consistencia",
+        right: "Modelos flexibles, iteración rápida",
+      },
+      {
+        label: "Uso típico",
+        left: "Apps de negocio, sistemas enterprise",
+        right: "Apps modernas, sistemas documentales",
+      },
+      {
+        label: "¿Empiezo aquí?",
+        left: "Sí (recomendado)",
+        right: "Después de SQL",
+      },
     ],
     compareRecommendationTitle: "Recomendación",
     compareRecommendationBody:
-      "Primero SQL (MySQL/SQL Server). Luego MongoDB.",
+      "Empieza por SQL. Gana seguridad con MySQL o SQL Server y luego añade MongoDB más adelante.",
 
     faqTitle: "FAQ",
     faq: [
-      { q: "¿Qué aprender primero?", a: "SQL. MySQL es un buen inicio." },
-      { q: "¿Oracle es obligatorio?", a: "Solo si apuntas a enterprise." },
-      { q: "¿MongoDB basta?", a: "Ayuda, pero SQL sigue siendo base." },
-      { q: "¿Cómo ser empleable rápido?", a: "Proyecto real con schema + índices + backup." },
+      {
+        q: "¿Qué base de datos estudiar primero?",
+        a: "Empieza por fundamentos SQL. MySQL suele ser la entrada más simple y práctica.",
+      },
+      {
+        q: "¿Necesito Oracle?",
+        a: "Solo si apuntas a entornos enterprise donde Oracle sea común. Es útil, pero no obligatorio para todos.",
+      },
+      {
+        q: "¿MongoDB basta para trabajar?",
+        a: "Ayuda, pero SQL sigue siendo la base más universal y demandada.",
+      },
+      {
+        q: "¿Cómo ser empleable más rápido?",
+        a: "Haz un mini proyecto real: schema, consultas, índices, plan de backup y razonamiento de rendimiento.",
+      },
     ],
 
-    finalCtaTitle: "🚀 Empieza ahora",
-    finalCtaBody: "Empieza con SQL y practica cada día.",
+    finalCtaTitle: "🚀 Empieza ahora (camino práctico)",
+    finalCtaBody:
+      "Aprende primero SQL. Practica cada día. Luego refuerza el camino relacional y añade MongoDB solo cuando la base sea natural.",
   },
 
   fr: {
     title: "Parcours Certifications Bases de Données 2026",
-    subtitle: "Des bases SQL aux compétences concrètes",
+    subtitle: "Des bases SQL aux vraies compétences base de données",
     intro:
-      "Les bases de données sont partout. Ce parcours est simple : d’abord SQL, puis choisissez un chemin (MySQL, SQL Server, Oracle, MongoDB).",
+      "Les bases de données sont partout : sites, applis, analytics, cloud et IA. Ce parcours vous fait progresser étape par étape : d’abord SQL, puis une base relationnelle plus forte, ensuite administration et performance, et enfin NoSQL.",
 
-    ctaPrimary: "Commencer avec MySQL",
-    ctaSecondary: "Ou s’entraîner sur SQL Server",
+    ctaPrimary: "Commencer avec le quiz MySQL",
+    ctaSecondary: "Voir la certification SQL Server",
+    certCta: "Voir la certification",
 
     goalLabel: "Objectif :",
     practiceCta: "S’entraîner",
@@ -496,70 +648,113 @@ const CONTENT: Record<
       {
         title: "🟢 Niveau 0 — Fondamentaux SQL",
         body:
-          "SELECT, JOIN, GROUP BY, sous-requêtes, contraintes, index, normalisation.",
-        recommended: ["MySQL (bases SQL)"],
-        goal: "Écrire des requêtes avec confiance.",
-        ctaQuizSlug: "mysql",
-        ctaText: "Quiz MySQL",
+          "Commencez par la base universelle : SELECT, WHERE, ORDER BY, JOIN, GROUP BY, sous-requêtes, contraintes, index et normalisation de base.",
+        recommended: ["MySQL", "SQL en pratique"],
+        goal: "Écrire des requêtes avec confiance et comprendre les relations entre les tables.",
+        ctaQuizSlug: "mysql-certification",
+        ctaCertSlug: "mysql-certification",
+        ctaPrimaryText: "Commencer le quiz MySQL",
+        ctaSecondaryText: "Voir la certification MySQL",
       },
       {
-        title: "🟡 Niveau 1 — Relationnel (écosystème)",
+        title: "🟡 Niveau 1 — Relationnel (choisissez votre voie)",
         body:
-          "Enterprise (SQL Server/Oracle) ou web/business (MySQL).",
-        recommended: ["Microsoft SQL Server", "Oracle Database SQL", "MySQL"],
-        goal: "Transactions, verrous, performance de base.",
+          "Quand les bases SQL sont claires, choisissez un écosystème relationnel : MySQL pour un usage large, SQL Server pour les environnements Microsoft/enterprise, ou Oracle pour les contextes enterprise classiques.",
+        recommended: ["MySQL", "Microsoft SQL Server", "Oracle Database SQL"],
+        goal: "Comprendre transactions, verrous, execution plans et performance de base.",
         ctaQuizSlug: "microsoft-sql-server",
-        ctaText: "Quiz SQL Server",
+        ctaCertSlug: "microsoft-sql-server",
+        ctaPrimaryText: "Commencer le quiz SQL Server",
+        ctaSecondaryText: "Voir la certification SQL Server",
       },
       {
-        title: "🟠 Niveau 2 — Performance & fiabilité",
+        title: "🟠 Niveau 2 — Administration, fiabilité et profondeur enterprise",
         body:
-          "Backups, permissions, monitoring, stratégie d’index, dépannage.",
-        recommended: ["Optimisation", "Backup & recovery", "Rôles/permissions"],
-        goal: "Garder le DB rapide et sûr.",
+          "Allez au-delà des requêtes : stratégie d’index, permissions, sauvegardes, monitoring, recovery et mentalité base de données enterprise.",
+        recommended: [
+          "Oracle Database SQL",
+          "Optimisation des requêtes",
+          "Backup & recovery",
+          "Rôles et permissions",
+        ],
+        goal: "Garder une base de données rapide, sûre, récupérable et prête pour les contextes enterprise.",
+        ctaQuizSlug: "oracle-database-sql",
+        ctaCertSlug: "oracle-database-sql",
+        ctaPrimaryText: "Commencer le quiz Oracle Database SQL",
+        ctaSecondaryText: "Voir la certification Oracle Database SQL",
       },
       {
-        title: "🔴 Niveau 3 — NoSQL (MongoDB)",
+        title: "🔴 Niveau 3 — NoSQL et mentalité moderne",
         body:
-          "Après SQL, ajoutez MongoDB pour des modèles flexibles.",
+          "Quand vous comprenez bien le relationnel, ajoutez NoSQL. MongoDB est utile pour les schémas flexibles, les documents et les applis modernes.",
         recommended: ["MongoDB Developer"],
-        goal: "Savoir quand NoSQL est pertinent.",
+        goal: "Comprendre quand NoSQL a du sens et comment modéliser correctement les documents.",
         ctaQuizSlug: "mongodb-developer",
-        ctaText: "Quiz MongoDB",
+        ctaCertSlug: "mongodb-developer",
+        ctaPrimaryText: "Commencer le quiz MongoDB",
+        ctaSecondaryText: "Voir la certification MongoDB",
       },
     ],
 
     salaryTitle: "💰 Salary outlook DB (2026)",
-    salaryIntro: "Fourchettes indicatives mondiales.",
+    salaryIntro:
+      "Les fourchettes mondiales varient selon le pays, l’entreprise et la spécialisation. Utilisez-les comme repère, pas comme promesse.",
     salaryRanges: [
       { label: "Junior", range: "$45k–$70k" },
       { label: "Mid-level", range: "$75k–$110k" },
       { label: "Senior / DBA", range: "$120k+" },
     ],
-    salaryDisclaimer: "SQL + performance + projet réel = impact.",
+    salaryDisclaimer:
+      "La croissance la plus rapide vient souvent de SQL + performance + projet réel, pas seulement de la théorie.",
 
-    compareTitle: "🔍 SQL vs NoSQL — quoi d’abord ?",
-    compareIntro: "Commencez par SQL. NoSQL ensuite.",
-    compareLeftTitle: "SQL",
+    compareTitle: "🔍 SQL vs NoSQL — quoi étudier d’abord ?",
+    compareIntro:
+      "La plupart des gens devraient commencer par SQL. NoSQL a beaucoup plus de sens après avoir bien compris le relationnel.",
+    compareLeftTitle: "SQL (Relationnel)",
     compareRightTitle: "NoSQL (MongoDB)",
     compareRows: [
-      { label: "Idéal pour", left: "Structure et cohérence", right: "Flexibilité" },
-      { label: "Usage", left: "Enterprise et business", right: "Apps modernes" },
-      { label: "Démarrer", left: "Oui", right: "Après SQL" },
+      {
+        label: "Idéal pour",
+        left: "Données structurées, reporting, cohérence",
+        right: "Modèles flexibles, itération rapide",
+      },
+      {
+        label: "Usage typique",
+        left: "Applications business, systèmes enterprise",
+        right: "Applis modernes, systèmes orientés documents",
+      },
+      {
+        label: "Commencer ici ?",
+        left: "Oui (recommandé)",
+        right: "Après SQL",
+      },
     ],
     compareRecommendationTitle: "Recommandation",
     compareRecommendationBody:
-      "SQL d’abord (MySQL/SQL Server), puis MongoDB.",
+      "Commencez par SQL. Prenez confiance avec MySQL ou SQL Server, puis ajoutez MongoDB plus tard.",
 
     faqTitle: "FAQ",
     faq: [
-      { q: "Quoi apprendre en premier ?", a: "SQL. MySQL est un bon départ." },
-      { q: "Oracle obligatoire ?", a: "Seulement si vous visez l’enterprise." },
-      { q: "MongoDB suffit ?", a: "Utile, mais SQL reste la base." },
-      { q: "Devenir employable vite ?", a: "Projet réel : schéma + index + backup." },
+      {
+        q: "Quelle base de données apprendre en premier ?",
+        a: "Commencez par les fondamentaux SQL. MySQL est souvent l’entrée la plus simple et la plus pratique.",
+      },
+      {
+        q: "Ai-je besoin d’Oracle ?",
+        a: "Seulement si vous visez des environnements enterprise où Oracle est courant. C’est utile, mais pas obligatoire pour tout le monde.",
+      },
+      {
+        q: "MongoDB suffit-il pour travailler ?",
+        a: "C’est utile, mais SQL reste la base la plus universelle et la plus demandée.",
+      },
+      {
+        q: "Comment devenir employable plus vite ?",
+        a: "Faites un mini projet réel : schéma, requêtes, index, plan de sauvegarde et logique de performance.",
+      },
     ],
 
-    finalCtaTitle: "🚀 Commencez maintenant",
-    finalCtaBody: "Commencez par SQL et pratiquez chaque jour.",
+    finalCtaTitle: "🚀 Commencez maintenant (parcours pratique)",
+    finalCtaBody:
+      "Apprenez d’abord SQL. Entraînez-vous chaque jour. Puis renforcez le relationnel et ajoutez MongoDB seulement quand la base devient naturelle.",
   },
 };
