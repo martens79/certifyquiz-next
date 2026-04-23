@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const roadmapItems = [
   {
+    title: "Fundamentals",
+    desc: "Il punto di partenza perfetto per iniziare da zero nel mondo IT.",
+    href: "/it/roadmap-fundamentals",
+    icon: "🧱",
+  },
+  {
     title: "Cloud",
     desc: "Un percorso per orientarti tra basi cloud, AWS, Azure e Google Cloud.",
     href: "/it/roadmap-cloud",
