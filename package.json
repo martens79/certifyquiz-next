@@ -44,7 +44,7 @@
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/html2canvas": "^0.5.35",
-    "@types/node": "^20",
+    "@types/node": "^20.19.39",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/recharts": "^1.8.29",

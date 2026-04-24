@@ -14,8 +14,6 @@ const API_BASE = API_RAW.replace(/\/+$/, "");
 const langs = ["it", "es", "en", "fr"] as const;
 type Lang = (typeof langs)[number];
 
-// Segmento PRETTY per la lista certificazioni per lingua
-// (coerente con le rewrites del tuo next.config.js)
 const CERT_SEGMENT_BY_LANG: Record<Lang, string> = {
   it: "certificazioni",
   es: "certificaciones",
@@ -30,9 +28,20 @@ const staticPages: Record<Lang, string[]> = {
   fr: ["fonctionnement", "contact", "confidentialite", "conditions", "cookies"],
 };
 
-async function getRemoteCerts(lang: Lang, timeoutMs = 5000) {
+type RemoteCert = {
+  id: number;
+  slug: string;
+};
+
+type RemoteTopic = {
+  slug: string;
+  certification_slug: string;
+};
+
+async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[]> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
+
   const url = `${API_BASE}/certifications?lang=${encodeURIComponent(lang)}`;
 
   try {
@@ -41,13 +50,58 @@ async function getRemoteCerts(lang: Lang, timeoutMs = 5000) {
       cache: "no-store",
       signal: controller.signal,
     });
+
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const arr = (await res.json()) as Array<{ id: number; slug: string | null }>;
+
+    const arr = (await res.json()) as Array<{
+      id: number;
+      slug: string | null;
+    }>;
+
     return arr.filter(
-      (c) => typeof c.slug === "string" && c.slug.trim().length > 0
-    ) as Array<{ id: number; slug: string }>;
+      (c): c is RemoteCert =>
+        typeof c.id === "number" &&
+        typeof c.slug === "string" &&
+        c.slug.trim().length > 0
+    );
   } catch {
-    // fallback silenzioso: nessuna URL dinamica se backend non risponde
+    return [];
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function getRemoteTopics(
+  lang: Lang,
+  timeoutMs = 5000
+): Promise<RemoteTopic[]> {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+
+  const url = `${API_BASE}/topics?lang=${encodeURIComponent(lang)}`;
+
+  try {
+    const res = await fetch(url, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const arr = (await res.json()) as Array<{
+      slug?: string | null;
+      certification_slug?: string | null;
+    }>;
+
+    return arr.filter(
+      (t): t is RemoteTopic =>
+        typeof t.slug === "string" &&
+        t.slug.trim().length > 0 &&
+        typeof t.certification_slug === "string" &&
+        t.certification_slug.trim().length > 0
+    );
+  } catch {
     return [];
   } finally {
     clearTimeout(t);
@@ -60,24 +114,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const perLang = await Promise.all(
     langs.map(async (lang) => {
       const certs = await getRemoteCerts(lang);
-      const base = `${SITE}/${lang}`;
+      const topics = await getRemoteTopics(lang);
+
+      const base = lang === "en" ? SITE : `${SITE}/${lang}`;
       const listSegment = CERT_SEGMENT_BY_LANG[lang];
 
       const entries: MetadataRoute.Sitemap = [
         // Home lingua
         {
-          url: `${base}`,
+          url: base,
           changeFrequency: "weekly",
           priority: 0.9,
           lastModified: now,
         },
-        // Lista certificazioni lingua (PRETTY URL)
+
+        // Lista certificazioni lingua
         {
           url: `${base}/${listSegment}`,
           changeFrequency: "weekly",
           priority: 0.8,
           lastModified: now,
         },
+
         // Statiche lingua
         ...staticPages[lang].map((p) => ({
           url: `${base}/${p}`,
@@ -85,11 +143,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.6,
           lastModified: now,
         })),
-        // Dettagli certificazioni lingua (PRETTY URL)
+
+        // Dettagli certificazioni lingua
         ...certs.map((c) => ({
           url: `${base}/${listSegment}/${c.slug}`,
           changeFrequency: "weekly" as const,
           priority: 0.8,
+          lastModified: now,
+        })),
+
+        // Topic pages lingua
+        ...topics.map((t) => ({
+          url: `${base}/${listSegment}/${t.certification_slug}/${t.slug}`,
+          changeFrequency: "weekly" as const,
+          priority: 0.7,
           lastModified: now,
         })),
       ];
