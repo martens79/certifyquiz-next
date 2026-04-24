@@ -78,7 +78,7 @@ async function getRemoteTopics(
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
 
-  const url = `${API_BASE}/topics?lang=${encodeURIComponent(lang)}`;
+  const url = `${API_BASE}/sitemap/topics?lang=${encodeURIComponent(lang)}`;
 
   try {
     const res = await fetch(url, {
