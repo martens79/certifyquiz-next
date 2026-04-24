@@ -9,6 +9,7 @@ import { categoryPath, type CategoryKey, type Locale } from "@/lib/paths";
 
 import BlogTeaser from "@/components/BlogTeaser";
 import logo from "@/../public/images/logo-certifyquiz.png";
+import PathBox from "@/components/home/PathBox";
 
 import {
   BrainCircuit,
@@ -573,6 +574,12 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         </div>
       </section>
 
+
+{/* PATH BOX — guida l’utente che non sa da dove iniziare */}
+<PathBox lang={safeLang as any} />
+
+{/* BLOG SECTION — spostata più in alto e resa più visibile */}
+<section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog"></section>
       {/* BLOG SECTION — spostata più in alto e resa più visibile */}
       <section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5 shadow-sm">
