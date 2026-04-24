@@ -11,10 +11,9 @@ const CEH = {
 
   title: {
     it: "CEH Practice Test 2026 – Oltre 1000 Domande Tipo Esame (312-50)",
-    en: "CEH Practice Test 2026 – 1000+ Real Exam Questions (312-50)",
-    // ✅ CLICK MAGNET (match “ceh test pratique” + “qcm” + “simulation 125”)
-    fr: "CEH Test Pratique 2026 – 1000+ QCM (Simulation 125 Questions)",
-    es: "CEH Practice Test 2026 – Más de 1000 Preguntas Tipo Examen (312-50)",
+    en: "CEH Practice Test 2026 – 1000+ Questions + Exam Simulation (312-50)",
+    fr: "CEH Test Pratique 2026 – 1000+ QCM + Simulation 125 Questions",
+    es: "CEH Practice Test 2026 – Más de 1000 Preguntas + Simulación de Examen",
   },
 
   level: {
@@ -24,202 +23,191 @@ const CEH = {
     es: "Intermedio",
   },
 
-  // Nota SEO/CTR:
-  // - numero grande "1000+"
-  // - CEH + 312-50
-  // - exam simulation 125 timed
-  // - mixed quizzes
   description: {
-    it: "Preparati al CEH 312-50 con oltre 1000 domande tipo esame. Modalità training completa, simulazione cronometrata da 125 domande e quiz misti per misurare la tua preparazione reale (non teoria generica).",
-    en: "Prepare for CEH 312-50 with 1000+ real exam-style questions. Full training mode, realistic 125-question timed simulation, and mixed quizzes to measure real readiness (not generic theory).",
-    // ✅ aggiunge “test pratique CEH” + “préparation examen” senza spam
-    fr: "Préparez le CEH 312-50 avec plus de 1000 questions type examen (QCM). Idéal comme test pratique CEH, avec mode entraînement complet, simulation chronométrée de 125 questions et quiz mixtes pour une préparation examen réaliste.",
-    es: "Prepárate para CEH 312-50 con más de 1000 preguntas tipo examen. Modo entrenamiento completo, simulación cronometrada de 125 preguntas y cuestionarios mixtos para medir tu preparación real.",
+    it: "Preparati al CEH 312-50 con oltre 1000 domande tipo esame. Modalità training completa, simulazione cronometrata da 125 domande e quiz misti per misurare la tua preparazione reale.",
+    en: "Prepare for CEH 312-50 with 1000+ real exam-style questions. Includes training mode, 125-question timed exam simulation, mixed quizzes and last-week revision practice.",
+    fr: "Préparez le CEH 312-50 avec plus de 1000 QCM type examen. Test pratique CEH avec mode entraînement, simulation chronométrée de 125 questions et quiz mixtes.",
+    es: "Prepárate para CEH 312-50 con más de 1000 preguntas tipo examen. Incluye modo entrenamiento, simulación cronometrada de 125 preguntas y cuestionarios mixtos.",
   },
 
-  // Se i topic DB sono questi 5, lasciali così (meglio coerenza con quizRoute/topic mapping).
- topics: [
-  {
-    title: {
-      it: "Accesso non autorizzato",
-      en: "Gaining Unauthorized Access",
-      fr: "Accès non autorisé",
-      es: "Acceso no autorizado",
+  topics: [
+    {
+      title: {
+        it: "Accesso non autorizzato",
+        en: "Gaining Unauthorized Access",
+        fr: "Accès non autorisé",
+        es: "Acceso no autorizado",
+      },
+      slug: {
+        it: "accesso-non-autorizzato",
+        en: "gaining-unauthorized-access",
+        fr: "acces-non-autorise",
+        es: "acceso-no-autorizado",
+      },
     },
-    slug: {
-      it: "accesso-non-autorizzato",
-      en: "gaining-unauthorized-access",
-      fr: "acces-non-autorise",
-      es: "acceso-no-autorizado",
+    {
+      title: {
+        it: "Mantenimento dell’accesso",
+        en: "Maintaining Access",
+        fr: "Maintien de l’accès",
+        es: "Mantenimiento del acceso",
+      },
+      slug: {
+        it: "mantenimento-dellaccesso",
+        en: "maintaining-access",
+        fr: "maintien-de-lacces",
+        es: "mantenimiento-del-acceso",
+      },
     },
-  },
-  {
-    title: {
-      it: "Mantenimento dell’accesso",
-      en: "Maintaining Access",
-      fr: "Maintien de l’accès",
-      es: "Mantenimiento del acceso",
+    {
+      title: {
+        it: "Copertura delle tracce e forense",
+        en: "Covering Tracks and Forensics",
+        fr: "Masquage des traces et criminalistique",
+        es: "Ocultación de huellas y análisis forense",
+      },
+      slug: {
+        it: "copertura-delle-tracce-e-forense",
+        en: "covering-tracks-and-forensics",
+        fr: "masquage-des-traces-et-criminalistique",
+        es: "ocultacion-de-huellas-y-analisis-forense",
+      },
     },
-    slug: {
-      it: "mantenimento-dellaccesso",
-      en: "maintaining-access",
-      fr: "maintien-de-lacces",
-      es: "mantenimiento-del-acceso",
+    {
+      title: {
+        it: "Fondamenti di ethical hacking",
+        en: "Ethical Hacking Fundamentals",
+        fr: "Fondamentaux du hacking éthique",
+        es: "Fundamentos del hacking ético",
+      },
+      slug: {
+        it: "fondamenti-di-ethical-hacking",
+        en: "ethical-hacking-fundamentals",
+        fr: "fondamentaux-du-hacking-ethique",
+        es: "fundamentos-del-hacking-etico",
+      },
     },
-  },
-  {
-    title: {
-      it: "Copertura delle tracce e forense",
-      en: "Covering Tracks and Forensics",
-      fr: "Masquage des traces et criminalistique",
-      es: "Ocultación de huellas y análisis forense",
+    {
+      title: {
+        it: "Tipi di attacchi e minacce",
+        en: "Types of Attacks and Threats",
+        fr: "Types d’attaques et menaces",
+        es: "Tipos de ataques y amenazas",
+      },
+      slug: {
+        it: "tipi-di-attacchi-e-minacce",
+        en: "types-of-attacks-and-threats",
+        fr: "types-dattaques-et-menaces",
+        es: "tipos-de-ataques-y-amenazas",
+      },
     },
-    slug: {
-      it: "copertura-delle-tracce-e-forense",
-      en: "covering-tracks-and-forensics",
-      fr: "masquage-des-traces-et-criminalistique",
-      es: "ocultacion-de-huellas-y-analisis-forense",
+    {
+      title: {
+        it: "Tecniche di raccolta informazioni",
+        en: "Information Gathering Techniques",
+        fr: "Techniques de collecte d’informations",
+        es: "Técnicas de recopilación de información",
+      },
+      slug: {
+        it: "tecniche-di-raccolta-informazioni",
+        en: "information-gathering-techniques",
+        fr: "techniques-de-collecte-dinformations",
+        es: "tecnicas-de-recopilacion-de-informacion",
+      },
     },
-  },
-  {
-    title: {
-      it: "Fondamenti di ethical hacking",
-      en: "Ethical Hacking Fundamentals",
-      fr: "Fondamentaux du hacking éthique",
-      es: "Fundamentos del hacking ético",
+    {
+      title: {
+        it: "Scansione delle vulnerabilità e exploit",
+        en: "Vulnerability Scanning and Exploitation",
+        fr: "Analyse des vulnérabilités et exploitation",
+        es: "Análisis de vulnerabilidades y explotación",
+      },
+      slug: {
+        it: "scansione-delle-vulnerabilita-e-exploit",
+        en: "vulnerability-scanning-and-exploitation",
+        fr: "analyse-des-vulnerabilites-et-exploitation",
+        es: "analisis-de-vulnerabilidades-y-explotacion",
+      },
     },
-    slug: {
-      it: "fondamenti-di-ethical-hacking",
-      en: "ethical-hacking-fundamentals",
-      fr: "fondamentaux-du-hacking-ethique",
-      es: "fundamentos-del-hacking-etico",
+    {
+      title: {
+        it: "Attacchi su applicazioni Web",
+        en: "Web Application Attacks",
+        fr: "Attaques sur les applications Web",
+        es: "Ataques a aplicaciones web",
+      },
+      slug: {
+        it: "attacchi-su-applicazioni-web",
+        en: "web-application-attacks",
+        fr: "attaques-sur-les-applications-web",
+        es: "ataques-a-aplicaciones-web",
+      },
     },
-  },
-  {
-    title: {
-      it: "Tipi di attacchi e minacce",
-      en: "Types of Attacks and Threats",
-      fr: "Types d’attaques et menaces",
-      es: "Tipos de ataques y amenazas",
-    },
-    slug: {
-      it: "tipi-di-attacchi-e-minacce",
-      en: "types-of-attacks-and-threats",
-      fr: "types-dattaques-et-menaces",
-      es: "tipos-de-ataques-y-amenazas",
-    },
-  },
-  {
-    title: {
-      it: "Tecniche di raccolta informazioni",
-      en: "Information Gathering Techniques",
-      fr: "Techniques de collecte d’informations",
-      es: "Técnicas de recopilación de información",
-    },
-    slug: {
-      it: "tecniche-di-raccolta-informazioni",
-      en: "information-gathering-techniques",
-      fr: "techniques-de-collecte-dinformations",
-      es: "tecnicas-de-recopilacion-de-informacion",
-    },
-  },
-  {
-    title: {
-      it: "Scansione delle vulnerabilità e exploit",
-      en: "Vulnerability Scanning and Exploitation",
-      fr: "Analyse des vulnérabilités et exploitation",
-      es: "Análisis de vulnerabilidades y explotación",
-    },
-    slug: {
-      it: "scansione-delle-vulnerabilita-e-exploit",
-      en: "vulnerability-scanning-and-exploitation",
-      fr: "analyse-des-vulnerabilites-et-exploitation",
-      es: "analisis-de-vulnerabilidades-y-explotacion",
-    },
-  },
-  {
-    title: {
-      it: "Attacchi su applicazioni Web",
-      en: "Web Application Attacks",
-      fr: "Attaques sur les applications Web",
-      es: "Ataques a aplicaciones web",
-    },
-    slug: {
-      it: "attacchi-su-applicazioni-web",
-      en: "web-application-attacks",
-      fr: "attaques-sur-les-applications-web",
-      es: "ataques-a-aplicaciones-web",
-    },
-  },
-],
+  ],
 
   extraContent: {
-    // “Cosa imparerai” deve essere concreto + orientato ai task d’esame.
     learn: {
       it: [
-        "Impostare un approccio “CEH-style”: reconnaissance → scanning → exploitation → post-exploitation.",
-        "Riconoscere tecniche reali: enumerazione, privilege escalation, persistenza, evasione.",
+        "Impostare un approccio CEH-style: reconnaissance, scanning, exploitation e post-exploitation.",
+        "Riconoscere tecniche reali come enumerazione, privilege escalation, persistenza ed evasione.",
         "Allenarti su attacchi web e di rete con domande mirate e quiz misti multi-dominio.",
-        "Capire dove sbagli: spiegazioni e ragionamento dietro ogni risposta (quando disponibili).",
-        "Simulare l’esame CEH 312-50 con 125 domande cronometrate per fare “exam readiness” vera.",
+        "Capire dove sbagli grazie a spiegazioni e ragionamento dietro ogni risposta, quando disponibili.",
+        "Simulare l’esame CEH 312-50 con 125 domande cronometrate per misurare la tua exam readiness.",
       ],
       en: [
-        "Apply a CEH-style flow: reconnaissance → scanning → exploitation → post-exploitation.",
-        "Train on real techniques: enumeration, privilege escalation, persistence, evasion.",
-        "Practice web + network attack concepts using targeted and mixed multi-domain quizzes.",
-        "Understand mistakes: explanations and reasoning behind each answer (when available).",
+        "Apply a CEH-style flow: reconnaissance, scanning, exploitation and post-exploitation.",
+        "Train on real techniques such as enumeration, privilege escalation, persistence and evasion.",
+        "Practice web and network attack concepts using targeted and mixed multi-domain quizzes.",
+        "Understand mistakes through explanations and answer reasoning, when available.",
         "Build real exam readiness with a timed 125-question CEH 312-50 simulation.",
       ],
       fr: [
-        "Appliquer un workflow “CEH” : reconnaissance → scan → exploitation → post-exploitation.",
-        "S’entraîner sur des techniques réelles : énumération, élévation de privilèges, persistance, évasion.",
-        "Travailler web + réseau avec des QCM ciblés et des quiz mixtes multi-domaines.",
-        "Comprendre vos erreurs : explications et logique de réponse (si disponibles).",
-        "Gagner en “exam readiness” avec une simulation CEH 312-50 de 125 questions chronométrées.",
+        "Appliquer un workflow CEH : reconnaissance, scan, exploitation et post-exploitation.",
+        "S’entraîner sur des techniques réelles : énumération, élévation de privilèges, persistance et évasion.",
+        "Travailler les attaques web et réseau avec des QCM ciblés et des quiz mixtes multi-domaines.",
+        "Comprendre vos erreurs grâce aux explications et à la logique de réponse, si disponibles.",
+        "Gagner en exam readiness avec une simulation CEH 312-50 de 125 questions chronométrées.",
       ],
       es: [
-        "Aplicar un flujo “CEH”: reconnaissance → scanning → exploitation → post-exploitation.",
-        "Practicar técnicas reales: enumeración, escalada de privilegios, persistencia, evasión.",
-        "Entrenar conceptos de ataques web y de red con cuestionarios dirigidos y mixtos.",
-        "Entender errores: explicaciones y razonamiento de cada respuesta (cuando esté disponible).",
+        "Aplicar un flujo CEH: reconnaissance, scanning, exploitation y post-exploitation.",
+        "Practicar técnicas reales como enumeración, escalada de privilegios, persistencia y evasión.",
+        "Entrenar ataques web y de red con cuestionarios dirigidos y mixtos multi-dominio.",
+        "Entender tus errores gracias a explicaciones y razonamiento de respuesta, cuando esté disponible.",
         "Construir preparación real con una simulación CEH 312-50 de 125 preguntas cronometradas.",
       ],
     },
 
-    // “Perché scegliere” deve vendere MA con promesse credibili.
     whyChoose: {
       it: [
-        "Oltre 1000 domande tipo esame (allineate allo stile CEH 312-50).",
-        "Modalità training per fare volume + modalità esame realistica per misurarti davvero.",
-        "Simulazione cronometrata da 125 domande: perfetta per abituarti a ritmo e pressione.",
-        "Quiz misti per colpire le lacune: meno illusioni, più preparazione reale.",
-        "Multilingua: utile se studi e ripassi anche in francese/spagnolo/inglese.",
+        "Oltre 1000 domande tipo esame allineate allo stile CEH 312-50.",
+        "Modalità training per fare volume e modalità esame per misurare davvero il tuo livello.",
+        "Simulazione cronometrata da 125 domande per abituarti a ritmo, pressione e gestione del tempo.",
+        "Quiz misti per scoprire lacune reali e prepararti meglio all’esame completo.",
+        "Pensato anche per il ripasso finale nelle ultime settimane prima dell’esame CEH.",
       ],
       en: [
-        "1000+ real exam-style questions aligned with CEH 312-50.",
-        "Training mode for volume + realistic exam mode to measure true readiness.",
-        "Timed 125-question simulation to build pace and pressure tolerance.",
-        "Mixed quizzes to expose weak areas fast (less illusion, more readiness).",
-        "Multilingual practice to support study and revision across languages.",
+        "1000+ exam-style questions aligned with CEH 312-50.",
+        "Training mode for volume and exam mode to measure true readiness.",
+        "Timed 125-question simulation to build pace, pressure tolerance and time management.",
+        "Mixed quizzes to expose weak areas and prepare for the full exam experience.",
+        "Designed for final revision during the last weeks before the CEH exam.",
       ],
       fr: [
-        // ✅ micro-match (una sola volta) sulla query “test pratique”
         "Plus de 1000 questions type examen : un vrai test pratique CEH aligné 312-50.",
-        "Mode entraînement pour faire du volume + mode examen pour vous mesurer réellement.",
-        "Simulation chronométrée de 125 questions pour travailler rythme et stress.",
-        "Quiz mixtes pour cibler vos lacunes (moins d’illusions, plus de niveau réel).",
-        "Multilingue : idéal si vous révisez aussi en français/espagnol/anglais.",
+        "Mode entraînement pour faire du volume et mode examen pour mesurer votre niveau réel.",
+        "Simulation chronométrée de 125 questions pour travailler rythme, pression et gestion du temps.",
+        "Quiz mixtes pour révéler vos lacunes et mieux préparer l’examen complet.",
+        "Pensé aussi pour la révision finale dans les dernières semaines avant l’examen CEH.",
       ],
       es: [
         "Más de 1000 preguntas tipo examen alineadas a CEH 312-50.",
-        "Modo entrenamiento para volumen + modo examen realista para medir tu nivel.",
-        "Simulación cronometrada de 125 preguntas para trabajar ritmo y presión.",
-        "Cuestionarios mixtos para detectar debilidades rápido (menos ilusión, más preparación).",
-        "Multilingüe: útil si estudias y repasas en varios idiomas.",
+        "Modo entrenamiento para practicar mucho y modo examen para medir tu nivel real.",
+        "Simulación cronometrada de 125 preguntas para trabajar ritmo, presión y gestión del tiempo.",
+        "Cuestionarios mixtos para detectar debilidades y prepararte mejor para el examen completo.",
+        "Diseñado también para el repaso final en las últimas semanas antes del examen CEH.",
       ],
     },
 
-    // FAQ: qui ci giochiamo SEO + conversione (risposte brevi, chiare, “no hype”).
     faq: {
       it: [
         {
@@ -232,7 +220,7 @@ const CEH = {
         },
         {
           q: "È adatto al CEH 312-50?",
-          a: "Sì. Il focus è sullo stile “exam practice” e sulla copertura dei principali argomenti richiesti dal CEH 312-50.",
+          a: "Sì. Il focus è sullo stile exam practice e sulla copertura dei principali argomenti richiesti dal CEH 312-50.",
         },
         {
           q: "Meglio training o esame?",
@@ -262,13 +250,13 @@ const CEH = {
         },
         {
           q: "What is the benefit of mixed quizzes?",
-          a: "Mixed quizzes combine domains to expose weak areas faster and train context switching—closer to a real exam experience.",
+          a: "Mixed quizzes combine domains to expose weak areas faster and train context switching, closer to a real exam experience.",
         },
       ],
       fr: [
         {
           q: "Combien de questions CEH sont disponibles ?",
-          a: "Le pool contient plus de 1000 questions type examen CEH (QCM). Le total peut varier légèrement selon la langue car les mises à jour ne sont pas toujours simultanées.",
+          a: "Le pool contient plus de 1000 questions type examen CEH. Le total peut varier légèrement selon la langue car les mises à jour ne sont pas toujours simultanées.",
         },
         {
           q: "Existe-t-il une simulation chronométrée ?",
@@ -276,11 +264,11 @@ const CEH = {
         },
         {
           q: "Est-ce aligné avec le CEH 312-50 ?",
-          a: "Oui. L’objectif est la pratique “type examen” et la couverture des sujets majeurs du CEH 312-50.",
+          a: "Oui. L’objectif est la pratique type examen et la couverture des sujets majeurs du CEH 312-50.",
         },
         {
           q: "Dois-je utiliser le mode entraînement ou le mode examen ?",
-          a: "Le mode entraînement pour faire du volume et apprendre; le mode examen pour mesurer votre niveau et travailler la gestion du temps.",
+          a: "Le mode entraînement sert à faire du volume et apprendre; le mode examen sert à mesurer votre niveau et travailler la gestion du temps.",
         },
         {
           q: "À quoi servent les quiz mixtes ?",
@@ -350,7 +338,7 @@ const CEH = {
     it: "/it/certificazioni",
     en: "/certifications",
     fr: "/fr/certifications",
-    es: "/es/certifications",
+    es: "/es/certificaciones",
   },
 } as const;
 

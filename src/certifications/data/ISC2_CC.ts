@@ -8,12 +8,12 @@ const ISC2CC = {
   officialUrl: "https://www.isc2.org/certifications/certified-in-cybersecurity",
 
   // ✅ SEO-first: titoli orientati a quiz / practice test / simulazione esame
-  title: {
-    it: "ISC2 CC – Quiz e Simulazione Esame 2026 (Certified in Cybersecurity)",
-    en: "ISC2 CC Practice Test 2026 – Certified in Cybersecurity Exam Questions",
-    fr: "ISC2 CC Examen 2026 – Quiz et Questions (Certified in Cybersecurity)",
-    es: "ISC2 CC Examen 2026 – Quiz y Preguntas (Certified in Cybersecurity)",
-  },
+ title: {
+  it: "ISC2 CC Practice Test 2026 – Quiz e Simulazione Esame",
+  en: "ISC2 CC Practice Test 2026 – Free Certified in Cybersecurity Quiz",
+  fr: "ISC2 CC Test Pratique 2026 – Quiz Cybersécurité Gratuit",
+  es: "ISC2 CC Practice Test 2026 – Quiz Gratis de Ciberseguridad",
+},
 
   level: {
     it: "Principiante",
@@ -24,11 +24,11 @@ const ISC2CC = {
 
   // ✅ Descrizioni più coerenti con i topic reali del DB
   description: {
-    it: "Allenati per l’esame ISC2 Certified in Cybersecurity (CC) con quiz gratuiti e domande in stile esame 2026. Migliora la tua preparazione sui concetti di sicurezza, la gestione del rischio, i controlli di sicurezza, la conformità e la risposta agli incidenti con spiegazioni dettagliate.",
-    en: "Prepare for the ISC2 Certified in Cybersecurity (CC) exam with our FREE 2026 practice test. Train with exam-style questions and detailed explanations covering security fundamentals, risk management, security controls, compliance, and incident response.",
-    fr: "Préparez l’examen ISC2 Certified in Cybersecurity (CC) 2026 avec notre quiz gratuit et des questions pratiques en style examen. Entraînez-vous sur les fondamentaux de la sécurité, la gestion des risques, les contrôles de sécurité, la conformité et la réponse aux incidents.",
-    es: "Prepárate para el examen ISC2 Certified in Cybersecurity (CC) 2026 con nuestro quiz gratuito y preguntas tipo examen. Practica fundamentos de seguridad, gestión de riesgos, controles de seguridad, cumplimiento y respuesta ante incidentes con explicaciones detalladas.",
-  },
+  it: "Preparati all’esame ISC2 Certified in Cybersecurity con quiz gratuiti, domande tipo esame, spiegazioni chiare e pratica su rischio, controlli, compliance e incident response.",
+  en: "Prepare for the ISC2 Certified in Cybersecurity exam with a free practice test, exam-style questions, clear explanations and focused cybersecurity revision.",
+  fr: "Préparez l’examen ISC2 Certified in Cybersecurity avec un test pratique gratuit, des QCM type examen, des explications claires et une révision ciblée.",
+  es: "Prepárate para el examen ISC2 Certified in Cybersecurity con un practice test gratis, preguntas tipo examen, explicaciones claras y repaso guiado.",
+},
 
   // ✅ Allineato ai topic reali del DB + slug reali
   topics: [

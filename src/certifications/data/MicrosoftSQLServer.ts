@@ -10,12 +10,12 @@ const MicrosoftSQLServer = {
 
   // ✅ SEO-first: intent “practice test / questions / quiz”
   // EN ha 760 domande → lo dichiariamo SOLO in EN (pool reale).
-  title: {
-    it: "Microsoft SQL Server – Quiz e Domande Pratiche",
-    en: "SQL Server Practice Test 2026 – 760 Exam-Style Questions",
-    fr: "Microsoft SQL Server – Quiz et Questions Pratiques",
-    es: "Microsoft SQL Server – Quiz y Preguntas Prácticas",
-  },
+ title: {
+  it: "SQL Server Practice Test 2026 – Quiz SQL e Domande Pratiche",
+  en: "SQL Server Practice Test 2026 – 760 SQL Exam-Style Questions",
+  fr: "SQL Server Test Pratique 2026 – Quiz SQL et Questions",
+  es: "SQL Server Practice Test 2026 – Quiz SQL y Preguntas",
+},
 
   level: {
     it: "Intermedio",
@@ -26,11 +26,11 @@ const MicrosoftSQLServer = {
 
   // ✅ description: non più “certificazione dedicata…”, ma pagina di pratica
   description: {
-    it: "Esercitati con quiz e domande pratiche su SQL e Microsoft SQL Server: query reali, modellazione dati, stored procedure, performance, backup e sicurezza. Modalità training e quiz misti per prepararti sul serio.",
-    en: "Practice SQL and Microsoft SQL Server with 760 exam-style questions (English pool). Train on real queries, database design, stored procedures, performance tuning, backup/restore, and security with focused quizzes and mixed tests.",
-    fr: "Entraînez-vous sur SQL et Microsoft SQL Server avec des quiz et des questions pratiques : requêtes, modélisation, procédures stockées, performances, sauvegarde/restauration et sécurité. Banque de questions en croissance.",
-    es: "Practica SQL y Microsoft SQL Server con quizzes y preguntas prácticas: consultas, modelado, procedimientos almacenados, rendimiento, backup/restauración y seguridad. Banco de preguntas en crecimiento.",
-  },
+  it: "Esercitati su SQL Server con quiz pratici, query reali, T-SQL, database design, performance, backup e sicurezza. Ideale per prepararti ai percorsi Microsoft Data.",
+  en: "Practice SQL Server with 760 exam-style questions covering SQL queries, T-SQL, database design, performance tuning, backup, restore and security.",
+  fr: "Entraînez-vous sur SQL Server avec des quiz pratiques : requêtes SQL, T-SQL, modélisation, performances, sauvegarde, restauration et sécurité.",
+  es: "Practica SQL Server con quizzes prácticos sobre consultas SQL, T-SQL, diseño de bases de datos, rendimiento, backup, restauración y seguridad.",
+},
 
  topics: [
   {
