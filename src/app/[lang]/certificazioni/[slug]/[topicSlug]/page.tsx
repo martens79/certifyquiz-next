@@ -162,13 +162,53 @@ export async function generateMetadata({
     data.topic.description ||
     "Practice certification topics on CertifyQuiz.";
 
-  return {
+ const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
+
+const pageUrl = `${siteUrl}${topicSeoPath(lang, slug, topicSlug)}`;
+
+const category = slug.includes("security") || slug.includes("ceh") || slug.includes("cissp") || slug.includes("isc2")
+  ? "security"
+  : slug.includes("aws") || slug.includes("azure") || slug.includes("google-cloud")
+    ? "cloud"
+    : slug.includes("ccna") || slug.includes("network")
+      ? "networking"
+      : "default";
+
+const ogImage = `${siteUrl}/api/og?type=topic&title=${encodeURIComponent(
+  data.topic.title
+)}&subtitle=${encodeURIComponent(
+  `${data.certification.title} Free Practice Questions`
+)}&category=${category}`;
+
+return {
+  title,
+  description,
+  alternates: {
+    canonical: pageUrl,
+  },
+  openGraph: {
     title,
     description,
-    alternates: {
-      canonical: topicSeoPath(lang, slug, topicSlug),
-    },
-  };
+    url: pageUrl,
+    siteName: "CertifyQuiz",
+    type: "website",
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: `${data.topic.title} - ${data.certification.title}`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [ogImage],
+  },
+};
 }
 
 export default async function TopicPage({
