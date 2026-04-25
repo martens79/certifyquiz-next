@@ -8,6 +8,7 @@ import type {
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import { certPath } from "@/lib/paths";
+import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -254,20 +255,28 @@ export default function CertificationPage({
         )}
 
         {/* CTA quiz */}
-        <div className="mt-2 mb-6 text-center">
-          <Link
-            href={quizHref}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
-          >
-            <span className="text-lg">🚀</span>
-            {({
-              it: "Vai ai quiz",
-              en: "Go to quiz",
-              fr: "Accéder aux quiz",
-              es: "Ir a los cuestionarios",
-            } as const)[lang] ?? "Go to quiz"}
-          </Link>
-        </div>
+<div className="mt-2 mb-6 text-center">
+  <Link
+    href={quizHref}
+    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
+  >
+    <span className="text-lg">🚀</span>
+    {({
+      it: "Vai ai quiz",
+      en: "Go to quiz",
+      fr: "Accéder aux quiz",
+      es: "Ir a los cuestionarios",
+    } as const)[lang] ?? "Go to quiz"}
+  </Link>
+</div>
+
+{/* 👇 LEAD MAGNET */}
+<ContextualLeadMagnetBox
+  lang={lang}
+  variant="cert"
+  certificationSlug={data.slug}
+  className="mb-8"
+/>
 
         {/* Practice box */}
         <CertificationPracticeBox

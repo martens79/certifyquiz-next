@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
+import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 
 type Lang = "en";
 
@@ -192,12 +193,21 @@ export default async function TopicPageEn({
             )}
           </div>
 
-          {/* Intro SEO lasciata sotto la CTA */}
-          {data.topic.intro && (
-            <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-              <p>{data.topic.intro}</p>
-            </div>
-          )}
+         {/* Intro SEO lasciata sotto la CTA */}
+{data.topic.intro && (
+  <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+    <p>{data.topic.intro}</p>
+  </div>
+)}
+
+<ContextualLeadMagnetBox
+  lang="en"
+  variant="topic"
+  certificationSlug={slug}
+  topicSlug={topicSlug}
+  quizHref={quizHref}
+  className="mb-8"
+/>
         </section>
 
         <section className="bg-white border rounded-2xl p-6 mb-8">

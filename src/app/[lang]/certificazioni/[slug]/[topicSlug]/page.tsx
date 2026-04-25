@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
+import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 
 type Lang = Locale;
 
@@ -273,11 +274,20 @@ export default async function TopicPage({
           </div>
 
           {/* Intro SEO sotto la CTA, non sopra */}
-          {data.topic.intro && (
-            <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-              <p>{data.topic.intro}</p>
-            </div>
-          )}
+{data.topic.intro && (
+  <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+    <p>{data.topic.intro}</p>
+  </div>
+)}
+
+<ContextualLeadMagnetBox
+  lang={lang}
+  variant="topic"
+  certificationSlug={slug}
+  topicSlug={topicSlug}
+  quizHref={quizHref}
+  className="mb-8"
+/>
         </section>
 
         <section className="bg-white border rounded-2xl p-6 mb-8">
