@@ -25,4 +25,7 @@ export const articleBySlugLang = groq`
 
   // ✅ nuovo + fallback vecchio
   "body": coalesce(body, content)
+
+  "seoTitle": seo.title,
+  "seoDescription": description
 }`;
