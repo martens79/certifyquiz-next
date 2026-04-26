@@ -9,7 +9,7 @@ import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
 import AuthorBox from "@/components/blog/AuthorBox";
 import type { Metadata } from "next";
-
+import LeadMagnetBox from "@/components/blog/LeadMagnetBox";
 import type { Locale } from "@/lib/i18n";
 import {
   blogIndexPath,
@@ -236,20 +236,25 @@ export default async function BlogArticlePage({
         </div>
       </header>
 
-      {/* Article content */}
-      <section className="mt-8">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className={cx("prose prose-zinc lg:prose-lg", "max-w-none")}>
-            <PortableText value={value} components={portableTextComponents} />
-          </div>
-        </div>
-      </section>
+     {/* Article content */}
+<section className="mt-8">
+  <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className={cx("prose prose-zinc lg:prose-lg", "max-w-none")}>
+      <PortableText value={value} components={portableTextComponents} />
+    </div>
+  </div>
+</section>
 
-      {/* ✅ Author box */}
-      <AuthorBox lang={lang} />
+<LeadMagnetBox lang={lang} />
 
-      {/* Final CTA */}
-      <section className="mt-10 rounded-2xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm">
+{/* ✅ Author box */}
+<AuthorBox lang={lang} />
+
+{/* Lead magnet finale */}
+<LeadMagnetBox lang={lang} />
+
+{/* Final CTA */}
+<section className="mt-10 rounded-2xl border border-zinc-200 bg-gradient-to-b from-white to-zinc-50 p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-zinc-900">
           {labels.ctaTitle}
         </h3>
@@ -262,7 +267,6 @@ export default async function BlogArticlePage({
           >
             {labels.ctaPrimary}
           </Link>
-
           <Link
             href={blogBase}
             className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50"
