@@ -8,6 +8,7 @@ import { sanityServerClient } from "@/lib/sanity.server";
 import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
 import AuthorBox from "@/components/blog/AuthorBox";
+import type { Metadata } from "next";
 
 import type { Locale } from "@/lib/i18n";
 import {
@@ -76,7 +77,69 @@ function getLabels(lang: Locale) {
 function cx(...parts: Array<string | undefined | false | null>) {
   return parts.filter(Boolean).join(" ");
 }
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: Locale; slug: string }>;
+}): Promise<Metadata> {
+  const { lang, slug } = await params;
 
+  const article = await sanityServerClient.fetch<any>(articleBySlugLang, {
+    lang,
+    slug,
+  });
+
+  if (!article) {
+    return {
+      title: "Blog | CertifyQuiz",
+    };
+  }
+
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
+
+  const title = article.seoTitle || article.title || "CertifyQuiz Blog";
+  const description =
+    article.seoDescription ||
+    article.excerpt ||
+    "Study smarter with CertifyQuiz.";
+
+  const pageUrl =
+    lang === "en"
+      ? `${siteUrl}/blog/${slug}`
+      : `${siteUrl}/${lang}/blog/${slug}`;
+
+  const ogImage = `${siteUrl}/api/og?type=blog&title=${encodeURIComponent(
+    article.title || title
+  )}&subtitle=${encodeURIComponent(description)}&category=${encodeURIComponent(
+    article.category || "security"
+  )}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: pageUrl,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: article.title || title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
 /* ------------------------------------------------------------ */
 
 export default async function BlogArticlePage({
