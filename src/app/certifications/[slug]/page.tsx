@@ -14,6 +14,12 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     description:
       "Practice for SQL Server certification with 760 exam-style questions. T-SQL, database design, backup, security and performance. Start free.",
   },
+  // 👇 AGGIUNGI QUESTO
+  "isc2-cc": {
+    title: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
+    description:
+      "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
+  },
 };
 
 function getCategoryFromSlug(slug: string) {

@@ -29,7 +29,18 @@ const ISC2CC = {
   fr: "Préparez l’examen ISC2 Certified in Cybersecurity avec un test pratique gratuit, des QCM type examen, des explications claires et une révision ciblée.",
   es: "Prepárate para el examen ISC2 Certified in Cybersecurity con un practice test gratis, preguntas tipo examen, explicaciones claras y repaso guiado.",
 },
-
+metaTitle: {
+  it: "ISC2 CC – Practice Test e Quiz Cybersecurity 2026 | CertifyQuiz",
+  en: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
+  fr: "ISC2 CC Certified in Cybersecurity – Test Pratique 2026 | CertifyQuiz",
+  es: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
+},
+metaDescription: {
+  it: "Preparati all'esame ISC2 CC con quiz gratuiti in stile esame. Copre rischio, controlli, compliance e incident response. Inizia gratis.",
+  en: "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
+  fr: "Préparez l'examen ISC2 CC avec des questions gratuites type examen. Couvre risque, contrôles, conformité et réponse aux incidents. Commencez gratuitement.",
+  es: "Prepárate para el examen ISC2 CC con preguntas gratuitas tipo examen. Cubre riesgo, controles, cumplimiento e incident response. Empieza gratis.",
+},
   // ✅ Allineato ai topic reali del DB + slug reali
   topics: [
     {
