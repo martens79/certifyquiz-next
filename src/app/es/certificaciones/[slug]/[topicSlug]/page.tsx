@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
+import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 
 function getLabels() {
   return {
@@ -12,20 +13,18 @@ function getLabels() {
     whatYouWillLearn: "Qué aprenderás en este tema",
     whyItMatters: "Por qué este tema es importante",
     practiceIntro: "Este tema forma parte del recorrido",
-    learnText1:
-      "En esta página puedes comprender mejor qué cubre este tema, qué conceptos son más importantes y por qué es útil practicar con un cuestionario específico antes de pasar al examen completo o a cuestionarios mixtos.",
+    learnText1: "...",
     learnText2: "El quiz sobre",
-    learnText3:
-      "te ayuda a centrarte en conceptos específicos, definiciones, escenarios prácticos e ideas recurrentes que pueden aparecer durante la preparación para la certificación.",
+    learnText3: "...",
     whyText1: "Estudiar bien",
-    whyText2:
-      "es importante porque este tema contribuye a la comprensión general de la certificación",
-    whyText3:
-      "Una buena preparación en cada tema facilita afrontar tanto las preguntas teóricas como las prácticas, mejorando la seguridad y la rapidez al responder.",
-    whyText4:
-      "Practicar tema por tema también te permite identificar con mayor precisión tus puntos débiles, repasar mejor y construir una preparación más sólida con el tiempo.",
+    whyText2: "...",
+    whyText3: "...",
+    whyText4: "...",
     faqTitle: "Preguntas frecuentes",
     contentTitle: "Guía rápida",
+
+    // 👇 AGGIUNGI QUESTO
+    mobileHint: "🎯 Quiz rápido sobre este tema",
   };
 }
 
@@ -135,9 +134,11 @@ export default async function TopicPageEs({
   if (!data) return notFound();
 
   const labels = getLabels();
+  const quizHref = `/es/quiz/topic/${data.topic.id}`;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
+  <>
+    <div className="max-w-5xl mx-auto px-4 py-8 md:py-10 pb-28 md:pb-10">
       <Link
         href={`/es/certificaciones/${slug}`}
         className="text-sm text-blue-600 hover:underline"
@@ -150,30 +151,45 @@ export default async function TopicPageEs({
           {data.topic.title}
         </h1>
 
-        <p className="text-lg text-slate-700 max-w-3xl mb-4">
+        <p className="text-base md:text-lg text-slate-700 max-w-3xl mb-4">
           {data.topic.description}
         </p>
 
+        {/* CTA sopra la piega */}
+        <div className="mb-6">
+          <Link
+            href={quizHref}
+            className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
+          >
+            {labels.startQuiz}
+          </Link>
+
+          {data.questionCount !== null && (
+            <p className="text-sm text-slate-500 mt-3">
+              {labels.availableQuestions}: {data.questionCount}
+            </p>
+          )}
+        </div>
+
+        {/* Intro SEO */}
         {data.topic.intro && (
           <div className="max-w-3xl text-slate-700 leading-7 mb-6">
             <p>{data.topic.intro}</p>
           </div>
         )}
 
-        <Link
-          href={`/es/quiz/topic/${data.topic.id}`}
-          className="inline-block bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 mb-6"
-        >
-          {labels.startQuiz}
-        </Link>
-
-        {data.questionCount !== null && (
-          <p className="text-sm text-slate-500 mb-8">
-            {labels.availableQuestions}: {data.questionCount}
-          </p>
-        )}
+        {/* 🔥 LEAD MAGNET */}
+        <ContextualLeadMagnetBox
+          lang="es"
+          variant="topic"
+          certificationSlug={slug}
+          topicSlug={topicSlug}
+          quizHref={quizHref}
+          className="mb-8"
+        />
       </section>
 
+      {/* WHAT YOU WILL LEARN */}
       <section className="bg-white border rounded-2xl p-6 mb-8">
         <h2 className="text-2xl font-semibold text-slate-900 mb-3">
           {labels.whatYouWillLearn}
@@ -188,6 +204,7 @@ export default async function TopicPageEs({
         </p>
       </section>
 
+      {/* WHY IT MATTERS */}
       <section className="bg-white border rounded-2xl p-6 mb-8">
         <h2 className="text-2xl font-semibold text-slate-900 mb-3">
           {labels.whyItMatters}
@@ -197,18 +214,22 @@ export default async function TopicPageEs({
           {labels.whyText2} <strong>{data.certification.title}</strong>.{" "}
           {labels.whyText3}
         </p>
-        <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
+        <p className="text-slate-700 leading-7 mt-4">
+          {labels.whyText4}
+        </p>
       </section>
 
+      {/* CONTENT */}
       {data.topic.content && (
-  <section className="bg-white border rounded-2xl p-6 mb-8">
-    <div
-      className="prose max-w-none text-slate-700"
-      dangerouslySetInnerHTML={{ __html: data.topic.content }}
-    />
-  </section>
-)}
+        <section className="bg-white border rounded-2xl p-6 mb-8">
+          <div
+            className="prose max-w-none text-slate-700"
+            dangerouslySetInnerHTML={{ __html: data.topic.content }}
+          />
+        </section>
+      )}
 
+      {/* FAQ */}
       {data.topic.faq && data.topic.faq.length > 0 && (
         <section className="bg-white border rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-semibold text-slate-900 mb-4">
@@ -219,13 +240,16 @@ export default async function TopicPageEs({
             {data.topic.faq.map((item, index) => (
               <div key={`${item.q}-${index}`}>
                 <h3 className="font-semibold text-slate-900">{item.q}</h3>
-                <p className="text-slate-700 mt-2 leading-7">{item.a}</p>
+                <p className="text-slate-700 mt-2 leading-7">
+                  {item.a}
+                </p>
               </div>
             ))}
           </div>
         </section>
       )}
 
+      {/* RELATED */}
       <section>
         <h2 className="text-2xl font-semibold text-slate-900 mb-4">
           {labels.relatedTopics}
@@ -238,12 +262,32 @@ export default async function TopicPageEs({
               href={`/es/certificaciones/${slug}/${t.slug}`}
               className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
             >
-              <div className="font-semibold text-slate-900">{t.title}</div>
-              <div className="text-sm text-slate-600 mt-2">{t.description}</div>
+              <div className="font-semibold text-slate-900">
+                {t.title}
+              </div>
+              <div className="text-sm text-slate-600 mt-2">
+                {t.description}
+              </div>
             </Link>
           ))}
         </div>
       </section>
     </div>
-  );
+
+    {/* 📱 STICKY CTA MOBILE */}
+    <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
+      <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
+        <div className="text-xs text-slate-500 mb-2">
+          {labels.mobileHint}
+        </div>
+        <Link
+          href={quizHref}
+          className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-5 py-3 rounded-full font-semibold text-slate-900"
+        >
+          {labels.startQuiz}
+        </Link>
+      </div>
+    </div>
+  </>
+);
 }
