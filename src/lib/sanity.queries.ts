@@ -7,6 +7,7 @@ export const articlesListByLang = groq`
   title,
   excerpt,
   lang,
+  category,
   "publishedAt": coalesce(publishedAt, date),
   "coverUrl": coalesce(coverImage.asset->url, cover.asset->url)
 }`;
@@ -18,6 +19,7 @@ export const articleBySlugLang = groq`
   title,
   excerpt,
   lang,
+  category,
   "publishedAt": coalesce(publishedAt, date),
   "coverUrl": coalesce(coverImage.asset->url, cover.asset->url),
 

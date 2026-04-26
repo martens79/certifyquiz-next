@@ -31,6 +31,27 @@ const themes = {
     badge: "#9333ea",
     icon: "🤖",
   },
+  database: {
+    bg: "#020617",
+    panel: "#1e293b",
+    accent: "#f59e0b",
+    badge: "#d97706",
+    icon: "🗄️",
+  },
+  programming: {
+    bg: "#020617",
+    panel: "#1e1b4b",
+    accent: "#6366f1",
+    badge: "#4f46e5",
+    icon: "💻",
+  },
+  fundamentals: {
+    bg: "#020617",
+    panel: "#064e3b",
+    accent: "#10b981",
+    badge: "#059669",
+    icon: "📚",
+  },
   default: {
     bg: "#020617",
     panel: "#0f172a",
@@ -44,20 +65,50 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
   const title = searchParams.get("title") || "CertifyQuiz";
-  const subtitle =
-    searchParams.get("subtitle") || "Realistic quizzes for IT certifications";
+  let subtitle =
+    searchParams.get("subtitle") ||
+    "Realistic quizzes for IT certifications";
+
   const type = searchParams.get("type") || "certification";
+  const lang = searchParams.get("lang") || "en";
   const category = searchParams.get("category") || "default";
 
   const theme =
     themes[category as keyof typeof themes] || themes.default;
 
-  const label =
+  let label =
     type === "topic"
       ? "TOPIC PRACTICE"
       : type === "blog"
-        ? "STUDY GUIDE"
+        ? "FREE STUDY GUIDE"
         : "PRACTICE EXAM";
+
+  // 🔥 MULTILINGUA BLOG
+  if (type === "blog") {
+    const blogTexts =
+      lang === "it"
+        ? {
+            label: "GUIDA GRATUITA",
+            subtitle: "Supera l’esame più velocemente",
+          }
+        : lang === "es"
+          ? {
+              label: "GUÍA GRATIS",
+              subtitle: "Aprueba el examen más rápido",
+            }
+          : lang === "fr"
+            ? {
+                label: "GUIDE GRATUIT",
+                subtitle: "Réussis l’examen plus vite",
+              }
+            : {
+                label: "FREE STUDY GUIDE",
+                subtitle: "Pass faster with real exam questions",
+              };
+
+    label = blogTexts.label;
+    subtitle = blogTexts.subtitle;
+  }
 
   const bigIcon =
     type === "topic" ? "📘" : type === "blog" ? "✍️" : theme.icon;
@@ -152,21 +203,21 @@ export async function GET(req: Request) {
           {/* Brand */}
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
-  style={{
-    width: "56px",
-    height: "56px",
-    borderRadius: "16px",
-    backgroundColor: theme.accent,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "24px",
-    fontWeight: 900,
-    marginRight: "18px",
-  }}
->
-  CQ
-</div>
+              style={{
+                width: "56px",
+                height: "56px",
+                borderRadius: "16px",
+                backgroundColor: theme.accent,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "24px",
+                fontWeight: 900,
+                marginRight: "18px",
+              }}
+            >
+              CQ
+            </div>
 
             <div
               style={{
@@ -231,9 +282,9 @@ export async function GET(req: Request) {
               color: "rgba(255,255,255,0.92)",
             }}
           >
-           <span style={{ marginRight: "30px" }}>Realistic questions</span>
-<span style={{ marginRight: "30px" }}>Clear explanations</span>
-<span>Exam practice</span>
+            <span style={{ marginRight: "30px" }}>Realistic questions</span>
+            <span style={{ marginRight: "30px" }}>Clear explanations</span>
+            <span>Exam practice</span>
           </div>
         </div>
 

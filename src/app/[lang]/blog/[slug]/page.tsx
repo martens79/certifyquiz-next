@@ -109,11 +109,11 @@ export async function generateMetadata({
       ? `${siteUrl}/blog/${slug}`
       : `${siteUrl}/${lang}/blog/${slug}`;
 
-  const ogImage = `${siteUrl}/api/og?type=blog&title=${encodeURIComponent(
-    article.title || title
-  )}&subtitle=${encodeURIComponent(description)}&category=${encodeURIComponent(
-    article.category || "security"
-  )}`;
+  const ogImage = `${siteUrl}/api/og?type=blog&lang=${lang}&title=${encodeURIComponent(
+  article.title || title
+)}&subtitle=${encodeURIComponent(description)}&category=${encodeURIComponent(
+  article.category || "default"
+)}`;
 
   return {
     title,
