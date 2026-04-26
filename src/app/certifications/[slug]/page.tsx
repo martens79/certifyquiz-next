@@ -1,8 +1,20 @@
+// src/app/certifications/[slug]/page.tsx
 import type { Metadata } from "next";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 import { getCertificationDetailRSC } from "@/lib/server/certs";
 
 type Props = { params: Promise<{ slug: string }> };
+
+// ✅ Override SEO manuali per slug specifici (EN root)
+// Usare quando il DB non ha meta title/description ottimizzati.
+// Aggiungere nuovi slug qui man mano che si ottimizzano le pagine.
+const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = {
+  "microsoft-sql-server": {
+    title: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
+    description:
+      "Practice for SQL Server certification with 760 exam-style questions. T-SQL, database design, backup, security and performance. Start free.",
+  },
+};
 
 function getCategoryFromSlug(slug: string) {
   if (
@@ -42,10 +54,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 
   const certName = data.name_en || data.name || slug;
+  const override = SEO_OVERRIDES[slug] || {};
 
-  const title = `${certName}: practice exam and quiz preparation | CertifyQuiz`;
+  // ✅ Usa override se disponibile, altrimenti template generico
+  const title =
+    override.title ||
+    `${certName}: practice exam and quiz preparation | CertifyQuiz`;
 
   const description =
+    override.description ||
     data.description_en ||
     data.description ||
     `Prepare for ${certName} with realistic quizzes, exam-style questions and clear explanations.`;

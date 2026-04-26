@@ -64,6 +64,11 @@ export type CertificationData = {
   level: LocalizedText;
   description: LocalizedText;
 
+  metaTitle?: LocalizedText;
+  metaDescription?: LocalizedText;
+
+  
+
   // ✅ ora accetta sia il vecchio formato sia il nuovo con slug
   topics: ReadonlyArray<CertificationTopic>;
 

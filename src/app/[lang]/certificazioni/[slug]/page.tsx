@@ -19,18 +19,13 @@ const RAW_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
-// ------------------------- PATH PER LINGUA -------------------------
-// Nota strategia SEO:
-// - EN ufficiale = root (senza /en) → /certifications/:slug
-// - /en/* resta route tecnica ma non deve indicizzarsi (noindex + canonical verso root)
 const listPathByLang: Record<Lang, string> = {
   it: "/it/certificazioni",
-  en: "/en/certifications", // route tecnica (NOINDEX)
+  en: "/en/certifications",
   fr: "/fr/certifications",
   es: "/es/certificaciones",
 };
 
-// 🔥 EN ufficiale = root
 const EN_ROOT_LIST_PATH = "/certifications";
 const enRootDetailPath = (slug: string) => `${EN_ROOT_LIST_PATH}/${slug}`;
 
@@ -60,6 +55,15 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
 
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
+  const suffix =
+    L === "it"
+      ? "Quiz ed esame"
+      : L === "fr"
+      ? "Quiz et examen"
+      : L === "es"
+      ? "Cuestionarios y examen"
+      : "Quizzes & Exam";
+
   // 1) Registry
   const reg = CERTS_BY_SLUG[slug];
   let titleBase: string | undefined;
@@ -67,8 +71,9 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
   let ogImage: string | undefined;
 
   if (reg) {
-    titleBase = reg.title?.[L] ?? reg.title?.it;
-    description = reg.description?.[L] ?? reg.description?.it;
+    // ✅ Usa metaTitle/metaDescription se disponibili, altrimenti fallback su title/description
+    titleBase = reg.metaTitle?.[L] ?? reg.metaTitle?.it ?? reg.title?.[L] ?? reg.title?.it;
+    description = reg.metaDescription?.[L] ?? reg.metaDescription?.it ?? reg.description?.[L] ?? reg.description?.it;
     ogImage = reg.imageUrl;
   } else {
     // 2) Fallback data layer
@@ -82,16 +87,11 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
 
   if (!titleBase) return {};
 
-  const suffix =
-    L === "it"
-      ? "Quiz ed esame"
-      : L === "fr"
-      ? "Quiz et examen"
-      : L === "es"
-      ? "Cuestionarios y examen"
-      : "Quizzes & Exam";
-
-  const title = `${titleBase} — ${suffix} | CertifyQuiz`;
+  // ✅ Se c'è metaTitle custom lo usa direttamente (già include "| CertifyQuiz")
+  // altrimenti costruisce il title con il suffix standard
+  const title = reg?.metaTitle?.[L] ?? reg?.metaTitle?.it
+    ? titleBase
+    : `${titleBase} — ${suffix} | CertifyQuiz`;
 
   // 🔥 canonical
   const canonical =

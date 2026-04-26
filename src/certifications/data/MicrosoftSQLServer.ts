@@ -31,7 +31,19 @@ const MicrosoftSQLServer = {
   fr: "Entraînez-vous sur SQL Server avec des quiz pratiques : requêtes SQL, T-SQL, modélisation, performances, sauvegarde, restauration et sécurité.",
   es: "Practica SQL Server con quizzes prácticos sobre consultas SQL, T-SQL, diseño de bases de datos, rendimiento, backup, restauración y seguridad.",
 },
-
+// 👇 AGGIUNGI QUI
+  metaTitle: {
+    it: "SQL Server Certification – Practice Test e Quiz 2026 | CertifyQuiz",
+    en: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
+    fr: "SQL Server Certification – Test Pratique 2026 | CertifyQuiz",
+    es: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
+  },
+  metaDescription: {
+    it: "Preparati con quiz pratici su SQL Server: query, T-SQL, database design, performance e backup. Ideale per DP-900 e DP-300. Inizia gratis.",
+    en: "Practice for SQL Server certification with 760 exam-style questions. T-SQL, database design, backup, security and performance. Start free.",
+    fr: "Préparez-vous avec des quiz SQL Server : T-SQL, modélisation, performances, sauvegarde. Idéal pour DP-900 et DP-300. Commencez gratuitement.",
+    es: "Practica para la certificación SQL Server con preguntas tipo examen. T-SQL, diseño, rendimiento, seguridad. Ideal para DP-900 y DP-300. Gratis.",
+  },
  topics: [
   {
     title: {
