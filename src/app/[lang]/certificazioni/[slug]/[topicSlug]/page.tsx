@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
+import TopicContent from "@/components/TopicContent";
 
 type Lang = Locale;
 
@@ -317,13 +318,14 @@ export default async function TopicPage({
         </section>
 
         {data.topic.content && (
-          <section className="bg-white border rounded-2xl p-6 mb-8">
-            <div
-              className="prose max-w-none text-slate-700"
-              dangerouslySetInnerHTML={{ __html: data.topic.content }}
-            />
-          </section>
-        )}
+  <section className="bg-white border rounded-2xl p-6 mb-8">
+    <TopicContent
+      content={data.topic.content}
+      quizRoute={quizHref}
+      lang={lang}
+    />
+  </section>
+)}
 
         {data.topic.faq && data.topic.faq.length > 0 && (
           <section className="bg-white border rounded-2xl p-6 mb-8">
