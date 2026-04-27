@@ -106,6 +106,12 @@ const nextConfig: NextConfig = {
       { source: "/es/virtualizzazione", destination: "/es/categorias/virtualizzazione", permanent: true },
       { source: "/es/intelligenza-artificiale", destination: "/es/categorias/intelligenza-artificiale", permanent: true },
 
+       // Oracle hub legacy
+      { source: "/hub/oracle", destination: "/certifications/oracle-database-sql", permanent: true },
+
+      // google-career hub
+      { source: "/hub/google-career", destination: "/certifications/google-cloud", permanent: true },
+
       // ---------------------------------------------------------------------
       // ✅ Hub legacy
       // ---------------------------------------------------------------------
@@ -225,8 +231,7 @@ const nextConfig: NextConfig = {
       { source: "/it/quiz/cloud/mixed", destination: "/it/quiz/aws-cloud-practitioner/mixed", permanent: true },
       { source: "/it/quiz/database/mixed", destination: "/it/quiz/microsoft-sql-server/mixed", permanent: true },
 
-      // Oracle hub legacy
-      { source: "/hub/oracle", destination: "/certifications/oracle-database-sql", permanent: true },
+      
 
       // CCST alias senza specificare networking/cybersecurity
       { source: "/certifications/ccst", destination: "/certifications/cisco-ccst-networking", permanent: true },
@@ -234,7 +239,20 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/ccst", destination: "/fr/certifications/cisco-ccst-networking", permanent: true },
       { source: "/es/certificaciones/ccst", destination: "/es/certificaciones/cisco-ccst-networking", permanent: true },
 
-      // csharp senza microsoft (già gestito ma aggiungi anche topic)
+      // CCST alias con path (mancava il wildcard)
+{ source: "/certifications/ccst/:path*", destination: "/certifications/cisco-ccst-networking/:path*", permanent: true },
+{ source: "/it/certificazioni/ccst/:path*", destination: "/it/certificazioni/cisco-ccst-networking/:path*", permanent: true },
+{ source: "/fr/certifications/ccst/:path*", destination: "/fr/certifications/cisco-ccst-networking/:path*", permanent: true },
+{ source: "/es/certificaciones/ccst/:path*", destination: "/es/certificaciones/cisco-ccst-networking/:path*", permanent: true },
+
+// CCST Security alias → cisco-ccst-cybersecurity
+{ source: "/certifications/cisco-ccst-security", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-security/:path*", destination: "/certifications/cisco-ccst-cybersecurity/:path*", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-security", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-security", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-security", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+      
+// csharp senza microsoft (già gestito ma aggiungi anche topic)
       { source: "/certifications/csharp", destination: "/certifications/microsoft-csharp", permanent: true },
       { source: "/certifications/csharp/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
       // ---------------------------------------------------------------------
