@@ -19,7 +19,18 @@ const CISSP = {
     fr: "La certification CISSP valide des compétences avancées en gestion de la sécurité de l'information et constitue une référence mondiale.",
     es: "La certificación CISSP valida habilidades avanzadas en gestión de seguridad de la información y es un estándar global.",
   },
-
+  metaTitle: {
+  it: "CISSP – Practice Test e Quiz Cybersecurity Avanzato 2026 | CertifyQuiz",
+  en: "CISSP Practice Test 2026 – Exam-Style Questions | CertifyQuiz",
+  fr: "CISSP – Test Pratique et Quiz Cybersécurité 2026 | CertifyQuiz",
+  es: "CISSP – Practice Test y Quiz Ciberseguridad 2026 | CertifyQuiz",
+},
+metaDescription: {
+  it: "Preparati al CISSP con quiz avanzati su tutti e 8 i domini: rischio, crittografia, IAM, sicurezza reti e operazioni. Per professionisti senior.",
+  en: "Practice for the CISSP exam with advanced questions across all 8 domains: risk, cryptography, IAM, network security and operations. For senior professionals.",
+  fr: "Préparez le CISSP avec des quiz avancés sur les 8 domaines : risque, cryptographie, IAM, sécurité réseau et opérations. Pour professionnels seniors.",
+  es: "Prepárate para el CISSP con preguntas avanzadas en los 8 dominios: riesgo, criptografía, IAM, seguridad de redes y operaciones. Para profesionales senior.",
+},
  topics: [
   {
     title: {

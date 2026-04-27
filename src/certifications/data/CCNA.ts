@@ -29,7 +29,18 @@ const CCNA = {
     fr: "Préparez l’examen Cisco CCNA 200-301 avec des quiz type examen, un mode entraînement et des séries mixtes. Réseaux, routage/commutation, adressage IP, sécurité et automatisation de base.",
     es: "Prepárate para el examen Cisco CCNA 200-301 con quizzes tipo examen, modo entrenamiento y cuestionarios mixtos. Redes, routing/switching, direccionamiento IP, seguridad y automatización básica.",
   },
-
+  metaTitle: {
+  it: "CCNA 200-301 – Quiz e Simulazione Esame Cisco 2026 | CertifyQuiz",
+  en: "CCNA Practice Test 2026 – 600 Exam Questions 200-301 | CertifyQuiz",
+  fr: "CCNA 200-301 – Quiz et Simulation Examen Cisco 2026 | CertifyQuiz",
+  es: "CCNA 200-301 – Quiz y Simulacro Examen Cisco 2026 | CertifyQuiz",
+},
+metaDescription: {
+  it: "Preparati al Cisco CCNA 200-301 con quiz in stile esame: routing, switching, subnetting, VLAN, OSPF e sicurezza. Inizia gratis.",
+  en: "Practice for Cisco CCNA 200-301 with 600 exam-style questions. Covers routing, switching, subnetting, VLANs, OSPF and security. Start free.",
+  fr: "Préparez le Cisco CCNA 200-301 avec des quiz type examen : routage, switching, subnetting, VLAN, OSPF et sécurité. Commencez gratuitement.",
+  es: "Prepárate para el Cisco CCNA 200-301 con quizzes tipo examen: routing, switching, subnetting, VLAN, OSPF y seguridad. Empieza gratis.",
+},
   // ✅ Topics più “syllabus-like” (più credibili per CCNA 200-301)
  topics: [
   {
