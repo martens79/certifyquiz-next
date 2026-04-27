@@ -1,5 +1,6 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
+import { sanityServerClient } from "@/lib/sanity.server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,6 +29,13 @@ const staticPages: Record<Lang, string[]> = {
   fr: ["fonctionnement", "contact", "confidentialite", "conditions", "cookies"],
 };
 
+const BLOG_SEGMENT_BY_LANG: Record<Lang, string> = {
+  it: "blog",
+  es: "blog",
+  en: "blog",
+  fr: "blog",
+};
+
 type RemoteCert = {
   id: number;
   slug: string;
@@ -37,6 +45,19 @@ type RemoteTopic = {
   slug: string;
   certification_slug: string;
 };
+
+type SanityArticle = {
+  slug: string;
+  lang: string;
+  publishedAt: string | null;
+};
+
+const blogSitemapQuery = `
+*[_type == "article" && !(_id in path("drafts.**")) && seo.noindex != true]{
+  "slug": slug.current,
+  "lang": lang,
+  "publishedAt": coalesce(publishedAt, date)
+}`;
 
 async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[]> {
   const controller = new AbortController();
@@ -108,62 +129,90 @@ async function getRemoteTopics(
   }
 }
 
+async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
+  try {
+    const articles = await sanityServerClient.fetch<SanityArticle[]>(
+      blogSitemapQuery
+    );
+
+    return articles
+      .filter((a) => a.slug && a.lang)
+      .map((a) => {
+        const lang = a.lang as Lang;
+        const base = lang === "en" ? SITE : `${SITE}/${lang}`;
+        const segment = BLOG_SEGMENT_BY_LANG[lang] ?? "blog";
+
+        return {
+          url: `${base}/${segment}/${a.slug}`,
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+          lastModified: a.publishedAt ? new Date(a.publishedAt) : new Date(),
+        };
+      });
+  } catch {
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  const perLang = await Promise.all(
-    langs.map(async (lang) => {
-      const certs = await getRemoteCerts(lang);
-      const topics = await getRemoteTopics(lang);
+  const [perLang, blogEntries] = await Promise.all([
+    Promise.all(
+      langs.map(async (lang) => {
+        const certs = await getRemoteCerts(lang);
+        const topics = await getRemoteTopics(lang);
 
-      const base = lang === "en" ? SITE : `${SITE}/${lang}`;
-      const listSegment = CERT_SEGMENT_BY_LANG[lang];
+        const base = lang === "en" ? SITE : `${SITE}/${lang}`;
+        const listSegment = CERT_SEGMENT_BY_LANG[lang];
 
-      const entries: MetadataRoute.Sitemap = [
-        // Home lingua
-        {
-          url: base,
-          changeFrequency: "weekly",
-          priority: 0.9,
-          lastModified: now,
-        },
+        const entries: MetadataRoute.Sitemap = [
+          // Home lingua
+          {
+            url: base,
+            changeFrequency: "weekly",
+            priority: 0.9,
+            lastModified: now,
+          },
 
-        // Lista certificazioni lingua
-        {
-          url: `${base}/${listSegment}`,
-          changeFrequency: "weekly",
-          priority: 0.8,
-          lastModified: now,
-        },
+          // Lista certificazioni lingua
+          {
+            url: `${base}/${listSegment}`,
+            changeFrequency: "weekly",
+            priority: 0.8,
+            lastModified: now,
+          },
 
-        // Statiche lingua
-        ...staticPages[lang].map((p) => ({
-          url: `${base}/${p}`,
-          changeFrequency: "monthly" as const,
-          priority: 0.6,
-          lastModified: now,
-        })),
+          // Statiche lingua
+          ...staticPages[lang].map((p) => ({
+            url: `${base}/${p}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.6,
+            lastModified: now,
+          })),
 
-        // Dettagli certificazioni lingua
-        ...certs.map((c) => ({
-          url: `${base}/${listSegment}/${c.slug}`,
-          changeFrequency: "weekly" as const,
-          priority: 0.8,
-          lastModified: now,
-        })),
+          // Dettagli certificazioni lingua
+          ...certs.map((c) => ({
+            url: `${base}/${listSegment}/${c.slug}`,
+            changeFrequency: "weekly" as const,
+            priority: 0.8,
+            lastModified: now,
+          })),
 
-        // Topic pages lingua
-        ...topics.map((t) => ({
-          url: `${base}/${listSegment}/${t.certification_slug}/${t.slug}`,
-          changeFrequency: "weekly" as const,
-          priority: 0.7,
-          lastModified: now,
-        })),
-      ];
+          // Topic pages lingua
+          ...topics.map((t) => ({
+            url: `${base}/${listSegment}/${t.certification_slug}/${t.slug}`,
+            changeFrequency: "weekly" as const,
+            priority: 0.7,
+            lastModified: now,
+          })),
+        ];
 
-      return entries;
-    })
-  );
+        return entries;
+      })
+    ),
+    getBlogEntries(),
+  ]);
 
-  return perLang.flat();
+  return [...perLang.flat(), ...blogEntries];
 }
