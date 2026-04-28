@@ -129,6 +129,34 @@ const MicrosoftSQLServer = {
       es: "optimizacion-del-rendimiento",
     },
   },
+    {
+    title: {
+      it: "DP-900: Fondamenti di Azure Data",
+      en: "DP-900: Azure Data Fundamentals",
+      fr: "DP-900 : Fondamentaux des données Azure",
+      es: "DP-900: Fundamentos de datos de Azure",
+    },
+    slug: {
+      it: "dp-900-fondamenti-azure-data",
+      en: "dp-900-azure-data-fundamentals",
+      fr: "dp-900-fondamentaux-donnees-azure",
+      es: "dp-900-fundamentos-datos-azure",
+    },
+  },
+  {
+    title: {
+      it: "DP-300: Amministrazione Azure SQL",
+      en: "DP-300: Administering Azure SQL Solutions",
+      fr: "DP-300 : Administration des solutions Azure SQL",
+      es: "DP-300: Administración de soluciones Azure SQL",
+    },
+    slug: {
+      it: "dp-300-amministrazione-azure-sql",
+      en: "dp-300-administering-azure-sql-solutions",
+      fr: "dp-300-administration-solutions-azure-sql",
+      es: "dp-300-administracion-soluciones-azure-sql",
+    },
+  },
 ],
 
   extraContent: {
