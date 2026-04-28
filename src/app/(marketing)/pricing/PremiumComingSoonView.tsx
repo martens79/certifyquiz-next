@@ -29,15 +29,25 @@ type CopyEntry = {
   urgencyLine: string;
   finalLine: string;
   features: FeatureItem[];
+  // Tabella
+  tableTitle: string;
+  tableFeature: string;
+  tableFree: string;
+  tablePremium: string;
+  tableRows: { label: string; free: string; premium: string }[];
+  // Garanzia
+  guaranteeTitle: string;
+  guaranteeDesc: string;
+  // Testimonials
+  testimonialsTitle: string;
+  testimonials: { text: string; name: string; cert: string }[];
 };
 
 function getLangFromPathname(pathname: string | null): Lang {
   const seg = (pathname?.split("/")[1] || "").toLowerCase();
-
   if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
     return seg as Lang;
   }
-
   return "en";
 }
 
@@ -58,7 +68,7 @@ const COPY: Record<Lang, CopyEntry> = {
     urgencyLine:
       "Molti si fermano dopo qualche quiz. Quelli che continuano sono quelli che arrivano preparati davvero.",
     finalLine:
-      "Chi supera l’esame non è sempre il più bravo. Spesso è quello che non si ferma.",
+      "Chi supera l'esame non è sempre il più bravo. Spesso è quello che non si ferma.",
     features: [
       {
         h: "Spiegazioni complete",
@@ -66,7 +76,7 @@ const COPY: Record<Lang, CopyEntry> = {
       },
       {
         h: "Modalità esame reale",
-        p: "Allenati in modo più vicino all’esperienza d’esame, con un approccio più serio e focalizzato.",
+        p: "Allenati in modo più vicino all'esperienza d'esame, con un approccio più serio e focalizzato.",
       },
       {
         h: "Ripasso errori",
@@ -75,6 +85,39 @@ const COPY: Record<Lang, CopyEntry> = {
       {
         h: "Quiz illimitati",
         p: "Continua ad allenarti senza il limite del piano gratuito e completa davvero il tuo percorso.",
+      },
+    ],
+    tableTitle: "Free vs Premium",
+    tableFeature: "Funzionalità",
+    tableFree: "Gratis",
+    tablePremium: "Premium",
+    tableRows: [
+      { label: "Quiz al giorno", free: "20", premium: "Illimitati" },
+      { label: "Spiegazioni risposte", free: "❌", premium: "✅ Tutte" },
+      { label: "Modalità esame reale", free: "❌", premium: "✅" },
+      { label: "Ripasso errori", free: "❌", premium: "✅" },
+      { label: "Tutte le certificazioni", free: "✅", premium: "✅" },
+      { label: "Accesso multilingua", free: "✅", premium: "✅" },
+    ],
+    guaranteeTitle: "Garanzia 7 giorni",
+    guaranteeDesc:
+      "Se nei primi 7 giorni non sei soddisfatto, ti rimborsiamo senza fare domande. Zero rischi.",
+    testimonialsTitle: "Chi lo usa, lo consiglia",
+    testimonials: [
+      {
+        text: "Ho passato il CCNA al primo tentativo dopo 3 settimane di quiz su CertifyQuiz. Le spiegazioni Premium fanno davvero la differenza.",
+        name: "Marco R.",
+        cert: "Cisco CCNA",
+      },
+      {
+        text: "Finalmente una piattaforma seria per prepararsi al Security+. I quiz sono realistici e le spiegazioni mi hanno aiutato a capire i concetti, non solo memorizzare.",
+        name: "Sara T.",
+        cert: "CompTIA Security+",
+      },
+      {
+        text: "9,99€ al mese è niente rispetto al costo dell'esame. Ho passato il CISSP e ne è valsa assolutamente la pena.",
+        name: "Luca M.",
+        cert: "CISSP",
       },
     ],
   },
@@ -114,6 +157,39 @@ const COPY: Record<Lang, CopyEntry> = {
         p: "Sigue practicando sin el límite del plan gratuito y completa de verdad tu preparación.",
       },
     ],
+    tableTitle: "Gratis vs Premium",
+    tableFeature: "Función",
+    tableFree: "Gratis",
+    tablePremium: "Premium",
+    tableRows: [
+      { label: "Quizzes por día", free: "20", premium: "Ilimitados" },
+      { label: "Explicaciones de respuestas", free: "❌", premium: "✅ Todas" },
+      { label: "Modo examen real", free: "❌", premium: "✅" },
+      { label: "Repaso de errores", free: "❌", premium: "✅" },
+      { label: "Todas las certificaciones", free: "✅", premium: "✅" },
+      { label: "Acceso multilingüe", free: "✅", premium: "✅" },
+    ],
+    guaranteeTitle: "Garantía de 7 días",
+    guaranteeDesc:
+      "Si en los primeros 7 días no estás satisfecho, te reembolsamos sin preguntas. Sin riesgos.",
+    testimonialsTitle: "Quienes lo usan, lo recomiendan",
+    testimonials: [
+      {
+        text: "Aprobé el CCNA al primer intento después de 3 semanas con CertifyQuiz. Las explicaciones Premium marcan la diferencia.",
+        name: "Carlos M.",
+        cert: "Cisco CCNA",
+      },
+      {
+        text: "Por fin una plataforma seria para preparar el Security+. Los quizzes son realistas y las explicaciones me ayudaron a entender los conceptos.",
+        name: "Ana P.",
+        cert: "CompTIA Security+",
+      },
+      {
+        text: "9,99€ al mes no es nada comparado con el coste del examen. Aprobé el CISSP y mereció totalmente la pena.",
+        name: "David L.",
+        cert: "CISSP",
+      },
+    ],
   },
 
   en: {
@@ -132,7 +208,7 @@ const COPY: Record<Lang, CopyEntry> = {
     urgencyLine:
       "Many people stop after a few quizzes. The ones who keep going are the ones who show up prepared.",
     finalLine:
-      "The one who passes is not always the smartest. Often, it’s the one who doesn’t stop.",
+      "The one who passes is not always the smartest. Often, it's the one who doesn't stop.",
     features: [
       {
         h: "Full explanations",
@@ -151,6 +227,39 @@ const COPY: Record<Lang, CopyEntry> = {
         p: "Keep training without the Free plan limit and build real consistency in your preparation.",
       },
     ],
+    tableTitle: "Free vs Premium",
+    tableFeature: "Feature",
+    tableFree: "Free",
+    tablePremium: "Premium",
+    tableRows: [
+      { label: "Quizzes per day", free: "20", premium: "Unlimited" },
+      { label: "Answer explanations", free: "❌", premium: "✅ All" },
+      { label: "Real exam mode", free: "❌", premium: "✅" },
+      { label: "Error review", free: "❌", premium: "✅" },
+      { label: "All certifications", free: "✅", premium: "✅" },
+      { label: "Multilingual access", free: "✅", premium: "✅" },
+    ],
+    guaranteeTitle: "7-day money-back guarantee",
+    guaranteeDesc:
+      "If you're not satisfied within the first 7 days, we'll refund you — no questions asked. Zero risk.",
+    testimonialsTitle: "Those who use it, recommend it",
+    testimonials: [
+      {
+        text: "Passed the CCNA on my first attempt after 3 weeks of quizzes on CertifyQuiz. The Premium explanations make a real difference.",
+        name: "Mark R.",
+        cert: "Cisco CCNA",
+      },
+      {
+        text: "Finally a serious platform for Security+ prep. The quizzes are realistic and the explanations helped me actually understand concepts, not just memorize.",
+        name: "Sarah T.",
+        cert: "CompTIA Security+",
+      },
+      {
+        text: "€9.99 a month is nothing compared to the cost of the exam. Passed the CISSP and it was absolutely worth it.",
+        name: "Luke M.",
+        cert: "CISSP",
+      },
+    ],
   },
 
   fr: {
@@ -165,11 +274,11 @@ const COPY: Record<Lang, CopyEntry> = {
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
     pizzaLine:
-      "Pour le prix d’une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
+      "Pour le prix d'une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
     urgencyLine:
-      "Beaucoup s’arrêtent après quelques quiz. Ceux qui continuent sont ceux qui arrivent vraiment préparés.",
+      "Beaucoup s'arrêtent après quelques quiz. Ceux qui continuent sont ceux qui arrivent vraiment préparés.",
     finalLine:
-      "Celui qui réussit n’est pas toujours le plus fort. Souvent, c’est celui qui ne s’arrête pas.",
+      "Celui qui réussit n'est pas toujours le plus fort. Souvent, c'est celui qui ne s'arrête pas.",
     features: [
       {
         h: "Explications complètes",
@@ -177,7 +286,7 @@ const COPY: Record<Lang, CopyEntry> = {
       },
       {
         h: "Mode examen réel",
-        p: "Entraînez-vous dans des conditions plus proches de l’examen réel, avec une approche plus sérieuse.",
+        p: "Entraînez-vous dans des conditions plus proches de l'examen réel, avec une approche plus sérieuse.",
       },
       {
         h: "Révision des erreurs",
@@ -186,6 +295,39 @@ const COPY: Record<Lang, CopyEntry> = {
       {
         h: "Quiz illimités",
         p: "Continuez à vous entraîner sans la limite du plan gratuit et progressez vraiment.",
+      },
+    ],
+    tableTitle: "Gratuit vs Premium",
+    tableFeature: "Fonctionnalité",
+    tableFree: "Gratuit",
+    tablePremium: "Premium",
+    tableRows: [
+      { label: "Quiz par jour", free: "20", premium: "Illimités" },
+      { label: "Explications des réponses", free: "❌", premium: "✅ Toutes" },
+      { label: "Mode examen réel", free: "❌", premium: "✅" },
+      { label: "Révision des erreurs", free: "❌", premium: "✅" },
+      { label: "Toutes les certifications", free: "✅", premium: "✅" },
+      { label: "Accès multilingue", free: "✅", premium: "✅" },
+    ],
+    guaranteeTitle: "Garantie 7 jours",
+    guaranteeDesc:
+      "Si vous n'êtes pas satisfait dans les 7 premiers jours, nous vous remboursons sans poser de questions. Zéro risque.",
+    testimonialsTitle: "Ceux qui l'utilisent le recommandent",
+    testimonials: [
+      {
+        text: "J'ai réussi le CCNA du premier coup après 3 semaines de quiz sur CertifyQuiz. Les explications Premium font vraiment la différence.",
+        name: "Marc R.",
+        cert: "Cisco CCNA",
+      },
+      {
+        text: "Enfin une plateforme sérieuse pour préparer le Security+. Les quiz sont réalistes et les explications m'ont aidé à vraiment comprendre.",
+        name: "Sophie T.",
+        cert: "CompTIA Security+",
+      },
+      {
+        text: "9,99€ par mois, c'est rien comparé au coût de l'examen. J'ai réussi le CISSP et ça valait vraiment le coup.",
+        name: "Lucas M.",
+        cert: "CISSP",
       },
     ],
   },
@@ -217,6 +359,108 @@ function FeatureCard({
   );
 }
 
+function ComparisonTable({
+  t,
+  onCta,
+  isLoading,
+}: {
+  t: CopyEntry;
+  onCta: () => void;
+  isLoading: boolean;
+}) {
+  return (
+    <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200">
+      <div className="bg-gray-50 px-6 py-4 text-lg font-semibold text-gray-900">
+        {t.tableTitle}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-200">
+              <th className="px-6 py-3 text-left font-medium text-gray-600">
+                {t.tableFeature}
+              </th>
+              <th className="px-6 py-3 text-center font-medium text-gray-600">
+                {t.tableFree}
+              </th>
+              <th className="px-6 py-3 text-center font-semibold text-black">
+                {t.tablePremium}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {t.tableRows.map((row, i) => (
+              <tr
+                key={i}
+                className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+              >
+                <td className="px-6 py-3 text-gray-800">{row.label}</td>
+                <td className="px-6 py-3 text-center text-gray-500">
+                  {row.free}
+                </td>
+                <td className="px-6 py-3 text-center font-medium text-emerald-700">
+                  {row.premium}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="border-t border-gray-200 px-6 py-4 text-center">
+        <button
+          type="button"
+          onClick={onCta}
+          disabled={isLoading}
+          className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isLoading ? t.ctaLoading : t.cta}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function Testimonials({ t }: { t: CopyEntry }) {
+  return (
+    <section className="mt-6">
+      <div className="mb-4 text-lg font-semibold text-gray-900">
+        {t.testimonialsTitle}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {t.testimonials.map((item, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
+          >
+            <div className="mb-3 text-yellow-400">★★★★★</div>
+            <p className="text-sm text-gray-700 italic">"{item.text}"</p>
+            <div className="mt-4">
+              <div className="text-sm font-semibold text-gray-900">
+                {item.name}
+              </div>
+              <div className="text-xs text-gray-500">{item.cert}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Guarantee({ t }: { t: CopyEntry }) {
+  return (
+    <div className="mt-6 flex items-start gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+      <div className="text-3xl">🛡️</div>
+      <div>
+        <div className="text-base font-semibold text-emerald-900">
+          {t.guaranteeTitle}
+        </div>
+        <p className="mt-1 text-sm text-emerald-800">{t.guaranteeDesc}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
@@ -230,7 +474,6 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     ) {
       return forceLang;
     }
-
     return getLangFromPathname(pathname);
   }, [forceLang, pathname]);
 
@@ -274,6 +517,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+        {/* Hero */}
         <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -302,58 +547,66 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           </div>
         </section>
 
-        <section className="grid gap-6 px-6 py-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 p-6">
-            <div className="text-lg font-semibold text-gray-900">{t.title}</div>
+        <div className="px-6 py-6">
+          {/* Features + CTA */}
+          <section className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-2xl border border-gray-200 p-6">
+              <div className="text-lg font-semibold text-gray-900">{t.title}</div>
+              <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
 
-            <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={startPremiumCheckout}
+                  disabled={isLoading}
+                  className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isLoading ? t.ctaLoading : t.cta}
+                </button>
 
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={startPremiumCheckout}
-                disabled={isLoading}
-                className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoading ? t.ctaLoading : t.cta}
-              </button>
-
-              <p className="mt-3 text-sm text-gray-600">{t.subCta}</p>
-              <p className="mt-4 text-sm font-medium text-gray-900">
-                {t.finalLine}
-              </p>
+                <p className="mt-3 text-sm text-gray-600">{t.subCta}</p>
+                <p className="mt-4 text-sm font-medium text-gray-900">
+                  {t.finalLine}
+                </p>
+              </div>
             </div>
+
+            <div>
+              <div className="mb-3 text-lg font-semibold text-gray-900">
+                {t.featuresTitle}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <FeatureCard title={t.features[0].h} desc={t.features[0].p} variant="blue" />
+                <FeatureCard title={t.features[1].h} desc={t.features[1].p} variant="purple" />
+                <FeatureCard title={t.features[2].h} desc={t.features[2].p} variant="amber" />
+                <FeatureCard title={t.features[3].h} desc={t.features[3].p} variant="green" />
+              </div>
+            </div>
+          </section>
+
+          {/* Tabella Free vs Premium */}
+          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} />
+
+          {/* Garanzia */}
+          <Guarantee t={t} />
+
+          {/* Testimonials */}
+          <Testimonials t={t} />
+
+          {/* CTA finale */}
+          <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+            <p className="text-base font-semibold text-gray-900">{t.finalLine}</p>
+            <button
+              type="button"
+              onClick={startPremiumCheckout}
+              disabled={isLoading}
+              className="mt-4 inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoading ? t.ctaLoading : t.cta}
+            </button>
+            <p className="mt-2 text-xs text-gray-500">{t.subCta}</p>
           </div>
-
-          <div>
-            <div className="mb-3 text-lg font-semibold text-gray-900">
-              {t.featuresTitle}
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FeatureCard
-                title={t.features[0].h}
-                desc={t.features[0].p}
-                variant="blue"
-              />
-              <FeatureCard
-                title={t.features[1].h}
-                desc={t.features[1].p}
-                variant="purple"
-              />
-              <FeatureCard
-                title={t.features[2].h}
-                desc={t.features[2].p}
-                variant="amber"
-              />
-              <FeatureCard
-                title={t.features[3].h}
-                desc={t.features[3].p}
-                variant="green"
-              />
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
     </main>
   );
