@@ -1,5 +1,6 @@
 // src/app/hub/[slug]/page.tsx
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import type { Locale } from "@/lib/i18n";
 import CertificationHubPage, { type HubResolvedCert } from "@/components/CertificationHubPage";
@@ -22,6 +23,62 @@ const quizHref = (slug: string) => `/en/quiz/${slug}`;
 
 // ✅ Next 15: params tipizzati come Promise nel PageProps
 type Params = { slug: string };
+
+// ✅ Override SEO manuali per hub specifici
+const SEO_HUB_OVERRIDES: Record<string, { title?: string; description?: string }> = {
+  oracle: {
+    title: "Oracle Database Certification – Practice Test & Quiz 2026 | CertifyQuiz",
+    description:
+      "Prepare for Oracle Database SQL certification with exam-style questions. Practice SQL, data modeling and database objects. Start free.",
+  },
+  google: {
+    title: "Google Certifications – Practice Tests & Quizzes 2026 | CertifyQuiz",
+    description:
+      "Prepare for Google certifications with practice quizzes. Covers Google Cloud, TensorFlow, and more. Start free.",
+  },
+  aws: {
+    title: "AWS Certifications – Practice Tests & Quizzes 2026 | CertifyQuiz",
+    description:
+      "Prepare for AWS certifications with exam-style questions. Covers Cloud Practitioner, Solutions Architect, and more. Start free.",
+  },
+  microsoft: {
+    title: "Microsoft Certifications – Practice Tests & Quizzes 2026 | CertifyQuiz",
+    description:
+      "Prepare for Microsoft certifications with practice quizzes. Covers Azure, AI, SQL Server, and more. Start free.",
+  },
+  cisco: {
+    title: "Cisco Certifications – Practice Tests & Quizzes 2026 | CertifyQuiz",
+    description:
+      "Prepare for Cisco certifications with exam-style questions. Covers CCNA, CCST Networking, CCST Cybersecurity. Start free.",
+  },
+};
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<Params>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const hub = HUBS_BY_SLUG[slug];
+
+  if (!hub) return { title: "CertifyQuiz" };
+
+  const override = SEO_HUB_OVERRIDES[slug] || {};
+
+  const title =
+    override.title ??
+    (hub.title?.en ? `${hub.title.en} | CertifyQuiz` : "CertifyQuiz");
+
+  const description =
+    override.description ??
+    hub.description?.en ??
+    "Practice for IT certifications with realistic quizzes and clear explanations.";
+
+  return {
+    title,
+    description,
+  };
+}
 
 export default async function HubEnRootPage({
   params,

@@ -30,6 +30,11 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   description:
     "Practice for the CISSP exam with advanced questions across all 8 domains: risk, cryptography, IAM, network security and operations. For senior professionals.",
 },
+"cisco-ccst-networking": {
+  title: "Cisco CCST Networking – Practice Test 2026 | CertifyQuiz",
+  description:
+    "Prepare for Cisco CCST Networking with practice questions covering protocols, devices, IP addressing, security and troubleshooting. Start free.",
+},
 };
 
 function getCategoryFromSlug(slug: string) {

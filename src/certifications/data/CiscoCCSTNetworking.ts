@@ -25,7 +25,18 @@ const CISCO_CCST_NETWORKING = {
     fr: "La certification Cisco CCST Networking valide les compétences de base en réseaux, y compris les protocoles, les dispositifs, le dépannage et la sécurité.",
     es: "La certificación Cisco CCST Networking valida habilidades básicas de redes, incluidos protocolos, dispositivos, resolución de problemas y seguridad.",
   },
-
+  metaTitle: {
+  it: "Cisco CCST Networking – Practice Test e Quiz 2026 | CertifyQuiz",
+  en: "Cisco CCST Networking – Practice Test 2026 | CertifyQuiz",
+  fr: "Cisco CCST Networking – Test Pratique 2026 | CertifyQuiz",
+  es: "Cisco CCST Networking – Practice Test 2026 | CertifyQuiz",
+},
+metaDescription: {
+  it: "Preparati alla Cisco CCST Networking con quiz pratici: protocolli, dispositivi, subnetting, sicurezza e troubleshooting. Ideale prima del CCNA. Inizia gratis.",
+  en: "Prepare for Cisco CCST Networking with practice questions covering protocols, devices, IP addressing, security and troubleshooting. Start free.",
+  fr: "Préparez la Cisco CCST Networking avec des quiz pratiques : protocoles, dispositifs, adressage IP, sécurité et dépannage. Commencez gratuitement.",
+  es: "Prepárate para la Cisco CCST Networking con preguntas prácticas: protocolos, dispositivos, direccionamiento IP, seguridad y troubleshooting. Empieza gratis.",
+},
   topics: [
   {
     title: {
