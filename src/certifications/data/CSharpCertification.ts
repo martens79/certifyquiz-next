@@ -28,6 +28,18 @@ const CSharpAzureDeveloper = {
     es: "Ruta de Microsoft para desarrolladores C#/.NET que crean API, funciones y apps cloud-native en Azure. Cubre cómputo, almacenamiento, seguridad, integración y monitoreo.",
   },
 
+  metaTitle: {
+    en: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
+    it: "C# / AZ-204 Practice Test 2026 – Quiz Azure Developer | CertifyQuiz",
+    fr: "C# / AZ-204 Test Pratique 2026 – Quiz Azure Developer | CertifyQuiz",
+    es: "C# / AZ-204 Practice Test 2026 – Quiz Azure Developer | CertifyQuiz",
+  },
+  metaDescription: {
+    en: "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
+    it: "Preparati all'esame AZ-204 Azure Developer con quiz C#/.NET. Copre compute, storage, sicurezza, API e monitoraggio. Inizia gratis.",
+    fr: "Préparez l'examen AZ-204 Azure Developer avec des quiz C#/.NET. Couvre calcul, stockage, sécurité, API et supervision. Commencez gratuitement.",
+    es: "Prepárate para el examen AZ-204 Azure Developer con quiz C#/.NET. Cubre cómputo, almacenamiento, seguridad, API y monitoreo. Empieza gratis.",
+  },
   topics: [
   {
     title: {

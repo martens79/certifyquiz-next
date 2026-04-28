@@ -45,6 +45,16 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   description:
     "Prepare for Cisco CCST with practice questions on networking, cybersecurity and IT support. Choose your specialization and start free.",
 },
+"ceh": {
+  title: "CEH Practice Test 2026 – 1000+ Ethical Hacking Questions | CertifyQuiz",
+  description:
+    "Prepare for CEH 312-50 with 1000+ exam-style questions. Covers ethical hacking, network attacks, web vulnerabilities and exploitation. Start free.",
+},
+"csharp": {
+  title: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
+  description:
+    "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
+},
 };
 
 function getCategoryFromSlug(slug: string) {
