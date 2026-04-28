@@ -35,6 +35,16 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   description:
     "Prepare for Cisco CCST Networking with practice questions covering protocols, devices, IP addressing, security and troubleshooting. Start free.",
 },
+"cisco-ccst-cybersecurity": {
+  title: "Cisco CCST Cybersecurity – Practice Test 2026 | CertifyQuiz",
+  description:
+    "Prepare for Cisco CCST Cybersecurity with practice questions covering threats, malware, network security and social engineering. Start free.",
+},
+"ccst": {
+  title: "Cisco CCST Certification – Networking & Cybersecurity Practice Test | CertifyQuiz",
+  description:
+    "Prepare for Cisco CCST with practice questions on networking, cybersecurity and IT support. Choose your specialization and start free.",
+},
 };
 
 function getCategoryFromSlug(slug: string) {

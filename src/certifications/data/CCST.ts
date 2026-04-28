@@ -25,37 +25,46 @@ const CCST = {
     fr: "La certification Cisco CCST valide des compétences clés en support réseau, incluant dépannage, sécurité et gestion des réseaux d’entreprise.",
     es: "La certificación Cisco CCST valida habilidades clave en soporte de redes, incluyendo troubleshooting, seguridad y gestión de redes empresariales.",
   },
-
+  metaTitle: {
+    en: "Cisco CCST Certification – Networking & Cybersecurity Practice Test | CertifyQuiz",
+    it: "Certificazione Cisco CCST – Quiz Networking e Cybersecurity | CertifyQuiz",
+    fr: "Certification Cisco CCST – Quiz Réseaux et Cybersécurité | CertifyQuiz",
+    es: "Certificación Cisco CCST – Quiz Redes y Ciberseguridad | CertifyQuiz",
+  },
+  metaDescription: {
+    en: "Prepare for Cisco CCST with practice questions on networking, cybersecurity and IT support. Choose your specialization and start free.",
+    it: "Preparati alla certificazione Cisco CCST con quiz su networking, cybersecurity e supporto IT. Scegli la tua specializzazione e inizia gratis.",
+    fr: "Préparez la certification Cisco CCST avec des quiz sur les réseaux, la cybersécurité et le support IT. Choisissez votre spécialisation et commencez gratuitement.",
+    es: "Prepárate para la certificación Cisco CCST con quizzes de redes, ciberseguridad y soporte IT. Elige tu especialización y empieza gratis.",
+  },
   topics: [
     {
-      it: "Fondamenti di networking e protocolli",
-      en: "Networking fundamentals and protocols",
-      fr: "Principes de base du réseau et protocoles",
-      es: "Fundamentos de redes y protocolos",
+      title: {
+        en: "CCST Networking",
+        it: "CCST Networking",
+        fr: "CCST Networking",
+        es: "CCST Networking",
+      },
+      slug: {
+        en: "cisco-ccst-networking",
+        it: "cisco-ccst-networking",
+        fr: "cisco-ccst-networking",
+        es: "cisco-ccst-networking",
+      },
     },
     {
-      it: "Configurazione di dispositivi di rete",
-      en: "Configuration of network devices",
-      fr: "Configuration des dispositifs réseau",
-      es: "Configuración de dispositivos de red",
-    },
-    {
-      it: "Risoluzione dei problemi di connettività",
-      en: "Connectivity troubleshooting",
-      fr: "Dépannage de la connectivité",
-      es: "Resolución de problemas de conectividad",
-    },
-    {
-      it: "Sicurezza delle reti e protezione dei dati",
-      en: "Network security and data protection",
-      fr: "Sécurité réseau et protection des données",
-      es: "Seguridad de redes y protección de datos",
-    },
-    {
-      it: "Monitoraggio e gestione delle reti",
-      en: "Network monitoring and management",
-      fr: "Surveillance et gestion des réseaux",
-      es: "Supervisión y gestión de redes",
+      title: {
+        en: "CCST Cybersecurity",
+        it: "CCST Cybersecurity",
+        fr: "CCST Cybersecurity",
+        es: "CCST Cybersecurity",
+      },
+      slug: {
+        en: "cisco-ccst-cybersecurity",
+        it: "cisco-ccst-cybersecurity",
+        fr: "cisco-ccst-cybersecurity",
+        es: "cisco-ccst-cybersecurity",
+      },
     },
   ],
 

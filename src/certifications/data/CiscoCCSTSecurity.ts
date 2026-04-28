@@ -20,7 +20,18 @@ const CISCO_CCST_CYBERSECURITY = {
     fr: "La certification Cisco CCST Cybersecurity valide les compétences essentielles pour sécuriser les systèmes informatiques, identifier les menaces et comprendre les bases de la sécurité des réseaux et des appareils.",
     es: "La certificación Cisco CCST Cybersecurity valida habilidades esenciales para proteger sistemas informáticos, identificar amenazas y comprender los fundamentos de la seguridad de redes y dispositivos.",
   },
-
+  metaTitle: {
+  en: "Cisco CCST Cybersecurity — Free Practice Quiz & Exam Prep",
+  it: "Cisco CCST Cybersecurity in Italiano — Quiz e Simulazione Esame",
+  fr: "Cisco CCST Cybersecurity en Français — Quiz et Examen Blanc",
+  es: "Cisco CCST Cybersecurity en Español — Quiz y Examen de Práctica",
+},
+metaDescription: {
+  en: "Prepare for the Cisco CCST Cybersecurity exam with 1,000+ practice questions. Realistic simulations, detailed explanations. Start for free!",
+  it: "Preparati all'esame Cisco CCST Cybersecurity con +1.000 domande di pratica in italiano. Simulazioni reali, spiegazioni dettagliate. Inizia gratis!",
+  fr: "Préparez l'examen Cisco CCST Cybersecurity avec +1 000 questions de pratique en français. Simulations réelles, explications détaillées. Commencez gratuitement !",
+  es: "Prepárate para el examen Cisco CCST Cybersecurity con +1.000 preguntas de práctica en español. Simulaciones reales, explicaciones detalladas. ¡Empieza gratis!",
+},
  topics: [
   {
     title: {
