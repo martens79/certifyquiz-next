@@ -29,7 +29,8 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "javascript-developer": 21,
   "vmware-vcp": 22,
   "microsoft-virtualization": 23,
-  "microsoft-ai-fundamentals": 24,
+  "microsoft-ai-fundamentals": 24,// slug legacy: "microsoft-ai-fundamentals"
+  "microsoft-ai": 24,
   "tensorflow": 25,
   "mongodb-developer": 26,
   "mysql": 27,
