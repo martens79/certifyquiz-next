@@ -246,20 +246,20 @@ const MicrosoftAIFundamentals = {
   },
 
   // Rotte quiz localizzate
-  quizRoute: {
-    it: "/it/quiz/ai-fundamentals",
-    en: "/en/quiz/ai-fundamentals",
-    fr: "/fr/quiz/ai-fundamentals",
-    es: "/es/quiz/ai-fundamentals",
-  },
+quizRoute: {
+  it: "/it/quiz/microsoft-ai",
+  en: "/en/quiz/microsoft-ai",
+  fr: "/fr/quiz/microsoft-ai",
+  es: "/es/quiz/microsoft-ai",
+},
 
-  // Rotta “indietro” alla lista certificazioni
-  backRoute: {
-    it: "/it/certificazioni",
-    en: "/certifications",
-    fr: "/fr/certifications",
-    es: "/es/certificaciones",
-  },
+// Rotta “indietro” alla lista certificazioni
+backRoute: {
+  it: "/it/certificazioni",
+  en: "/certifications",
+  fr: "/fr/certifications",
+  es: "/es/certificaciones",
+},
 } as const;
 
 export default MicrosoftAIFundamentals;

@@ -292,11 +292,12 @@ const AIFoundations = {
   // ─── ROUTES ─────────────────────────────────────────────────────────────────
 
   quizRoute: {
-  it: "/it/quiz/microsoft-ai",
-  en: "/en/quiz/microsoft-ai",
-  fr: "/fr/quiz/microsoft-ai",
-  es: "/es/quiz/microsoft-ai",
-},
+    it: "/it/quiz/ai-foundations",
+    en: "/en/quiz/ai-foundations",
+    fr: "/fr/quiz/ai-foundations",
+    es: "/es/quiz/ai-foundations",
+  },
+
   backRoute: {
     it: "/it/certificazioni",
     en: "/en/certifications",
