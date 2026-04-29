@@ -168,11 +168,14 @@ const normalizeSlug = (raw: unknown): string => {
   if (s === "comptia-network-plus") return "network-plus";
 
   // Legacy slugs (visti in giro)
-  if (s === "mysql-certification") return "mysql";
-  if (s === "google-tensorflow") return "tensorflow";
-if (s === "microsoft-ai") return "microsoft-ai-fundamentals";
-if (s === "ai-fundamentals") return "microsoft-ai-fundamentals";
-  if (s === "azure-fundamentals") return "microsoft-azure-fundamentals";
+if (s === "mysql-certification") return "mysql";
+if (s === "google-tensorflow") return "tensorflow";
+
+// Microsoft AI aliases: canonical = microsoft-ai
+if (s === "microsoft-ai-fundamentals") return "microsoft-ai";
+if (s === "ai-fundamentals") return "microsoft-ai";
+
+if (s === "azure-fundamentals") return "microsoft-azure-fundamentals";
 
   // VMware legacy
   if (s === "vmware-certified-professional") return "vmware-vcp";
