@@ -2,10 +2,8 @@
 // ✅ Modulo dati puro per il renderer server (no React/JSX, no router).
 
 const MicrosoftAIFundamentals = {
-  slug: "microsoft-ai-fundamentals",
+  slug: "microsoft-ai",  // ← era "microsoft-ai-fundamentals"
   imageUrl: "/images/certifications/ai-fundamentals-icon.png",
-
-  // 🔗 Pagina ufficiale dell’esame (AI-900)
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
 
@@ -28,6 +26,19 @@ const MicrosoftAIFundamentals = {
     en: "Foundational certification in artificial intelligence.",
     fr: "Certification de base en intelligence artificielle.",
     es: "Certificación básica en inteligencia artificial.",
+  },
+
+  metaTitle: {
+    en: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
+    it: "Microsoft AI-900 Practice Test 2026 – AI Fundamentals in Italiano | CertifyQuiz",
+    fr: "Microsoft AI-900 Test Pratique 2026 – Azure AI Fondamentaux | CertifyQuiz",
+    es: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentos | CertifyQuiz",
+  },
+  metaDescription: {
+    en: "Prepare for the Microsoft AI-900 exam with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
+    it: "Preparati all'esame Microsoft AI-900 con quiz su concetti AI, machine learning, visione artificiale, NLP e AI generativa. Inizia gratis.",
+    fr: "Préparez l'examen Microsoft AI-900 avec des quiz sur les concepts IA, machine learning, vision par ordinateur, NLP et IA générative. Commencez gratuitement.",
+    es: "Prepárate para el examen Microsoft AI-900 con preguntas sobre conceptos de IA, machine learning, visión por computadora, NLP e IA generativa. Empieza gratis.",
   },
 
   topics: [

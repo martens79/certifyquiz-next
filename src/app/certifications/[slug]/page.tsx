@@ -55,6 +55,11 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   description:
     "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
 },
+"microsoft-ai": {
+  title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
+  description:
+    "Prepare for the Microsoft AI-900 exam with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
+},
 };
 
 function getCategoryFromSlug(slug: string) {
