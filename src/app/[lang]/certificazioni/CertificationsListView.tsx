@@ -55,7 +55,8 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "javascript-developer": "intermediate",
   "microsoft-virtualization": "intermediate",
   "microsoft-azure-fundamentals": "intermediate",
-  "microsoft-ai-fundamentals": "intermediate",
+  "microsoft-ai": "intermediate",
+  "microsoft-ai-fundamentals": "intermediate", // alias legacy
   "oracle-database-sql": "intermediate",
   mysql: "intermediate",
   "microsoft-sql-server": "intermediate",
@@ -98,7 +99,8 @@ const ICON_BY_SLUG: Record<string, string> = {
   csharp: "/images/certifications/csharp-icon.png",
   "microsoft-sql-server": "/images/certifications/sqlserver.png",
   "microsoft-virtualization": "/images/certifications/microsoft-virtualization-logo.png",
-  "microsoft-ai-fundamentals": "/images/certifications/ai-fundamentals-icon.png",
+  "microsoft-ai": "/images/certifications/ai-fundamentals-icon.png",
+  "microsoft-ai-fundamentals": "/images/certifications/ai-fundamentals-icon.png", // alias legacy
 
   "ibm-cloud-v5": "/images/certifications/ibmcloud-icon.png",
   f5: "/images/certifications/f5-icon.png",
@@ -168,8 +170,8 @@ const normalizeSlug = (raw: unknown): string => {
   // Legacy slugs (visti in giro)
   if (s === "mysql-certification") return "mysql";
   if (s === "google-tensorflow") return "tensorflow";
-  if (s === "microsoft-ai") return "microsoft-ai-fundamentals";
-  if (s === "ai-fundamentals") return "microsoft-ai-fundamentals";
+if (s === "microsoft-ai") return "microsoft-ai-fundamentals";
+if (s === "ai-fundamentals") return "microsoft-ai-fundamentals";
   if (s === "azure-fundamentals") return "microsoft-azure-fundamentals";
 
   // VMware legacy
