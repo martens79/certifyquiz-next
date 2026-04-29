@@ -42,6 +42,9 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "cisco-ccst-networking": 33,
   "cisco-ccst-cybersecurity": 34,
 "cisco-ccst-security": 34, // alias legacy
+"google-cloud-digital-leader": 35,
+"aws-ai-practitioner": 36,
+"ai-foundations": 37,
 
 };
 
@@ -85,6 +88,10 @@ import PythonDeveloper from "./PythonDeveloper";
 import SecurityPlus from "./SecurityPlus";
 import VMwareVCP from "./VMwareVCP";
 
+import GoogleCloudDigitalLeader from "./google-cloud-digital-leader";
+import AWSAIPractitioner from "./aws-ai-practitioner";
+import AIFoundations from "./ai-foundations";
+
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
  * -------------------------------------------------------------------*/
@@ -125,6 +132,9 @@ const RAW_CERTS = [
   PythonDeveloper,            // slug: "python-developer"
   SecurityPlus,               // slug: "security-plus"
   VMwareVCP,                  // slug: "vmware-vcp"
+  GoogleCloudDigitalLeader,   // slug: "google-cloud-digital-leader"
+  AWSAIPractitioner,          // slug: "aws-ai-practitioner"
+  AIFoundations,              // slug: "ai-foundations"
 ] as const;
 
 /**
