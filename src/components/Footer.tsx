@@ -118,7 +118,7 @@ export default function Footer({ lang }: { lang: Locale }) {
 
   return (
     <footer className="border-t bg-white">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 md:grid-cols-4">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-2">
@@ -179,6 +179,50 @@ export default function Footer({ lang }: { lang: Locale }) {
           </ul>
         </nav>
 
+                  {/* Support */}
+<div>
+  <h3 className="mb-2 text-sm font-semibold">
+    {lang === "it"
+      ? "Supporto"
+      : lang === "es"
+      ? "Soporte"
+      : lang === "fr"
+      ? "Support"
+      : "Support"}
+  </h3>
+
+  <p className="mb-3 text-sm text-gray-600">
+    {lang === "it"
+      ? "Domande, problemi o suggerimenti? Scrivici."
+      : lang === "es"
+      ? "¿Preguntas, problemas o sugerencias? Escríbenos."
+      : lang === "fr"
+      ? "Questions, problèmes ou suggestions ? Écrivez-nous."
+      : "Questions, issues or suggestions? Contact us."}
+  </p>
+
+  <a
+    href="mailto:certifyquiz@gmail.com?subject=Support%20Request%20-%20CertifyQuiz"
+    className="inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+  >
+    {lang === "it"
+      ? "Contatta il supporto"
+      : lang === "es"
+      ? "Contactar soporte"
+      : lang === "fr"
+      ? "Contacter le support"
+      : "Contact Support"}
+  </a>
+
+  <div className="mt-3">
+    <a
+      href="mailto:certifyquiz@gmail.com"
+      className="text-sm text-gray-700 underline hover:text-gray-900"
+    >
+      certifyquiz@gmail.com
+    </a>
+  </div>
+</div>
         {/* Newsletter */}
         <div>
           <h3 className="mb-2 text-sm font-semibold">{t.newsletterTitle ?? "Newsletter"}</h3>
