@@ -77,7 +77,7 @@ async function serverJson<T>(
  * Lista certificazioni (ISR, SEO)
  * Tag: certs:list
  */
-export async function getCertificationsListRSC(revalidateSeconds = 86400) {
+export async function getCertificationsListRSC(revalidateSeconds = 300) {
   return serverJson<CertListItem[]>("/certifications", {
     revalidate: revalidateSeconds,
     tags: [CERTS_LIST_TAG],
