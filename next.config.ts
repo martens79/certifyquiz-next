@@ -277,6 +277,8 @@ const nextConfig: NextConfig = {
   destination: '/it/certificazioni/:rest*',
   permanent: true,
 },
+
+{ source: '/fr/certificazioni/:rest*', destination: '/fr/certifications/:rest*', permanent: true },
     ];
   },
 };
