@@ -36,6 +36,9 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "comptia-itf-plus": "base",
   "aws-cloud-practitioner": "base",
   "google-cloud": "base",
+  "google-cloud-digital-leader": "base",
+"aws-ai-practitioner": "base",
+"ai-foundations": "base",
   eipass: "base",
   "eipass-basic": "base",
   pekit: "base",
@@ -101,6 +104,10 @@ const ICON_BY_SLUG: Record<string, string> = {
   "microsoft-virtualization": "/images/certifications/microsoft-virtualization-logo.png",
   "microsoft-ai": "/images/certifications/ai-fundamentals-icon.png",
   "microsoft-ai-fundamentals": "/images/certifications/ai-fundamentals-icon.png", // alias legacy
+
+  "google-cloud-digital-leader": "/images/certifications/google-cloud-digital-leader.png",
+"aws-ai-practitioner": "/images/certifications/aws-ai-practitioner.png",
+"ai-foundations": "/images/certifications/ai-foundations.png",
 
   "ibm-cloud-v5": "/images/certifications/ibmcloud-icon.png",
   f5: "/images/certifications/f5-icon.png",
