@@ -61,7 +61,9 @@ const slugFromLink = (link?: string | null) => {
 };
 const SLUG_ALIASES: Record<string, string> = {
   "security-plus": "security-plus",
-  "cisco-ccst-security": "cisco-ccst-cybersecurity", // ✅ alias legacy → slug DB
+  "cisco-ccst-security": "cisco-ccst-cybersecurity",
+  "microsoft-ai-fundamentals": "microsoft-ai",
+  "ai-fundamentals": "microsoft-ai",
 };
 
 
@@ -215,13 +217,15 @@ const certificationNames: CertificationNames = {
   ],
 
   cloud: [
-    { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
-    { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
-    { name: "Google Cloud", link: certPath(lang, "google-cloud") },
-    { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
-    { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
-    { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },
-  ],
+  { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
+  { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
+  { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
+  { name: "Google Cloud", link: certPath(lang, "google-cloud") },
+  { name: "Google Cloud Digital Leader", link: certPath(lang, "google-cloud-digital-leader") },
+  { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
+  { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
+  { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },
+],
 
   database: [
     { name: "Microsoft SQL Server", link: certPath(lang, "microsoft-sql-server") },
@@ -249,11 +253,14 @@ const certificationNames: CertificationNames = {
   ],
 
   ai: [
-    { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
-    { name: "PyTorch", link: null },
-    { name: "OpenAI", link: null },
-    { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai-fundamentals") },
-  ],
+  { name: "AI Foundations", link: certPath(lang, "ai-foundations") },
+  { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai") },
+  { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
+  { name: "Google Cloud Digital Leader", link: certPath(lang, "google-cloud-digital-leader") },
+  { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
+  { name: "PyTorch", link: null },
+  { name: "OpenAI", link: null },
+],
 };
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();

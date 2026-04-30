@@ -227,13 +227,37 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
     es: "Virtualización Microsoft: conceptos de Hyper-V, VMs, almacenamiento/red virtual y gestión básica.",
   },
 
-  /* ---------------------------------- AI -------------------------------- */
-  "microsoft-ai-fundamentals": {
-    it: "AI basics: ML, computer vision, NLP, responsible AI e servizi cloud correlati.",
-    en: "AI basics: ML, computer vision, NLP, responsible AI and related cloud services.",
-    fr: "Bases IA : ML, vision, NLP, IA responsable et services cloud associés.",
-    es: "Bases de IA: ML, visión, NLP, IA responsable y servicios cloud relacionados.",
-  },
+ /* ---------------------------------- AI -------------------------------- */
+"microsoft-ai": {
+  it: "Microsoft AI-900: concetti AI, machine learning, computer vision, NLP, responsible AI e servizi Azure.",
+  en: "Microsoft AI-900: AI concepts, machine learning, computer vision, NLP, responsible AI and Azure services.",
+  fr: "Microsoft AI-900 : concepts IA, machine learning, vision, NLP, IA responsable et services Azure.",
+  es: "Microsoft AI-900: conceptos de IA, machine learning, visión, NLP, IA responsable y servicios Azure.",
+},
+"microsoft-ai-fundamentals": {
+  it: "Microsoft AI-900: concetti AI, machine learning, computer vision, NLP, responsible AI e servizi Azure.",
+  en: "Microsoft AI-900: AI concepts, machine learning, computer vision, NLP, responsible AI and Azure services.",
+  fr: "Microsoft AI-900 : concepts IA, machine learning, vision, NLP, IA responsable et services Azure.",
+  es: "Microsoft AI-900: conceptos de IA, machine learning, visión, NLP, IA responsable y servicios Azure.",
+},
+"ai-foundations": {
+  it: "Fondamenti AI CertifyQuiz: concetti base, machine learning, prompt, uso pratico e limiti dei modelli.",
+  en: "CertifyQuiz AI foundations: core concepts, machine learning, prompts, practical use and model limits.",
+  fr: "Fondations IA CertifyQuiz : concepts de base, machine learning, prompts, usage pratique et limites des modèles.",
+  es: "Fundamentos de IA CertifyQuiz: conceptos base, machine learning, prompts, uso práctico y límites de los modelos.",
+},
+"aws-ai-practitioner": {
+  it: "AWS AI Practitioner: concetti AI/ML, casi d’uso, responsible AI, servizi AWS e basi di generative AI.",
+  en: "AWS AI Practitioner: AI/ML concepts, use cases, responsible AI, AWS services and generative AI basics.",
+  fr: "AWS AI Practitioner : concepts IA/ML, cas d’usage, IA responsable, services AWS et bases de l’IA générative.",
+  es: "AWS AI Practitioner: conceptos IA/ML, casos de uso, IA responsable, servicios AWS y bases de IA generativa.",
+},
+"google-cloud-digital-leader": {
+  it: "Google Cloud Digital Leader: trasformazione digitale, cloud business, data, AI e servizi Google Cloud.",
+  en: "Google Cloud Digital Leader: digital transformation, cloud business, data, AI and Google Cloud services.",
+  fr: "Google Cloud Digital Leader : transformation numérique, cloud business, data, IA et services Google Cloud.",
+  es: "Google Cloud Digital Leader: transformación digital, cloud business, datos, IA y servicios Google Cloud.",
+},
 };
 
 /* --------------------------------------------------------------------- */
@@ -246,16 +270,34 @@ const ALIAS_TO_CANONICAL: Record<string, string> = {
   // old ECDL slug -> ICDL canonical
   ecdl: "icdl",
 
-  // common older/alternate spellings (if they ever appear)
+  // common older/alternate spellings
   "comptia-network-plus": "network-plus",
   "cloud-plus": "comptia-cloud-plus",
   "azure-fundamentals": "microsoft-azure-fundamentals",
   "ibm-cloud": "ibm-cloud-v5",
   "oracle-sql": "oracle-database-sql",
+
   python: "python-developer",
   "eipass-basic": "eipass",
   "pekit-base": "pekit",
-  "cisco-ccst-cybersecurity": "cisco-ccst-security",
+
+  // CCST alias
+  "cisco-ccst-security": "cisco-ccst-cybersecurity",
+
+   // Microsoft AI aliases
+  "microsoft-ai-fundamentals": "microsoft-ai",
+  "ai-fundamentals": "microsoft-ai",
+  "microsoft-ai-900": "microsoft-ai",
+
+  // AWS AI aliases
+  "aws-certified-ai-practitioner": "aws-ai-practitioner",
+  "aws-ai": "aws-ai-practitioner",
+  "aws-ai-foundations": "aws-ai-practitioner",
+
+  // Google Cloud Digital Leader aliases
+  "google-cloud-digital-leader-certification": "google-cloud-digital-leader",
+  "cloud-digital-leader": "google-cloud-digital-leader",
+  "google-digital-leader": "google-cloud-digital-leader",
 };
 
 /**

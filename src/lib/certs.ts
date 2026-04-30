@@ -168,15 +168,22 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "hyper-v": "virtualizzazione",
   "microsoft-virtualization": "virtualizzazione",
 
-   // AI
-  tensorflow: "ai", // ✅ slug reale usato dal registry
-  "google-tensorflow-developer": "ai",
-  "google-tensorflow": "ai",
-  pytorch: "ai",
-  openai: "ai",
-  "microsoft-ai-fundamentals": "ai",
-  "microsoft-ai": "ai",
+  // AI
+tensorflow: "ai", // canonical
+"google-tensorflow-developer": "ai", // legacy
+"google-tensorflow": "ai", // legacy
 
+pytorch: "ai",
+openai: "ai",
+
+// Microsoft AI (canonical + alias)
+"microsoft-ai": "ai", // ✅ canonical
+"microsoft-ai-fundamentals": "ai", // legacy alias
+
+// Nuove certificazioni AI
+"ai-foundations": "ai", // ✅ tua certificazione
+"aws-ai-practitioner": "ai", // ⚠️ qui AI per UX (anche se è cloud lato SEO)
+"google-cloud-digital-leader": "cloud", // ⚠️ corretto SEO → cloud
 };
 
 /* ======================  ID <-> SLUG (DERIVED)  ====================== */
