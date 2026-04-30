@@ -271,6 +271,12 @@ const nextConfig: NextConfig = {
       destination: '/certifications/microsoft-ai',
       permanent: true,
     },
+    // IT: certifications → certificazioni (typo/old URLs)
+{
+  source: '/it/certifications/:rest*',
+  destination: '/it/certificazioni/:rest*',
+  permanent: true,
+},
     ];
   },
 };
