@@ -259,6 +259,18 @@ const nextConfig: NextConfig = {
       // ✅ Garbage / bot paths
       // ---------------------------------------------------------------------
       { source: "/favicon.ico/:path*", destination: "/favicon.ico", permanent: true },
+      // Microsoft AI Fundamentals — topic redirects
+    {
+      source: '/certifications/microsoft-ai-fundamentals/:topic',
+      destination: '/certifications/microsoft-ai/:topic',
+      permanent: true,
+    },
+    // Redirect anche la hub page della certificazione
+    {
+      source: '/certifications/microsoft-ai-fundamentals',
+      destination: '/certifications/microsoft-ai',
+      permanent: true,
+    },
     ];
   },
 };
