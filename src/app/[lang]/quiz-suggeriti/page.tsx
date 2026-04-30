@@ -1,7 +1,7 @@
 // src/app/[lang]/quiz-suggeriti/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { withLang, type Locale, isLocale, locales } from "@/lib/i18n";
+import { withLang, type Locale, isLocale, locales, routeCertDetail } from "@/lib/i18n";
 import {
   BookOpen,
   Laptop2,
@@ -302,7 +302,7 @@ export default async function SuggestedQuizzesPage(
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {SUGGESTED.map((item) => {
-              const certHref = withLang(L, `/certificazioni/${item.slug}`);
+              const certHref = routeCertDetail(L, item.slug);
               const quizHref = withLang(L, `/quiz/${item.slug}`);
 
               return (

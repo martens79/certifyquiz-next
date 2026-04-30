@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
       { source: "/es/certifications/:path*", destination: "/es/certificaciones/:path*", permanent: true },
 
       // ---------------------------------------------------------------------
-      // ✅ Fix 404: categorie "vecchie" senza prefisso /categorie|/categories
+      // ✅ Fix 404: categorie "vecchie" senza prefisso
       // ---------------------------------------------------------------------
 
       // IT
@@ -106,15 +106,12 @@ const nextConfig: NextConfig = {
       { source: "/es/virtualizzazione", destination: "/es/categorias/virtualizzazione", permanent: true },
       { source: "/es/intelligenza-artificiale", destination: "/es/categorias/intelligenza-artificiale", permanent: true },
 
-       // Oracle hub legacy
+      // ---------------------------------------------------------------------
+      // ✅ Hub legacy — specifici PRIMA del catch-all
+      // ---------------------------------------------------------------------
+      { source: "/hub/security", destination: "/roadmap-cybersecurity", permanent: true },
       { source: "/hub/oracle", destination: "/certifications/oracle-database-sql", permanent: true },
-
-      // google-career hub
       { source: "/hub/google-career", destination: "/certifications/google-cloud", permanent: true },
-
-      // ---------------------------------------------------------------------
-      // ✅ Hub legacy
-      // ---------------------------------------------------------------------
       { source: "/hub/:path*", destination: "/certifications", permanent: true },
 
       // ---------------------------------------------------------------------
@@ -134,9 +131,7 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/ecdl", destination: "/fr/certifications/icdl", permanent: true },
       { source: "/es/certificaciones/ecdl", destination: "/es/certificaciones/icdl", permanent: true },
 
-      // ---------------------------------------------------------------------
       // ✅ ICDL / ECDL canonicalization — QUIZ
-      // ---------------------------------------------------------------------
       { source: "/it/quiz/ecdl", destination: "/it/quiz/icdl", permanent: true },
       { source: "/quiz/ecdl", destination: "/quiz/icdl", permanent: true },
       { source: "/fr/quiz/ecdl", destination: "/fr/quiz/icdl", permanent: true },
@@ -163,7 +158,7 @@ const nextConfig: NextConfig = {
       { source: "/es/certificaciones/comptia-security-plus/:path*", destination: "/es/certificaciones/security-plus/:path*", permanent: true },
 
       // ---------------------------------------------------------------------
-      // ✅ Google TensorFlow legacy (CORRETTO: google-tensorflow non tensorflow)
+      // ✅ Google TensorFlow legacy
       // ---------------------------------------------------------------------
       { source: "/certifications/tensorflow-developer", destination: "/certifications/google-tensorflow", permanent: true },
       { source: "/certifications/tensorflow-developer/:path*", destination: "/certifications/google-tensorflow/:path*", permanent: true },
@@ -173,12 +168,12 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/tensorflow-developer/:path*", destination: "/fr/certifications/google-tensorflow/:path*", permanent: true },
       { source: "/es/certificaciones/tensorflow-developer", destination: "/es/certificaciones/google-tensorflow", permanent: true },
       { source: "/es/certificaciones/tensorflow-developer/:path*", destination: "/es/certificaciones/google-tensorflow/:path*", permanent: true },
-      { source: "/en/certifications/tensorflow-developer", destination: "/certifications/google-tensorflow", permanent: true },
-      { source: "/en/certifications/tensorflow-developer/:path*", destination: "/certifications/google-tensorflow/:path*", permanent: true },
 
       // ---------------------------------------------------------------------
-      // ✅ Microsoft C# legacy (CORRETTO: microsoft-csharp non csharp)
+      // ✅ Microsoft C# legacy
       // ---------------------------------------------------------------------
+      { source: "/certifications/csharp", destination: "/certifications/microsoft-csharp", permanent: true },
+      { source: "/certifications/csharp/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
       { source: "/certifications/csharp-certification", destination: "/certifications/microsoft-csharp", permanent: true },
       { source: "/certifications/csharp-certification/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
       { source: "/it/certificazioni/csharp-certification", destination: "/it/certificazioni/microsoft-csharp", permanent: true },
@@ -199,22 +194,25 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/microsoft-ai-fundamentals/:path*", destination: "/fr/certifications/microsoft-ai/:path*", permanent: true },
       { source: "/es/certificaciones/microsoft-ai-fundamentals", destination: "/es/certificaciones/microsoft-ai", permanent: true },
       { source: "/es/certificaciones/microsoft-ai-fundamentals/:path*", destination: "/es/certificaciones/microsoft-ai/:path*", permanent: true },
-      { source: "/en/certifications/microsoft-ai-fundamentals", destination: "/certifications/microsoft-ai", permanent: true },
-      { source: "/en/certifications/microsoft-ai-fundamentals/:path*", destination: "/certifications/microsoft-ai/:path*", permanent: true },
 
       // ---------------------------------------------------------------------
-      // ✅ VMware legacy (verifica che vmware-certified-professional esista nel DB)
+      // ✅ CCST alias
       // ---------------------------------------------------------------------
-      { source: "/certifications/vmware-certified-professional", destination: "/certifications/vmware-certified-professional", permanent: false },
-      { source: "/it/certificazioni/vmware-certified-professional", destination: "/it/certificazioni/vmware-certified-professional", permanent: false },
-      { source: "/fr/certifications/vmware-certified-professional", destination: "/fr/certifications/vmware-certified-professional", permanent: false },
-      { source: "/es/certificaciones/vmware-certified-professional", destination: "/es/certificaciones/vmware-certified-professional", permanent: false },
+      { source: "/certifications/ccst", destination: "/certifications/cisco-ccst-networking", permanent: true },
+      { source: "/certifications/ccst/:path*", destination: "/certifications/cisco-ccst-networking/:path*", permanent: true },
+      { source: "/it/certificazioni/ccst", destination: "/it/certificazioni/cisco-ccst-networking", permanent: true },
+      { source: "/it/certificazioni/ccst/:path*", destination: "/it/certificazioni/cisco-ccst-networking/:path*", permanent: true },
+      { source: "/fr/certifications/ccst", destination: "/fr/certifications/cisco-ccst-networking", permanent: true },
+      { source: "/fr/certifications/ccst/:path*", destination: "/fr/certifications/cisco-ccst-networking/:path*", permanent: true },
+      { source: "/es/certificaciones/ccst", destination: "/es/certificaciones/cisco-ccst-networking", permanent: true },
+      { source: "/es/certificaciones/ccst/:path*", destination: "/es/certificaciones/cisco-ccst-networking/:path*", permanent: true },
 
-      // ---------------------------------------------------------------------
-      // ✅ CCST Cybersecurity alias
-      // ---------------------------------------------------------------------
-      { source: "/certifications/cisco-ccst-cybersecurity", destination: "/certifications/cisco-ccst-cybersecurity", permanent: false },
-      { source: "/it/certificazioni/cisco-ccst-cybersecurity", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: false },
+      // ✅ CCST Security alias → cisco-ccst-cybersecurity
+      { source: "/certifications/cisco-ccst-security", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+      { source: "/certifications/cisco-ccst-security/:path*", destination: "/certifications/cisco-ccst-cybersecurity/:path*", permanent: true },
+      { source: "/it/certificazioni/cisco-ccst-security", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+      { source: "/fr/certifications/cisco-ccst-security", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+      { source: "/es/certificaciones/cisco-ccst-security", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
 
       // ---------------------------------------------------------------------
       // ✅ Legacy quiz paths per categoria
@@ -231,54 +229,10 @@ const nextConfig: NextConfig = {
       { source: "/it/quiz/cloud/mixed", destination: "/it/quiz/aws-cloud-practitioner/mixed", permanent: true },
       { source: "/it/quiz/database/mixed", destination: "/it/quiz/microsoft-sql-server/mixed", permanent: true },
 
-      
-
-      // CCST alias senza specificare networking/cybersecurity
-      { source: "/certifications/ccst", destination: "/certifications/cisco-ccst-networking", permanent: true },
-      { source: "/it/certificazioni/ccst", destination: "/it/certificazioni/cisco-ccst-networking", permanent: true },
-      { source: "/fr/certifications/ccst", destination: "/fr/certifications/cisco-ccst-networking", permanent: true },
-      { source: "/es/certificaciones/ccst", destination: "/es/certificaciones/cisco-ccst-networking", permanent: true },
-
-      // CCST alias con path (mancava il wildcard)
-{ source: "/certifications/ccst/:path*", destination: "/certifications/cisco-ccst-networking/:path*", permanent: true },
-{ source: "/it/certificazioni/ccst/:path*", destination: "/it/certificazioni/cisco-ccst-networking/:path*", permanent: true },
-{ source: "/fr/certifications/ccst/:path*", destination: "/fr/certifications/cisco-ccst-networking/:path*", permanent: true },
-{ source: "/es/certificaciones/ccst/:path*", destination: "/es/certificaciones/cisco-ccst-networking/:path*", permanent: true },
-
-// CCST Security alias → cisco-ccst-cybersecurity
-{ source: "/certifications/cisco-ccst-security", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
-{ source: "/certifications/cisco-ccst-security/:path*", destination: "/certifications/cisco-ccst-cybersecurity/:path*", permanent: true },
-{ source: "/it/certificazioni/cisco-ccst-security", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
-{ source: "/fr/certifications/cisco-ccst-security", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
-{ source: "/es/certificaciones/cisco-ccst-security", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
-      
-// csharp senza microsoft (già gestito ma aggiungi anche topic)
-      { source: "/certifications/csharp", destination: "/certifications/microsoft-csharp", permanent: true },
-      { source: "/certifications/csharp/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
       // ---------------------------------------------------------------------
       // ✅ Garbage / bot paths
       // ---------------------------------------------------------------------
       { source: "/favicon.ico/:path*", destination: "/favicon.ico", permanent: true },
-      // Microsoft AI Fundamentals — topic redirects
-    {
-      source: '/certifications/microsoft-ai-fundamentals/:topic',
-      destination: '/certifications/microsoft-ai/:topic',
-      permanent: true,
-    },
-    // Redirect anche la hub page della certificazione
-    {
-      source: '/certifications/microsoft-ai-fundamentals',
-      destination: '/certifications/microsoft-ai',
-      permanent: true,
-    },
-    // IT: certifications → certificazioni (typo/old URLs)
-{
-  source: '/it/certifications/:rest*',
-  destination: '/it/certificazioni/:rest*',
-  permanent: true,
-},
-
-{ source: '/fr/certificazioni/:rest*', destination: '/fr/certifications/:rest*', permanent: true },
     ];
   },
 };

@@ -350,7 +350,12 @@ export function routeCertList(lang: Locale) {
 }
 
 export function routeCertDetail(lang: Locale, slug: string) {
-  return withLang(lang, `/certificazioni/${slug}`);
+  const seg =
+    lang === "it" ? "certificazioni" :
+    lang === "es" ? "certificaciones" :
+    "certifications";
+  const prefix = lang === "en" ? "" : `/${lang}`;
+  return `${prefix}/${seg}/${slug}`;
 }
 
 
