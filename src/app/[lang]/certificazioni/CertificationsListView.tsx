@@ -99,7 +99,7 @@ const ICON_BY_SLUG: Record<string, string> = {
 
   icdl: "/images/certifications/ecdl.png",
   "microsoft-azure-fundamentals": "/images/certifications/azure-fundamentals-icon.png",
-  csharp: "/images/certifications/csharp-icon.png",
+ "microsoft-csharp": "/images/certifications/csharp-icon.png",
   "microsoft-sql-server": "/images/certifications/sqlserver.png",
   "microsoft-virtualization": "/images/certifications/microsoft-virtualization-logo.png",
   "microsoft-ai": "/images/certifications/ai-fundamentals-icon.png",
@@ -197,6 +197,7 @@ if (s === "azure-fundamentals") return "microsoft-azure-fundamentals";
 if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
 if (s === "ccst-cybersecurity") return "cisco-ccst-cybersecurity";
 
+if (s === "microsoft-csharp") return "csharp";
 
   return s;
 };
