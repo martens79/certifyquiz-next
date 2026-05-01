@@ -163,19 +163,20 @@ export default function CategoryBox({
     "rounded-md font-semibold text-xs py-1.5 px-3 bg-blue-600 text-white hover:bg-blue-700 transition";
 
   const cardBase = [
-    "group rounded-xl",
-    pad,
-    "shadow-md border",
-    border,
-    background,
-    className,
-    "transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-lg",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
-  ].join(" ");
+  "group rounded-xl",
+  pad,
+  "shadow-md border",
+  border,
+  background,
+  className,
+  "h-full flex flex-col",
+  "transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-lg",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
+].join(" ");
 
   return (
     <div className={cardBase}>
-      <div className="flex flex-col">
+      <div className="flex flex-col h-full">
         {/* Header */}
         <div className="flex items-center gap-2">
           <div
@@ -250,7 +251,7 @@ export default function CategoryBox({
         )}
 
         {/* CTA */}
-        <div className="flex justify-end mt-3">
+        <div className="flex justify-end mt-auto pt-3">
           <Link href={categoryPath(lang, categoryKey)} prefetch={false} className={btnClasses}>
             {getLabel({ it: "Quiz", en: "Quiz", fr: "Quiz", es: "Quiz" })}
           </Link>
