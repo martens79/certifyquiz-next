@@ -1,17 +1,18 @@
 // src/certifications/data/google-cloud.ts
-// ✅ Versione data-only (nessun JSX/router). Coerente con gli altri file.
-// 🖼️ Assicurati che l’immagine esista in /public/images/certifications/google_cloud_icon.png
+// ✅ Google Cloud Fundamentals
+// ✅ Mantiene slug "google-cloud" per non rompere SEO, link e quiz esistenti
+// ✅ NON duplica più Google Cloud Digital Leader: la cita solo come prossimo step
 
 const GoogleCloud = {
   slug: "google-cloud",
   imageUrl: "/images/certifications/google_cloud_icon.png",
-  officialUrl: "https://cloud.google.com/certification/cloud-digital-leader",
+  officialUrl: "https://cloud.google.com/learn",
 
   title: {
-    it: "Google Cloud — Fondamenti (Cloud Digital Leader)",
-    en: "Google Cloud — Fundamentals (Cloud Digital Leader)",
-    fr: "Google Cloud — Fondamentaux (Cloud Digital Leader)",
-    es: "Google Cloud — Fundamentos (Cloud Digital Leader)",
+    it: "Google Cloud — Fondamenti",
+    en: "Google Cloud — Fundamentals",
+    fr: "Google Cloud — Fondamentaux",
+    es: "Google Cloud — Fundamentos",
   },
 
   level: {
@@ -22,178 +23,227 @@ const GoogleCloud = {
   },
 
   description: {
-    it: "Fondamenti Google Cloud: concetti cloud, servizi GCP, sicurezza, networking e storage. Quiz realistici e link alle pagine ufficiali d’esame.",
-    en: "Google Cloud fundamentals: cloud concepts, GCP services, security, networking and storage. Realistic quizzes and links to official exam pages.",
-    fr: "Fondamentaux Google Cloud : concepts cloud, services GCP, sécurité, réseau et stockage. Quiz réalistes et liens officiels d’examen.",
-    es: "Fundamentos de Google Cloud: conceptos cloud, servicios GCP, seguridad, redes y almacenamiento. Cuestionarios realistas y enlaces oficiales del examen.",
+    it: "Impara i fondamenti di Google Cloud: infrastruttura cloud, sicurezza, costi, dati, AI e trasformazione digitale. Percorso base ideale prima di preparare la certificazione Google Cloud Digital Leader.",
+    en: "Learn Google Cloud fundamentals: cloud infrastructure, security, costs, data, AI, and digital transformation. A beginner-friendly path before preparing for the Google Cloud Digital Leader certification.",
+    fr: "Apprenez les fondamentaux de Google Cloud : infrastructure cloud, sécurité, coûts, données, IA et transformation numérique. Un parcours idéal avant la certification Google Cloud Digital Leader.",
+    es: "Aprende los fundamentos de Google Cloud: infraestructura cloud, seguridad, costos, datos, IA y transformación digital. Un camino base ideal antes de preparar la certificación Google Cloud Digital Leader.",
   },
 
   topics: [
-  {
-    title: {
-      it: "Trasformazione digitale con Google Cloud",
-      en: "Digital Transformation with Google Cloud",
-      fr: "Transformation numérique avec Google Cloud",
-      es: "Transformación digital con Google Cloud",
+    {
+      title: {
+        it: "Infrastruttura cloud, sicurezza e costi",
+        en: "Cloud infrastructure, security and costs",
+        fr: "Infrastructure cloud, sécurité et coûts",
+        es: "Infraestructura cloud, seguridad y costos",
+      },
+      slug: {
+        it: "cloud-infrastruttura-sicurezza-costi",
+        en: "cloud-infrastructure-security-costs",
+        fr: "infrastructure-cloud-securite-couts",
+        es: "infraestructura-cloud-seguridad-costos",
+      },
     },
-    slug: {
-      it: "trasformazione-digitale-con-google-cloud",
-      en: "digital-transformation-with-google-cloud",
-      fr: "transformation-numerique-avec-google-cloud",
-      es: "transformacion-digital-con-google-cloud",
+    {
+      title: {
+        it: "Dati, AI e innovazione",
+        en: "Data, AI and innovation",
+        fr: "Données, IA et innovation",
+        es: "Datos, IA e innovación",
+      },
+      slug: {
+        it: "dati-ai-innovazione",
+        en: "data-ai-innovation",
+        fr: "donnees-ia-innovation",
+        es: "datos-ia-innovacion",
+      },
     },
-  },
-  {
-    title: {
-      it: "Innovazione con i dati e Google Cloud",
-      en: "Innovation with Data and Google Cloud",
-      fr: "Innovation avec les données et Google Cloud",
-      es: "Innovación con datos y Google Cloud",
+    {
+      title: {
+        it: "Trasformazione digitale",
+        en: "Digital transformation",
+        fr: "Transformation numérique",
+        es: "Transformación digital",
+      },
+      slug: {
+        it: "trasformazione-digitale",
+        en: "digital-transformation",
+        fr: "transformation-numerique",
+        es: "transformacion-digital",
+      },
     },
-    slug: {
-      it: "innovazione-con-i-dati-e-google-cloud",
-      en: "innovation-with-data-and-google-cloud",
-      fr: "innovation-avec-les-donnees-et-google-cloud",
-      es: "innovacion-con-datos-y-google-cloud",
-    },
-  },
-  {
-    title: {
-      it: "Modernizzazione di infrastrutture e applicazioni",
-      en: "Modernization of Infrastructure and Applications",
-      fr: "Modernisation de l'infrastructure et des applications",
-      es: "Modernización de infraestructura y aplicaciones",
-    },
-    slug: {
-      it: "modernizzazione-di-infrastrutture-e-applicazioni",
-      en: "modernization-of-infrastructure-and-applications",
-      fr: "modernisation-de-linfrastructure-et-des-applications",
-      es: "modernizacion-de-infraestructura-y-aplicaciones",
-    },
-  },
-  {
-    title: {
-      it: "Sicurezza e operazioni con Google Cloud",
-      en: "Security and Operations with Google Cloud",
-      fr: "Sécurité et opérations avec Google Cloud",
-      es: "Seguridad y operaciones con Google Cloud",
-    },
-    slug: {
-      it: "sicurezza-e-operazioni-con-google-cloud",
-      en: "security-and-operations-with-google-cloud",
-      fr: "securite-et-operations-avec-google-cloud",
-      es: "seguridad-y-operaciones-con-google-cloud",
-    },
-  },
-],
+  ],
 
   extraContent: {
     examReference: {
       it: [
-        { text: "Cloud Digital Leader — Pagina ufficiale d’esame", url: "https://cloud.google.com/certification/cloud-digital-leader" },
-        { text: "Associate Cloud Engineer — (opzionale, passo successivo)", url: "https://cloud.google.com/certification/cloud-engineer" },
+        {
+          text: "Google Cloud Digital Leader — prossimo step consigliato",
+          url: "https://cloud.google.com/certification/cloud-digital-leader",
+        },
+        {
+          text: "Google Cloud — Risorse ufficiali di apprendimento",
+          url: "https://cloud.google.com/learn",
+        },
       ],
       en: [
-        { text: "Cloud Digital Leader — Official exam page", url: "https://cloud.google.com/certification/cloud-digital-leader" },
-        { text: "Associate Cloud Engineer — (optional, next step)", url: "https://cloud.google.com/certification/cloud-engineer" },
+        {
+          text: "Google Cloud Digital Leader — recommended next step",
+          url: "https://cloud.google.com/certification/cloud-digital-leader",
+        },
+        {
+          text: "Google Cloud — Official learning resources",
+          url: "https://cloud.google.com/learn",
+        },
       ],
       fr: [
-        { text: "Cloud Digital Leader — Page officielle de l’examen", url: "https://cloud.google.com/certification/cloud-digital-leader" },
-        { text: "Associate Cloud Engineer — (optionnel, étape suivante)", url: "https://cloud.google.com/certification/cloud-engineer" },
+        {
+          text: "Google Cloud Digital Leader — prochaine étape recommandée",
+          url: "https://cloud.google.com/certification/cloud-digital-leader",
+        },
+        {
+          text: "Google Cloud — Ressources officielles d’apprentissage",
+          url: "https://cloud.google.com/learn",
+        },
       ],
       es: [
-        { text: "Cloud Digital Leader — Página oficial del examen", url: "https://cloud.google.com/certification/cloud-digital-leader" },
-        { text: "Associate Cloud Engineer — (opcional, siguiente paso)", url: "https://cloud.google.com/certification/cloud-engineer" },
+        {
+          text: "Google Cloud Digital Leader — siguiente paso recomendado",
+          url: "https://cloud.google.com/certification/cloud-digital-leader",
+        },
+        {
+          text: "Google Cloud — Recursos oficiales de aprendizaje",
+          url: "https://cloud.google.com/learn",
+        },
       ],
     },
 
     learn: {
       it: [
-        "Comprendere i concetti fondamentali del cloud computing secondo Google.",
-        "Esplorare i principali servizi offerti da Google Cloud Platform (GCP).",
-        "Conoscere i modelli di deployment e gestione delle risorse su GCP.",
-        "Apprendere le pratiche di sicurezza e conformità nella nuvola.",
-        "Sviluppare competenze di base su networking, storage e compute su GCP.",
+        "Comprendere i concetti fondamentali del cloud computing.",
+        "Capire region, zone, macchine virtuali, storage e scalabilità.",
+        "Imparare le basi di sicurezza cloud, IAM, crittografia e responsabilità condivisa.",
+        "Comprendere come dati e AI supportano innovazione e decisioni aziendali.",
+        "Gestire concetti base di costo, budget, risorse inutilizzate e ottimizzazione cloud.",
+        "Prepararsi gradualmente al percorso Google Cloud Digital Leader.",
       ],
       en: [
-        "Understand fundamental cloud computing concepts according to Google.",
-        "Explore key services offered by Google Cloud Platform (GCP).",
-        "Learn about deployment models and resource management in GCP.",
-        "Gain knowledge on cloud security and compliance best practices.",
-        "Develop basic skills in networking, storage, and compute on GCP.",
+        "Understand the fundamental concepts of cloud computing.",
+        "Learn regions, zones, virtual machines, storage, and scalability.",
+        "Understand cloud security basics, IAM, encryption, and shared responsibility.",
+        "Learn how data and AI support innovation and business decision-making.",
+        "Understand basic cost concepts, budgets, unused resources, and cloud optimization.",
+        "Build a foundation before preparing for Google Cloud Digital Leader.",
       ],
       fr: [
-        "Comprendre les concepts fondamentaux du cloud computing selon Google.",
-        "Explorer les principaux services offerts par Google Cloud Platform (GCP).",
-        "Connaître les modèles de déploiement et la gestion des ressources sur GCP.",
-        "Apprendre les pratiques de sécurité et de conformité dans le cloud.",
-        "Développer des compétences de base en réseau, stockage et calcul sur GCP.",
+        "Comprendre les concepts fondamentaux du cloud computing.",
+        "Apprendre les régions, zones, machines virtuelles, stockage et scalabilité.",
+        "Comprendre les bases de la sécurité cloud, IAM, chiffrement et responsabilité partagée.",
+        "Comprendre comment les données et l’IA soutiennent l’innovation et la prise de décision.",
+        "Comprendre les coûts, budgets, ressources inutilisées et optimisation cloud.",
+        "Construire une base solide avant Google Cloud Digital Leader.",
       ],
       es: [
-        "Comprender los conceptos fundamentales de la computación en la nube según Google.",
-        "Explorar los principales servicios ofrecidos por Google Cloud Platform (GCP).",
-        "Conocer los modelos de implementación y gestión de recursos en GCP.",
-        "Aprender las prácticas de seguridad y cumplimiento en la nube.",
-        "Desarrollar habilidades básicas en redes, almacenamiento y cómputo en GCP.",
+        "Comprender los conceptos fundamentales del cloud computing.",
+        "Aprender regiones, zonas, máquinas virtuales, almacenamiento y escalabilidad.",
+        "Comprender seguridad cloud, IAM, cifrado y responsabilidad compartida.",
+        "Entender cómo los datos y la IA impulsan innovación y decisiones empresariales.",
+        "Comprender costos, presupuestos, recursos no utilizados y optimización cloud.",
+        "Crear una base antes de preparar Google Cloud Digital Leader.",
       ],
     },
 
     whyChoose: {
       it: [
-        "Certificazione ufficiale supportata da Google.",
-        "Riconosciuta da aziende e startup che adottano GCP.",
-        "Base ideale per ruoli cloud entry-level e futuri esperti.",
-        "Copre concetti cloud vendor-neutral e pratici.",
-        "Valida per concorsi pubblici e selezioni IT moderne.",
+        "È il punto di partenza ideale per chi vuole capire Google Cloud da zero.",
+        "Non richiede esperienza tecnica avanzata.",
+        "Collega cloud, sicurezza, costi, dati e AI in un unico percorso pratico.",
+        "Aiuta a prepararsi meglio alla certificazione Google Cloud Digital Leader.",
+        "È utile per studenti, professionisti junior, project manager e profili business-tech.",
       ],
       en: [
-        "Official certification supported by Google.",
-        "Recognized by companies and startups using GCP.",
-        "Great foundation for entry-level cloud roles and future specialists.",
-        "Covers vendor-neutral and practical cloud concepts.",
-        "Valid for public competitions and modern IT job selection.",
+        "It is the ideal starting point for learning Google Cloud from zero.",
+        "It does not require advanced technical experience.",
+        "It connects cloud, security, costs, data, and AI in one practical path.",
+        "It helps you prepare more effectively for Google Cloud Digital Leader.",
+        "It is useful for students, junior professionals, project managers, and business-tech profiles.",
       ],
       fr: [
-        "Certification officielle soutenue par Google.",
-        "Reconnue par les entreprises et les startups utilisant GCP.",
-        "Base idéale pour les rôles cloud débutants et futurs experts.",
-        "Couvre des concepts cloud neutres et pratiques.",
-        "Valable pour les concours publics et les sélections informatiques modernes.",
+        "C’est le point de départ idéal pour apprendre Google Cloud depuis zéro.",
+        "Aucune expérience technique avancée n’est requise.",
+        "Il relie cloud, sécurité, coûts, données et IA dans un parcours pratique.",
+        "Il aide à mieux préparer Google Cloud Digital Leader.",
+        "Il est utile pour étudiants, profils juniors, chefs de projet et profils business-tech.",
       ],
       es: [
-        "Certificación oficial respaldada por Google.",
-        "Reconocida por empresas y startups que usan GCP.",
-        "Base ideal para roles de entrada en cloud y futuros especialistas.",
-        "Cubre conceptos en la nube neutrales y prácticos.",
-        "Válida para oposiciones y procesos de selección en TI.",
+        "Es el punto de partida ideal para aprender Google Cloud desde cero.",
+        "No requiere experiencia técnica avanzada.",
+        "Conecta cloud, seguridad, costos, datos e IA en un camino práctico.",
+        "Ayuda a preparar mejor Google Cloud Digital Leader.",
+        "Es útil para estudiantes, perfiles junior, project managers y perfiles business-tech.",
       ],
     },
 
     faq: {
       it: [
-        { q: "È adatta anche a chi non ha esperienza cloud?", a: "Sì, la certificazione è pensata per principianti e professionisti alle prime armi con GCP." },
-        { q: "Ci sono esami ufficiali disponibili?", a: "Sì, Google offre l’esame ‘Cloud Digital Leader’ come introduzione ufficiale." },
-        { q: "Quanto dura la certificazione?", a: "La validità standard è di 3 anni, come per molte certificazioni cloud." },
+        {
+          q: "È una certificazione ufficiale Google?",
+          a: "No. È un percorso base di preparazione sui fondamenti di Google Cloud. La certificazione ufficiale consigliata dopo questo percorso è Google Cloud Digital Leader.",
+        },
+        {
+          q: "Devo studiare Google Cloud Fundamentals prima della Digital Leader?",
+          a: "Non è obbligatorio, ma è consigliato se parti da zero o vuoi rafforzare cloud, dati, AI, sicurezza e costi.",
+        },
+        {
+          q: "I quiz sono utili per la certificazione Digital Leader?",
+          a: "Sì. I quiz coprono concetti fondamentali che aiutano a preparare meglio il percorso verso Google Cloud Digital Leader.",
+        },
       ],
       en: [
-        { q: "Is it suitable for cloud beginners?", a: "Yes, it is designed for newcomers and professionals starting with GCP." },
-        { q: "Are there official exams available?", a: "Yes, Google offers the ‘Cloud Digital Leader’ exam as an official entry point." },
-        { q: "How long is the certification valid?", a: "Typically, it's valid for 3 years like most cloud certifications." },
+        {
+          q: "Is this an official Google certification?",
+          a: "No. This is a foundational learning path for Google Cloud basics. The recommended official certification after this path is Google Cloud Digital Leader.",
+        },
+        {
+          q: "Should I study Google Cloud Fundamentals before Digital Leader?",
+          a: "It is not mandatory, but it is recommended if you are starting from zero or want to strengthen cloud, data, AI, security, and cost concepts.",
+        },
+        {
+          q: "Are the quizzes useful for the Digital Leader certification?",
+          a: "Yes. The quizzes cover fundamental concepts that help you prepare more effectively for Google Cloud Digital Leader.",
+        },
       ],
       fr: [
-        { q: "Est-elle adaptée aux débutants en cloud ?", a: "Oui, elle est conçue pour les débutants et les professionnels débutant sur GCP." },
-        { q: "Y a-t-il des examens officiels disponibles ?", a: "Oui, Google propose l’examen ‘Cloud Digital Leader’ comme introduction officielle." },
-        { q: "Quelle est la durée de validité ?", a: "En général, elle est valable 3 ans comme les autres certifications cloud." },
+        {
+          q: "Est-ce une certification officielle Google ?",
+          a: "Non. C’est un parcours de base sur les fondamentaux de Google Cloud. La certification officielle recommandée ensuite est Google Cloud Digital Leader.",
+        },
+        {
+          q: "Dois-je étudier Google Cloud Fundamentals avant Digital Leader ?",
+          a: "Ce n’est pas obligatoire, mais recommandé si vous partez de zéro ou souhaitez renforcer cloud, données, IA, sécurité et coûts.",
+        },
+        {
+          q: "Les quiz sont-ils utiles pour Digital Leader ?",
+          a: "Oui. Les quiz couvrent des concepts fondamentaux utiles pour mieux préparer Google Cloud Digital Leader.",
+        },
       ],
       es: [
-        { q: "¿Es adecuada para principiantes en la nube?", a: "Sí, está diseñada para principiantes y profesionales que empiezan con GCP." },
-        { q: "¿Hay exámenes oficiales disponibles?", a: "Sí, Google ofrece el examen ‘Cloud Digital Leader’ como entrada oficial." },
-        { q: "¿Cuánto dura la certificación?", a: "Normalmente tiene una validez de 3 años como otras certificaciones cloud." },
+        {
+          q: "¿Es una certificación oficial de Google?",
+          a: "No. Es un camino de aprendizaje base sobre los fundamentos de Google Cloud. La certificación oficial recomendada después es Google Cloud Digital Leader.",
+        },
+        {
+          q: "¿Debo estudiar Google Cloud Fundamentals antes de Digital Leader?",
+          a: "No es obligatorio, pero sí recomendable si empiezas desde cero o quieres reforzar cloud, datos, IA, seguridad y costos.",
+        },
+        {
+          q: "¿Los quizzes sirven para Digital Leader?",
+          a: "Sí. Los quizzes cubren conceptos fundamentales que ayudan a preparar mejor Google Cloud Digital Leader.",
+        },
       ],
     },
   },
 
-  // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/google-cloud",
     en: "/en/quiz/google-cloud",
@@ -201,7 +251,6 @@ const GoogleCloud = {
     es: "/es/quiz/google-cloud",
   },
 
-  // Rotta “indietro”: lista certificazioni per lingua
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",
