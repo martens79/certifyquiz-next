@@ -126,6 +126,12 @@ const ICON_BY_SLUG: Record<string, string> = {
 
   "vmware-vcp": "/images/certifications/vmware-vcp.png",
   jncie: "/images/certifications/jncie-icon.png",
+
+  "csharp": "/images/certifications/csharp-icon.png",
+"itil-4-foundation": "/images/certifications/itil-4-foundation.png",
+"nvidia-generative-ai-llm": "/images/certifications/nvidia-generative-ai.png",
+"ccnp-enterprise": "/images/certifications/ccnp-enterprise.png",
+"kcna-kubernetes-cloud-native": "/images/certifications/kubernetes-kcna.png",
 };
 
 /* ---------------------------- SEO TEXT ---------------------------- */
