@@ -256,7 +256,6 @@ const certificationNames: CertificationNames = {
   { name: "AI Foundations", link: certPath(lang, "ai-foundations") },
   { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai") },
   { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
-  { name: "Google Cloud Digital Leader", link: certPath(lang, "google-cloud-digital-leader") },
   { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
   { name: "PyTorch", link: null },
   { name: "OpenAI", link: null },
@@ -267,19 +266,6 @@ const certificationNames: CertificationNames = {
 
   const allCertsUnique: CertItem[] = Array.from(
   new Map(allCerts.map((c) => [c.link ?? `name:${c.name}`, c])).values()
-);
-console.log("=== DEBUG SECURITY+ ===");
-console.log(
-  "slug from link:",
-  slugFromLink(certPath(lang, "security-plus"))
-);
-console.log(
-  "availability[security-plus]:",
-  availability?.["security-plus"]
-);
-console.log(
-  "availability keys with 'security':",
-  Object.keys(availability || {}).filter(k => k.includes("security"))
 );
 
 
@@ -464,7 +450,7 @@ name: getLabel(
       <main className="flex-1 overflow-y-auto px-3 pt-2 pb-15.5">
         <QuizTitle lang={lang} />
 
-        {lang !== "it" && translatedCertsForLang.length > 0 && (
+        {lang !== "it" && lang !== "en" && translatedCertsForLang.length > 0 && (
           <div className="mx-auto max-w-345 mb-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-900 p-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="text-sm">
