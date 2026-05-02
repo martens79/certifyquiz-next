@@ -50,7 +50,7 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
-            href={quiz(lang, "ai-fundamentals")}
+            href={quiz(lang, "ai-foundations")}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
           >
             {t.ctaPrimary}
@@ -278,53 +278,48 @@ const CONTENT: Record<
   goalLabel: "Goal:",
   practiceCta: "Open now",
 
-  levels: [
-    {
-      title: "🟢 Level 0 — Absolute beginner",
-      body:
-        "Learn what AI actually is: models, data, training vs inference, bias, overfitting, and basic evaluation. Keep it simple and practical.",
-      recommended: ["AI vocabulary", "Data basics", "Evaluation basics"],
-      goal: "Understand core concepts without confusion.",
-    },
-    {
-      title: "🟡 Level 1 — Fundamentals baseline (your first milestone)",
-      body:
-        "Start with a structured fundamentals track. This gives you a clean map of AI concepts before moving into vendor certifications.",
-      recommended: ["AI Fundamentals"],
-      goal: "Build a solid mental model of AI and real-world use cases.",
-      ctaQuizSlug: "ai-fundamentals",
-      ctaPrimaryText: "Practice AI Fundamentals",
-    },
-    {
-      title: "🟠 Level 2 — Microsoft AI Fundamentals",
-      body:
-        "This is your first real certification step. It introduces AI concepts in a practical business and cloud context and works well for beginners.",
-      recommended: ["Microsoft AI Fundamentals"],
-      goal: "Understand how AI is applied in real cloud environments.",
-      ctaQuizSlug: "microsoft-ai-fundamentals",
-      ctaCertSlug: "microsoft-ai-fundamentals",
-      ctaPrimaryText: "Start Microsoft AI quiz",
-      ctaSecondaryText: "Explore Microsoft AI certification",
-    },
-    {
-      title: "🔴 Level 3 — TensorFlow (hands-on practice)",
-      body:
-        "Once the basics are clear, move into real framework practice. TensorFlow helps you think more like a practitioner and less like a beginner.",
-      recommended: ["TensorFlow"],
-      goal: "Start working with real AI workflows, patterns, and model logic.",
-      ctaQuizSlug: "tensorflow",
-      ctaCertSlug: "tensorflow",
-      ctaPrimaryText: "Start TensorFlow quiz",
-      ctaSecondaryText: "Explore TensorFlow certification",
-    },
-    {
-      title: "⚫ Level 4 — Google AI (coming soon)",
-      body:
-        "This future step will expand the roadmap into Google AI certifications and practical cloud-based AI tools.",
-      recommended: ["Google AI", "Vertex AI"],
-      goal: "Expand into modern cloud AI ecosystems.",
-    },
-  ],
+ levels: [
+  {
+    title: "🟢 Level 1 — AI Foundations",
+    body: "Start with a solid internal foundation of AI concepts before touching vendor certifications.",
+    recommended: ["AI Foundations"],
+    goal: "Build a clear understanding of AI basics and terminology.",
+    ctaQuizSlug: "ai-foundations",
+    ctaPrimaryText: "Start AI Foundations",
+  },
+  {
+    title: "🟡 Level 2 — Microsoft AI Fundamentals",
+    body: "Your first real certification step. Covers practical AI concepts in business and cloud environments.",
+    recommended: ["Microsoft AI Fundamentals"],
+    goal: "Understand how AI is applied in real-world cloud scenarios.",
+    ctaQuizSlug: "microsoft-ai",
+    ctaCertSlug: "microsoft-ai",
+  },
+  {
+    title: "🟠 Level 3 — AWS AI Practitioner",
+    body: "Expand your knowledge into AWS AI services and real use cases.",
+    recommended: ["AWS AI Practitioner"],
+    goal: "Learn how AI services are used in AWS environments.",
+    ctaQuizSlug: "aws-ai-practitioner",
+    ctaCertSlug: "aws-ai-practitioner",
+  },
+  {
+    title: "🔴 Level 4 — Google Cloud Digital Leader",
+    body: "Understand AI in enterprise and business decision contexts.",
+    recommended: ["Google Cloud Digital Leader"],
+    goal: "Gain a high-level understanding of AI in cloud ecosystems.",
+    ctaQuizSlug: "google-cloud-digital-leader",
+    ctaCertSlug: "google-cloud-digital-leader",
+  },
+  {
+    title: "⚫ Level 5 — TensorFlow (hands-on)",
+    body: "Move into real AI practice using frameworks and workflows.",
+    recommended: ["TensorFlow"],
+    goal: "Start building real AI logic and models.",
+    ctaQuizSlug: "tensorflow",
+    ctaCertSlug: "tensorflow",
+  },
+],
 
   salaryTitle: "💰 AI salary outlook (2026)",
   salaryIntro:
@@ -398,52 +393,47 @@ it: {
   practiceCta: "Apri ora",
 
   levels: [
-    {
-      title: "🟢 Livello 0 — Principiante totale",
-      body:
-        "Impara cos’è davvero l’AI: modelli, dati, training vs inference, bias, overfitting e valutazione di base. Tutto in modo semplice e pratico.",
-      recommended: ["Vocabolario AI", "Basi dati", "Basi valutazione"],
-      goal: "Capire i concetti senza confusione.",
-    },
-    {
-      title: "🟡 Livello 1 — Fundamentals baseline (prima milestone)",
-      body:
-        "Parti con un percorso fundamentals strutturato. Ti crea una mappa chiara dei concetti AI prima di passare alle certificazioni vendor.",
-      recommended: ["AI Fundamentals"],
-      goal: "Costruire un modello mentale solido dell’AI e dei suoi casi d’uso reali.",
-      ctaQuizSlug: "ai-fundamentals",
-      ctaPrimaryText: "Allenati con AI Fundamentals",
-    },
-    {
-      title: "🟠 Livello 2 — Microsoft AI Fundamentals",
-      body:
-        "Questo è il primo vero passo certificativo. Introduce l’AI in un contesto pratico, business e cloud, ed è perfetto per chi parte da livello base.",
-      recommended: ["Microsoft AI Fundamentals"],
-      goal: "Capire come l’AI viene applicata in contesti cloud reali.",
-      ctaQuizSlug: "microsoft-ai-fundamentals",
-      ctaCertSlug: "microsoft-ai-fundamentals",
-      ctaPrimaryText: "Inizia il quiz Microsoft AI",
-      ctaSecondaryText: "Scopri la certificazione Microsoft AI",
-    },
-    {
-      title: "🔴 Livello 3 — TensorFlow (pratica reale)",
-      body:
-        "Quando le basi sono chiare, passa alla pratica con un framework reale. TensorFlow ti aiuta a ragionare meno da principiante e più da practitioner.",
-      recommended: ["TensorFlow"],
-      goal: "Iniziare a lavorare con workflow AI reali, pattern e logica dei modelli.",
-      ctaQuizSlug: "tensorflow",
-      ctaCertSlug: "tensorflow",
-      ctaPrimaryText: "Inizia il quiz TensorFlow",
-      ctaSecondaryText: "Scopri la certificazione TensorFlow",
-    },
-    {
-      title: "⚫ Livello 4 — Google AI (in arrivo)",
-      body:
-        "Questo step futuro allargherà la roadmap alle certificazioni Google AI e agli strumenti pratici di AI su cloud.",
-      recommended: ["Google AI", "Vertex AI"],
-      goal: "Espandere le competenze verso gli ecosistemi cloud AI moderni.",
-    },
-  ],
+  {
+    title: "🟢 Livello 1 — AI Foundations",
+    body: "Parti con una base solida sui concetti fondamentali dell’AI prima delle certificazioni vendor.",
+    recommended: ["AI Foundations"],
+    goal: "Capire chiaramente basi e terminologia dell’intelligenza artificiale.",
+    ctaQuizSlug: "ai-foundations",
+    ctaPrimaryText: "Inizia AI Foundations",
+  },
+  {
+    title: "🟡 Livello 2 — Microsoft AI Fundamentals",
+    body: "Il primo vero passo certificativo. Introduce l’AI in contesti cloud e business.",
+    recommended: ["Microsoft AI Fundamentals"],
+    goal: "Capire come l’AI viene applicata in scenari reali.",
+    ctaQuizSlug: "microsoft-ai",
+    ctaCertSlug: "microsoft-ai",
+  },
+  {
+    title: "🟠 Livello 3 — AWS AI Practitioner",
+    body: "Espandi le competenze verso i servizi AI di AWS e casi reali.",
+    recommended: ["AWS AI Practitioner"],
+    goal: "Comprendere l’uso dell’AI nei servizi AWS.",
+    ctaQuizSlug: "aws-ai-practitioner",
+    ctaCertSlug: "aws-ai-practitioner",
+  },
+  {
+    title: "🔴 Livello 4 — Google Cloud Digital Leader",
+    body: "Capisci l’AI dal punto di vista business e decisionale.",
+    recommended: ["Google Cloud Digital Leader"],
+    goal: "Avere una visione completa dell’AI nel cloud.",
+    ctaQuizSlug: "google-cloud-digital-leader",
+    ctaCertSlug: "google-cloud-digital-leader",
+  },
+  {
+    title: "⚫ Livello 5 — TensorFlow (pratica reale)",
+    body: "Passa alla pratica con framework e workflow reali.",
+    recommended: ["TensorFlow"],
+    goal: "Costruire logiche e modelli AI concreti.",
+    ctaQuizSlug: "tensorflow",
+    ctaCertSlug: "tensorflow",
+  },
+],
 
   salaryTitle: "💰 Salary outlook AI (2026)",
   salaryIntro:
@@ -517,52 +507,47 @@ es: {
   practiceCta: "Abrir ahora",
 
   levels: [
-    {
-      title: "🟢 Nivel 0 — Principiante total",
-      body:
-        "Aprende qué es realmente la IA: modelos, datos, entrenamiento vs inferencia, sesgo, overfitting y evaluación básica. Todo de forma simple y práctica.",
-      recommended: ["Vocabulario IA", "Bases de datos", "Evaluación básica"],
-      goal: "Entender los conceptos sin confusión.",
-    },
-    {
-      title: "🟡 Nivel 1 — Fundamentals baseline (primer hito)",
-      body:
-        "Empieza con un camino fundamentals estructurado. Te da una base clara antes de pasar a certificaciones de vendor.",
-      recommended: ["AI Fundamentals"],
-      goal: "Construir un modelo mental sólido de la IA y de sus casos de uso reales.",
-      ctaQuizSlug: "ai-fundamentals",
-      ctaPrimaryText: "Practicar AI Fundamentals",
-    },
-    {
-      title: "🟠 Nivel 2 — Microsoft AI Fundamentals",
-      body:
-        "Este es el primer paso real de certificación. Introduce la IA en un contexto práctico, empresarial y cloud, ideal para principiantes.",
-      recommended: ["Microsoft AI Fundamentals"],
-      goal: "Entender cómo se aplica la IA en entornos cloud reales.",
-      ctaQuizSlug: "microsoft-ai-fundamentals",
-      ctaCertSlug: "microsoft-ai-fundamentals",
-      ctaPrimaryText: "Empezar quiz Microsoft AI",
-      ctaSecondaryText: "Ver certificación Microsoft AI",
-    },
-    {
-      title: "🔴 Nivel 3 — TensorFlow (práctica real)",
-      body:
-        "Cuando la base esté clara, pasa a la práctica con un framework real. TensorFlow te ayuda a pensar menos como principiante y más como practitioner.",
-      recommended: ["TensorFlow"],
-      goal: "Empezar a trabajar con flujos AI reales, patrones y lógica de modelos.",
-      ctaQuizSlug: "tensorflow",
-      ctaCertSlug: "tensorflow",
-      ctaPrimaryText: "Empezar quiz TensorFlow",
-      ctaSecondaryText: "Ver certificación TensorFlow",
-    },
-    {
-      title: "⚫ Nivel 4 — Google AI (próximamente)",
-      body:
-        "Este paso futuro ampliará la ruta hacia certificaciones Google AI y herramientas prácticas de IA en cloud.",
-      recommended: ["Google AI", "Vertex AI"],
-      goal: "Expandir habilidades hacia ecosistemas cloud AI modernos.",
-    },
-  ],
+  {
+    title: "🟢 Nivel 1 — AI Foundations",
+    body: "Empieza con una base sólida de conceptos de IA antes de pasar a certificaciones.",
+    recommended: ["AI Foundations"],
+    goal: "Entender claramente los fundamentos y la terminología.",
+    ctaQuizSlug: "ai-foundations",
+    ctaPrimaryText: "Empezar AI Foundations",
+  },
+  {
+    title: "🟡 Nivel 2 — Microsoft AI Fundamentals",
+    body: "Primer paso real de certificación en IA aplicada al cloud.",
+    recommended: ["Microsoft AI Fundamentals"],
+    goal: "Entender cómo se aplica la IA en escenarios reales.",
+    ctaQuizSlug: "microsoft-ai",
+    ctaCertSlug: "microsoft-ai",
+  },
+  {
+    title: "🟠 Nivel 3 — AWS AI Practitioner",
+    body: "Amplía tu conocimiento hacia servicios AI en AWS.",
+    recommended: ["AWS AI Practitioner"],
+    goal: "Comprender el uso de IA en AWS.",
+    ctaQuizSlug: "aws-ai-practitioner",
+    ctaCertSlug: "aws-ai-practitioner",
+  },
+  {
+    title: "🔴 Nivel 4 — Google Cloud Digital Leader",
+    body: "Visión empresarial y estratégica de la IA.",
+    recommended: ["Google Cloud Digital Leader"],
+    goal: "Comprender la IA en ecosistemas cloud.",
+    ctaQuizSlug: "google-cloud-digital-leader",
+    ctaCertSlug: "google-cloud-digital-leader",
+  },
+  {
+    title: "⚫ Nivel 5 — TensorFlow (práctica)",
+    body: "Empieza con frameworks reales y workflows.",
+    recommended: ["TensorFlow"],
+    goal: "Construir modelos AI reales.",
+    ctaQuizSlug: "tensorflow",
+    ctaCertSlug: "tensorflow",
+  },
+],
 
   salaryTitle: "💰 Salary outlook IA (2026)",
   salaryIntro:
@@ -636,52 +621,47 @@ fr: {
   practiceCta: "Ouvrir maintenant",
 
   levels: [
-    {
-      title: "🟢 Niveau 0 — Débutant total",
-      body:
-        "Apprenez ce qu’est vraiment l’IA : modèles, données, entraînement vs inférence, biais, overfitting et évaluation de base. Le tout de façon simple et pratique.",
-      recommended: ["Vocabulaire IA", "Bases des données", "Évaluation de base"],
-      goal: "Comprendre les concepts sans confusion.",
-    },
-    {
-      title: "🟡 Niveau 1 — Fundamentals baseline (premier jalon)",
-      body:
-        "Commencez par un parcours fundamentals structuré. Il vous donne une base claire avant de passer aux certifications vendor.",
-      recommended: ["AI Fundamentals"],
-      goal: "Construire un modèle mental solide de l’IA et de ses cas d’usage réels.",
-      ctaQuizSlug: "ai-fundamentals",
-      ctaPrimaryText: "S’entraîner avec AI Fundamentals",
-    },
-    {
-      title: "🟠 Niveau 2 — Microsoft AI Fundamentals",
-      body:
-        "C’est votre premier vrai pas de certification. Il introduit l’IA dans un contexte pratique, business et cloud, parfait pour débuter.",
-      recommended: ["Microsoft AI Fundamentals"],
-      goal: "Comprendre comment l’IA s’applique dans des environnements cloud réels.",
-      ctaQuizSlug: "microsoft-ai-fundamentals",
-      ctaCertSlug: "microsoft-ai-fundamentals",
-      ctaPrimaryText: "Commencer le quiz Microsoft AI",
-      ctaSecondaryText: "Voir la certification Microsoft AI",
-    },
-    {
-      title: "🔴 Niveau 3 — TensorFlow (pratique réelle)",
-      body:
-        "Quand la base est claire, passez à la pratique avec un vrai framework. TensorFlow vous aide à penser moins comme débutant et davantage comme practitioner.",
-      recommended: ["TensorFlow"],
-      goal: "Commencer à travailler avec de vrais workflows IA, des patterns et la logique des modèles.",
-      ctaQuizSlug: "tensorflow",
-      ctaCertSlug: "tensorflow",
-      ctaPrimaryText: "Commencer le quiz TensorFlow",
-      ctaSecondaryText: "Voir la certification TensorFlow",
-    },
-    {
-      title: "⚫ Niveau 4 — Google AI (bientôt disponible)",
-      body:
-        "Cette future étape élargira le parcours vers les certifications Google AI et les outils pratiques d’IA sur le cloud.",
-      recommended: ["Google AI", "Vertex AI"],
-      goal: "Étendre les compétences vers les écosystèmes cloud AI modernes.",
-    },
-  ],
+  {
+    title: "🟢 Niveau 1 — AI Foundations",
+    body: "Commencez avec une base solide des concepts IA avant les certifications.",
+    recommended: ["AI Foundations"],
+    goal: "Comprendre les bases et la terminologie.",
+    ctaQuizSlug: "ai-foundations",
+    ctaPrimaryText: "Commencer AI Foundations",
+  },
+  {
+    title: "🟡 Niveau 2 — Microsoft AI Fundamentals",
+    body: "Premier vrai pas dans les certifications IA.",
+    recommended: ["Microsoft AI Fundamentals"],
+    goal: "Comprendre l’application de l’IA en environnement cloud.",
+    ctaQuizSlug: "microsoft-ai",
+    ctaCertSlug: "microsoft-ai",
+  },
+  {
+    title: "🟠 Niveau 3 — AWS AI Practitioner",
+    body: "Approfondissez avec les services AI d’AWS.",
+    recommended: ["AWS AI Practitioner"],
+    goal: "Comprendre l’IA dans AWS.",
+    ctaQuizSlug: "aws-ai-practitioner",
+    ctaCertSlug: "aws-ai-practitioner",
+  },
+  {
+    title: "🔴 Niveau 4 — Google Cloud Digital Leader",
+    body: "Vision business et stratégique de l’IA.",
+    recommended: ["Google Cloud Digital Leader"],
+    goal: "Comprendre l’IA dans le cloud.",
+    ctaQuizSlug: "google-cloud-digital-leader",
+    ctaCertSlug: "google-cloud-digital-leader",
+  },
+  {
+    title: "⚫ Niveau 5 — TensorFlow (pratique)",
+    body: "Passez à la pratique avec des frameworks réels.",
+    recommended: ["TensorFlow"],
+    goal: "Construire des modèles IA concrets.",
+    ctaQuizSlug: "tensorflow",
+    ctaCertSlug: "tensorflow",
+  },
+],
 
   salaryTitle: "💰 Salary outlook IA (2026)",
   salaryIntro:
