@@ -201,7 +201,7 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
         <p className="mt-2 text-slate-700">{t.finalCtaBody}</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
-            href={quiz(lang, "ai-fundamentals")}
+            href={quiz(lang, "ai-foundations")}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 transition"
           >
             {t.ctaPrimary}
