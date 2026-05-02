@@ -1,5 +1,5 @@
 // src/app/_views/CertificationDetailView.tsx
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
@@ -8,6 +8,15 @@ import { getCertBySlug, type Cert } from "@/lib/data";
 
 type Lang = Locale;
 
+/* ------------------------------- Slug redirects ---------------------------------- */
+
+const SLUG_REDIRECTS: Record<string, string> = {
+  "cisco-ccst-security": "cisco-ccst-cybersecurity",
+  "microsoft-ai-fundamentals": "microsoft-ai",
+  "csharp-certification": "microsoft-csharp",
+  "tensorflow-developer": "google-tensorflow",
+};
+
 /* ------------------------------- Adapter ---------------------------------- */
 
 const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
@@ -15,7 +24,7 @@ const allLocales = (s: string) => ({ it: s, en: s, fr: s, es: s } as const);
 const makeQuizRoute = (slug: string) =>
   ({
     it: `/it/quiz/${slug}`,
-    en: `/en/quiz/${slug}`, // ✅ quiz sempre con /en
+    en: `/en/quiz/${slug}`,
     fr: `/fr/quiz/${slug}`,
     es: `/es/quiz/${slug}`,
   } as const);
@@ -23,7 +32,7 @@ const makeQuizRoute = (slug: string) =>
 const makeBackRoute = () =>
   ({
     it: "/it/certificazioni",
-    en: "/certifications", // 🔥 torna all’elenco ufficiale EN root
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certificaciones",
   } as const);
@@ -61,6 +70,19 @@ export async function CertificationDetailView({
   lang: Lang;
   slug: string;
 }) {
+  // ✅ Redirect slug legacy → slug canonico, tutte le lingue
+  if (SLUG_REDIRECTS[slug]) {
+    const target = SLUG_REDIRECTS[slug];
+    const prefix = lang === "en" ? "" : `/${lang}`;
+    const seg =
+      lang === "it"
+        ? "certificazioni"
+        : lang === "es"
+        ? "certificaciones"
+        : "certifications";
+    redirect(`${prefix}/${seg}/${target}`);
+  }
+
   const reg = CERTS_BY_SLUG[slug];
   if (reg) return <CertificationPage lang={lang} data={reg} />;
 

@@ -92,6 +92,7 @@ import GoogleCloudDigitalLeader from "./google-cloud-digital-leader";
 import AWSAIPractitioner from "./aws-ai-practitioner";
 import AIFoundations from "./ai-foundations";
 
+
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
  * -------------------------------------------------------------------*/
