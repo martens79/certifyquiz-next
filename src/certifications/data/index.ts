@@ -29,7 +29,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "javascript-developer": 21,
   "vmware-vcp": 22,
   "microsoft-virtualization": 23,
-  "microsoft-ai-fundamentals": 24,// slug legacy: "microsoft-ai-fundamentals"
+  "microsoft-ai-fundamentals": 24, // slug legacy
   "microsoft-ai": 24,
   "tensorflow": 25,
   "mongodb-developer": 26,
@@ -41,11 +41,14 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "aws-cloud-practitioner": 32,
   "cisco-ccst-networking": 33,
   "cisco-ccst-cybersecurity": 34,
-"cisco-ccst-security": 34, // alias legacy
-"google-cloud-digital-leader": 35,
-"aws-ai-practitioner": 36,
-"ai-foundations": 37,
-
+  "cisco-ccst-security": 34, // alias legacy
+  "google-cloud-digital-leader": 35,
+  "aws-ai-practitioner": 36,
+  "ai-foundations": 37,
+  "itil-4-foundation": 38,
+  "nvidia-generative-ai-llm": 39,
+  "ccnp-enterprise": 40,
+  "kcna-kubernetes-cloud-native": 41,
 };
 
 /* ---------------------------------------------------------------------
@@ -63,9 +66,7 @@ import CompTIACloudPlus from "./CompTIACloudPlus";
 import CompTIA_A_Plus from "./CompTIA_A_Plus";
 import CompTIA_ITF_Plus from "./CompTIA_ITF_Plus";
 import CSharpCertification from "./CSharpCertification";
-import ICDL from "./ICDL"; // ✅
-
-//import ECDL from "./ECDL";
+import ICDL from "./ICDL";
 import EIPASS from "./EIPASS";
 import F5 from "./F5";
 import GoogleCloud from "./GoogleCloud";
@@ -87,17 +88,18 @@ import PEKIT from "./PEKIT";
 import PythonDeveloper from "./PythonDeveloper";
 import SecurityPlus from "./SecurityPlus";
 import VMwareVCP from "./VMwareVCP";
-
 import GoogleCloudDigitalLeader from "./google-cloud-digital-leader";
 import AWSAIPractitioner from "./aws-ai-practitioner";
 import AIFoundations from "./ai-foundations";
-
+import ITIL4Foundation from "./ITIL4Foundation";
+import NvidiaGenerativeAI from "./NvidiaGenerativeAI";
+import CCNPEnterprise from "./CCNPEnterprise";
+import KubernetesKCNA from "./KubernetesKCNA";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
  * -------------------------------------------------------------------*/
 
-// Elenco base (immutabile a livello di riferimento)
 const RAW_CERTS = [
   AWSCloudPractitioner,
   AWSSolutionsArchitect,
@@ -105,13 +107,13 @@ const RAW_CERTS = [
   CCST,
   CEH,
   CiscoCCSTNetworking,
-  CiscoCCSTSecurity,          // slug: "cisco-ccst-security"
+  CiscoCCSTSecurity,          // slug: "cisco-ccst-cybersecurity"
   CISSP,
   CompTIACloudPlus,           // slug: "comptia-cloud-plus"
   CompTIA_A_Plus,             // slug: "comptia-a-plus"
   CompTIA_ITF_Plus,           // slug: "comptia-itf-plus"
-  CSharpCertification,        // slug: "csharp" (rinomina futura: "azure-developer")
-  ICDL,  // slug: "icdl"
+  CSharpCertification,        // slug: "csharp"
+  ICDL,                       // slug: "icdl"
   EIPASS,                     // slug: "eipass"
   F5,                         // slug: "f5"
   GoogleCloud,                // slug: "google-cloud"
@@ -136,11 +138,14 @@ const RAW_CERTS = [
   GoogleCloudDigitalLeader,   // slug: "google-cloud-digital-leader"
   AWSAIPractitioner,          // slug: "aws-ai-practitioner"
   AIFoundations,              // slug: "ai-foundations"
+  ITIL4Foundation,            // slug: "itil-4-foundation"
+  NvidiaGenerativeAI,         // slug: "nvidia-generative-ai-llm"
+  CCNPEnterprise,             // slug: "ccnp-enterprise"
+  KubernetesKCNA,             // slug: "kcna-kubernetes-cloud-native"
 ] as const;
 
 /**
- * Applica l’overlay degli ID (dal DB) agli oggetti certificazione.
- * Nota: niente `as const` sul risultato di `.map()`.
+ * Applica l'overlay degli ID (dal DB) agli oggetti certificazione.
  */
 export const CERTS: ReadonlyArray<CertificationData> = RAW_CERTS.map((c) => ({
   ...c,
