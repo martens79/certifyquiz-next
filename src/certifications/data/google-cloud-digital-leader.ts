@@ -45,77 +45,51 @@ const GoogleCloudDigitalLeader = {
     es: "Simulacro examen Google Cloud Digital Leader 2026: quizzes sobre cloud, productos Google Cloud, IA/ML, seguridad y valor empresarial. Empieza gratis en CertifyQuiz.",
   },
 
-  // ─── TOPICS ─────────────────────────────────────────────────────────────────
+    // ─── TOPICS ─────────────────────────────────────────────────────────────────
+  // ✅ Allineati ai topic reali del DB / pagina quiz.
+  // ✅ Evita 404 dalla pagina certificazione verso topic inesistenti.
 
   topics: [
     {
       title: {
-        it: "Fondamenti cloud e trasformazione digitale",
-        en: "Cloud Fundamentals and Digital Transformation",
-        fr: "Fondamentaux cloud et transformation numérique",
-        es: "Fundamentos cloud y transformación digital",
+        it: "Trasformazione digitale con Google Cloud",
+        en: "Digital transformation with Google Cloud",
+        fr: "Transformation numérique avec Google Cloud",
+        es: "Transformación digital con Google Cloud",
       },
       slug: {
-        it: "fondamenti-cloud-trasformazione-digitale",
-        en: "cloud-fundamentals-digital-transformation",
-        fr: "fondamentaux-cloud-transformation-numerique",
-        es: "fundamentos-cloud-transformacion-digital",
+        it: "digital-transformation-google-cloud",
+        en: "digital-transformation-google-cloud",
+        fr: "digital-transformation-google-cloud",
+        es: "digital-transformation-google-cloud",
       },
     },
     {
       title: {
-        it: "Prodotti e servizi Google Cloud",
-        en: "Google Cloud Products and Services",
-        fr: "Produits et services Google Cloud",
-        es: "Productos y servicios de Google Cloud",
+        it: "Dati, AI e innovazione",
+        en: "Data, AI and innovation",
+        fr: "Données, IA et innovation",
+        es: "Datos, IA e innovación",
       },
       slug: {
-        it: "prodotti-servizi-google-cloud",
-        en: "google-cloud-products-services",
-        fr: "produits-services-google-cloud",
-        es: "productos-servicios-google-cloud",
+        it: "data-ai-innovation",
+        en: "data-ai-innovation",
+        fr: "data-ai-innovation",
+        es: "data-ai-innovation",
       },
     },
     {
       title: {
-        it: "Dati, AI e Machine Learning su Google Cloud",
-        en: "Data, AI, and Machine Learning on Google Cloud",
-        fr: "Données, IA et Machine Learning sur Google Cloud",
-        es: "Datos, IA y Machine Learning en Google Cloud",
+        it: "Infrastruttura cloud, sicurezza e costi",
+        en: "Cloud infrastructure, security and costs",
+        fr: "Infrastructure cloud, sécurité et coûts",
+        es: "Infraestructura cloud, seguridad y costes",
       },
       slug: {
-        it: "dati-ai-machine-learning-google-cloud",
-        en: "data-ai-machine-learning-google-cloud",
-        fr: "donnees-ia-machine-learning-google-cloud",
-        es: "datos-ia-machine-learning-google-cloud",
-      },
-    },
-    {
-      title: {
-        it: "Sicurezza, affidabilità e governance su Google Cloud",
-        en: "Security, Reliability, and Governance on Google Cloud",
-        fr: "Sécurité, fiabilité et gouvernance sur Google Cloud",
-        es: "Seguridad, fiabilidad y gobernanza en Google Cloud",
-      },
-      slug: {
-        it: "sicurezza-affidabilita-governance-google-cloud",
-        en: "security-reliability-governance-google-cloud",
-        fr: "securite-fiabilite-gouvernance-google-cloud",
-        es: "seguridad-fiabilidad-gobernanza-google-cloud",
-      },
-    },
-    {
-      title: {
-        it: "Valore aziendale e casi d'uso business",
-        en: "Business Value and Cloud Use Cases",
-        fr: "Valeur métier et cas d'usage cloud",
-        es: "Valor empresarial y casos de uso cloud",
-      },
-      slug: {
-        it: "valore-aziendale-casi-uso-business",
-        en: "business-value-cloud-use-cases",
-        fr: "valeur-metier-cas-usage-cloud",
-        es: "valor-empresarial-casos-uso-cloud",
+        it: "cloud-infrastructure-security-costs",
+        en: "cloud-infrastructure-security-costs",
+        fr: "cloud-infrastructure-security-costs",
+        es: "cloud-infrastructure-security-costs",
       },
     },
   ],
