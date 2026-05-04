@@ -24,7 +24,7 @@ export const articleBySlugLang = groq`
   "coverUrl": coalesce(coverImage.asset->url, cover.asset->url),
 
   // ✅ nuovo + fallback vecchio
-  "body": coalesce(body, content)
+  "body": coalesce(body, content),
 
   "seoTitle": seo.title,
   "seoDescription": description
