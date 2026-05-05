@@ -186,7 +186,6 @@ openai: "ai",
 // Nuove certificazioni AI
 "ai-foundations": "ai", // ✅ tua certificazione
 "aws-ai-practitioner": "ai", // ⚠️ qui AI per UX (anche se è cloud lato SEO)
-"google-cloud-digital-leader": "cloud", // ⚠️ corretto SEO → cloud
 };
 
 /* ======================  ID <-> SLUG (DERIVED)  ====================== */
