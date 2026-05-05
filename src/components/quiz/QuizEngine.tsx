@@ -867,6 +867,27 @@ const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
 const explainPreview = explainText ? makePreview(explainText, 260) : '';
 
 if (freeLimitReached) {
+  // ✅ Calcola il risultato reale delle prime 20 domande gratuite
+  const freeQuestions = questions.slice(0, FREE_LIMIT);
+
+  let freeCorrectCount = 0;
+
+  for (const question of freeQuestions) {
+    const chosen = marked[question.id];
+    const right = question.answers.find((answer) => !!answer.isCorrect)?.id;
+
+    if (
+      chosen != null &&
+      right != null &&
+      Number(chosen) === Number(right)
+    ) {
+      freeCorrectCount++;
+    }
+  }
+
+  const freeTotalAnswered = freeQuestions.length;
+  const freeWrongCount = Math.max(freeTotalAnswered - freeCorrectCount, 0);
+
   return (
     <div className={`min-h-[100dvh] ${gradient}`}>
       <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
@@ -875,6 +896,9 @@ if (freeLimitReached) {
           currentCount={FREE_LIMIT}
           freeLimit={FREE_LIMIT}
           mode={effectiveMode}
+          correctCount={freeCorrectCount}
+          wrongCount={freeWrongCount}
+          totalAnswered={freeTotalAnswered}
           onBack={() => setIdx(FREE_LIMIT - 1)}
         />
       </div>
@@ -1037,7 +1061,7 @@ return (
 
 
         {/* domanda (altezza stabile) */}
-        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-[128px] flex items-center">
+        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-32 flex items-center">
           <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 

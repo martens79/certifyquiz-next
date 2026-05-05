@@ -10,26 +10,31 @@ type Props = {
   freeLimit: number;
   mode?: "training" | "exam";
   onBack?: () => void;
+
+  // ✅ Dati risultato free test
+  correctCount?: number;
+  wrongCount?: number;
+  totalAnswered?: number;
 };
 
 const COPY = {
   badge: {
     it: "Limite gratuito raggiunto",
     en: "Free limit reached",
-    fr: "Limite gratuit atteinte",
+    fr: "Limite gratuit atteint",
     es: "Límite gratuito alcanzado",
   },
   title: {
-    it: "Ti sei fermato a {limit} domande 🎯",
-    en: "You've reached {limit} questions 🎯",
-    fr: "Vous êtes arrivé à {limit} questions 🎯",
-    es: "Has llegado a {limit} preguntas 🎯",
+    it: "Hai completato il tuo test gratuito 🎯",
+    en: "You completed your free test 🎯",
+    fr: "Vous avez terminé votre test gratuit 🎯",
+    es: "Has completado tu test gratuito 🎯",
   },
   subtitle: {
-    it: "Ed è proprio qui che molti si fermano.",
-    en: "And this is exactly where many people stop.",
-    fr: "Et c'est exactement ici que beaucoup s'arrêtent.",
-    es: "Y es justo aquí donde muchos se detienen.",
+    it: "Prima di continuare, guarda dove sei davvero.",
+    en: "Before you continue, see where you really stand.",
+    fr: "Avant de continuer, voyez où vous en êtes vraiment.",
+    es: "Antes de continuar, mira dónde estás realmente.",
   },
   progress: {
     it: "Hai completato {current}/{limit} domande gratuite.",
@@ -37,57 +42,72 @@ const COPY = {
     fr: "Vous avez complété {current}/{limit} questions gratuites.",
     es: "Has completado {current}/{limit} preguntas gratuitas.",
   },
+  resultTitle: {
+    it: "Risultato del test",
+    en: "Test result",
+    fr: "Résultat du test",
+    es: "Resultado del test",
+  },
+  correct: {
+    it: "Risposte corrette",
+    en: "Correct answers",
+    fr: "Bonnes réponses",
+    es: "Respuestas correctas",
+  },
+  score: {
+    it: "Punteggio",
+    en: "Score",
+    fr: "Score",
+    es: "Puntuación",
+  },
+  mistakes: {
+    it: "Errori",
+    en: "Mistakes",
+    fr: "Erreurs",
+    es: "Errores",
+  },
+  diagnosisGood: {
+    it: "Buon inizio. Ma l’esame reale è più lungo e meno permissivo.",
+    en: "Good start. But the real exam is longer and less forgiving.",
+    fr: "Bon début. Mais le vrai examen est plus long et moins indulgent.",
+    es: "Buen comienzo. Pero el examen real es más largo y menos permisivo.",
+  },
+  diagnosisMedium: {
+    it: "Sei vicino, ma questi errori possono ancora costarti l’esame.",
+    en: "You are close, but these mistakes can still cost you the exam.",
+    fr: "Vous êtes proche, mais ces erreurs peuvent encore vous coûter l’examen.",
+    es: "Estás cerca, pero estos errores todavía pueden costarte el examen.",
+  },
+  diagnosisLow: {
+    it: "Con questo livello, oggi non sei ancora pronto per l’esame reale.",
+    en: "At this level, you are not ready for the real exam yet.",
+    fr: "À ce niveau, vous n’êtes pas encore prêt pour le vrai examen.",
+    es: "Con este nivel, todavía no estás listo para el examen real.",
+  },
+  mistakeLine: {
+    it: "Hai fatto {wrong} errori. Premium ti aiuta a capire perché hai sbagliato e come correggere le lacune.",
+    en: "You made {wrong} mistakes. Premium helps you understand why and fix your gaps.",
+    fr: "Vous avez fait {wrong} erreurs. Premium vous aide à comprendre pourquoi et à corriger vos lacunes.",
+    es: "Has cometido {wrong} errores. Premium te ayuda a entender por qué y a corregir tus lagunas.",
+  },
   text: {
-    it: "La differenza la fa chi continua. Con Premium sblocchi l'esperienza completa, studi con più continuità e trasformi il quiz in una preparazione vera, non in una semplice prova veloce.",
-    en: "The difference is made by the people who keep going. With Premium, you unlock the full experience, study with more consistency, and turn the quiz into real preparation instead of a quick test.",
-    fr: "La différence, ce sont ceux qui continuent. Avec Premium, vous débloquez l'expérience complète, étudiez avec plus de régularité et transformez le quiz en vraie préparation.",
-    es: "La diferencia la marca quien sigue adelante. Con Premium desbloqueas la experiencia completa, estudias con más constancia y conviertes el quiz en una preparación real.",
+    it: "La differenza la fa chi continua. Con Premium sblocchi l’esperienza completa, studi con più continuità e trasformi il quiz in una preparazione vera.",
+    en: "The difference is made by the people who keep going. With Premium, you unlock the full experience and turn the quiz into real preparation.",
+    fr: "La différence, ce sont ceux qui continuent. Avec Premium, vous débloquez l’expérience complète et transformez le quiz en vraie préparation.",
+    es: "La diferencia la marca quien sigue adelante. Con Premium desbloqueas la experiencia completa y conviertes el quiz en una preparación real.",
   },
   urgencyLine: {
-    it: "Hai già iniziato bene. Fermarti adesso sarebbe il momento peggiore.",
-    en: "You've already started well. Stopping now would be the worst moment.",
-    fr: "Vous avez déjà bien commencé. S'arrêter maintenant serait le pire moment.",
-    es: "Ya empezaste bien. Detenerte ahora sería el peor momento.",
+    it: "Hai già iniziato. Fermarti ora sarebbe il momento peggiore.",
+    en: "You've already started. Stopping now would be the worst moment.",
+    fr: "Vous avez déjà commencé. S’arrêter maintenant serait le pire moment.",
+    es: "Ya empezaste. Detenerte ahora sería el peor momento.",
   },
   pizzaLine: {
     it: "Al prezzo di una pizza, continui senza limiti e ti prepari davvero alla certificazione.",
     en: "For the price of a pizza, you keep going without limits and prepare seriously for your certification.",
-    fr: "Pour le prix d'une pizza, vous continuez sans limites et vous vous préparez vraiment à la certification.",
+    fr: "Pour le prix d’une pizza, vous continuez sans limites et vous vous préparez vraiment à la certification.",
     es: "Por el precio de una pizza, sigues sin límites y te preparas de verdad para la certificación.",
   },
-  featuresTitle: {
-    it: "Con Premium sblocchi:",
-    en: "With Premium you unlock:",
-    fr: "Avec Premium, vous débloquez :",
-    es: "Con Premium desbloqueas:",
-  },
-  features: {
-    it: [
-      "Quiz illimitati",
-      "Modalità esame reale",
-      "Ripasso errori",
-      "Spiegazioni complete per ogni domanda",
-    ],
-    en: [
-      "Unlimited quizzes",
-      "Real exam mode",
-      "Error review",
-      "Full explanations for every question",
-    ],
-    fr: [
-      "Quiz illimités",
-      "Mode examen réel",
-      "Révision des erreurs",
-      "Explications complètes pour chaque question",
-    ],
-    es: [
-      "Quizzes ilimitados",
-      "Modo examen real",
-      "Repaso de errores",
-      "Explicaciones completas para cada pregunta",
-    ],
-  },
-  // Tabella
   tableTitle: {
     it: "Free vs Premium",
     en: "Free vs Premium",
@@ -129,55 +149,49 @@ const COPY = {
     ],
     fr: [
       { label: "Quiz par jour", free: "20", premium: "Illimités" },
-      { label: "Explications des réponses", free: "❌", premium: "✅ Toutes" },
+      { label: "Explications", free: "❌", premium: "✅ Toutes" },
       { label: "Mode examen réel", free: "❌", premium: "✅" },
       { label: "Révision des erreurs", free: "❌", premium: "✅" },
       { label: "Toutes les certifications", free: "✅", premium: "✅" },
     ],
     es: [
       { label: "Quizzes por día", free: "20", premium: "Ilimitados" },
-      { label: "Explicaciones de respuestas", free: "❌", premium: "✅ Todas" },
+      { label: "Explicaciones", free: "❌", premium: "✅ Todas" },
       { label: "Modo examen real", free: "❌", premium: "✅" },
       { label: "Repaso de errores", free: "❌", premium: "✅" },
       { label: "Todas las certificaciones", free: "✅", premium: "✅" },
     ],
   },
-  // Garanzia
-  guaranteeTitle: {
-    it: "Garanzia 7 giorni",
-    en: "7-day money-back guarantee",
-    fr: "Garantie 7 jours",
-    es: "Garantía de 7 días",
+  featuresTitle: {
+    it: "Con Premium sblocchi:",
+    en: "With Premium you unlock:",
+    fr: "Avec Premium, vous débloquez :",
+    es: "Con Premium desbloqueas:",
   },
-  guaranteeDesc: {
-    it: "Se nei primi 7 giorni non sei soddisfatto, ti rimborsiamo senza fare domande. Zero rischi.",
-    en: "If you're not satisfied within the first 7 days, we'll refund you — no questions asked. Zero risk.",
-    fr: "Si vous n'êtes pas satisfait dans les 7 premiers jours, nous vous remboursons sans poser de questions. Zéro risque.",
-    es: "Si en los primeros 7 días no estás satisfecho, te reembolsamos sin preguntas. Sin riesgos.",
-  },
-  // Testimonials
-  testimonialsTitle: {
-    it: "Chi ha continuato, ha passato l'esame",
-    en: "Those who kept going, passed",
-    fr: "Ceux qui ont continué ont réussi",
-    es: "Quienes siguieron adelante, aprobaron",
-  },
-  testimonials: {
+  features: {
     it: [
-      { text: "Ho passato il CCNA al primo tentativo dopo 3 settimane. Le spiegazioni Premium fanno davvero la differenza.", name: "Marco R.", cert: "Cisco CCNA" },
-      { text: "Senza Premium mi sarei fermato ai primi quiz. Con le spiegazioni ho capito dove sbagliavo davvero.", name: "Sara T.", cert: "CompTIA Security+" },
+      "Quiz illimitati",
+      "Modalità esame reale",
+      "Ripasso errori",
+      "Spiegazioni complete per ogni domanda",
     ],
     en: [
-      { text: "Passed the CCNA on my first attempt after 3 weeks. The Premium explanations make a real difference.", name: "Mark R.", cert: "Cisco CCNA" },
-      { text: "Without Premium I would have stopped at the first quizzes. The explanations helped me understand where I was actually going wrong.", name: "Sarah T.", cert: "CompTIA Security+" },
+      "Unlimited quizzes",
+      "Real exam mode",
+      "Error review",
+      "Full explanations for every question",
     ],
     fr: [
-      { text: "J'ai réussi le CCNA du premier coup après 3 semaines. Les explications Premium font vraiment la différence.", name: "Marc R.", cert: "Cisco CCNA" },
-      { text: "Sans Premium je me serais arrêté aux premiers quiz. Les explications m'ont aidé à comprendre mes erreurs.", name: "Sophie T.", cert: "CompTIA Security+" },
+      "Quiz illimités",
+      "Mode examen réel",
+      "Révision des erreurs",
+      "Explications complètes pour chaque question",
     ],
     es: [
-      { text: "Aprobé el CCNA al primer intento después de 3 semanas. Las explicaciones Premium marcan la diferencia.", name: "Carlos M.", cert: "Cisco CCNA" },
-      { text: "Sin Premium me habría detenido en los primeros quizzes. Las explicaciones me ayudaron a entender mis errores.", name: "Ana P.", cert: "CompTIA Security+" },
+      "Quizzes ilimitados",
+      "Modo examen real",
+      "Repaso de errores",
+      "Explicaciones completas para cada pregunta",
     ],
   },
   cta: {
@@ -198,12 +212,6 @@ const COPY = {
     fr: "Annulez quand vous voulez. Aucun engagement.",
     es: "Cancela cuando quieras. Sin compromiso.",
   },
-  finalLine: {
-    it: "Chi passa l'esame non è sempre il più bravo. Spesso è quello che non si ferma.",
-    en: "The one who passes is not always the smartest. Often, it's the one who doesn't stop.",
-    fr: "Celui qui réussit n'est pas toujours le plus fort. Souvent, c'est celui qui ne s'arrête pas.",
-    es: "Quien aprueba no siempre es el más brillante. Muchas veces es quien no se detiene.",
-  },
   back: {
     it: "Torna indietro",
     en: "Go back",
@@ -211,15 +219,17 @@ const COPY = {
     es: "Volver",
   },
   checkoutError: {
-    it: "Errore durante l'apertura del checkout. Riprova.",
+    it: "Errore durante l’apertura del checkout. Riprova.",
     en: "Error while opening checkout. Please try again.",
-    fr: "Erreur lors de l'ouverture du checkout. Réessayez.",
+    fr: "Erreur lors de l’ouverture du checkout. Réessayez.",
     es: "Error al abrir el checkout. Inténtalo de nuevo.",
   },
 } as const;
 
 function safeLang(lang?: Locale): Locale {
-  return lang === "it" || lang === "en" || lang === "fr" || lang === "es" ? lang : "en";
+  return lang === "it" || lang === "en" || lang === "fr" || lang === "es"
+    ? lang
+    : "en";
 }
 
 function interpolate(value: string, vars: Record<string, string | number>) {
@@ -231,9 +241,28 @@ export default function PremiumQuestionLimitGate({
   currentCount,
   freeLimit,
   onBack,
+  correctCount,
+  wrongCount,
+  totalAnswered,
 }: Props) {
   const L = safeLang(lang);
   const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ Calcolo sicuro risultato test
+  const total = totalAnswered ?? currentCount ?? freeLimit;
+  const correct = correctCount ?? 0;
+  const wrong = wrongCount ?? Math.max(total - correct, 0);
+  const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  const resultLevel =
+    percentage >= 80 ? "good" : percentage >= 60 ? "medium" : "low";
+
+  const diagnosis =
+    resultLevel === "good"
+      ? COPY.diagnosisGood[L]
+      : resultLevel === "medium"
+        ? COPY.diagnosisMedium[L]
+        : COPY.diagnosisLow[L];
 
   async function startPremiumCheckout() {
     if (isLoading) return;
@@ -250,13 +279,7 @@ export default function PremiumQuestionLimitGate({
         body: JSON.stringify({ lang: L }),
       });
 
-      let data: { url?: string; error?: string } | null = null;
-
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error("Invalid server response");
-      }
+      const data: { url?: string; error?: string } = await res.json();
 
       if (!res.ok || !data?.url) {
         throw new Error(data?.error || "Failed to create checkout session");
@@ -272,30 +295,104 @@ export default function PremiumQuestionLimitGate({
 
   return (
     <div className="mx-auto max-w-2xl rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
-
-      {/* Badge */}
       <div className="mb-4 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
         🔒 {COPY.badge[L]}
       </div>
 
-      {/* Titolo */}
       <h2 className="mb-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-        {interpolate(COPY.title[L], { limit: freeLimit })}
+        {COPY.title[L]}
       </h2>
 
       <p className="mb-3 text-base font-semibold text-gray-900 sm:text-lg">
         {COPY.subtitle[L]}
       </p>
 
-      <p className="mb-2 text-sm text-gray-600 sm:text-base">
-        {interpolate(COPY.progress[L], { current: currentCount, limit: freeLimit })}
+      <p className="mb-5 text-sm text-gray-600 sm:text-base">
+        {interpolate(COPY.progress[L], {
+          current: currentCount,
+          limit: freeLimit,
+        })}
       </p>
+
+      {/* ✅ RISULTATO DEL FREE TEST */}
+      <div className="mb-5 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+        <p className="mb-3 text-sm font-semibold text-gray-900">
+          📊 {COPY.resultTitle[L]}
+        </p>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
+            <div className="text-2xl font-bold text-gray-950">
+              {correct}/{total}
+            </div>
+            <div className="mt-1 text-xs text-gray-600">{COPY.correct[L]}</div>
+          </div>
+
+          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
+            <div className="text-2xl font-bold text-gray-950">
+              {percentage}%
+            </div>
+            <div className="mt-1 text-xs text-gray-600">{COPY.score[L]}</div>
+          </div>
+
+          <div className="rounded-xl bg-white p-3 text-center shadow-sm">
+            <div className="text-2xl font-bold text-red-600">{wrong}</div>
+            <div className="mt-1 text-xs text-gray-600">{COPY.mistakes[L]}</div>
+          </div>
+        </div>
+
+        <div className="mt-4 h-3 overflow-hidden rounded-full bg-gray-200">
+          <div
+            className={`h-full rounded-full ${
+              resultLevel === "good"
+                ? "bg-emerald-500"
+                : resultLevel === "medium"
+                  ? "bg-amber-500"
+                  : "bg-red-500"
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+
+        <div
+          className={`mt-4 rounded-xl border p-3 ${
+            resultLevel === "good"
+              ? "border-emerald-200 bg-emerald-50"
+              : resultLevel === "medium"
+                ? "border-amber-200 bg-amber-50"
+                : "border-red-200 bg-red-50"
+          }`}
+        >
+          <p
+            className={`text-sm font-semibold ${
+              resultLevel === "good"
+                ? "text-emerald-900"
+                : resultLevel === "medium"
+                  ? "text-amber-900"
+                  : "text-red-900"
+            }`}
+          >
+            {diagnosis}
+          </p>
+
+          <p
+            className={`mt-1 text-sm ${
+              resultLevel === "good"
+                ? "text-emerald-800"
+                : resultLevel === "medium"
+                  ? "text-amber-800"
+                  : "text-red-800"
+            }`}
+          >
+            {interpolate(COPY.mistakeLine[L], { wrong })}
+          </p>
+        </div>
+      </div>
 
       <p className="mb-4 text-sm text-gray-700 sm:text-base">
         {COPY.text[L]}
       </p>
 
-      {/* Urgency */}
       <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
         <p className="text-sm font-semibold text-amber-900 sm:text-base">
           {COPY.urgencyLine[L]}
@@ -305,36 +402,45 @@ export default function PremiumQuestionLimitGate({
         </p>
       </div>
 
-      {/* Tabella Free vs Premium */}
       <div className="mb-5 overflow-hidden rounded-xl border border-gray-200">
         <div className="bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-900">
           {COPY.tableTitle[L]}
         </div>
+
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="px-4 py-2 text-left font-medium text-gray-600">{COPY.tableFeature[L]}</th>
-              <th className="px-4 py-2 text-center font-medium text-gray-500">{COPY.tableFree[L]}</th>
-              <th className="px-4 py-2 text-center font-semibold text-black">{COPY.tablePremium[L]}</th>
+              <th className="px-4 py-2 text-left font-medium text-gray-600">
+                {COPY.tableFeature[L]}
+              </th>
+              <th className="px-4 py-2 text-center font-medium text-gray-500">
+                {COPY.tableFree[L]}
+              </th>
+              <th className="px-4 py-2 text-center font-semibold text-black">
+                {COPY.tablePremium[L]}
+              </th>
             </tr>
           </thead>
+
           <tbody>
             {COPY.tableRows[L].map((row, i) => (
-              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+              <tr key={row.label} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
                 <td className="px-4 py-2 text-gray-800">{row.label}</td>
                 <td className="px-4 py-2 text-center text-gray-500">{row.free}</td>
-                <td className="px-4 py-2 text-center font-medium text-emerald-700">{row.premium}</td>
+                <td className="px-4 py-2 text-center font-medium text-emerald-700">
+                  {row.premium}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* Features list */}
       <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
         <p className="mb-3 text-sm font-semibold text-gray-900">
           {COPY.featuresTitle[L]}
         </p>
+
         <ul className="space-y-2 text-sm text-gray-800">
           {COPY.features[L].map((feature) => (
             <li key={feature} className="flex items-start gap-2">
@@ -345,7 +451,6 @@ export default function PremiumQuestionLimitGate({
         </ul>
       </div>
 
-      {/* CTA principale */}
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
@@ -370,36 +475,6 @@ export default function PremiumQuestionLimitGate({
 
       <p className="mt-3 text-xs text-gray-500 sm:text-sm">
         {COPY.cancelNote[L]}
-      </p>
-
-      {/* Garanzia */}
-      <div className="mt-5 flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-        <div className="text-2xl">🛡️</div>
-        <div>
-          <div className="text-sm font-semibold text-emerald-900">{COPY.guaranteeTitle[L]}</div>
-          <p className="mt-1 text-xs text-emerald-800">{COPY.guaranteeDesc[L]}</p>
-        </div>
-      </div>
-
-      {/* Testimonials */}
-      <div className="mt-5">
-        <p className="mb-3 text-sm font-semibold text-gray-900">{COPY.testimonialsTitle[L]}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {COPY.testimonials[L].map((item, i) => (
-            <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
-              <div className="mb-2 text-yellow-400 text-xs">★★★★★</div>
-              <p className="text-xs text-gray-700 italic">"{item.text}"</p>
-              <div className="mt-3">
-                <div className="text-xs font-semibold text-gray-900">{item.name}</div>
-                <div className="text-xs text-gray-500">{item.cert}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <p className="mt-5 text-sm font-medium text-gray-900 sm:text-base">
-        {COPY.finalLine[L]}
       </p>
     </div>
   );
