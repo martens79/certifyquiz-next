@@ -211,19 +211,21 @@ const certificationNames: CertificationNames = {
   ],
 
   reti: [
-    { name: "Network+", link: certPath(lang, "network-plus") },
-    { name: "CCNA", link: certPath(lang, "ccna") },
-    { name: "JNCIE", link: certPath(lang, "jncie") },
-    { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
-    { name: "F5-CTS", link: certPath(lang, "f5") },
-  ],
+  { name: "Network+", link: certPath(lang, "network-plus") },
+  { name: "CCNA", link: certPath(lang, "ccna") },
+  { name: "CCNP Enterprise", link: certPath(lang, "ccnp-enterprise") },
+  { name: "JNCIE", link: certPath(lang, "jncie") },
+  { name: "CCST Networking", link: certPath(lang, "cisco-ccst-networking") },
+  { name: "F5-CTS", link: certPath(lang, "f5") },
+],
 
-  cloud: [
+cloud: [
   { name: "AWS Cloud Practitioner", link: certPath(lang, "aws-cloud-practitioner") },
   { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
   { name: "Azure", link: certPath(lang, "microsoft-azure-fundamentals") },
   { name: "Google Cloud", link: certPath(lang, "google-cloud") },
   { name: "Google Cloud Digital Leader", link: certPath(lang, "google-cloud-digital-leader") },
+  { name: "Kubernetes KCNA", link: certPath(lang, "kcna-kubernetes-cloud-native") },
   { name: "CompTIA Cloud+", link: certPath(lang, "comptia-cloud-plus") },
   { name: "IBM Cloud v5", link: certPath(lang, "ibm-cloud-v5") },
   { name: "AWS Solutions Architect", link: certPath(lang, "aws-solutions-architect") },

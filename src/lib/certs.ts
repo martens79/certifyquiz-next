@@ -125,22 +125,25 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   "cisco-ccst-cybersecurity": "sicurezza", // alias vecchio (categoria)
 
   // Reti
-  ccna: "reti",
-  "network-plus": "reti",          // ✅ slug reale
-"comptia-network-plus": "reti",  // alias vecchio (se ti serve)
-  "cisco-ccst-networking": "reti",
-  jncie: "reti",
-  f5: "reti",
-  "f5-cts": "reti",
+ccna: "reti",
+"network-plus": "reti",
+"comptia-network-plus": "reti",
+"ccnp-enterprise": "reti", // ✅ aggiunto
+"cisco-ccst-networking": "reti",
+jncie: "reti",
+f5: "reti",
+"f5-cts": "reti",
 
   // Cloud
-  "aws-cloud-practitioner": "cloud",
-  "comptia-cloud-plus": "cloud",
-  "ibm-cloud-v5": "cloud",
-  "aws-solutions-architect": "cloud",
-  "azure-fundamentals": "cloud",
-  "microsoft-azure-fundamentals": "cloud",
-  "google-cloud": "cloud",
+"aws-cloud-practitioner": "cloud",
+"comptia-cloud-plus": "cloud",
+"ibm-cloud-v5": "cloud",
+"aws-solutions-architect": "cloud",
+"azure-fundamentals": "cloud",
+"microsoft-azure-fundamentals": "cloud",
+"google-cloud": "cloud",
+"google-cloud-digital-leader": "cloud",
+"kcna-kubernetes-cloud-native": "cloud", // ✅ aggiunto
 
   // Database
   "microsoft-sql-server": "database",
