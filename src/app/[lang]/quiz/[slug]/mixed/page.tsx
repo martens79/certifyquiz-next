@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import QuizEngine from '@/components/quiz/QuizEngine';
 import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
@@ -154,6 +154,9 @@ const COPY: Record<Locale, Copy> = {
 
 export default function MixedQuizPage() {
   const router = useRouter();
+const searchParams = useSearchParams();
+const isAssessmentMode = searchParams.get("mode") === "assessment";
+
   const params = useParams<{ lang: string; slug: string }>();
 
   const currentLang = ((params?.lang as Locale) ?? 'it') as Locale;
@@ -162,7 +165,9 @@ export default function MixedQuizPage() {
   const certId = CERT_ID_BY_SLUG[currentSlug];
 
 
-  const [mode, setMode] = useState<'training' | 'exam'>('training');
+  const [mode, setMode] = useState<'training' | 'exam' | 'assessment'>(
+  isAssessmentMode ? 'assessment' : 'training'
+);
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
@@ -239,8 +244,12 @@ export default function MixedQuizPage() {
 
   /* ------------------------- fetch pool for engine ------------------------- */
   const fetchPool = useCallback(async (): Promise<UiQuestion[]> => {
-    const effectiveLimit =
-      mode === 'exam' ? Math.max(1, examSpec.questions) : trainingCap;
+   const effectiveLimit =
+  isAssessmentMode
+    ? 10
+    : mode === 'exam'
+    ? Math.max(1, examSpec.questions)
+    : trainingCap;
 
     const res = await getMixedQuestions(certId, currentLang, {
       limit: effectiveLimit,
@@ -253,7 +262,7 @@ export default function MixedQuizPage() {
       : (res as any).questions ?? [];
 
     return raw.map(normalizeMixedQuestion);
-  }, [certId, currentLang, trainingCap, mode, examSpec.questions]);
+  }, [certId, currentLang, trainingCap, mode, examSpec.questions, isAssessmentMode]);
 
   return (
     <div className="min-h-screen">
@@ -324,6 +333,11 @@ export default function MixedQuizPage() {
   lang={currentLang}
   storageScope={`mixed:${currentSlug}:${currentLang}`}
   categoryColor="from-blue-900 to-blue-700"
+
+  // 🔥 MODE (assessment override)
+  mode={isAssessmentMode ? "assessment" : undefined}
+  hideModeSwitch={isAssessmentMode}
+
   context={{
     kind: 'mixed',
     certificationName: currentSlug.toUpperCase(),
@@ -337,12 +351,27 @@ export default function MixedQuizPage() {
         : currentLang === 'fr'
         ? '← Retour à la certification'
         : '← Back to certification',
+
     isPremiumUser: premium.isPremiumUser,
     premiumLocked: premium.premiumLocked,
   }}
+
   initialMode={mode}
-  durationsByMode={{ training: undefined, exam: examSpec.durationSec }}
-  limitsByMode={{ training: trainingCap, exam: examSpec.questions }}
+
+  // 🔥 DURATIONS
+  durationsByMode={{
+    training: null,
+    exam: examSpec.durationSec,
+    assessment: null,
+  }}
+
+  // 🔥 LIMITS
+  limitsByMode={{
+    training: trainingCap,
+    exam: examSpec.questions,
+    assessment: 10,
+  }}
+
   onModeChange={(m) => setMode(m)}
   fetchQuestions={async () => {
     try {
@@ -375,8 +404,12 @@ export default function MixedQuizPage() {
   }}
   onFinish={async (s: any) => {
     try {
-      const finishedMode: 'training' | 'exam' =
-        s?.mode === 'exam' || s?.mode === 'training' ? s.mode : mode;
+      const finishedMode =
+  s?.mode === 'exam' || s?.mode === 'training' || s?.mode === 'assessment'
+    ? s.mode
+    : mode;
+
+if (finishedMode === 'assessment') return;
 
       await saveExam({
         certification_id: certId,

@@ -22,6 +22,12 @@ import PremiumQuestionLimitGate from '@/components/premium/PremiumQuestionLimitG
 const L = {
   training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
   exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
+  assessment: {
+  it: 'Free test',
+  en: 'Free test',
+  fr: 'Test gratuit',
+  es: 'Test gratuito'
+},
   question: { it: 'Domanda', en: 'Question', fr: 'Question', es: 'Pregunta' },
   answered: { it: 'Risposte date', en: 'Answered', fr: 'Répondues', es: 'Respondidas' },
 
@@ -57,7 +63,7 @@ const L = {
 function label(key: keyof typeof L, lang: Locale) {
   return L[key][lang] ?? L[key].it;
 }
-type Mode = 'training' | 'exam';
+type Mode = 'training' | 'exam' | 'assessment';
 
 type Props = {
   lang: Locale;
@@ -149,7 +155,7 @@ export default function QuizEngine({
   const FREE_LIMIT = 20;
 
   // ---------------- Sticky timer (UI-only) ----------------
-  const examDurationSec = (durationsByMode?.exam ?? null) ?? (durationSec ?? null);
+  const examDurationSec = durationsByMode?.exam ?? durationSec ?? null;
 
   const timeStrFromSec = (s: number) => {
     const mm = Math.floor(s / 60);
@@ -241,9 +247,11 @@ const openFeedback = () => {
     if (!p?.length) return [];
 
     const target =
-      m === 'training'
-        ? (limitsByMode?.training ?? p.length)
-        : (effectiveLimit ?? p.length);
+  m === 'training'
+    ? (limitsByMode?.training ?? p.length)
+    : m === 'assessment'
+    ? (limitsByMode?.assessment ?? effectiveLimit ?? 10)
+    : (effectiveLimit ?? p.length);
 
     const n = Math.max(1, Math.min(p.length, target));
 
@@ -348,7 +356,8 @@ const openFeedback = () => {
     if (Object.keys(marked).length > 0) return;
 
     clearProgress(`${storageScope}:training`);
-    clearProgress(`${storageScope}:exam`);
+clearProgress(`${storageScope}:exam`);
+clearProgress(`${storageScope}:assessment`);
 
     onModeChange?.(m);
 
@@ -775,10 +784,16 @@ const goToFirstUnanswered = () => {
   }
 
   /* --------------------------- UI QUIZ NORMALE ------------------------ */
-  const q = questions[idx];
-  const freeLimitReached = !isPremiumUser && idx >= FREE_LIMIT;
+const q = questions[idx];
 
-  console.log("QUIZ DEBUG", {
+const isExam = effectiveMode === 'exam';
+const isAssessment = effectiveMode === 'assessment';
+const isTestLike = isExam || isAssessment;
+
+const freeLimitReached =
+  !isAssessment && !isPremiumUser && idx >= FREE_LIMIT;
+
+console.log("QUIZ DEBUG", {
   idx,
   FREE_LIMIT,
   isPremiumUser,
@@ -789,7 +804,7 @@ const goToFirstUnanswered = () => {
   context,
 });
 
-  const submitFeedback = async () => {
+const submitFeedback = async () => {
   if (!onFeedback) return;
   if (!q?.id) return;
 
@@ -814,15 +829,15 @@ const goToFirstUnanswered = () => {
     setFbSending(false);
   }
 };
-  const isExam = effectiveMode === 'exam';
-  const chosen = marked[q.id];
 
-  const reviewTotal = reviewPositions.length;
-  const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
+const chosen = marked[q.id];
 
-  const canGoNext =
-    idx < questions.length - 1 || (effectiveMode === 'training' && reviewPositions.length > 0);
+const reviewTotal = reviewPositions.length;
+const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
 
+const canGoNext =
+  idx < questions.length - 1 ||
+  (effectiveMode === 'training' && reviewPositions.length > 0);
    /* ============================================================
    PREMIUM — GATING QUIZ + SPIEGAZIONI
 
@@ -917,7 +932,7 @@ return (
           {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
           {label('answered', lang)} {answeredCount}
           <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-            {isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+            {isAssessment ? label('assessment', lang) : isExam ? tQuiz.modeExam : tQuiz.modeTraining}
           </span>
 
           {hideModeSwitch && isExam && (
@@ -995,31 +1010,47 @@ return (
             </div>
           )}
 
-        {/* Exam notice */}
-        {effectiveMode === 'exam' && (
-          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
-            <p className="text-sm font-semibold">
-              ⚠️{' '}
-              {lang === 'it'
-                ? 'Modalità esame: niente feedback immediato'
-                : lang === 'fr'
-                ? "Mode examen : aucun retour immédiat"
-                : lang === 'es'
-                ? 'Modo examen: sin feedback inmediato'
-                : 'Exam mode: no instant feedback'}
-            </p>
+       {/* Exam / Free Test notice */}
+{isTestLike && (
+  <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+    <p className="text-sm font-semibold">
+      ⚠️{' '}
+      {lang === 'it'
+        ? isAssessment
+          ? 'Free test: niente soluzioni immediate'
+          : 'Modalità esame: niente feedback immediato'
+        : lang === 'fr'
+        ? isAssessment
+          ? 'Test gratuit : aucune solution immédiate'
+          : "Mode examen : aucun retour immédiat"
+        : lang === 'es'
+        ? isAssessment
+          ? 'Test gratuito: sin soluciones inmediatas'
+          : 'Modo examen: sin feedback inmediato'
+        : isAssessment
+        ? 'Free test: no instant answers'
+        : 'Exam mode: no instant feedback'}
+    </p>
 
-            <p className="mt-1 text-sm text-amber-900/90">
-              {lang === 'it'
-                ? 'Concentrati su gestione del tempo e precisione. Potrai rivedere le risposte alla fine.'
-                : lang === 'fr'
-                ? "Concentre-toi sur le temps et la précision. Tu pourras revoir tes réponses à la fin."
-                : lang === 'es'
-                ? 'Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final.'
-                : 'Focus on time management and accuracy. You can review your answers at the end.'}
-            </p>
-          </div>
-        )}
+    <p className="mt-1 text-sm text-amber-900/90">
+      {lang === 'it'
+        ? isAssessment
+          ? 'Rispondi come in un vero esame. Vedrai il risultato alla fine.'
+          : 'Concentrati su gestione del tempo e precisione. Potrai rivedere le risposte alla fine.'
+        : lang === 'fr'
+        ? isAssessment
+          ? "Réponds comme à un vrai examen. Tu verras le résultat à la fin."
+          : "Concentre-toi sur le temps et la précision. Tu pourras revoir tes réponses à la fin."
+        : lang === 'es'
+        ? isAssessment
+          ? 'Responde como en un examen real. Verás el resultado al final.'
+          : 'Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final.'
+        : isAssessment
+        ? 'Answer like a real exam. You will see your result at the end.'
+        : 'Focus on time management and accuracy. You can review your answers at the end.'}
+    </p>
+  </div>
+)}
 
         {context && (
           <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-white/90">
@@ -1141,12 +1172,12 @@ return (
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
             const isRight = !!a.isCorrect;
-            const showFeedback = !isExam && chosen != null;
+            const showFeedback = !isTestLike && chosen != null;
 
             let btnClasses =
               'bg-white text-gray-900 border border-white/20 hover:bg-white/90';
 
-            if (isExam) {
+            if (isTestLike) {
               if (isChosen) {
                 btnClasses =
                   'bg-emerald-500 text-white border-2 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)] ring-2 ring-white/70';
@@ -1187,7 +1218,7 @@ return (
         </div>
 
    {/* spiegazione (training) — premium-ready */}
-{!isExam && chosen != null && q.explanation && (
+{!isTestLike && chosen != null && q.explanation && (
   <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
     <b>{label('explain', lang)}</b>{' '}
     {premiumLocked ? explainPreview : explainText}
@@ -1307,15 +1338,23 @@ return (
     <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
   </button>
 
-  {isExam ? (
-    <button
-      type="button"
-      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
-      onClick={() => doFinish(false)}
-    >
-      {label('finish', lang)}
-    </button>
-  ) : (
+  {isTestLike ? (
+  <button
+    type="button"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
+    onClick={() => doFinish(false)}
+  >
+    {isAssessment
+      ? (lang === 'it'
+          ? 'Vedi risultato'
+          : lang === 'fr'
+          ? 'Voir le résultat'
+          : lang === 'es'
+          ? 'Ver resultado'
+          : 'See result')
+      : label('finish', lang)}
+  </button>
+) : (
     <button
       type="button"
       className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"

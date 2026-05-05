@@ -15,7 +15,7 @@ export type PersistPayload = {
   reviewLater: Array<string | number>;
 
   // Modalità quiz corrente
-  mode: 'training' | 'exam';
+  mode: 'training' | 'exam' | 'assessment';
 
   // Secondi rimanenti (solo in exam)
   remainingSec: number | null;

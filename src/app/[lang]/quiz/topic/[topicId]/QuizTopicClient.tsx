@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import QuizEngine from "@/components/quiz/QuizEngine";
 import ComingSoonBox from "@/components/ui/ComingSoonBox";
@@ -39,6 +39,8 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
 
 export default function QuizTopicClient({ lang, topicId }: { lang: Locale; topicId: number }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+const isAssessmentMode = searchParams.get("mode") === "assessment";
   const L = lang;
   const numericId = topicId;
 
@@ -222,6 +224,8 @@ export default function QuizTopicClient({ lang, topicId }: { lang: Locale; topic
       storageScope={`topic:${numericId}:${L}`}
       categoryColor="from-blue-900 to-blue-700"
       backToHref={backToHref}
+      mode={isAssessmentMode ? "assessment" : undefined}
+      hideModeSwitch={isAssessmentMode}
       context={{
         kind: "topic",
         certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
@@ -285,14 +289,16 @@ export default function QuizTopicClient({ lang, topicId }: { lang: Locale; topic
         }
       }}
       durationsByMode={{
-        training: null,
-        exam: examSpec.durationSec,
-      }}
+  training: null,
+  exam: examSpec.durationSec,
+  assessment: null,
+}}
       limitsByMode={{
-        training: 500,
-        exam: examSpec.questions,
-      }}
-      onFinish={async (s: QuizSummary & { mode: "training" | "exam"; attempts?: any[] }) => {
+  training: 500,
+  exam: examSpec.questions,
+  assessment: 10,
+}}
+      onFinish={async (s: QuizSummary & { mode: "training" | "exam" | "assessment"; attempts?: any[] }) => {
         if (s.mode !== "exam") return;
 
         const token = getAccessToken();

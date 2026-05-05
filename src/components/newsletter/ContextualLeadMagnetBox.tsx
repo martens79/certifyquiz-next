@@ -197,10 +197,20 @@ export default function ContextualLeadMagnetBox({
   topic: topicSlug ?? "general",
 });
 
-if (quizHref) {
-  searchParams.set("quiz", quizHref);
-}
+const fallbackQuizHref =
+  certificationSlug
+    ? `/${safeLang}/quiz/${certificationSlug}/mixed`
+    : "";
 
+const finalQuizHref = quizHref || fallbackQuizHref;
+
+if (finalQuizHref) {
+  const quizWithAssessment = finalQuizHref.includes("?")
+    ? `${finalQuizHref}&mode=assessment`
+    : `${finalQuizHref}?mode=assessment`;
+
+  searchParams.set("quiz", quizWithAssessment);
+}
 const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
 
   return (
