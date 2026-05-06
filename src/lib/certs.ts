@@ -45,6 +45,7 @@ export type CategoryKey =
   | "programmazione"
   | "virtualizzazione"
   | "ai"
+  | "management"
   | "default";
 
 export type CatStyle = {
@@ -87,6 +88,10 @@ export const CATEGORY_STYLES: Record<CategoryKey, CatStyle> = {
     wrapper: "bg-cyan-50 border border-cyan-200 hover:ring-2 hover:ring-cyan-200/70",
     header: "bg-cyan-50 border border-cyan-200",
   },
+   management: {
+    wrapper: "bg-slate-50 border border-slate-300 hover:ring-2 hover:ring-slate-300/70",
+    header: "bg-slate-50 border border-slate-300",
+  },
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
     header: "bg-gray-50 border border-gray-200",
@@ -111,8 +116,13 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   eipass: "base",
   ecdl: "base",
   icdl: "base",
-  pekit: "base",
+    pekit: "base",
 
+  // Management
+  pmp: "management",
+  "project-management-professional": "management",
+  "itil-4-foundation": "management",
+  
   // Sicurezza
   "security-plus": "sicurezza",
   

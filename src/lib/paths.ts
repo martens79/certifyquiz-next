@@ -104,6 +104,7 @@ export type CategoryKey =
   | "database"
   | "programmazione"
   | "virtualizzazione"
+  | "management"
   | "ai";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
@@ -116,8 +117,10 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "database",
     programmazione: "programmazione",
     virtualizzazione: "virtualizzazione",
+    management: "management",
     ai: "intelligenza-artificiale",
   },
+
   en: {
     default: "fundamentals",
     base: "fundamentals",
@@ -127,8 +130,10 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "databases",
     programmazione: "programming",
     virtualizzazione: "virtualization",
+    management: "management",
     ai: "artificial-intelligence",
   },
+
   fr: {
     default: "fondamentaux",
     base: "fondamentaux",
@@ -138,8 +143,10 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "bases-de-donnees",
     programmazione: "programmation",
     virtualizzazione: "virtualisation",
+    management: "management",
     ai: "intelligence-artificielle",
   },
+
   es: {
     default: "fundamentos",
     base: "fundamentos",
@@ -149,6 +156,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "bases-de-datos",
     programmazione: "programacion",
     virtualizzazione: "virtualizacion",
+    management: "gestion-management",
     ai: "inteligencia-artificial",
   },
 };
@@ -162,8 +170,10 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     database: "database",
     programmazione: "programmazione",
     virtualizzazione: "virtualizzazione",
+    management: "management",
     "intelligenza-artificiale": "ai",
   },
+
   en: {
     fundamentals: "base",
     security: "sicurezza",
@@ -172,8 +182,10 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     databases: "database",
     programming: "programmazione",
     virtualization: "virtualizzazione",
+    management: "management",
     "artificial-intelligence": "ai",
   },
+
   fr: {
     fondamentaux: "base",
     securite: "sicurezza",
@@ -182,8 +194,10 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "bases-de-donnees": "database",
     programmation: "programmazione",
     virtualisation: "virtualizzazione",
+    management: "management",
     "intelligence-artificielle": "ai",
   },
+
   es: {
     fundamentos: "base",
     seguridad: "sicurezza",
@@ -192,6 +206,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "bases-de-datos": "database",
     programacion: "programmazione",
     virtualizacion: "virtualizzazione",
+    "gestion-management": "management",
     "inteligencia-artificial": "ai",
   },
 };

@@ -80,7 +80,6 @@ type CertificationChip = {
   link: string | null;
 };
 
-/** ✅ Roadmap key: EN root (/roadmap-xxx), altre lingue /it/roadmap-xxx */
 type RoadmapKey = "cybersecurity" | "cloud" | "networking" | "devops";
 
 type Props = {
@@ -88,13 +87,9 @@ type Props = {
   description?: string | I18nDict;
   icon: React.ReactNode;
 
-  /** ✅ chiave semantica categoria */
   categoryKey: CategoryKey;
-
-  /** ✅ lingua corrente (OBBLIGATORIA) */
   lang: Locale;
 
-  /** ✅ opzionale: mostra link alla roadmap */
   roadmapKey?: RoadmapKey;
   roadmapLabel?: string | I18nDict;
 
@@ -102,6 +97,12 @@ type Props = {
   certifications?: CertificationChip[];
   compact?: boolean;
   className?: string;
+
+  /**
+   * default = card normale della griglia
+   * wide = card orizzontale per sezioni larghe tipo Management
+   */
+  variant?: "default" | "wide";
 };
 
 /* ----------------------------- COMPONENT ----------------------------- */
@@ -118,20 +119,24 @@ export default function CategoryBox({
   certifications = [],
   compact = false,
   className = "",
+  variant = "default",
 }: Props) {
   const border = borderColors[color];
   const iconClass = iconBg[color];
   const textClass = textColor[color];
   const background = bgColor[color];
 
+  const isWide = variant === "wide";
+
   const pad = "p-4";
   const titleSize = "text-base";
   const descSize = "text-sm";
   const chipText = compact ? "text-[11px]" : "text-xs";
   const chipPad = compact ? "px-2 py-0.5" : "px-2 py-1";
-  const chipsMaxH = compact ? "max-h-[105px]" : "max-h-none";
+  const chipsMaxH = compact ? "max-h-[86px]" : "max-h-none";
 
-  const titleStr = typeof title === "string" ? title : (getLabel(title) as string);
+  const titleStr =
+    typeof title === "string" ? title : (getLabel(title) as string);
 
   const descStr =
     typeof description === "string"
@@ -140,7 +145,6 @@ export default function CategoryBox({
       ? (getLabel(description) as string)
       : "";
 
-  // ✅ Roadmap href: EN è root, le altre lingue hanno prefisso
   const roadmapHref = roadmapKey
     ? lang === "en"
       ? `/roadmap-${roadmapKey}`
@@ -163,96 +167,139 @@ export default function CategoryBox({
     "rounded-md font-semibold text-xs py-1.5 px-3 bg-blue-600 text-white hover:bg-blue-700 transition";
 
   const cardBase = [
-  "group rounded-xl",
-  pad,
-  "shadow-md border",
-  border,
-  background,
-  className,
-  "h-full flex flex-col",
-  "transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-lg",
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
-].join(" ");
+    "group rounded-xl",
+    pad,
+    "shadow-md border",
+    border,
+    background,
+    className,
+    "h-full flex flex-col",
+    "transition-transform duration-200 ease-out hover:-translate-y-1 hover:shadow-lg",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2",
+  ].join(" ");
 
   return (
     <div className={cardBase}>
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${iconClass} shrink-0 transition-transform group-hover:scale-110`}
-          >
-            {icon}
+      <div
+        className={
+          isWide
+            ? "grid h-full grid-cols-1 items-center gap-4 md:grid-cols-[1.4fr_1fr_auto]"
+            : "flex h-full flex-col"
+        }
+      >
+        {/* Colonna sinistra: header, descrizione, roadmap e chips */}
+        <div>
+          {/* Header */}
+          <div className="flex items-center gap-2">
+            <div
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconClass} transition-transform group-hover:scale-110`}
+            >
+              {icon}
+            </div>
+
+            <div className={`${titleSize} font-semibold ${textClass}`}>
+              {titleStr}
+            </div>
           </div>
-          <div className={`${titleSize} font-semibold ${textClass}`}>{titleStr}</div>
+
+          {/* Descrizione */}
+          {descStr && (
+            <p
+              className={[
+                descSize,
+                "mt-2 leading-snug text-gray-600",
+                compact && !isWide ? "line-clamp-2" : "whitespace-normal",
+              ].join(" ")}
+            >
+              {descStr}
+            </p>
+          )}
+
+          {/* Roadmap CTA opzionale */}
+          {roadmapHref && (
+            <div className="mt-3">
+              <Link
+                href={roadmapHref}
+                prefetch={false}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+              >
+                {roadmapText}
+              </Link>
+            </div>
+          )}
+
+          {/* Chips certificazioni */}
+          {certifications.length > 0 && (
+            <div
+                className={[
+                  "relative mt-3",
+                  compact && !isWide
+                    ? "overflow-y-auto pr-1"
+                    : "overflow-visible",
+                  compact && !isWide ? chipsMaxH : "max-h-none",
+                ].join(" ")}
+              >
+              <div className="flex flex-wrap gap-2">
+                {certifications.map((cert, i) =>
+                  cert.link ? (
+                    <Link
+                      key={`${cert.name}-${i}`}
+                      href={cert.link}
+                      prefetch={false}
+                      className={`${chipText} ${chipPad} max-w-full truncate rounded-full border border-blue-100 bg-white text-blue-600 hover:bg-blue-50 hover:underline`}
+                      title={cert.name}
+                    >
+                      {cert.name}
+                    </Link>
+                  ) : (
+                    <span
+                      key={`${cert.name}-${i}`}
+                      className={`${chipText} ${chipPad} max-w-full cursor-not-allowed truncate rounded-full border border-gray-300 bg-gray-200 italic text-gray-500`}
+                      title="Coming soon"
+                    >
+                      {cert.name} 🚧
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Descrizione */}
-        {descStr && (
-          <p
-            className={[
-              descSize,
-              "text-gray-600 leading-snug mt-2",
-              compact ? "line-clamp-2" : "whitespace-normal",
-            ].join(" ")}
-          >
-            {descStr}
-          </p>
-        )}
+        {/* Colonna centrale: claim visibile solo nella card larga */}
+        {isWide && (
+          <div className="hidden px-4 text-center md:block">
+            <p className={`text-lg font-semibold ${textClass}`}>
+              {getLabel({
+                it: "Dal tecnico al ruolo di guida.",
+                en: "From technical skills to leadership.",
+                fr: "Des compétences techniques au leadership.",
+                es: "De las habilidades técnicas al liderazgo.",
+              })}
+            </p>
 
-        {/* ✅ Roadmap CTA (opzionale) */}
-        {roadmapHref && (
-          <div className="mt-3">
-            <Link
-              href={roadmapHref}
-              prefetch={false}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
-            >
-              {roadmapText}
-            </Link>
-          </div>
-        )}
-
-        {/* Chips */}
-        {certifications.length > 0 && (
-          <div
-            className={[
-              "mt-3 relative",
-              compact
-                ? "overflow-hidden [mask-image:linear-gradient(to_bottom,black_85%,transparent)]"
-                : "overflow-visible",
-              chipsMaxH,
-            ].join(" ")}
-          >
-            <div className="flex flex-wrap gap-2">
-              {certifications.map((cert, i) =>
-                cert.link ? (
-                  <Link
-                    key={`${cert.name}-${i}`}
-                    href={cert.link}
-                    prefetch={false}
-                    className={`${chipText} ${chipPad} bg-white border border-blue-100 text-blue-600 rounded-full hover:underline hover:bg-blue-50 truncate max-w-full`}
-                    title={cert.name}
-                  >
-                    {cert.name}
-                  </Link>
-                ) : (
-                  <span
-                    key={`${cert.name}-${i}`}
-                    className={`${chipText} ${chipPad} bg-gray-200 border border-gray-300 text-gray-500 rounded-full italic cursor-not-allowed truncate max-w-full`}
-                    title="Coming soon"
-                  >
-                    {cert.name} 🚧
-                  </span>
-                )
-              )}
-            </div>
+            <p className="mt-1 text-sm text-gray-600">
+              {getLabel({
+                it: "Percorsi pensati per crescere in carriera, guidare team e gestire progetti reali.",
+                en: "Paths designed to grow your career, lead teams and manage real projects.",
+                fr: "Des parcours pour faire évoluer votre carrière, diriger des équipes et gérer des projets réels.",
+                es: "Rutas pensadas para crecer profesionalmente, liderar equipos y gestionar proyectos reales.",
+              })}
+            </p>
           </div>
         )}
 
         {/* CTA */}
-        <div className="flex justify-end mt-auto pt-3">
-          <Link href={categoryPath(lang, categoryKey)} prefetch={false} className={btnClasses}>
+        <div
+          className={
+            isWide ? "flex justify-end md:self-end" : "mt-auto flex justify-end pt-3"
+          }
+        >
+          <Link
+            href={categoryPath(lang, categoryKey)}
+            prefetch={false}
+            className={btnClasses}
+          >
             {getLabel({ it: "Quiz", en: "Quiz", fr: "Quiz", es: "Quiz" })}
           </Link>
         </div>

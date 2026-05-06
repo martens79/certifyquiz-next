@@ -12,6 +12,7 @@ import {
   Code,
   Server,
   Cpu,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 import QuizTitle from "@/components/QuizTitle";
@@ -199,6 +200,14 @@ const certificationNames: CertificationNames = {
   default: baseCerts,
 
   base: baseCerts,
+
+    management: [
+    { name: "PMP", link: certPath(lang, "pmp") },
+    { name: "ITIL 4 Foundation", link: certPath(lang, "itil-4-foundation") },
+    { name: "CAPM", link: null, comingSoon: true },
+    { name: "Scrum Master", link: null, comingSoon: true },
+    { name: "PRINCE2 Foundation", link: null, comingSoon: true },
+  ],
 
   sicurezza: [
     { name: "Security+", link: certPath(lang, "security-plus") },
@@ -499,7 +508,7 @@ name: getLabel(
           </div>
         )}
 
-        {/* Griglia categorie: box compatti + id per anchor (#base, #sicurezza, ...) */}
+               {/* Griglia categorie: box compatti + id per anchor (#base, #sicurezza, ...) */}
         <div
           className="
             mx-auto max-w-345
@@ -523,6 +532,60 @@ name: getLabel(
             </section>
           ))}
         </div>
+
+          <div className="mt-4 flex justify-center">
+  <a
+    href="#management"
+    className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-800 transition"
+  >
+    <span>
+      {getLabel(
+        {
+          it: "Scopri anche l’area Management",
+          en: "Discover the Management area",
+          fr: "Découvrez aussi l’espace Management",
+          es: "Descubre también el área Management",
+        },
+        lang
+      )}
+    </span>
+
+    <span className="animate-bounce">↓</span>
+  </a>
+</div>
+
+        {/* Management: area business/career in evidenza */}
+        <section id="management" className="mx-auto max-w-345 mt-4">
+          <CategoryBox
+            title={getLabel(
+              {
+                it: "Management & Project Management",
+                en: "Management & Project Management",
+                es: "Gestión y Project Management",
+                fr: "Management & Gestion de Projet",
+              },
+              lang
+            )}
+            icon={<BriefcaseBusiness size={32} />}
+            description={getLabel(
+              {
+                it: "Project management, leadership, processi Agile, governance e organizzazione aziendale.",
+                en: "Project management, leadership, Agile processes, governance and business organization.",
+                es: "Gestión de proyectos, liderazgo, procesos Agile, gobernanza y organización empresarial.",
+                fr: "Gestion de projet, leadership, processus Agile, gouvernance et organisation d’entreprise.",
+              },
+              lang
+            )}
+            categoryKey="management"
+            lang={lang}
+            color="blue"
+            certifications={certificationNames.management}
+            compact
+            variant="wide"
+            className="min-h-42"
+          />
+        </section>
+
       </main>
 
       <BottomNavbar />

@@ -152,6 +152,22 @@ const CATEGORY_META: Record<
       es: "Conceptos básicos de IA y aprendizaje automático.",
     },
   },
+    management: {
+    key: "management",
+    emoji: "💼",
+    title: {
+      it: "Management & Project Management",
+      en: "Management & Project Management",
+      fr: "Management & Gestion de Projet",
+      es: "Management y Gestión de Proyectos",
+    },
+    subtitle: {
+      it: "Project management, leadership, Agile, governance e organizzazione aziendale.",
+      en: "Project management, leadership, Agile, governance and business organization.",
+      fr: "Gestion de projet, leadership, Agile, gouvernance et organisation d’entreprise.",
+      es: "Gestión de proyectos, liderazgo, Agile, gobernanza y organización empresarial.",
+    },
+  },
 };
 
 
@@ -164,6 +180,7 @@ const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
   database: "databases",
   virtualizzazione: "virtualization",
   ai: "ai",
+  management: "management",
 };
 
 
@@ -180,6 +197,7 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     database: "database",
     programmazione: "programmazione",
     virtualizzazione: "virtualizzazione",
+     management: "management",
     "intelligenza-artificiale": "ai",
   },
   en: {
@@ -191,6 +209,7 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     databases: "database",
     programming: "programmazione",
     virtualization: "virtualizzazione",
+     management: "management",
     "artificial-intelligence": "ai",
   },
   fr: {
@@ -202,6 +221,7 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "bases-de-donnees": "database",
     programmation: "programmazione",
     virtualisation: "virtualizzazione",
+     management: "management",
     "intelligence-artificielle": "ai",
   },
   es: {
@@ -213,6 +233,8 @@ const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "bases-de-datos": "database",
     programacion: "programmazione",
     virtualizacion: "virtualizzazione",
+    "gestion-management": "management",
+     management: "management",
     "inteligencia-artificial": "ai",
   },
 };
@@ -227,6 +249,7 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "database",
     programmazione: "programmazione",
     virtualizzazione: "virtualizzazione",
+    management: "management",
     ai: "intelligenza-artificiale",
   },
   en: {
@@ -238,6 +261,7 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "databases",
     programmazione: "programming",
     virtualizzazione: "virtualization",
+    management: "management",
     ai: "artificial-intelligence",
   },
   fr: {
@@ -249,6 +273,7 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "bases-de-donnees",
     programmazione: "programmation",
     virtualizzazione: "virtualisation",
+    management: "management",
     ai: "intelligence-artificielle",
   },
   es: {
@@ -260,6 +285,7 @@ const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     database: "bases-de-datos",
     programmazione: "programacion",
     virtualizzazione: "virtualizacion",
+    management: "management",
     ai: "inteligencia-artificial",
   },
 };

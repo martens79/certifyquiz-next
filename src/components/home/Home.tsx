@@ -20,6 +20,7 @@ import {
   Code,
   Layers,
   Cpu,
+  BriefcaseBusiness,
 } from "lucide-react";
 
 /* Helpers */
@@ -71,6 +72,11 @@ const CATEGORY_UI: Record<
     bg: "bg-cyan-50",
     border: "border-cyan-200",
     ring: "hover:ring-2 hover:ring-cyan-200/60",
+  },
+    management: {
+    bg: "bg-slate-50",
+    border: "border-slate-300",
+    ring: "hover:ring-2 hover:ring-slate-300/60",
   },
 } as const;
 
@@ -236,6 +242,28 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           en: "Virtualization technologies and cloud-native environments.",
           fr: "Technologies de virtualisation et environnements cloud-native.",
           es: "Tecnologías de virtualización y entornos cloud-native.",
+        },
+        safeLang
+      ),
+    },
+        {
+      key: "management",
+      icon: <BriefcaseBusiness size={20} aria-hidden="true" />,
+      title: L(
+        {
+          it: "Management",
+          en: "Management",
+          fr: "Management",
+          es: "Management",
+        },
+        safeLang
+      ),
+      desc: L(
+        {
+          it: "Project management, leadership, Agile e organizzazione aziendale.",
+          en: "Project management, leadership, Agile and business organization.",
+          fr: "Gestion de projet, leadership, Agile et organisation d’entreprise.",
+          es: "Gestión de proyectos, liderazgo, Agile y organización empresarial.",
         },
         safeLang
       ),
@@ -578,8 +606,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
 <PathBox lang={safeLang as any} />
 
-{/* BLOG SECTION — spostata più in alto e resa più visibile */}
-<section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog"></section>
+
       {/* BLOG SECTION — spostata più in alto e resa più visibile */}
       <section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5 shadow-sm">
@@ -647,47 +674,91 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         </div>
       </section>
 
-      {/* CATEGORIE */}
-      <section className="mt-5 md:mt-6" aria-label="Categories">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {allCategories.map((cat) => {
-            const ui = CATEGORY_UI[cat.key];
-            return (
-              <Link
-                key={cat.key}
-                href={categoryPath(safeLang, cat.key)}
-                className={`transition p-3 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
-              >
-                <div className="flex items-center gap-2 text-slate-800 font-bold mb-1">
-                  {cat.icon}
-                  <span className="text-sm leading-tight">{cat.title}</span>
-                </div>
-                <div className="text-xs text-slate-600 leading-tight line-clamp-2">
-                  {cat.desc}
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+     {/* CATEGORIE */}
+<section className="mt-5 md:mt-6" aria-label="Categories">
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    {allCategories
+      .filter((cat) => cat.key !== "management")
+      .map((cat) => {
+        const ui = CATEGORY_UI[cat.key];
 
-        <div className="text-center mt-5">
+        return (
           <Link
-            href={withLang(safeLang as any, "/quiz-suggeriti")}
-            className="text-blue-600 font-semibold hover:underline text-sm"
+            key={cat.key}
+            href={categoryPath(safeLang, cat.key)}
+            className={`transition p-3 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
           >
-            ⭐{" "}
+            <div className="flex items-center gap-2 text-slate-800 font-bold mb-1">
+              {cat.icon}
+              <span className="text-sm leading-tight">{cat.title}</span>
+            </div>
+
+            <div className="text-xs text-slate-600 leading-tight line-clamp-2">
+              {cat.desc}
+            </div>
+          </Link>
+        );
+      })}
+  </div>
+
+  {allCategories
+    .filter((cat) => cat.key === "management")
+    .map((cat) => {
+      const ui = CATEGORY_UI[cat.key];
+
+      return (
+        <Link
+          key={cat.key}
+          href={categoryPath(safeLang, cat.key)}
+          className={`mt-3 flex items-center justify-between gap-4 transition p-4 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 text-slate-800">{cat.icon}</div>
+
+            <div>
+              <div className="text-sm font-bold text-slate-800">
+                {cat.title}
+              </div>
+
+              <div className="text-xs text-slate-600 leading-tight">
+                {cat.desc}
+              </div>
+            </div>
+          </div>
+
+          <span className="hidden sm:inline text-xs font-semibold text-slate-600">
             {L(
               {
-                it: "Prova i nostri migliori quiz →",
-                en: "Try our best quizzes →",
-                fr: "Essayez nos meilleurs quiz →",
-                es: "Prueba nuestros mejores quizzes →",
+                it: "Project manager, Agile, leadership →",
+                en: "Project managers, Agile, leadership →",
+                fr: "Gestion de projet, Agile, leadership →",
+                es: "Gestión de proyectos, Agile, liderazgo →",
               },
               safeLang
             )}
-          </Link>
-        </div>
-      </section>
+          </span>
+        </Link>
+      );
+    })}
+
+  <div className="text-center mt-5">
+    <Link
+      href={withLang(safeLang as any, "/quiz-suggeriti")}
+      className="text-blue-600 font-semibold hover:underline text-sm"
+    >
+      ⭐{" "}
+      {L(
+        {
+          it: "Prova i nostri migliori quiz →",
+          en: "Try our best quizzes →",
+          fr: "Essayez nos meilleurs quiz →",
+          es: "Prueba nuestros mejores quizzes →",
+        },
+        safeLang
+      )}
+    </Link>
+  </div>
+</section>
     </div>
   );
 }

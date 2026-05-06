@@ -49,6 +49,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "nvidia-generative-ai-llm": 39,
   "ccnp-enterprise": 40,
   "kcna-kubernetes-cloud-native": 41,
+  "pmp": 42,
 };
 
 /* ---------------------------------------------------------------------
@@ -95,6 +96,7 @@ import ITIL4Foundation from "./ITIL4Foundation";
 import NvidiaGenerativeAI from "./NvidiaGenerativeAI";
 import CCNPEnterprise from "./CCNPEnterprise";
 import KubernetesKCNA from "./KubernetesKCNA";
+import PMP from "./PMP";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -142,6 +144,7 @@ const RAW_CERTS = [
   NvidiaGenerativeAI,         // slug: "nvidia-generative-ai-llm"
   CCNPEnterprise,             // slug: "ccnp-enterprise"
   KubernetesKCNA,             // slug: "kcna-kubernetes-cloud-native"
+  PMP,                        // slug: "pmp"
 ] as const;
 
 /**
