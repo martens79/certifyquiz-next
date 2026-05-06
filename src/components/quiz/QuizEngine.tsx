@@ -650,6 +650,75 @@ const goToFirstUnanswered = () => {
     const backUrl = backToHref || withLang(lang, '/quiz-home');
     const markedMap = lastSummary?.marked ?? marked;
 
+    const isAssessmentResult = effectiveMode === 'assessment';
+
+const assessmentCopy =
+  scorePct < 50
+    ? {
+        badge: '⚠️',
+        title: {
+          it: 'Non sei ancora pronto per l’esame',
+          en: 'You are not ready for the exam yet',
+          fr: "Tu n'es pas encore prêt pour l'examen",
+          es: 'Todavía no estás listo para el examen',
+        },
+        subtitle: {
+          it: 'Hai ancora lacune importanti. Se facessi l’esame oggi, rischieresti seriamente di non superarlo.',
+          en: 'You still have important gaps. If you took the exam today, you would seriously risk failing it.',
+          fr: "Tu as encore des lacunes importantes. Si tu passais l'examen aujourd'hui, tu risquerais sérieusement de ne pas le réussir.",
+          es: 'Todavía tienes lagunas importantes. Si hicieras el examen hoy, correrías un riesgo real de no aprobarlo.',
+        },
+        cta: {
+          it: 'Inizia la preparazione seriamente',
+          en: 'Start preparing seriously',
+          fr: 'Commencer une vraie préparation',
+          es: 'Empieza a prepararte en serio',
+        },
+      }
+    : scorePct < 75
+    ? {
+        badge: '📘',
+        title: {
+          it: 'Sei sulla strada giusta',
+          en: 'You are on the right track',
+          fr: 'Tu es sur la bonne voie',
+          es: 'Vas por el buen camino',
+        },
+        subtitle: {
+          it: 'Hai buone basi, ma ci sono ancora errori che potrebbero costarti caro in un esame reale.',
+          en: 'You have a decent base, but there are still mistakes that could cost you in a real exam.',
+          fr: "Tu as de bonnes bases, mais il reste des erreurs qui pourraient te coûter cher lors d'un vrai examen.",
+          es: 'Tienes una buena base, pero aún hay errores que podrían costarte caro en un examen real.',
+        },
+        cta: {
+          it: 'Colma le lacune',
+          en: 'Close your gaps',
+          fr: 'Combler tes lacunes',
+          es: 'Corrige tus puntos débiles',
+        },
+      }
+    : {
+        badge: '🔥',
+        title: {
+          it: 'Sei vicino a passare l’esame',
+          en: 'You are close to passing the exam',
+          fr: "Tu es proche de réussir l'examen",
+          es: 'Estás cerca de aprobar el examen',
+        },
+        subtitle: {
+          it: 'Il livello è buono. Ora devi consolidare gli errori e allenarti con simulazioni più realistiche.',
+          en: 'Your level is good. Now you need to fix your weak spots and train with more realistic simulations.',
+          fr: 'Ton niveau est bon. Il faut maintenant consolider tes erreurs et t’entraîner avec des simulations plus réalistes.',
+          es: 'Tu nivel es bueno. Ahora debes consolidar tus errores y practicar con simulaciones más realistas.',
+        },
+        cta: {
+          it: 'Preparati a passarlo davvero',
+          en: 'Get ready to actually pass it',
+          fr: 'Te préparer à vraiment le réussir',
+          es: 'Prepárate para aprobarlo de verdad',
+        },
+      };
+
     const wrongDetails = questions
       .map((q, index) => {
         const chosenId = markedMap?.[q.id];
@@ -676,12 +745,40 @@ const goToFirstUnanswered = () => {
       <div className={`min-h-screen ${gradient}`}>
         <div className="mobile-safe-top max-w-3xl mx-auto px-4 pt-20 pb-28">
           <div className="bg-white text-gray-900 rounded-2xl shadow-xl p-6 space-y-4">
-            <h1 className="text-2xl font-semibold mb-2">
-              {label('summaryTitle', lang)}
-            </h1>
-            <p className="text-sm text-gray-600">
-              {label('score', lang)} {scorePct}% · {total} {label('questionsLabel', lang)}
-            </p>
+            {isAssessmentResult ? (
+  <div className="space-y-3">
+    <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-800">
+      {label('assessment', lang)}
+    </div>
+
+    <div className="flex items-end gap-3">
+      <div className="text-6xl font-black tracking-tight text-gray-950">
+        {scorePct}%
+      </div>
+      <div className="pb-2 text-sm text-gray-500">
+        {correct}/{total} {label('correctLabel', lang).toLowerCase()}
+      </div>
+    </div>
+
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+      <h1 className="text-2xl font-bold text-amber-950">
+        {assessmentCopy.badge} {assessmentCopy.title[lang]}
+      </h1>
+      <p className="mt-2 text-sm leading-relaxed text-amber-900">
+        {assessmentCopy.subtitle[lang]}
+      </p>
+    </div>
+  </div>
+) : (
+  <>
+    <h1 className="text-2xl font-semibold mb-2">
+      {label('summaryTitle', lang)}
+    </h1>
+    <p className="text-sm text-gray-600">
+      {label('score', lang)} {scorePct}% · {total} {label('questionsLabel', lang)}
+    </p>
+  </>
+)}
 
             <div className="grid grid-cols-3 gap-3 text-center text-sm">
               <div className="bg-emerald-50 rounded-xl p-3">
@@ -710,7 +807,7 @@ const goToFirstUnanswered = () => {
               </div>
             </div>
 
-            {!!wrongDetails.length && (
+           {!isAssessmentResult && !!wrongDetails.length && (
               <div className="mt-4 border-t pt-4">
                 <h2 className="text-sm font-semibold text-gray-800 mb-2">
                   {label('wrongSummaryTitle', lang)} ({wrongDetails.length})
@@ -735,12 +832,47 @@ const goToFirstUnanswered = () => {
               </div>
             )}
 
+            {isAssessmentResult && (
+  <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+    <h2 className="text-lg font-bold text-gray-950">
+      🔒 {lang === 'it'
+        ? 'Review completa disponibile con Premium'
+        : lang === 'fr'
+        ? 'Correction complète disponible avec Premium'
+        : lang === 'es'
+        ? 'Revisión completa disponible con Premium'
+        : 'Full review available with Premium'}
+    </h2>
+
+    <p className="mt-2 text-sm leading-relaxed text-gray-600">
+      {lang === 'it'
+        ? 'Sblocca spiegazioni dettagliate, ripasso errori e simulazioni realistiche per capire dove stai sbagliando davvero.'
+        : lang === 'fr'
+        ? 'Débloque les explications détaillées, la révision des erreurs et les simulations réalistes pour comprendre tes vrais points faibles.'
+        : lang === 'es'
+        ? 'Desbloquea explicaciones detalladas, repaso de errores y simulaciones realistas para entender tus puntos débiles reales.'
+        : 'Unlock detailed explanations, mistake review, and realistic simulations to understand your real weak spots.'}
+    </p>
+
+    {!isPremiumUser && (
+      <button
+        type="button"
+        className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer"
+        onClick={() => router.push(pricingPath(lang))}
+      >
+        {assessmentCopy.cta[lang]}
+      </button>
+    )}
+  </div>
+)}
+
+
             {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
-            {!isPremiumUser && (
-              <div className="pt-2">
-                <PremiumTeaserBox lang={lang} />
-              </div>
-            )}
+            {!isAssessmentResult && !isPremiumUser && (
+  <div className="pt-2">
+    <PremiumTeaserBox lang={lang} />
+  </div>
+)}
 
             <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-2 text-sm">
@@ -767,15 +899,15 @@ const goToFirstUnanswered = () => {
                 </button>
               </div>
 
-              {!isPremiumUser && (
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-                  onClick={() => router.push(pricingPath(lang))}
-                >
-                  {label('seePremium', lang)}
-                </button>
-              )}
+             {!isAssessmentResult && !isPremiumUser && (
+  <button
+    type="button"
+    className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
+    onClick={() => router.push(pricingPath(lang))}
+  >
+    {label('seePremium', lang)}
+  </button>
+)}
             </div>
           </div>
         </div>
