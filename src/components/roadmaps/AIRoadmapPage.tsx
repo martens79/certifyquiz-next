@@ -2,13 +2,17 @@ import Link from "next/link";
 
 type Locale = "it" | "en" | "es" | "fr";
 
+type RoadmapQuizSlug = string;
+type RoadmapCertSlug = string;
+
 /* ----------------------------- PATH HELPERS ----------------------------- */
 
 /** Quiz rule: ALWAYS /{lang}/quiz/... (EN included) */
-const quiz = (lang: Locale, slug: string) => `/${lang}/quiz/${slug}`;
+const quiz = (lang: Locale, slug: RoadmapQuizSlug) =>
+  `/${lang}/quiz/${slug}`;
 
 /** Certification pages are localized */
-const cert = (lang: Locale, slug: string) => {
+const cert = (lang: Locale, slug: RoadmapCertSlug) => {
   if (lang === "it") return `/it/certificazioni/${slug}`;
   if (lang === "fr") return `/fr/certifications/${slug}`;
   if (lang === "es") return `/es/certificaciones/${slug}`;
@@ -25,10 +29,15 @@ function categoryPathAI(lang: Locale) {
   };
 
   const seg =
-    lang === "it" ? "categorie" : lang === "es" ? "categorias" : "categories";
+    lang === "it"
+      ? "categorie"
+      : lang === "es"
+      ? "categorias"
+      : "categories";
 
   // SEO rule: EN root has NO /en prefix for pages like categories
   const prefix = lang === "en" ? "" : `/${lang}`;
+
   return `${prefix}/${seg}/${slugByLang[lang]}`;
 }
 
@@ -45,8 +54,14 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
           {t.title}
         </h1>
-        <p className="mt-2 text-lg text-slate-600">{t.subtitle}</p>
-        <p className="mt-5 text-slate-700 leading-relaxed">{t.intro}</p>
+
+        <p className="mt-2 text-lg text-slate-600">
+          {t.subtitle}
+        </p>
+
+        <p className="mt-5 text-slate-700 leading-relaxed">
+          {t.intro}
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -72,8 +87,13 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
             key={lvl.title}
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
-            <h2 className="text-xl font-bold">{lvl.title}</h2>
-            <p className="mt-2 text-slate-700 leading-relaxed">{lvl.body}</p>
+            <h2 className="text-xl font-bold">
+              {lvl.title}
+            </h2>
+
+            <p className="mt-2 text-slate-700 leading-relaxed">
+              {lvl.body}
+            </p>
 
             {lvl.recommended?.length ? (
               <ul className="mt-3 list-disc pl-5 text-slate-700">
@@ -85,11 +105,57 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
 
             {lvl.goal ? (
               <p className="mt-3 text-slate-600">
-                <span className="font-semibold">{t.goalLabel}</span> {lvl.goal}
+                <span className="font-semibold">
+                  {t.goalLabel}
+                </span>{" "}
+                {lvl.goal}
               </p>
             ) : null}
 
-            {/* Level CTA: primary quiz + secondary certification link */}
+            {/* REALITY CHECK */}
+            {lvl.reality ? (
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <p className="font-semibold text-amber-900">
+                  ⚠️ Reality check
+                </p>
+
+                <p className="mt-1 text-amber-800">
+                  {lvl.reality}
+                </p>
+              </div>
+            ) : null}
+
+            {/* COMMON MISTAKES */}
+            {lvl.mistakes?.length ? (
+              <div className="mt-4">
+                <p className="font-semibold text-slate-900">
+                  Common mistakes
+                </p>
+
+                <ul className="mt-2 list-disc pl-5 text-slate-700">
+                  {lvl.mistakes.map((m) => (
+                    <li key={m}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* OUTCOMES */}
+            {lvl.outcomes?.length ? (
+              <div className="mt-4">
+                <p className="font-semibold text-slate-900">
+                  What you can realistically achieve
+                </p>
+
+                <ul className="mt-2 list-disc pl-5 text-slate-700">
+                  {lvl.outcomes.map((o) => (
+                    <li key={o}>{o}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {/* Level CTA */}
             {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
               <div className="mt-4 flex flex-col items-start gap-2">
                 {lvl.ctaQuizSlug ? (
@@ -235,15 +301,22 @@ const CONTENT: Record<
     practiceCta: string;
 
     levels: Array<{
-      title: string;
-      body: string;
-      recommended?: string[];
-      goal?: string;
-      ctaQuizSlug?: string;
-      ctaCertSlug?: string;
-      ctaPrimaryText?: string;
-      ctaSecondaryText?: string;
-    }>;
+  title: string;
+  body: string;
+  recommended?: string[];
+
+  goal?: string;
+
+  ctaQuizSlug?: string;
+  ctaCertSlug?: string;
+
+  ctaPrimaryText?: string;
+  ctaSecondaryText?: string;
+
+  reality?: string;
+  mistakes?: string[];
+  outcomes?: string[];
+}>;
 
     salaryTitle: string;
     salaryIntro: string;

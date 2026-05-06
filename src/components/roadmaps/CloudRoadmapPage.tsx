@@ -2,35 +2,20 @@ import Link from "next/link";
 
 type Locale = "it" | "en" | "es" | "fr";
 
-type CloudQuizSlug =
-  | "aws-cloud-practitioner"
-  | "microsoft-azure-fundamentals"
-  | "google-cloud"
-  | "comptia-cloud-plus"
-  | "aws-solutions-architect"
-  | "kubernetes";
-
-type CloudCertSlug =
-  | "aws-cloud-practitioner"
-  | "microsoft-azure-fundamentals"
-  | "google-cloud"
-  | "comptia-cloud-plus"
-  | "aws-solutions-architect"
-  | "ibm-cloud-v5"
-  | "kubernetes";
+type RoadmapQuizSlug = string;
+type RoadmapCertSlug = string;
 
 export default function CloudRoadmapPage({ lang }: { lang: Locale }) {
   const t = CONTENT[lang];
 
-  const quiz = (slug: CloudQuizSlug) => `/${lang}/quiz/${slug}`;
+  const quiz = (slug: RoadmapQuizSlug) => `/${lang}/quiz/${slug}`;
 
-const cert = (slug: CloudCertSlug) => {
-  if (lang === "it") return `/it/certificazioni/${slug}`;
-  if (lang === "fr") return `/fr/certifications/${slug}`;
-  if (lang === "es") return `/es/certificaciones/${slug}`;
-  return `/certifications/${slug}`;
-};
-
+  const cert = (slug: RoadmapCertSlug) => {
+    if (lang === "it") return `/it/certificazioni/${slug}`;
+    if (lang === "fr") return `/fr/certifications/${slug}`;
+    if (lang === "es") return `/es/certificaciones/${slug}`;
+    return `/certifications/${slug}`;
+  };
 
   // Category page (NO hub): path diverso per lingua
   const categoryCloud =
@@ -46,9 +31,17 @@ const cert = (slug: CloudCertSlug) => {
     <main className="max-w-4xl mx-auto px-4 py-10">
       {/* HERO */}
       <header className="mb-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">{t.title}</h1>
-        <p className="mt-2 text-lg text-slate-600">{t.subtitle}</p>
-        <p className="mt-5 text-slate-700 leading-relaxed">{t.intro}</p>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+          {t.title}
+        </h1>
+
+        <p className="mt-2 text-lg text-slate-600">
+          {t.subtitle}
+        </p>
+
+        <p className="mt-5 text-slate-700 leading-relaxed">
+          {t.intro}
+        </p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -74,8 +67,13 @@ const cert = (slug: CloudCertSlug) => {
             key={lvl.title}
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
           >
-            <h2 className="text-xl font-bold">{lvl.title}</h2>
-            <p className="mt-2 text-slate-700 leading-relaxed">{lvl.body}</p>
+            <h2 className="text-xl font-bold">
+              {lvl.title}
+            </h2>
+
+            <p className="mt-2 text-slate-700 leading-relaxed">
+              {lvl.body}
+            </p>
 
             {lvl.recommended?.length ? (
               <ul className="mt-3 list-disc pl-5 text-slate-700">
@@ -87,31 +85,34 @@ const cert = (slug: CloudCertSlug) => {
 
             {lvl.goal ? (
               <p className="mt-3 text-slate-600">
-                <span className="font-semibold">{t.goalLabel}</span> {lvl.goal}
+                <span className="font-semibold">
+                  {t.goalLabel}
+                </span>{" "}
+                {lvl.goal}
               </p>
             ) : null}
 
-           {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
-  <div className="mt-4 flex flex-col items-start gap-2">
-    {lvl.ctaQuizSlug ? (
-      <Link
-        href={quiz(lvl.ctaQuizSlug)}
-        className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-      >
-        {lvl.ctaPrimaryText ?? t.practiceCta}
-      </Link>
-    ) : null}
+            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
+              <div className="mt-4 flex flex-col items-start gap-2">
+                {lvl.ctaQuizSlug ? (
+                  <Link
+                    href={quiz(lvl.ctaQuizSlug)}
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
+                  >
+                    {lvl.ctaPrimaryText ?? t.practiceCta}
+                  </Link>
+                ) : null}
 
-    {lvl.ctaCertSlug ? (
-      <Link
-        href={cert(lvl.ctaCertSlug)}
-        className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
-      >
-        {lvl.ctaSecondaryText ?? t.certCta}
-      </Link>
-    ) : null}
-  </div>
-) : null}
+                {lvl.ctaCertSlug ? (
+                  <Link
+                    href={cert(lvl.ctaCertSlug)}
+                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
+                  >
+                    {lvl.ctaSecondaryText ?? t.certCta}
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ))}
       </section>
@@ -231,16 +232,23 @@ const CONTENT: Record<
     goalLabel: string;
     practiceCta: string;
 
-    levels: Array<{
-      title: string;
-      body: string;
-      recommended?: string[];
-      goal?: string;
-      ctaQuizSlug?: CloudQuizSlug;
-      ctaCertSlug?: CloudCertSlug;
-      ctaPrimaryText?: string;
-      ctaSecondaryText?: string;
-    }>;
+   levels: Array<{
+  title: string;
+  body: string;
+  recommended?: string[];
+
+  goal?: string;
+
+  ctaQuizSlug?: string;
+  ctaCertSlug?: string;
+
+  ctaPrimaryText?: string;
+  ctaSecondaryText?: string;
+
+  reality?: string;
+  mistakes?: string[];
+  outcomes?: string[];
+}>;
 
     salaryTitle: string;
     salaryIntro: string;

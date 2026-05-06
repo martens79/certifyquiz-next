@@ -900,14 +900,14 @@ const assessmentCopy =
               </div>
 
              {!isAssessmentResult && !isPremiumUser && (
-  <button
-    type="button"
-    className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-    onClick={() => router.push(pricingPath(lang))}
-  >
-    {label('seePremium', lang)}
-  </button>
-)}
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
+                  onClick={() => router.push(pricingPath(lang))}
+                >
+                  {label('seePremium', lang)}
+                </button>
+              )}
             </div>
           </div>
         </div>
