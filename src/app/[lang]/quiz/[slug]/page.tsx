@@ -233,6 +233,7 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
     programmazione: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
     virtualizzazione: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
     ai: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" },
+    management: { it: "Management", en: "Management", fr: "Management", es: "Management" },
   };
 
   const o = map[key] ?? map.default;
