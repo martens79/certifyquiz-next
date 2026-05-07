@@ -386,3 +386,18 @@ export function getLabel<T extends string>(
 ): T | '' {
   return (obj[lang] ?? obj.it ?? obj.en ?? '') as T | '';
 }
+// === Helper testo localizzato robusto ===
+// Serve quando dal DB/API arriva una stringa oppure un oggetto multilingua.
+// Evita di stampare a video JSON tipo {"it":"...","en":"..."}.
+export function getLocalizedText(
+  value: string | Partial<Record<Locale, string>> | null | undefined,
+  lang: Locale
+): string {
+  if (!value) return "";
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value[lang] ?? value.it ?? value.en ?? "";
+}

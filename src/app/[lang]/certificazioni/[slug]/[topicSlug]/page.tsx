@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
+import { getLocalizedText } from "@/lib/i18n";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
 
@@ -161,9 +162,9 @@ export async function generateMetadata({
     `${data.topic.title} | ${data.certification.title} | CertifyQuiz`;
 
   const description =
-    data.topic.seoDescription ||
-    data.topic.description ||
-    "Practice certification topics on CertifyQuiz.";
+  getLocalizedText(data.topic.seoDescription, lang) ||
+  getLocalizedText(data.topic.description, lang) ||
+  "Practice certification topics on CertifyQuiz.";
 
  const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
@@ -256,7 +257,7 @@ export default async function TopicPage({
           </h1>
 
           <p className="text-base md:text-lg text-slate-700 max-w-3xl mb-4">
-            {data.topic.description}
+            {getLocalizedText(data.topic.description, lang)}
           </p>
 
           {/* CTA principale: subito visibile anche su mobile */}
@@ -278,7 +279,7 @@ export default async function TopicPage({
           {/* Intro SEO sotto la CTA, non sopra */}
 {data.topic.intro && (
   <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-    <p>{data.topic.intro}</p>
+    <p>{getLocalizedText(data.topic.intro, lang)}</p>
   </div>
 )}
 
@@ -357,8 +358,12 @@ export default async function TopicPage({
                 href={topicSeoPath(lang, slug, t.slug)}
                 className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
               >
-                <div className="font-semibold text-slate-900">{t.title}</div>
-                <div className="text-sm text-slate-600 mt-2">{t.description}</div>
+                <div className="font-semibold text-slate-900">
+  {getLocalizedText(t.title, lang)}
+</div>
+<div className="text-sm text-slate-600 mt-2">
+  {getLocalizedText(t.description, lang)}
+</div>
               </Link>
             ))}
           </div>
