@@ -396,6 +396,18 @@ export function getLocalizedText(
   if (!value) return "";
 
   if (typeof value === "string") {
+    const trimmed = value.trim();
+
+    // Caso DB/API: stringa JSON tipo {"it":"...","en":"..."}
+    if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(trimmed) as Partial<Record<Locale, string>>;
+        return parsed[lang] ?? parsed.it ?? parsed.en ?? "";
+      } catch {
+        return value;
+      }
+    }
+
     return value;
   }
 
