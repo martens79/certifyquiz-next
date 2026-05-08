@@ -52,49 +52,49 @@ const GoogleCloud = {
   // ⚠️ Questi slug devono restare allineati agli slug reali dei topic/quiz.
 
   topics: [
-    {
-      title: {
-        it: "Infrastruttura cloud, sicurezza e costi",
-        en: "Cloud infrastructure, security and costs",
-        fr: "Infrastructure cloud, sécurité et coûts",
-        es: "Infraestructura cloud, seguridad y costos",
-      },
-      slug: {
-        it: "cloud-infrastruttura-sicurezza-costi",
-        en: "cloud-infrastructure-security-costs",
-        fr: "infrastructure-cloud-securite-couts",
-        es: "infraestructura-cloud-seguridad-costos",
-      },
+  {
+    title: {
+      it: "Trasformazione digitale con Google Cloud",
+      en: "Digital transformation with Google Cloud",
+      fr: "Transformation numérique avec Google Cloud",
+      es: "Transformación digital con Google Cloud",
     },
-    {
-      title: {
-        it: "Dati, AI e innovazione",
-        en: "Data, AI and innovation",
-        fr: "Données, IA et innovation",
-        es: "Datos, IA e innovación",
-      },
-      slug: {
-        it: "dati-ai-innovazione",
-        en: "data-ai-innovation",
-        fr: "donnees-ia-innovation",
-        es: "datos-ia-innovacion",
-      },
+    slug: {
+      it: "trasformazione-digitale-google-cloud",
+      en: "digital-transformation-google-cloud",
+      fr: "transformation-numerique-google-cloud",
+      es: "transformacion-digital-google-cloud",
     },
-    {
-      title: {
-        it: "Trasformazione digitale",
-        en: "Digital transformation",
-        fr: "Transformation numérique",
-        es: "Transformación digital",
-      },
-      slug: {
-        it: "trasformazione-digitale",
-        en: "digital-transformation",
-        fr: "transformation-numerique",
-        es: "transformacion-digital",
-      },
+  },
+  {
+    title: {
+      it: "Dati, AI e innovazione",
+      en: "Data, AI and innovation",
+      fr: "Données, IA et innovation",
+      es: "Datos, IA e innovación",
     },
-  ],
+    slug: {
+      it: "dati-ai-innovazione",
+      en: "data-ai-innovation",
+      fr: "donnees-ia-innovation",
+      es: "datos-ia-innovacion",
+    },
+  },
+  {
+    title: {
+      it: "Infrastruttura, sicurezza e costi cloud",
+      en: "Cloud infrastructure, security and costs",
+      fr: "Infrastructure, sécurité et coûts cloud",
+      es: "Infraestructura, seguridad y costes cloud",
+    },
+    slug: {
+      it: "infrastruttura-sicurezza-costi-cloud",
+      en: "cloud-infrastructure-security-costs",
+      fr: "infrastructure-securite-couts-cloud",
+      es: "infraestructura-seguridad-costes-cloud",
+    },
+  },
+],
 
   // ─── EXTRA CONTENT ──────────────────────────────────────────────────────────
 

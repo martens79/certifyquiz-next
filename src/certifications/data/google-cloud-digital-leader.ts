@@ -54,49 +54,63 @@ const GoogleCloudDigitalLeader = {
   // Li teniamo uguali in tutte le lingue per evitare vecchi 404 localizzati.
 
   topics: [
-    {
-      title: {
-        it: "Trasformazione digitale con Google Cloud",
-        en: "Digital Transformation with Google Cloud",
-        fr: "Transformation numérique avec Google Cloud",
-        es: "Transformación digital con Google Cloud",
-      },
-      slug: {
-        it: "digital-transformation-google-cloud",
-        en: "digital-transformation-google-cloud",
-        fr: "digital-transformation-google-cloud",
-        es: "digital-transformation-google-cloud",
-      },
+  {
+    title: {
+      it: "Trasformazione digitale con Google Cloud",
+      en: "Digital transformation with Google Cloud",
+      fr: "Transformation numérique avec Google Cloud",
+      es: "Transformación digital con Google Cloud",
     },
-    {
-      title: {
-        it: "Dati, AI e innovazione",
-        en: "Data, AI and Innovation",
-        fr: "Données, IA et innovation",
-        es: "Datos, IA e innovación",
-      },
-      slug: {
-        it: "data-ai-innovation",
-        en: "data-ai-innovation",
-        fr: "data-ai-innovation",
-        es: "data-ai-innovation",
-      },
+    slug: {
+      it: "trasformazione-digitale-con-google-cloud",
+      en: "digital-transformation-with-google-cloud",
+      fr: "transformation-numerique-avec-google-cloud",
+      es: "transformacion-digital-con-google-cloud",
     },
-    {
-      title: {
-        it: "Infrastruttura cloud, sicurezza e costi",
-        en: "Cloud Infrastructure, Security and Costs",
-        fr: "Infrastructure cloud, sécurité et coûts",
-        es: "Infraestructura cloud, seguridad y costes",
-      },
-      slug: {
-        it: "cloud-infrastructure-security-costs",
-        en: "cloud-infrastructure-security-costs",
-        fr: "cloud-infrastructure-security-costs",
-        es: "cloud-infrastructure-security-costs",
-      },
+  },
+  {
+    title: {
+      it: "Innovazione con i dati e Google Cloud",
+      en: "Innovation with data and Google Cloud",
+      fr: "Innovation avec les données et Google Cloud",
+      es: "Innovación con datos y Google Cloud",
     },
-  ],
+    slug: {
+      it: "innovazione-con-i-dati-e-google-cloud",
+      en: "innovation-with-data-and-google-cloud",
+      fr: "innovation-avec-les-donnees-et-google-cloud",
+      es: "innovacion-con-datos-y-google-cloud",
+    },
+  },
+  {
+    title: {
+      it: "Modernizzazione di infrastrutture e applicazioni",
+      en: "Modernization of infrastructure and applications",
+      fr: "Modernisation de l'infrastructure et des applications",
+      es: "Modernización de infraestructura y aplicaciones",
+    },
+    slug: {
+      it: "modernizzazione-di-infrastrutture-e-applicazioni",
+      en: "modernization-of-infrastructure-and-applications",
+      fr: "modernisation-de-linfrastructure-et-des-applications",
+      es: "modernizacion-de-infraestructura-y-aplicaciones",
+    },
+  },
+  {
+    title: {
+      it: "Sicurezza e operazioni con Google Cloud",
+      en: "Security and operations with Google Cloud",
+      fr: "Sécurité et opérations avec Google Cloud",
+      es: "Seguridad y operaciones con Google Cloud",
+    },
+    slug: {
+      it: "sicurezza-e-operazioni-con-google-cloud",
+      en: "security-and-operations-with-google-cloud",
+      fr: "securite-et-operations-avec-google-cloud",
+      es: "seguridad-y-operaciones-con-google-cloud",
+    },
+  },
+],
 
   // ─── EXTRA CONTENT ──────────────────────────────────────────────────────────
 
