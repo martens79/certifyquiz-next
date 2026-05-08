@@ -1,11 +1,11 @@
 // src/certifications/data/pekit.ts
-// Modulo dati per "PEKIT" (no React/JSX).
+// ✅ Pagina certificazione PEKIT aggiornata in ottica SEO.
+// ✅ Focus Italia: competenze digitali, scuola, docenti, ATA e concorsi.
+// ✅ Data-only: nessun JSX/router.
 
 const PEKIT = {
   slug: "pekit",
   imageUrl: "/images/certifications/pekit.png",
-
-  // Pagina ufficiale del progetto PEKIT
   officialUrl: "https://www.pekitproject.it",
 
   title: {
@@ -22,175 +22,272 @@ const PEKIT = {
     es: "Básico",
   },
 
+  metaTitle: {
+    it: "PEKIT: quiz, simulazioni e preparazione per competenze digitali",
+    en: "PEKIT: quizzes, practice tests and digital skills preparation",
+    fr: "PEKIT : quiz, simulations et préparation aux compétences numériques",
+    es: "PEKIT: quizzes, simulaciones y preparación en competencias digitales",
+  },
+
+  metaDescription: {
+    it: "Preparati alla certificazione PEKIT con quiz e simulazioni sulle competenze digitali. Utile per scuola, docenti, ATA, concorsi e formazione informatica di base.",
+    en: "Prepare for PEKIT with quizzes and practice tests on digital skills. Useful for basic ICT training, school and professional development.",
+    fr: "Préparez la certification PEKIT avec des quiz et simulations sur les compétences numériques de base.",
+    es: "Prepárate para PEKIT con quizzes y simulaciones sobre competencias digitales básicas.",
+  },
+
   description: {
-    it: "La certificazione PEKIT è un programma di formazione per sviluppare competenze digitali nel settore informatico.",
-    en: "The PEKIT certification is a training program to develop digital skills in the IT sector.",
-    fr: "La certification PEKIT est un programme de formation pour développer des compétences numériques dans le domaine informatique.",
-    es: "La certificación PEKIT es un programa de formación para desarrollar habilidades digitales en el sector informático.",
+    it: "La certificazione PEKIT è un percorso dedicato allo sviluppo delle competenze digitali: uso del computer, strumenti online, sicurezza, produttività, comunicazione e lavoro digitale. È particolarmente interessante per chi vuole rafforzare il proprio curriculum, prepararsi a concorsi pubblici, graduatorie scolastiche, profili ATA o percorsi formativi dove le competenze informatiche sono sempre più richieste.",
+    en: "The PEKIT certification is focused on digital skills: computer use, online tools, security, productivity, communication and digital work. It is useful for learners and professionals who want to strengthen their ICT profile.",
+    fr: "La certification PEKIT est axée sur les compétences numériques : utilisation de l’ordinateur, outils en ligne, sécurité, productivité, communication et travail numérique.",
+    es: "La certificación PEKIT se centra en competencias digitales: uso del ordenador, herramientas online, seguridad, productividad, comunicación y trabajo digital.",
   },
 
   topics: [
-  {
-    title: {
-      it: "Cominciare le operazioni",
-      en: "Starting Operations",
-      fr: "Commencer les opérations",
-      es: "Comenzar las operaciones",
+    {
+      title: {
+        it: "Cominciare le operazioni",
+        en: "Starting Operations",
+        fr: "Commencer les opérations",
+        es: "Comenzar las operaciones",
+      },
+      slug: {
+        it: "cominciare-le-operazioni",
+        en: "starting-operations",
+        fr: "commencer-les-operations",
+        es: "comenzar-las-operaciones",
+      },
     },
-    slug: {
-      it: "cominciare-le-operazioni",
-      en: "starting-operations",
-      fr: "commencer-les-operations",
-      es: "comenzar-las-operaciones",
+    {
+      title: {
+        it: "Esplorare e risolvere",
+        en: "Explore and Resolve",
+        fr: "Explorer et résoudre",
+        es: "Explorar y resolver",
+      },
+      slug: {
+        it: "esplorare-e-risolvere",
+        en: "explore-and-resolve",
+        fr: "explorer-et-resoudre",
+        es: "explorar-y-resolver",
+      },
     },
-  },
-  {
-    title: {
-      it: "Esplorare e risolvere",
-      en: "Explore and Resolve",
-      fr: "Explorer et résoudre",
-      es: "Explorar y resolver",
+    {
+      title: {
+        it: "Imparare e lavorare",
+        en: "Learn and Work",
+        fr: "Apprendre et travailler",
+        es: "Aprender y trabajar",
+      },
+      slug: {
+        it: "imparare-e-lavorare",
+        en: "learn-and-work",
+        fr: "apprendre-et-travailler",
+        es: "aprender-y-trabajar",
+      },
     },
-    slug: {
-      it: "esplorare-e-risolvere",
-      en: "explore-and-resolve",
-      fr: "explorer-et-resoudre",
-      es: "explorar-y-resolver",
+    {
+      title: {
+        it: "Vivere in connessione",
+        en: "Living Connected",
+        fr: "Vivre connecté",
+        es: "Vivir conectado",
+      },
+      slug: {
+        it: "vivere-in-connessione",
+        en: "living-connected",
+        fr: "vivre-connecte",
+        es: "vivir-conectado",
+      },
     },
-  },
-  {
-    title: {
-      it: "Imparare e lavorare",
-      en: "Learn and Work",
-      fr: "Apprendre et travailler",
-      es: "Aprender y trabajar",
-    },
-    slug: {
-      it: "imparare-e-lavorare",
-      en: "learn-and-work",
-      fr: "apprendre-et-travailler",
-      es: "aprender-y-trabajar",
-    },
-  },
-  {
-    title: {
-      it: "Vivere in connessione",
-      en: "Living Connected",
-      fr: "Vivre connecté",
-      es: "Vivir conectado",
-    },
-    slug: {
-      it: "vivere-in-connessione",
-      en: "living-connected",
-      fr: "vivre-connecte",
-      es: "vivir-conectado",
-    },
-  },
-],
+  ],
 
   extraContent: {
-    // 🧠 Cosa si impara
     learn: {
       it: [
-        "Comprendere i concetti fondamentali dell'informatica.",
-        "Utilizzare strumenti digitali per lavorare in modo efficiente.",
-        "Navigare in sicurezza e proteggere i propri dati.",
-        "Muovere i primi passi nello sviluppo web.",
+        "Usare computer, file, cartelle, programmi e strumenti digitali con maggiore sicurezza.",
+        "Comprendere le basi dell’informatica e dell’ambiente digitale moderno.",
+        "Navigare online, comunicare, cercare informazioni e usare servizi web in modo consapevole.",
+        "Proteggere dati personali, account, password e dispositivi dai rischi più comuni.",
+        "Utilizzare strumenti utili per studio, lavoro, produttività e collaborazione digitale.",
+        "Allenarti con quiz e simulazioni per capire quali argomenti conosci davvero e quali devi ripassare.",
       ],
       en: [
-        "Understand the fundamental concepts of computing.",
-        "Use digital tools for efficient work.",
-        "Browse safely and protect your data.",
-        "Take the first steps in web development.",
+        "Use computers, files, folders, software and digital tools with more confidence.",
+        "Understand the basics of computing and the modern digital environment.",
+        "Browse online, communicate, search for information and use web services responsibly.",
+        "Protect personal data, accounts, passwords and devices from common risks.",
+        "Use tools for study, work, productivity and digital collaboration.",
+        "Train with quizzes and practice tests to identify what you really know and what you need to review.",
       ],
       fr: [
-        "Comprendre les concepts fondamentaux de l'informatique.",
-        "Utiliser des outils numériques pour travailler efficacement.",
-        "Naviguer en toute sécurité et protéger ses données.",
-        "Faire ses premiers pas dans le développement web.",
+        "Utiliser ordinateurs, fichiers, dossiers, logiciels et outils numériques avec plus de confiance.",
+        "Comprendre les bases de l’informatique et de l’environnement numérique moderne.",
+        "Naviguer en ligne, communiquer, rechercher des informations et utiliser les services web de manière responsable.",
+        "Protéger les données personnelles, comptes, mots de passe et appareils contre les risques courants.",
+        "Utiliser des outils pour les études, le travail, la productivité et la collaboration numérique.",
+        "S’entraîner avec des quiz et simulations pour identifier les sujets à réviser.",
       ],
       es: [
-        "Comprender los conceptos fundamentales de la informática.",
-        "Utilizar herramientas digitales para trabajar eficientemente.",
-        "Navegar de forma segura y proteger tus datos.",
-        "Dar los primeros pasos en el desarrollo web.",
+        "Usar ordenadores, archivos, carpetas, programas y herramientas digitales con mayor seguridad.",
+        "Comprender las bases de la informática y del entorno digital moderno.",
+        "Navegar online, comunicarse, buscar información y usar servicios web de forma responsable.",
+        "Proteger datos personales, cuentas, contraseñas y dispositivos frente a riesgos comunes.",
+        "Usar herramientas para estudio, trabajo, productividad y colaboración digital.",
+        "Entrenar con quizzes y simulaciones para detectar qué sabes realmente y qué debes repasar.",
       ],
     },
 
-    // 💡 Perché scegliere PEKIT
     whyChoose: {
       it: [
-        "Ideale per chi vuole certificare le proprie competenze digitali di base.",
-        "Riconosciuta in ambito scolastico e lavorativo.",
-        "Utile per prepararsi a ruoli entry-level nel mondo IT.",
+        "È una certificazione digitale molto cercata da chi prepara concorsi, graduatorie e percorsi scolastici.",
+        "Aiuta a dimostrare competenze informatiche pratiche e spendibili nel curriculum.",
+        "È adatta anche a chi parte da zero e vuole costruire una base digitale solida.",
+        "I quiz permettono di allenarsi in modo più concreto rispetto al semplice studio teorico.",
+        "È utile per studenti, docenti, personale ATA, candidati ai concorsi e lavoratori che vogliono aggiornarsi.",
       ],
       en: [
-        "Ideal for those who want to certify their basic digital skills.",
-        "Recognized in education and employment sectors.",
-        "Useful preparation for entry-level roles in IT.",
+        "It helps demonstrate practical digital and ICT skills.",
+        "It is suitable for beginners who want to build a solid digital foundation.",
+        "It can strengthen a CV with basic technology competence.",
+        "Quizzes make preparation more concrete than theory alone.",
+        "It is useful for students, workers and professionals who want to update their digital skills.",
       ],
       fr: [
-        "Idéal pour ceux qui souhaitent certifier leurs compétences numériques de base.",
-        "Reconnue dans les secteurs éducatif et professionnel.",
-        "Utile pour se préparer à des rôles débutants dans l'informatique.",
+        "Elle permet de démontrer des compétences numériques pratiques.",
+        "Elle convient aux débutants qui souhaitent construire une base numérique solide.",
+        "Elle peut renforcer un CV avec des compétences technologiques de base.",
+        "Les quiz rendent la préparation plus concrète que la théorie seule.",
+        "Elle est utile aux étudiants, travailleurs et professionnels souhaitant mettre à jour leurs compétences numériques.",
       ],
       es: [
-        "Ideal para quienes desean certificar sus habilidades digitales básicas.",
-        "Reconocida en los sectores educativo y laboral.",
-        "Útil para prepararse para puestos iniciales en TI.",
+        "Ayuda a demostrar competencias digitales prácticas.",
+        "Es adecuada para principiantes que quieren construir una base digital sólida.",
+        "Puede reforzar el currículum con competencias tecnológicas básicas.",
+        "Los quizzes hacen que la preparación sea más concreta que solo estudiar teoría.",
+        "Es útil para estudiantes, trabajadores y profesionales que quieren actualizar sus competencias digitales.",
       ],
     },
 
-    // 🧾 Percorsi/esami ufficiali
     examReference: {
       it: [
-        { text: "Catalogo ufficiale certificazioni PEKIT", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Expert • Percorso base (4 moduli)", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Advanced • Moduli specialistici", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Security & Privacy • Sicurezza e GDPR", url: "https://www.pekitproject.it" },
+        {
+          text: "Catalogo ufficiale certificazioni PEKIT",
+          url: "https://www.pekitproject.it",
+        },
+        {
+          text: "PEKIT Expert — Percorso base",
+          url: "https://www.pekitproject.it",
+        },
       ],
       en: [
-        { text: "Official PEKIT Certifications Catalog", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Expert • Core path (4 modules)", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Advanced • Specialist modules", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Security & Privacy • Security and GDPR", url: "https://www.pekitproject.it" },
+        {
+          text: "Official PEKIT certifications catalog",
+          url: "https://www.pekitproject.it",
+        },
+        {
+          text: "PEKIT Expert — Core path",
+          url: "https://www.pekitproject.it",
+        },
       ],
       fr: [
-        { text: "Catalogue officiel des certifications PEKIT", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Expert • Parcours de base (4 modules)", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Advanced • Modules spécialisés", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Security & Privacy • Sécurité et RGPD", url: "https://www.pekitproject.it" },
+        {
+          text: "Catalogue officiel des certifications PEKIT",
+          url: "https://www.pekitproject.it",
+        },
+        {
+          text: "PEKIT Expert — Parcours de base",
+          url: "https://www.pekitproject.it",
+        },
       ],
       es: [
-        { text: "Catálogo oficial de certificaciones PEKIT", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Expert • Ruta base (4 módulos)", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Advanced • Módulos especializados", url: "https://www.pekitproject.it" },
-        { text: "PEKIT Security & Privacy • Seguridad y GDPR", url: "https://www.pekitproject.it" },
+        {
+          text: "Catálogo oficial de certificaciones PEKIT",
+          url: "https://www.pekitproject.it",
+        },
+        {
+          text: "PEKIT Expert — Ruta base",
+          url: "https://www.pekitproject.it",
+        },
       ],
     },
 
-    // ❓ FAQ
     faq: {
       it: [
-        { q: "È adatta anche a studenti o principianti?", a: "Assolutamente sì. È pensata per chi inizia a muovere i primi passi nel digitale." },
-        { q: "Serve esperienza nel settore?", a: "No, non è richiesta esperienza pregressa." },
+        {
+          q: "PEKIT è utile per docenti, ATA e concorsi?",
+          a: "Sì, PEKIT è spesso scelta da chi vuole certificare competenze digitali per scuola, graduatorie e concorsi. Il valore preciso e l’eventuale punteggio dipendono sempre dal bando, dalla tabella titoli e dal profilo specifico.",
+        },
+        {
+          q: "CertifyQuiz rilascia la certificazione PEKIT ufficiale?",
+          a: "No. CertifyQuiz offre quiz, simulazioni e materiali di preparazione. La certificazione ufficiale va sostenuta tramite enti, piattaforme o centri autorizzati.",
+        },
+        {
+          q: "PEKIT è adatta anche a principianti?",
+          a: "Sì. È adatta anche a chi parte da zero e vuole costruire competenze digitali di base per studio, lavoro o concorsi.",
+        },
+        {
+          q: "Perché prepararsi con i quiz?",
+          a: "Perché i quiz ti costringono a verificare davvero quello che sai. Leggere la teoria è utile, ma allenarsi sulle domande aiuta a scoprire errori, lacune e argomenti da ripassare.",
+        },
       ],
       en: [
-        { q: "Is it suitable for students or beginners?", a: "Absolutely. It's designed for those starting their digital journey." },
-        { q: "Is prior experience required?", a: "No, previous experience is not necessary." },
+        {
+          q: "Is PEKIT useful for digital skills preparation?",
+          a: "Yes. PEKIT is useful for validating basic digital skills for study, work and professional development.",
+        },
+        {
+          q: "Does CertifyQuiz issue the official PEKIT certification?",
+          a: "No. CertifyQuiz provides quizzes and preparation materials. The official certification must be taken through authorized providers.",
+        },
+        {
+          q: "Is PEKIT suitable for beginners?",
+          a: "Yes. It is suitable for beginners who want to build basic digital skills.",
+        },
+        {
+          q: "Why prepare with quizzes?",
+          a: "Because quizzes help verify what you really know and reveal weak areas before the exam.",
+        },
       ],
       fr: [
-        { q: "Convient-elle aux étudiants ou débutants ?", a: "Absolument. Elle est conçue pour ceux qui débutent dans le numérique." },
-        { q: "Une expérience est-elle requise ?", a: "Non, aucune expérience préalable n'est nécessaire." },
+        {
+          q: "PEKIT est-elle utile pour les compétences numériques ?",
+          a: "Oui. PEKIT est utile pour valider des compétences numériques de base pour les études, le travail ou le développement professionnel.",
+        },
+        {
+          q: "CertifyQuiz délivre-t-il la certification officielle PEKIT ?",
+          a: "Non. CertifyQuiz propose des quiz et du matériel de préparation. La certification officielle doit être passée auprès d’organismes autorisés.",
+        },
+        {
+          q: "PEKIT convient-elle aux débutants ?",
+          a: "Oui. Elle convient aux débutants qui souhaitent construire des compétences numériques de base.",
+        },
+        {
+          q: "Pourquoi se préparer avec des quiz ?",
+          a: "Parce que les quiz permettent de vérifier ce que vous savez vraiment et de repérer les points faibles avant l’examen.",
+        },
       ],
       es: [
-        { q: "¿Es adecuada para estudiantes o principiantes?", a: "Absolutamente. Está pensada para quienes empiezan en el mundo digital." },
-        { q: "¿Se necesita experiencia previa?", a: "No, no se requiere experiencia previa." },
+        {
+          q: "¿PEKIT es útil para competencias digitales?",
+          a: "Sí. PEKIT es útil para validar competencias digitales básicas para estudiar, trabajar o mejorar el perfil profesional.",
+        },
+        {
+          q: "¿CertifyQuiz emite la certificación oficial PEKIT?",
+          a: "No. CertifyQuiz ofrece quizzes y materiales de preparación. La certificación oficial debe realizarse mediante proveedores autorizados.",
+        },
+        {
+          q: "¿PEKIT es adecuada para principiantes?",
+          a: "Sí. Es adecuada para principiantes que quieren construir competencias digitales básicas.",
+        },
+        {
+          q: "¿Por qué prepararse con quizzes?",
+          a: "Porque los quizzes ayudan a comprobar lo que sabes realmente y detectar puntos débiles antes del examen.",
+        },
       ],
     },
   },
 
-  // Rotte quiz localizzate
   quizRoute: {
     it: "/it/quiz/pekit",
     en: "/en/quiz/pekit",
@@ -198,7 +295,6 @@ const PEKIT = {
     es: "/es/quiz/pekit",
   },
 
-  // Rotta “indietro” localizzata (verso lista certificazioni)
   backRoute: {
     it: "/it/certificazioni",
     en: "/certifications",

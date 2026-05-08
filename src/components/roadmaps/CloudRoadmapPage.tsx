@@ -285,17 +285,21 @@ const CONTENT: Record<
 
     levels: [
       {
-        title: "🟢 Level 0 — IT foundations before cloud",
-        body:
-          "Before opening cloud consoles, build the minimum technical base: operating systems, networking, DNS, identity and basic security. Without these foundations, cloud services look like isolated buttons instead of connected systems.",
-        recommended: [
-          "Basic operating systems knowledge",
-          "Networking fundamentals: IP, DNS, routing",
-          "Basic cybersecurity concepts",
-          "Identity and access basics",
-        ],
-        goal: "Understand what cloud services are actually built on.",
-      },
+  title: "🟢 Level 0 — Google Cloud Foundations",
+  body:
+    "Before opening cloud consoles, build the foundations: cloud computing, infrastructure, networking, security, costs, data and basic Google Cloud concepts. This level is designed for complete beginners with an introductory certification by CertifyQuiz.",
+  recommended: [
+    "Google Cloud Foundations by CertifyQuiz",
+    "Cloud computing basics",
+    "Networking, security and identity",
+    "Costs, data and digital transformation",
+  ],
+  goal: "Understand cloud basics and prepare better for Google Cloud Digital Leader or other cloud paths.",
+  ctaQuizSlug: "google-cloud",
+  ctaCertSlug: "google-cloud",
+  ctaPrimaryText: "Start Google Cloud Foundations quiz",
+  ctaSecondaryText: "Explore Google Cloud Foundations",
+},
       {
         title: "🟡 Level 1 — First cloud foundation",
         body:
@@ -344,12 +348,11 @@ const CONTENT: Record<
         title: "🟣 Level 5 — Multi-cloud awareness",
         body:
           "Once you understand one provider deeply and Kubernetes as a deployment layer, expand your view with Google Cloud. This strengthens your ability to compare services, architectures and vendor-specific approaches.",
-        recommended: ["Google Cloud"],
-        goal: "Build broader cloud awareness without becoming superficial.",
-        ctaQuizSlug: "google-cloud",
-        ctaCertSlug: "google-cloud",
-        ctaPrimaryText: "Start Google Cloud quiz",
-        ctaSecondaryText: "Explore Google Cloud certification",
+       recommended: ["Google Cloud Digital Leader"],
+        ctaQuizSlug: "google-cloud-digital-leader",
+        ctaCertSlug: "google-cloud-digital-leader",
+        ctaPrimaryText: "Start Google Cloud Digital Leader quiz",
+        ctaSecondaryText: "Explore Google Cloud Digital Leader",
       },
       {
         title: "⚫ Level 6 — Operations and troubleshooting",
@@ -449,18 +452,22 @@ const CONTENT: Record<
     practiceCta: "Allenati ora",
 
     levels: [
-      {
-        title: "🟢 Livello 0 — Basi IT prima del cloud",
-        body:
-          "Prima di entrare nei pannelli cloud, costruisci le fondamenta: sistemi operativi, reti, DNS, identità e sicurezza di base. Senza queste basi, i servizi cloud sembrano pulsanti scollegati invece che parti di un sistema.",
-        recommended: [
-          "Basi di sistemi operativi",
-          "Reti: IP, DNS, routing",
-          "Concetti base di cybersecurity",
-          "Identità e accessi",
-        ],
-        goal: "Capire su cosa si appoggiano davvero i servizi cloud.",
-      },
+    {
+  title: "🟢 Livello 0 — Google Cloud Foundations",
+  body:
+    "Prima di entrare nei pannelli cloud, costruisci le fondamenta: cloud computing, infrastruttura, reti, sicurezza, costi, dati e concetti base di Google Cloud. Questo livello è pensato per partire da zero con una certificazione introduttiva by CertifyQuiz.",
+  recommended: [
+    "Google Cloud Foundations by CertifyQuiz",
+    "Basi di cloud computing",
+    "Reti, sicurezza e identità",
+    "Costi, dati e trasformazione digitale",
+  ],
+  goal: "Capire le basi del cloud e prepararti meglio a Google Cloud Digital Leader o ad altri percorsi cloud.",
+  ctaQuizSlug: "google-cloud",
+  ctaCertSlug: "google-cloud",
+  ctaPrimaryText: "Inizia il quiz Google Cloud Foundations",
+  ctaSecondaryText: "Scopri Google Cloud Foundations",
+},
       {
         title: "🟡 Livello 1 — Prima base cloud",
         body:
@@ -509,12 +516,11 @@ const CONTENT: Record<
         title: "🟣 Livello 5 — Visione multi-cloud",
         body:
           "Quando conosci bene un provider e hai capito Kubernetes come layer di deployment, amplia la visione con Google Cloud. Questo ti aiuta a confrontare servizi, architetture e approcci diversi.",
-        recommended: ["Google Cloud"],
-        goal: "Costruire una visione cloud più ampia senza diventare superficiale.",
-        ctaQuizSlug: "google-cloud",
-        ctaCertSlug: "google-cloud",
-        ctaPrimaryText: "Inizia il quiz Google Cloud",
-        ctaSecondaryText: "Scopri Google Cloud",
+        recommended: ["Google Cloud Digital Leader"],
+        ctaQuizSlug: "google-cloud-digital-leader",
+        ctaCertSlug: "google-cloud-digital-leader",
+        ctaPrimaryText: "Start Google Cloud Digital Leader quiz",
+        ctaSecondaryText: "Explore Google Cloud Digital Leader",
       },
       {
         title: "⚫ Livello 6 — Operations e troubleshooting",
@@ -615,17 +621,21 @@ const CONTENT: Record<
 
     levels: [
       {
-        title: "🟢 Nivel 0 — Bases IT antes del cloud",
-        body:
-          "Antes de entrar en consolas cloud, construye las bases: sistemas operativos, redes, DNS, identidad y seguridad básica. Sin estas bases, los servicios cloud parecen botones aislados en lugar de partes de un sistema.",
-        recommended: [
-          "Bases de sistemas operativos",
-          "Redes: IP, DNS, routing",
-          "Conceptos básicos de ciberseguridad",
-          "Identidad y control de acceso",
-        ],
-        goal: "Entender sobre qué se apoyan realmente los servicios cloud.",
-      },
+  title: "🟢 Nivel 0 — Google Cloud Foundations",
+  body:
+    "Antes de entrar en consolas cloud, construye las bases: cloud computing, infraestructura, redes, seguridad, costes, datos y conceptos básicos de Google Cloud. Este nivel está pensado para empezar desde cero con una certificación introductoria by CertifyQuiz.",
+  recommended: [
+    "Google Cloud Foundations by CertifyQuiz",
+    "Bases de cloud computing",
+    "Redes, seguridad e identidad",
+    "Costes, datos y transformación digital",
+  ],
+  goal: "Entender las bases del cloud y prepararte mejor para Google Cloud Digital Leader u otras rutas cloud.",
+  ctaQuizSlug: "google-cloud",
+  ctaCertSlug: "google-cloud",
+  ctaPrimaryText: "Empezar quiz Google Cloud Foundations",
+  ctaSecondaryText: "Ver Google Cloud Foundations",
+},
       {
         title: "🟡 Nivel 1 — Primera base cloud",
         body:
@@ -674,12 +684,11 @@ const CONTENT: Record<
         title: "🟣 Nivel 5 — Visión multi-cloud",
         body:
           "Cuando ya conoces bien un proveedor y entiendes Kubernetes como capa de despliegue, amplía la visión con Google Cloud. Esto te ayuda a comparar servicios, arquitecturas y enfoques distintos.",
-        recommended: ["Google Cloud"],
-        goal: "Construir una visión cloud más amplia sin volverte superficial.",
-        ctaQuizSlug: "google-cloud",
-        ctaCertSlug: "google-cloud",
-        ctaPrimaryText: "Empezar quiz Google Cloud",
-        ctaSecondaryText: "Ver Google Cloud",
+       recommended: ["Google Cloud Digital Leader"],
+        ctaQuizSlug: "google-cloud-digital-leader",
+        ctaCertSlug: "google-cloud-digital-leader",
+        ctaPrimaryText: "Empezar quiz Google Cloud Digital Leader",
+        ctaSecondaryText: "Ver Google Cloud Digital Leader",
       },
       {
         title: "⚫ Nivel 6 — Operaciones y troubleshooting",
@@ -780,17 +789,21 @@ const CONTENT: Record<
 
     levels: [
       {
-        title: "🟢 Niveau 0 — Bases IT avant le cloud",
-        body:
-          "Avant d’ouvrir des consoles cloud, construisez les bases : systèmes d’exploitation, réseau, DNS, identité et sécurité de base. Sans ces fondations, les services cloud ressemblent à des boutons isolés plutôt qu’à des parties d’un système.",
-        recommended: [
-          "Bases des systèmes d’exploitation",
-          "Réseau : IP, DNS, routage",
-          "Concepts de base en cybersécurité",
-          "Identité et contrôle d’accès",
-        ],
-        goal: "Comprendre sur quoi reposent réellement les services cloud.",
-      },
+  title: "🟢 Niveau 0 — Google Cloud Foundations",
+  body:
+    "Avant d’ouvrir des consoles cloud, construisez les bases : cloud computing, infrastructure, réseau, sécurité, coûts, données et concepts de base de Google Cloud. Ce niveau est conçu pour partir de zéro avec une certification introductive by CertifyQuiz.",
+  recommended: [
+    "Google Cloud Foundations by CertifyQuiz",
+    "Bases du cloud computing",
+    "Réseau, sécurité et identité",
+    "Coûts, données et transformation digitale",
+  ],
+  goal: "Comprendre les bases du cloud et mieux préparer Google Cloud Digital Leader ou d’autres parcours cloud.",
+  ctaQuizSlug: "google-cloud",
+  ctaCertSlug: "google-cloud",
+  ctaPrimaryText: "Commencer le quiz Google Cloud Foundations",
+  ctaSecondaryText: "Voir Google Cloud Foundations",
+},
       {
         title: "🟡 Niveau 1 — Première base cloud",
         body:
@@ -839,12 +852,12 @@ const CONTENT: Record<
         title: "🟣 Niveau 5 — Vision multi-cloud",
         body:
           "Quand vous connaissez bien un fournisseur et que vous comprenez Kubernetes comme couche de déploiement, élargissez votre vision avec Google Cloud. Cela aide à comparer services, architectures et approches différentes.",
-        recommended: ["Google Cloud"],
-        goal: "Construire une vision cloud plus large sans devenir superficiel.",
-        ctaQuizSlug: "google-cloud",
-        ctaCertSlug: "google-cloud",
-        ctaPrimaryText: "Commencer le quiz Google Cloud",
-        ctaSecondaryText: "Voir Google Cloud",
+        recommended: ["Google Cloud Digital Leader"],
+        goal: "Élargir votre vision sur les services cloud et les architectures multi-fournisseurs.",
+        ctaQuizSlug: "google-cloud-digital-leader",
+        ctaCertSlug: "google-cloud-digital-leader",
+        ctaPrimaryText: "Commencer le quiz Google Cloud Digital Leader",
+        ctaSecondaryText: "Voir Google Cloud Digital Leader",
       },
       {
         title: "⚫ Niveau 6 — Operations et troubleshooting",

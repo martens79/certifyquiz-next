@@ -265,13 +265,18 @@ cloud: [
     { name: "Microsoft Virtualization", link: certPath(lang, "microsoft-virtualization") },
   ],
 
-  ai: [
+ ai: [
   { name: "AI Foundations", link: certPath(lang, "ai-foundations") },
   { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai") },
   { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
+
+  // ✅ NVIDIA GenAI & LLMs
+  { name: "NVIDIA Generative AI & LLMs", link: certPath(lang, "nvidia-generative-ai-llm") },
+
   { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
   { name: "PyTorch", link: null },
   { name: "OpenAI", link: null },
+
 ],
 };
 
