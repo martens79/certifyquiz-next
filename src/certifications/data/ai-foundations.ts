@@ -1,19 +1,21 @@
 // src/certifications/data/ai-foundations.ts
-// 🔥 CertifyQuiz proprietary certification – AI beginner path.
-// Data-only file: no JSX, no router logic, no DB IDs.
+// 🌟 CertifyQuiz Original Certification
+// Beginner-friendly proprietary AI certification path focused on practical AI literacy.
 
 const AIFoundations = {
   slug: "ai-foundations",
-  imageUrl: "/images/certifications/ai-foundations.png",
-  officialUrl: "https://certifyquiz.com/en/certifications/ai-foundations",
 
-  levelOrder: 1, // for sorting in hub/filter
+  imageUrl: "/images/certifications/ai-foundations.png",
+
+  officialUrl: "https://www.certifyquiz.com/certifications/ai-foundations",
+
+  levelOrder: 1,
 
   title: {
-    it: "AI Foundations – Impara le Basi dell'Intelligenza Artificiale",
-    en: "AI Foundations – Learn Artificial Intelligence Basics",
-    fr: "Fondamentaux IA – Apprenez les Bases de l'Intelligence Artificielle",
-    es: "Fundamentos de IA – Aprende las Bases de la Inteligencia Artificial",
+    it: "AI Foundations by CertifyQuiz",
+    en: "AI Foundations by CertifyQuiz",
+    fr: "AI Foundations by CertifyQuiz",
+    es: "AI Foundations by CertifyQuiz",
   },
 
   level: {
@@ -24,272 +26,245 @@ const AIFoundations = {
   },
 
   description: {
-    it: "Il punto di partenza per capire l'AI in modo pratico. Percorso CertifyQuiz su intelligenza artificiale, machine learning, LLM, prompt engineering, casi d'uso reali e AI responsabile. Nessuna programmazione richiesta.",
-    en: "The starting point to understand AI practically. CertifyQuiz path covering artificial intelligence, machine learning, LLMs, prompt engineering, real-world use cases, and responsible AI. No coding required.",
-    fr: "Le point de départ pour comprendre l'IA de façon pratique. Parcours CertifyQuiz sur l'intelligence artificielle, le machine learning, les LLM, le prompt engineering, les cas d'usage réels et l'IA responsable. Aucune programmation requise.",
-    es: "El punto de partida para entender la IA de forma práctica. Ruta CertifyQuiz sobre inteligencia artificial, machine learning, LLM, prompt engineering, casos de uso reales e IA responsable. Sin programación.",
+    it: "AI Foundations è la prima certificazione proprietaria di CertifyQuiz dedicata alle basi dell'intelligenza artificiale. Un percorso pratico e moderno per comprendere AI, prompt engineering, AI generativa, casi d'uso reali ed etica AI — senza bisogno di programmare.",
+    
+    en: "AI Foundations is the first proprietary certification created by CertifyQuiz for learning the fundamentals of artificial intelligence. A practical and modern path covering AI basics, prompt engineering, generative AI, real-world applications, and responsible AI — with no coding required.",
+    
+    fr: "AI Foundations est la première certification propriétaire créée par CertifyQuiz pour apprendre les bases de l'intelligence artificielle. Un parcours pratique et moderne couvrant les fondamentaux de l'IA, le prompt engineering, l'IA générative, les applications réelles et l'IA responsable — sans programmation.",
+    
+    es: "AI Foundations es la primera certificación propia creada por CertifyQuiz para aprender los fundamentos de la inteligencia artificial. Una ruta práctica y moderna sobre IA, prompt engineering, IA generativa, aplicaciones reales y uso responsable de la IA — sin necesidad de programar.",
   },
 
-  // ─── SEO ────────────────────────────────────────────────────────────────────
+  // ───────────────── SEO ─────────────────
 
   metaTitle: {
-    it: "Quiz AI Foundations 2026 – Basi di Intelligenza Artificiale | CertifyQuiz",
-    en: "AI Foundations Quiz 2026 – Artificial Intelligence Basics | CertifyQuiz",
-    fr: "Quiz Fondamentaux IA 2026 – Bases de l'Intelligence Artificielle | CertifyQuiz",
-    es: "Quiz Fundamentos de IA 2026 – Bases de Inteligencia Artificial | CertifyQuiz",
+    it: "AI Foundations by CertifyQuiz – Quiz e Basi AI 2026",
+    en: "AI Foundations by CertifyQuiz – AI Basics Quiz 2026",
+    fr: "AI Foundations by CertifyQuiz – Bases IA et Quiz 2026",
+    es: "AI Foundations by CertifyQuiz – Fundamentos IA y Quiz 2026",
   },
 
   metaDescription: {
-    it: "Impara AI, machine learning, LLM e prompt engineering con quiz pratici gratuiti. Percorso base ideale prima di AI-900 o AWS AI Practitioner. Inizia gratis su CertifyQuiz.",
-    en: "Learn AI, machine learning, LLMs and prompt engineering with free practice quizzes. Ideal foundation before AI-900 or AWS AI Practitioner. Start free on CertifyQuiz.",
-    fr: "Apprenez l'IA, le machine learning, les LLM et le prompt engineering avec des quiz gratuits. Base idéale avant AI-900 ou AWS AI Practitioner. Commencez gratuitement sur CertifyQuiz.",
-    es: "Aprende IA, machine learning, LLM y prompt engineering con quizzes gratuitos. Base ideal antes de AI-900 o AWS AI Practitioner. Empieza gratis en CertifyQuiz.",
+    it: "Impara le basi dell'intelligenza artificiale con la certificazione proprietaria AI Foundations di CertifyQuiz. Quiz pratici su prompt engineering, AI generativa ed etica AI.",
+    
+    en: "Learn artificial intelligence fundamentals with AI Foundations by CertifyQuiz. Practice quizzes on prompt engineering, generative AI, real-world AI, and responsible AI.",
+    
+    fr: "Apprenez les bases de l'intelligence artificielle avec AI Foundations by CertifyQuiz. Quiz pratiques sur le prompt engineering, l'IA générative et l'IA responsable.",
+    
+    es: "Aprende los fundamentos de la inteligencia artificial con AI Foundations by CertifyQuiz. Quizzes prácticos sobre prompt engineering, IA generativa y uso responsable de la IA.",
   },
 
-  // ─── TOPICS ─────────────────────────────────────────────────────────────────
+  // ───────────────── TOPICS ─────────────────
 
   topics: [
     {
       title: {
-        it: "Fondamenti di intelligenza artificiale",
-        en: "Artificial Intelligence Fundamentals",
-        fr: "Fondamentaux de l'intelligence artificielle",
-        es: "Fundamentos de inteligencia artificial",
+        it: "Fondamenti di AI",
+        en: "AI Fundamentals",
+        fr: "Fondamentaux de l'IA",
+        es: "Fundamentos de IA",
       },
+
       slug: {
-        it: "fondamenti-intelligenza-artificiale",
-        en: "artificial-intelligence-fundamentals",
-        fr: "fondamentaux-intelligence-artificielle",
-        es: "fundamentos-inteligencia-artificial",
+        it: "fondamenti-ai",
+        en: "ai-fundamentals",
+        fr: "fondamentaux-ia",
+        es: "fundamentos-ia",
       },
     },
+
     {
       title: {
-        it: "Machine Learning e Deep Learning",
-        en: "Machine Learning and Deep Learning",
-        fr: "Machine Learning et Deep Learning",
-        es: "Machine Learning y Deep Learning",
+        it: "Prompt engineering di base",
+        en: "Basic Prompt Engineering",
+        fr: "Prompt Engineering de base",
+        es: "Prompt Engineering básico",
       },
+
       slug: {
-        it: "machine-learning-deep-learning",
-        en: "machine-learning-deep-learning",
-        fr: "machine-learning-deep-learning",
-        es: "machine-learning-deep-learning",
+        it: "prompt-engineering-base",
+        en: "basic-prompt-engineering",
+        fr: "prompt-engineering-base",
+        es: "prompt-engineering-basico",
       },
     },
+
     {
       title: {
-        it: "LLM e Prompt Engineering",
-        en: "LLMs and Prompt Engineering",
-        fr: "LLM et Prompt Engineering",
-        es: "LLM y Prompt Engineering",
+        it: "AI generativa e applicazioni nel mondo reale",
+        en: "Generative AI and Real-World Applications",
+        fr: "IA générative et applications réelles",
+        es: "IA generativa y aplicaciones reales",
       },
+
       slug: {
-        it: "llm-e-prompt-engineering",
-        en: "llm-and-prompt-engineering",
-        fr: "llm-et-prompt-engineering",
-        es: "llm-y-prompt-engineering",
+        it: "ai-generativa-applicazioni-reali",
+        en: "generative-ai-and-real-world-applications",
+        fr: "ia-generative-applications-reelles",
+        es: "ia-generativa-aplicaciones-reales",
       },
     },
+
     {
       title: {
-        it: "AI nel mondo reale",
-        en: "AI in the Real World",
-        fr: "L'IA dans le monde réel",
-        es: "La IA en el mundo real",
+        it: "Etica, rischi e uso responsabile dell'AI",
+        en: "AI Ethics, Risks and Responsible Use",
+        fr: "Éthique, risques et usage responsable de l'IA",
+        es: "Ética, riesgos y uso responsable de la IA",
       },
+
       slug: {
-        it: "ai-nel-mondo-reale",
-        en: "ai-in-the-real-world",
-        fr: "ia-dans-le-monde-reel",
-        es: "ia-en-el-mundo-real",
-      },
-    },
-    {
-      title: {
-        it: "AI responsabile, etica e sicurezza",
-        en: "Responsible AI, Ethics and Security",
-        fr: "IA responsable, éthique et sécurité",
-        es: "IA responsable, ética y seguridad",
-      },
-      slug: {
-        it: "ai-responsabile-etica-sicurezza",
-        en: "responsible-ai-ethics-security",
-        fr: "ia-responsable-ethique-securite",
-        es: "ia-responsable-etica-seguridad",
+        it: "etica-rischi-uso-responsabile-ai",
+        en: "ai-ethics-risks-and-responsible-use",
+        fr: "ethique-risques-usage-responsable-ia",
+        es: "etica-riesgos-uso-responsable-ia",
       },
     },
   ],
 
-  // ─── EXTRA CONTENT ──────────────────────────────────────────────────────────
+  // ───────────────── EXTRA CONTENT ─────────────────
 
   extraContent: {
     learn: {
       it: [
-        "Distinguere AI, machine learning, deep learning e AI generativa con esempi concreti.",
-        "Capire come funzionano dataset, training, inference e valutazione di un modello.",
-        "Scrivere prompt più chiari ed efficaci per ChatGPT, Copilot e altri strumenti AI.",
-        "Riconoscere i casi d'uso reali dell'AI in azienda, nel marketing, nella medicina e nell'istruzione.",
-        "Comprendere rischi, bias algoritmici, privacy e principi di AI responsabile.",
+        "Comprendere i concetti fondamentali dell'intelligenza artificiale e il funzionamento dei moderni sistemi AI.",
+        "Imparare le basi del prompt engineering per ChatGPT, Copilot e altri strumenti AI.",
+        "Esplorare casi reali di AI generativa nel lavoro, nello studio e nella produttività.",
+        "Comprendere rischi, bias, privacy e utilizzo responsabile dell'intelligenza artificiale.",
+        "Costruire una base solida prima di certificazioni AI avanzate.",
       ],
-      en: [
-        "Distinguish AI, machine learning, deep learning, and generative AI with concrete examples.",
-        "Understand how datasets, training, inference, and model evaluation work.",
-        "Write clearer and more effective prompts for ChatGPT, Copilot, and other AI tools.",
-        "Recognize real AI use cases in business, marketing, healthcare, and education.",
-        "Understand risks, algorithmic bias, privacy, and responsible AI principles.",
-      ],
-      fr: [
-        "Distinguer l'IA, le machine learning, le deep learning et l'IA générative avec des exemples concrets.",
-        "Comprendre le fonctionnement des datasets, de l'entraînement, de l'inférence et de l'évaluation des modèles.",
-        "Rédiger des prompts plus clairs et efficaces pour ChatGPT, Copilot et d'autres outils IA.",
-        "Identifier les cas d'usage réels de l'IA en entreprise, dans le marketing, la santé et l'éducation.",
-        "Comprendre les risques, les biais algorithmiques, la confidentialité et les principes d'IA responsable.",
-      ],
-      es: [
-        "Distinguir IA, machine learning, deep learning e IA generativa con ejemplos concretos.",
-        "Entender cómo funcionan los datasets, el entrenamiento, la inferencia y la evaluación de modelos.",
-        "Escribir prompts más claros y eficaces para ChatGPT, Copilot y otras herramientas de IA.",
-        "Reconocer casos de uso reales de la IA en empresas, marketing, salud y educación.",
-        "Comprender riesgos, sesgos algorítmicos, privacidad y principios de IA responsable.",
-      ],
-    },
 
-    examReference: {
-      it: [
-        {
-          text: "AI Foundations by CertifyQuiz — Percorso proprietario",
-          url: "https://certifyquiz.com/it/certificazioni/ai-foundations",
-        },
-      ],
       en: [
-        {
-          text: "AI Foundations by CertifyQuiz — Proprietary learning path",
-          url: "https://certifyquiz.com/en/certifications/ai-foundations",
-        },
+        "Understand the core concepts of artificial intelligence and how modern AI systems work.",
+        "Learn the basics of prompt engineering for ChatGPT, Copilot, and other AI tools.",
+        "Explore real-world generative AI use cases in work, study, and productivity.",
+        "Understand AI risks, bias, privacy concerns, and responsible AI practices.",
+        "Build a strong foundation before advanced AI certifications.",
       ],
+
       fr: [
-        {
-          text: "Fondamentaux IA par CertifyQuiz — Parcours propriétaire",
-          url: "https://certifyquiz.com/fr/certifications/ai-foundations",
-        },
+        "Comprendre les concepts fondamentaux de l'intelligence artificielle et le fonctionnement des systèmes IA modernes.",
+        "Apprendre les bases du prompt engineering pour ChatGPT, Copilot et d'autres outils IA.",
+        "Explorer des cas réels d'IA générative dans le travail, les études et la productivité.",
+        "Comprendre les risques, les biais, la confidentialité et l'utilisation responsable de l'IA.",
+        "Construire une base solide avant des certifications IA avancées.",
       ],
+
       es: [
-        {
-          text: "Fundamentos de IA por CertifyQuiz — Ruta propia",
-          url: "https://certifyquiz.com/es/certifications/ai-foundations",
-        },
+        "Comprender los conceptos fundamentales de la inteligencia artificial y cómo funcionan los sistemas modernos de IA.",
+        "Aprender las bases del prompt engineering para ChatGPT, Copilot y otras herramientas de IA.",
+        "Explorar casos reales de IA generativa en trabajo, estudio y productividad.",
+        "Comprender riesgos, sesgos, privacidad y uso responsable de la IA.",
+        "Construir una base sólida antes de certificaciones avanzadas de IA.",
       ],
     },
 
     whyChoose: {
       it: [
-        "Percorso pratico pensato per chi parte da zero: nessuna programmazione richiesta.",
-        "Base solida prima di certificazioni ufficiali come AI-900, AWS AI Practitioner o Google AI Essentials.",
-        "Copre LLM e prompt engineering, competenze già richieste in quasi tutti i settori.",
-        "Ideale per aziende che vogliono costruire AI literacy nei propri team.",
-        "Quiz aggiornati al 2026 con scenari reali, non solo teoria.",
+        "Prima certificazione AI proprietaria creata da CertifyQuiz.",
+        "Pensata per principianti assoluti e utenti non tecnici.",
+        "Focus pratico su strumenti AI moderni e prompt engineering.",
+        "Ottimo punto di partenza prima di AI-900 o AWS AI Practitioner.",
+        "Approccio semplice, moderno e orientato al mondo reale.",
       ],
+
       en: [
-        "Practical path for absolute beginners — no coding required.",
-        "Solid foundation before official certifications like AI-900, AWS AI Practitioner, or Google AI Essentials.",
-        "Covers LLMs and prompt engineering, skills now in demand across every industry.",
-        "Ideal for companies looking to build AI literacy across their teams.",
-        "Quizzes updated for 2026 with real-world scenarios, not just theory.",
+        "First proprietary AI certification created by CertifyQuiz.",
+        "Designed for absolute beginners and non-technical users.",
+        "Practical focus on modern AI tools and prompt engineering.",
+        "Excellent starting point before AI-900 or AWS AI Practitioner.",
+        "Simple, modern, and real-world oriented approach.",
       ],
+
       fr: [
-        "Parcours pratique pour les débutants complets — aucune programmation requise.",
-        "Base solide avant les certifications officielles comme AI-900, AWS AI Practitioner ou Google AI Essentials.",
-        "Couvre les LLM et le prompt engineering, des compétences désormais demandées dans tous les secteurs.",
-        "Idéal pour les entreprises qui souhaitent développer la culture IA de leurs équipes.",
-        "Quiz mis à jour en 2026 avec des scénarios réels, pas seulement de la théorie.",
+        "Première certification IA propriétaire créée par CertifyQuiz.",
+        "Conçue pour les débutants complets et les profils non techniques.",
+        "Approche pratique centrée sur les outils IA modernes et le prompt engineering.",
+        "Excellent point de départ avant AI-900 ou AWS AI Practitioner.",
+        "Approche simple, moderne et orientée vers le monde réel.",
       ],
+
       es: [
-        "Ruta práctica para principiantes absolutos — sin programación.",
-        "Base sólida antes de certificaciones oficiales como AI-900, AWS AI Practitioner o Google AI Essentials.",
-        "Cubre LLM y prompt engineering, habilidades ya demandadas en todos los sectores.",
-        "Ideal para empresas que quieren desarrollar la cultura IA en sus equipos.",
-        "Quizzes actualizados en 2026 con escenarios reales, no solo teoría.",
+        "Primera certificación propia de IA creada por CertifyQuiz.",
+        "Diseñada para principiantes absolutos y usuarios no técnicos.",
+        "Enfoque práctico sobre herramientas modernas de IA y prompt engineering.",
+        "Excelente punto de partida antes de AI-900 o AWS AI Practitioner.",
+        "Enfoque simple, moderno y orientado al mundo real.",
       ],
     },
 
     faq: {
       it: [
         {
-          q: "Questa certificazione è riconosciuta da Microsoft, AWS o Google?",
-          a: "No. È una certificazione proprietaria CertifyQuiz pensata come percorso pratico introduttivo. È il punto di partenza ideale prima di affrontare certificazioni ufficiali come AI-900, AWS AI Practitioner o Google AI Essentials.",
+          q: "AI Foundations è una certificazione ufficiale Microsoft o AWS?",
+          a: "No. AI Foundations è una certificazione proprietaria sviluppata da CertifyQuiz come percorso introduttivo pratico all'intelligenza artificiale.",
         },
+
         {
-          q: "Serve saper programmare?",
-          a: "No. Il percorso è progettato per principianti assoluti, professionisti non tecnici e chiunque voglia capire l'AI in modo pratico e applicato, senza scrivere codice.",
+          q: "Serve programmare?",
+          a: "No. Il percorso è pensato per principianti assoluti e utenti non tecnici.",
         },
+
         {
-          q: "Quanto tempo ci vuole per completarlo?",
-          a: "Dipende dal tuo ritmo, ma la maggior parte degli utenti completa il percorso in 5–10 ore totali, suddivise in sessioni brevi.",
-        },
-        {
-          q: "È utile per le aziende?",
-          a: "Sì. È ideale per formare team su concetti AI, prompt engineering, rischi, privacy e casi d'uso concreti. Contattaci per il piano Team.",
+          q: "È utile prima di AI-900?",
+          a: "Sì. AI Foundations è progettata proprio come base introduttiva prima di certificazioni AI più avanzate.",
         },
       ],
+
       en: [
         {
-          q: "Is this certification recognized by Microsoft, AWS, or Google?",
-          a: "No. It is a CertifyQuiz proprietary certification designed as a practical introductory path. It is the ideal starting point before pursuing official certifications like AI-900, AWS AI Practitioner, or Google AI Essentials.",
+          q: "Is AI Foundations an official Microsoft or AWS certification?",
+          a: "No. AI Foundations is a proprietary certification created by CertifyQuiz as a practical introduction to artificial intelligence.",
         },
+
         {
-          q: "Do I need programming skills?",
-          a: "No. The path is designed for absolute beginners, non-technical professionals, and anyone who wants to understand AI practically — no coding required.",
+          q: "Do I need coding skills?",
+          a: "No. The path is designed for complete beginners and non-technical users.",
         },
+
         {
-          q: "How long does it take to complete?",
-          a: "It depends on your pace, but most users complete the path in 5–10 hours total, split across short sessions.",
-        },
-        {
-          q: "Is it useful for companies?",
-          a: "Yes. It is ideal for training teams on AI concepts, prompt engineering, risks, privacy, and real-world use cases. Contact us about the Team plan.",
+          q: "Is it useful before AI-900?",
+          a: "Yes. AI Foundations is specifically designed as an introductory step before advanced AI certifications.",
         },
       ],
+
       fr: [
         {
-          q: "Cette certification est-elle reconnue par Microsoft, AWS ou Google ?",
-          a: "Non. C'est une certification propriétaire CertifyQuiz conçue comme parcours pratique d'introduction. C'est le point de départ idéal avant de passer des certifications officielles comme AI-900, AWS AI Practitioner ou Google AI Essentials.",
+          q: "AI Foundations est-elle une certification officielle Microsoft ou AWS ?",
+          a: "Non. AI Foundations est une certification propriétaire créée par CertifyQuiz comme introduction pratique à l'intelligence artificielle.",
         },
+
         {
           q: "Faut-il savoir programmer ?",
-          a: "Non. Le parcours est conçu pour les débutants complets, les profils non techniques et toute personne souhaitant comprendre l'IA de façon pratique — sans écrire de code.",
+          a: "Non. Le parcours est conçu pour les débutants complets et les profils non techniques.",
         },
+
         {
-          q: "Combien de temps faut-il pour le terminer ?",
-          a: "Cela dépend de votre rythme, mais la plupart des utilisateurs terminent le parcours en 5 à 10 heures au total, réparties en courtes sessions.",
-        },
-        {
-          q: "Est-ce utile pour les entreprises ?",
-          a: "Oui. C'est idéal pour former les équipes aux concepts IA, au prompt engineering, aux risques, à la confidentialité et aux cas d'usage concrets. Contactez-nous pour le plan Team.",
+          q: "Est-ce utile avant AI-900 ?",
+          a: "Oui. AI Foundations a été conçue comme étape introductive avant des certifications IA avancées.",
         },
       ],
+
       es: [
         {
-          q: "¿Esta certificación está reconocida por Microsoft, AWS o Google?",
-          a: "No. Es una certificación propia de CertifyQuiz pensada como ruta práctica introductoria. Es el punto de partida ideal antes de afrontar certificaciones oficiales como AI-900, AWS AI Practitioner o Google AI Essentials.",
+          q: "¿AI Foundations es una certificación oficial de Microsoft o AWS?",
+          a: "No. AI Foundations es una certificación propia creada por CertifyQuiz como introducción práctica a la inteligencia artificial.",
         },
+
         {
-          q: "¿Necesito saber programar?",
-          a: "No. La ruta está diseñada para principiantes absolutos, perfiles no técnicos y cualquier persona que quiera entender la IA de forma práctica — sin escribir código.",
+          q: "¿Necesito programar?",
+          a: "No. La ruta está diseñada para principiantes absolutos y usuarios no técnicos.",
         },
+
         {
-          q: "¿Cuánto tiempo se tarda en completarla?",
-          a: "Depende de tu ritmo, pero la mayoría de los usuarios completan la ruta en 5–10 horas en total, distribuidas en sesiones cortas.",
-        },
-        {
-          q: "¿Es útil para empresas?",
-          a: "Sí. Es ideal para formar equipos en conceptos de IA, prompt engineering, riesgos, privacidad y casos de uso reales. Contáctanos para el plan Team.",
+          q: "¿Es útil antes de AI-900?",
+          a: "Sí. AI Foundations fue diseñada como base introductoria antes de certificaciones avanzadas de IA.",
         },
       ],
     },
   },
 
-  // ─── ROUTES ─────────────────────────────────────────────────────────────────
+  // ───────────────── ROUTES ─────────────────
 
   quizRoute: {
     it: "/it/quiz/ai-foundations",
@@ -300,7 +275,7 @@ const AIFoundations = {
 
   backRoute: {
     it: "/it/certificazioni",
-    en: "/en/certifications",
+    en: "/certifications",
     fr: "/fr/certifications",
     es: "/es/certifications",
   },
