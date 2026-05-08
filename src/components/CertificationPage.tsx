@@ -128,18 +128,19 @@ export default function CertificationPage({
       if (isTopicLinkItem(t)) {
         const label = pickLabel(t.title, lang);
 
-        const topicSlug =
-          t.slug?.[lang] ??
-          t.slug?.it ??
-          t.slug?.en ??
-          t.slug?.fr ??
-          t.slug?.es ??
-          "";
+       const topicSlug =
+  typeof t.slug === "object"
+    ? t.slug[lang]
+    : "";
 
-        const href = topicSlug
-          ? `${certPath(lang, data.slug)}/${topicSlug}`
-          : null;
+const href = topicSlug
+  ? `${certPath(lang, data.slug)}/${topicSlug}`
+  : null;
 
+return {
+  label,
+  href,
+};
         return {
           label,
           href,
