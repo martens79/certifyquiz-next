@@ -422,7 +422,70 @@ export async function getCertList(locale: Locale = "it"): Promise<Cert[]> {
     return MOCK.filter((c) => c.locale === locale && LIVE.has(c.slug));
   }
 }
+export type DbTopicLink = {
+  title: string;
+  slug: string;
+};
 
+function pickTopicTitleByLocale(raw: Record<string, unknown>, locale: Locale): string {
+  const byLocale: Record<Locale, string | undefined> = {
+    it: getString(raw, "title") ?? getString(raw, "title_it"),
+    en: getString(raw, "title_en") ?? getString(raw, "title"),
+    fr: getString(raw, "title_fr") ?? getString(raw, "title"),
+    es: getString(raw, "title_es") ?? getString(raw, "title"),
+  };
+
+  return sanitize(byLocale[locale]) || sanitize(getString(raw, "title")) || "";
+}
+
+function pickTopicSlugByLocale(raw: Record<string, unknown>, locale: Locale): string {
+  const byLocale: Record<Locale, string | undefined> = {
+    it: getString(raw, "slug_it") ?? getString(raw, "slug"),
+    en: getString(raw, "slug_en") ?? getString(raw, "slug"),
+    fr: getString(raw, "slug_fr") ?? getString(raw, "slug"),
+    es: getString(raw, "slug_es") ?? getString(raw, "slug"),
+  };
+
+  return sanitize(byLocale[locale]) || sanitize(getString(raw, "slug")) || "";
+}
+
+export async function getTopicsByCertSlug(
+  certSlug: string,
+  locale: Locale = "it"
+): Promise<DbTopicLink[]> {
+  const canonSlug = normalizeSlug(certSlug);
+
+  if (IS_BUILD) return [];
+
+  try {
+    const r = await okOrThrow(
+      fetchWithTimeout(`${API}/topic-pages/by-cert/${encodeURIComponent(canonSlug)}?lang=${locale}`, {
+        next: {
+          tags: [`cert:${canonSlug}:topics`, `cert:${canonSlug}`],
+          revalidate: 86400,
+        },
+      } as NextFetchInit)
+    );
+
+    const raw: unknown = await r.json();
+
+    const arr = Array.isArray(raw)
+      ? raw
+      : isRecord(raw) && Array.isArray(raw.topics)
+      ? raw.topics
+      : [];
+
+    return arr
+      .filter(isRecord)
+      .map((t) => ({
+        title: pickTopicTitleByLocale(t, locale),
+        slug: pickTopicSlugByLocale(t, locale),
+      }))
+      .filter((t) => t.title && t.slug);
+  } catch {
+    return [];
+  }
+}
 /* ---------------------------- Quiz intro (SSR) ---------------------------- */
 
 export type QuizIntro = {

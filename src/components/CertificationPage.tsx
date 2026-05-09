@@ -15,7 +15,10 @@ type TopicLinkItem = {
   title: LocalizedText | string;
   slug?: Partial<Record<Lang, string>>;
 };
-
+type DbTopicLink = {
+  title: string;
+  slug: string;
+};
 /* -------------------- i18n helpers -------------------- */
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
@@ -91,9 +94,11 @@ function toLocalizedText(topic: CertificationTopic): LocalizedText {
 export default function CertificationPage({
   lang,
   data,
+  dbTopics = [],
 }: {
   lang: Lang;
   data: CertificationData;
+  dbTopics?: DbTopicLink[];
 }) {
   const {
     title,

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
 import CertificationPage from "@/components/CertificationPage";
-import { getCertBySlug, type Cert } from "@/lib/data";
+import { getCertBySlug, getTopicsByCertSlug, type Cert } from "@/lib/data";
 
 type Lang = Locale;
 
@@ -80,15 +80,27 @@ export async function CertificationDetailView({
         : lang === "es"
         ? "certificaciones"
         : "certifications";
+
     redirect(`${prefix}/${seg}/${target}`);
   }
 
-  const reg = CERTS_BY_SLUG[slug];
-  if (reg) return <CertificationPage lang={lang} data={reg} />;
+  // ✅ Recupera i topic reali dal DB/API.
+  // Questo evita che CertificationPage usi slug statici vecchi dai file src/certifications/data/*.ts.
+  const dbTopics = await getTopicsByCertSlug(slug, lang);
 
+  const reg = CERTS_BY_SLUG[slug];
+
+  // ✅ Certificazione presente nel registry statico:
+  // usa testi/SEO dal registry, ma topic link dal DB.
+  if (reg) {
+    return <CertificationPage lang={lang} data={reg} dbTopics={dbTopics} />;
+  }
+
+  // ✅ Fallback per certificazioni prese dal backend.
   const cert = await getCertBySlug(slug, lang);
   if (!cert) return notFound();
 
   const data = adaptCertToRegistryShape(cert);
-  return <CertificationPage lang={lang} data={data} />;
+
+  return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} />;
 }

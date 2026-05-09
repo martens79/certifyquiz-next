@@ -99,7 +99,7 @@ const AIFoundations = {
 
       slug: {
         it: "ai-generativa-applicazioni-reali",
-        en: "generative-ai-and-real-world-applications",
+        en: "generative-ai-real-world-applications",
         fr: "ia-generative-applications-reelles",
         es: "ia-generativa-aplicaciones-reales",
       },

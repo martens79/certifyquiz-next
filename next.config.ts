@@ -229,6 +229,13 @@ const nextConfig: NextConfig = {
       { source: "/it/quiz/cloud/mixed", destination: "/it/quiz/aws-cloud-practitioner/mixed", permanent: true },
       { source: "/it/quiz/database/mixed", destination: "/it/quiz/microsoft-sql-server/mixed", permanent: true },
 
+      {
+          source:
+            "/certifications/ai-foundations/generative-ai-and-real-world-applications",
+          destination:
+            "/certifications/ai-foundations/generative-ai-real-world-applications",
+          permanent: true,
+        },
       // ---------------------------------------------------------------------
       // ✅ Garbage / bot paths
       // ---------------------------------------------------------------------
