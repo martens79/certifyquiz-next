@@ -118,55 +118,27 @@ export default function CertificationPage({
       lang
     ) || "";
 
-   // ✅ Topic box: supporta legacy, LocalizedText e nuovo formato con slug
-  const pageTopics = topics
-    .map((t) => {
-      // 👉 Caso legacy: stringa semplice
-      if (typeof t === "string") {
-        return {
-          label: t,
+  // ✅ Topic box:
+// Usa SOLO i topic reali dal DB per creare i link.
+// Se il DB non restituisce topic, mostra i topic statici SENZA link
+// per evitare slug legacy/404 dai file src/certifications/data/*.ts.
+const pageTopics =
+  dbTopics.length > 0
+    ? dbTopics
+        .map((t) => ({
+          label: t.title,
+          href: t.slug
+            ? `${certPath(lang, data.slug)}/${t.slug}`
+            : null,
+        }))
+        .filter((t) => t.label)
+    : topics
+        .map((t) => ({
+          label: pickLabel(toLocalizedText(t), lang),
           href: null as string | null,
-        };
-      }
-
-      // 👉 Caso nuovo: oggetto con slug
-      if (isTopicLinkItem(t)) {
-        const label = pickLabel(t.title, lang);
-
-       const topicSlug =
-  typeof t.slug === "object"
-    ? t.slug[lang]
-    : "";
-
-const href = topicSlug
-  ? `${certPath(lang, data.slug)}/${topicSlug}`
-  : null;
-
-return {
-  label,
-  href,
-};
-        return {
-          label,
-          href,
-        };
-      }
-
-      // 👉 Caso LocalizedText
-      if (isLocalizedText(t)) {
-        return {
-          label: pickLabel(t, lang),
-          href: null as string | null,
-        };
-      }
-
-      // 👉 fallback sicurezza
-      return {
-        label: "",
-        href: null as string | null,
-      };
-    })
-    .filter((t) => t.label);
+        }))
+        .filter((t) => t.label);
+        
   // ✅ Practice box: normalizza sempre al formato LocalizedText
   const practiceBoxTopics = topics.map((t) => toLocalizedText(t));
 
