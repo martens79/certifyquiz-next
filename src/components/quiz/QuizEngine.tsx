@@ -219,6 +219,8 @@ const openFeedback = () => {
   const [remaining, setRemaining] = useState<number | null>(null);
   const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const assessmentStartedTrackedRef = useRef(false);
+  const completedTrackedRef = useRef(false);
 
   /**
    * Storage separato per modalità:
@@ -347,6 +349,35 @@ const openFeedback = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit]);
+
+    // ✅ Analytics — traccia quando un assessment/free test viene realmente avviato.
+  // Usiamo un ref per evitare eventi doppi causati da re-render o Strict Mode.
+  useEffect(() => {
+    if (effectiveMode !== 'assessment') return;
+    if (loading || err || !questions.length) return;
+    if (assessmentStartedTrackedRef.current) return;
+
+    assessmentStartedTrackedRef.current = true;
+
+    trackQuizEvent('assessment_started', {
+      lang,
+      storage_scope: storageScope,
+      certification: context?.certificationName ?? null,
+      topic: context?.topicTitle ?? null,
+      kind: context?.kind ?? null,
+      total_questions: questions.length,
+    });
+  }, [
+    effectiveMode,
+    loading,
+    err,
+    questions.length,
+    lang,
+    storageScope,
+    context?.certificationName,
+    context?.topicTitle,
+    context?.kind,
+  ]);
 
   /* -------------------- MODE SWITCH (controlled-friendly) -------------------- */
   const setModeSafe = (m: Mode) => {
@@ -601,6 +632,30 @@ const goToFirstUnanswered = () => {
 
   setLastSummary(summary);
 
+  // ✅ Analytics — completamento quiz / assessment.
+// Serve per capire quanti utenti finiscono davvero il free test.
+if (!completedTrackedRef.current) {
+  completedTrackedRef.current = true;
+
+  trackQuizEvent(
+    effectiveMode === 'assessment'
+      ? 'assessment_completed'
+      : 'quiz_completed',
+    {
+      lang,
+      mode: effectiveMode,
+      storage_scope: storageScope,
+      certification: context?.certificationName ?? null,
+      topic: context?.topicTitle ?? null,
+      kind: context?.kind ?? null,
+      total_questions: total,
+      correct,
+      score_pct: scorePct,
+      duration_sec: elapsedSec,
+    }
+  );
+}
+
   try {
     await onFinish?.(summary);
   } catch {
@@ -613,24 +668,27 @@ const goToFirstUnanswered = () => {
 
 
   const restart = () => {
-    clearProgress(scopedKey);
+  clearProgress(scopedKey);
 
-    setIdx(0);
-    setMarked({});
-    setReviewLater(new Set());
-    setFinished(false);
-    setLastSummary(null);
-    startedAtRef.current = null;
-    setReviewMode(false);
+  assessmentStartedTrackedRef.current = false;
+  completedTrackedRef.current = false;
 
-    const active = buildActiveQuestions(pool, effectiveMode);
-    setQuestions(active);
+  setIdx(0);
+  setMarked({});
+  setReviewLater(new Set());
+  setFinished(false);
+  setLastSummary(null);
+  startedAtRef.current = null;
+  setReviewMode(false);
 
-    const total =
-      effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
+  const active = buildActiveQuestions(pool, effectiveMode);
+  setQuestions(active);
 
-    setRemaining(total);
-  };
+  const total =
+    effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
+
+  setRemaining(total);
+};
 
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
@@ -854,18 +912,29 @@ const assessmentCopy =
         : 'Unlock detailed explanations, mistake review, and realistic simulations to understand your real weak spots.'}
     </p>
 
-    {!isPremiumUser && (
-      <button
-        type="button"
-        className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer"
-        onClick={() => router.push(pricingPath(lang))}
-      >
-        {assessmentCopy.cta[lang]}
-      </button>
-    )}
-  </div>
-)}
+   {!isPremiumUser && (
+  <button
+    type="button"
+    className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer"
+    onClick={() => {
+      trackQuizEvent('premium_cta_clicked', {
+        lang,
+        mode: effectiveMode,
+        source: 'assessment_result',
+        storage_scope: storageScope,
+        certification: context?.certificationName ?? null,
+        topic: context?.topicTitle ?? null,
+        score_pct: scorePct,
+      });
 
+      router.push(pricingPath(lang));
+    }}
+  >
+    {assessmentCopy.cta[lang]}
+  </button>
+)}
+ </div>
+)}
 
             {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
             {!isAssessmentResult && !isPremiumUser && (
@@ -900,14 +969,26 @@ const assessmentCopy =
               </div>
 
              {!isAssessmentResult && !isPremiumUser && (
-                <button
-                  type="button"
-                  className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-                  onClick={() => router.push(pricingPath(lang))}
-                >
-                  {label('seePremium', lang)}
-                </button>
-              )}
+  <button
+    type="button"
+    className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
+    onClick={() => {
+      trackQuizEvent('premium_cta_clicked', {
+        lang,
+        mode: effectiveMode,
+        source: 'quiz_result',
+        storage_scope: storageScope,
+        certification: context?.certificationName ?? null,
+        topic: context?.topicTitle ?? null,
+        score_pct: scorePct,
+      });
+
+      router.push(pricingPath(lang));
+    }}
+  >
+    {label('seePremium', lang)}
+  </button>
+)}
             </div>
           </div>
         </div>
@@ -1367,9 +1448,20 @@ return (
           : 'Full explanation with Premium.'}
 
         <Link
-          href={pricingPath(lang)}
-          className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
-        >
+  href={pricingPath(lang)}
+  onClick={() => {
+    trackQuizEvent('premium_cta_clicked', {
+      lang,
+      mode: effectiveMode,
+      source: 'locked_explanation',
+      storage_scope: storageScope,
+      certification: context?.certificationName ?? null,
+      topic: context?.topicTitle ?? null,
+      question_id: Number(q.id),
+    });
+  }}
+  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
+>
           {lang === 'it'
             ? 'Scopri Premium'
             : lang === 'fr'
@@ -1536,6 +1628,23 @@ function makePreview(text: string, maxLen: number) {
   const cut = slice.lastIndexOf(' ');
   const out = cut > 140 ? slice.slice(0, cut) : slice;
   return out.trim() + '…';
+}
+function trackQuizEvent(
+  eventName: string,
+  params: Record<string, string | number | boolean | null | undefined> = {}
+) {
+  if (typeof window === 'undefined') return;
+
+  const w = window as typeof window & {
+    gtag?: (...args: any[]) => void;
+  };
+
+  if (typeof w.gtag !== 'function') return;
+
+  w.gtag('event', eventName, {
+    event_category: 'quiz',
+    ...params,
+  });
 }
 
 /*function label(key: keyof typeof L, lang: Locale) {

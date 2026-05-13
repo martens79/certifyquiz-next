@@ -1,8 +1,8 @@
 // src/certifications/data/google-cloud.ts
 // 🌟 CertifyQuiz Original / Foundations path
 // ✅ Mantiene slug "google-cloud" per non rompere SEO, link e quiz esistenti.
-// ✅ Posizionato come percorso introduttivo proprietario prima di Google Cloud Digital Leader.
-// ✅ Non duplica la certificazione ufficiale: la cita solo come step successivo.
+// ✅ Percorso base/foundations proprietario CertifyQuiz.
+// ✅ Pensato come certificazione introduttiva gratuita prima di Google Cloud Digital Leader.
 
 const GoogleCloud = {
   slug: "google-cloud",
@@ -19,84 +19,91 @@ const GoogleCloud = {
   },
 
   level: {
-    it: "Base",
-    en: "Beginner",
-    fr: "Débutant",
-    es: "Principiante",
+    it: "Base gratuita",
+    en: "Free Beginner",
+    fr: "Débutant gratuit",
+    es: "Principiante gratis",
   },
 
   description: {
-    it: "Google Cloud Foundations by CertifyQuiz è un percorso introduttivo proprietario pensato per chi vuole capire Google Cloud da zero. Copre cloud computing, infrastruttura, sicurezza, costi, dati, AI e trasformazione digitale, ed è ideale prima di preparare Google Cloud Digital Leader.",
-    en: "Google Cloud Foundations by CertifyQuiz is a proprietary introductory path for learners who want to understand Google Cloud from zero. It covers cloud computing, infrastructure, security, costs, data, AI, and digital transformation, and is ideal before preparing for Google Cloud Digital Leader.",
-    fr: "Google Cloud Foundations by CertifyQuiz est un parcours introductif propriétaire conçu pour comprendre Google Cloud depuis zéro. Il couvre le cloud computing, l'infrastructure, la sécurité, les coûts, les données, l'IA et la transformation numérique, et constitue une base idéale avant Google Cloud Digital Leader.",
-    es: "Google Cloud Foundations by CertifyQuiz es una ruta introductoria propia para aprender Google Cloud desde cero. Cubre cloud computing, infraestructura, seguridad, costos, datos, IA y transformación digital, y es ideal antes de preparar Google Cloud Digital Leader.",
+    it: "Google Cloud Foundations by CertifyQuiz è un percorso base gratuito pensato per chi vuole iniziare a capire Google Cloud da zero. Copre i concetti fondamentali del cloud, i servizi dati e AI, la sicurezza, l’infrastruttura, il compute e la modernizzazione delle applicazioni.",
+    en: "Google Cloud Foundations by CertifyQuiz is a free beginner path for learners who want to understand Google Cloud from zero. It covers cloud fundamentals, data and AI services, security, infrastructure, compute, and application modernization.",
+    fr: "Google Cloud Foundations by CertifyQuiz est un parcours débutant gratuit pour comprendre Google Cloud depuis zéro. Il couvre les fondamentaux du cloud, les services de données et d’IA, la sécurité, l’infrastructure, le compute et la modernisation des applications.",
+    es: "Google Cloud Foundations by CertifyQuiz es una ruta gratuita para principiantes que quieren entender Google Cloud desde cero. Cubre fundamentos cloud, servicios de datos e IA, seguridad, infraestructura, compute y modernización de aplicaciones.",
   },
 
-  // ─── SEO ────────────────────────────────────────────────────────────────────
-
   metaTitle: {
-    it: "Google Cloud Foundations by CertifyQuiz – Quiz Base Cloud 2026",
-    en: "Google Cloud Foundations by CertifyQuiz – Cloud Basics Quiz 2026",
-    fr: "Google Cloud Foundations by CertifyQuiz – Quiz Bases Cloud 2026",
-    es: "Google Cloud Foundations by CertifyQuiz – Quiz Bases Cloud 2026",
+    it: "Google Cloud Foundations Gratis | Quiz Base Cloud 2026",
+    en: "Free Google Cloud Foundations Quiz | Cloud Basics 2026",
+    fr: "Google Cloud Foundations gratuit | Quiz bases cloud 2026",
+    es: "Google Cloud Foundations gratis | Quiz bases cloud 2026",
   },
 
   metaDescription: {
-    it: "Impara Google Cloud da zero con il percorso proprietario Google Cloud Foundations by CertifyQuiz. Quiz su cloud, sicurezza, costi, dati, AI e trasformazione digitale.",
-    en: "Learn Google Cloud from zero with Google Cloud Foundations by CertifyQuiz. Practice quizzes on cloud computing, security, costs, data, AI, and digital transformation.",
-    fr: "Apprenez Google Cloud depuis zéro avec Google Cloud Foundations by CertifyQuiz. Quiz sur le cloud, la sécurité, les coûts, les données, l'IA et la transformation numérique.",
-    es: "Aprende Google Cloud desde cero con Google Cloud Foundations by CertifyQuiz. Quizzes sobre cloud, seguridad, costos, datos, IA y transformación digital.",
+    it: "Impara Google Cloud da zero con un percorso gratuito CertifyQuiz. Quiz su fondamenti cloud, AI, dati, sicurezza, infrastruttura, compute e modernizzazione.",
+    en: "Learn Google Cloud from zero with a free CertifyQuiz path. Practice quizzes on cloud fundamentals, AI, data, security, infrastructure, compute, and modernization.",
+    fr: "Apprenez Google Cloud depuis zéro avec un parcours gratuit CertifyQuiz. Quiz sur les fondamentaux cloud, l’IA, les données, la sécurité, l’infrastructure, le compute et la modernisation.",
+    es: "Aprende Google Cloud desde cero con una ruta gratuita de CertifyQuiz. Quizzes sobre fundamentos cloud, IA, datos, seguridad, infraestructura, compute y modernización.",
   },
-
-  // ─── TOPICS ─────────────────────────────────────────────────────────────────
-  // ⚠️ Questi slug devono restare allineati agli slug reali dei topic/quiz.
 
   topics: [
-  {
-    title: {
-      it: "Trasformazione digitale con Google Cloud",
-      en: "Digital transformation with Google Cloud",
-      fr: "Transformation numérique avec Google Cloud",
-      es: "Transformación digital con Google Cloud",
+    {
+      title: {
+        it: "Fondamenti del cloud e Google Cloud",
+        en: "Cloud and Google Cloud Fundamentals",
+        fr: "Fondamentaux du cloud et de Google Cloud",
+        es: "Fundamentos de cloud y Google Cloud",
+      },
+      slug: {
+        it: "fondamenti-cloud-google-cloud",
+        en: "cloud-google-cloud-fundamentals",
+        fr: "fondamentaux-cloud-google-cloud",
+        es: "fundamentos-cloud-google-cloud",
+      },
     },
-    slug: {
-      it: "trasformazione-digitale-google-cloud",
-      en: "digital-transformation-google-cloud",
-      fr: "transformation-numerique-google-cloud",
-      es: "transformacion-digital-google-cloud",
+    {
+      title: {
+        it: "AI e servizi dati Google Cloud",
+        en: "Google Cloud AI and Data Services",
+        fr: "IA et services de données Google Cloud",
+        es: "IA y servicios de datos de Google Cloud",
+      },
+      slug: {
+        it: "ai-servizi-dati-google-cloud",
+        en: "google-cloud-ai-data-services",
+        fr: "ia-services-donnees-google-cloud",
+        es: "ia-servicios-datos-google-cloud",
+      },
     },
-  },
-  {
-    title: {
-      it: "Dati, AI e innovazione",
-      en: "Data, AI and innovation",
-      fr: "Données, IA et innovation",
-      es: "Datos, IA e innovación",
+    {
+      title: {
+        it: "Sicurezza cloud e infrastruttura Google",
+        en: "Google Cloud Security and Infrastructure",
+        fr: "Sécurité cloud et infrastructure Google",
+        es: "Seguridad cloud e infraestructura Google",
+      },
+      slug: {
+        it: "sicurezza-cloud-infrastruttura-google",
+        en: "google-cloud-security-infrastructure",
+        fr: "securite-cloud-infrastructure-google",
+        es: "seguridad-cloud-infraestructura-google",
+      },
     },
-    slug: {
-      it: "dati-ai-innovazione",
-      en: "data-ai-innovation",
-      fr: "donnees-ia-innovation",
-      es: "datos-ia-innovacion",
+    {
+      title: {
+        it: "Compute e modernizzazione applicazioni",
+        en: "Compute and Application Modernization",
+        fr: "Compute et modernisation des applications",
+        es: "Compute y modernización de aplicaciones",
+      },
+      slug: {
+        it: "compute-modernizzazione-applicazioni",
+        en: "compute-application-modernization",
+        fr: "compute-modernisation-applications",
+        es: "compute-modernizacion-aplicaciones",
+      },
     },
-  },
-  {
-    title: {
-      it: "Infrastruttura, sicurezza e costi cloud",
-      en: "Cloud infrastructure, security and costs",
-      fr: "Infrastructure, sécurité et coûts cloud",
-      es: "Infraestructura, seguridad y costes cloud",
-    },
-    slug: {
-      it: "infrastruttura-sicurezza-costi-cloud",
-      en: "cloud-infrastructure-security-costs",
-      fr: "infrastructure-securite-couts-cloud",
-      es: "infraestructura-seguridad-costes-cloud",
-    },
-  },
-],
-
-  // ─── EXTRA CONTENT ──────────────────────────────────────────────────────────
+  ],
 
   extraContent: {
     examReference: {
@@ -145,66 +152,66 @@ const GoogleCloud = {
     learn: {
       it: [
         "Comprendere i concetti fondamentali del cloud computing e il ruolo di Google Cloud.",
-        "Capire region, zone, macchine virtuali, storage, rete e scalabilità.",
-        "Imparare le basi di sicurezza cloud, IAM, crittografia e responsabilità condivisa.",
-        "Comprendere come dati, analytics e AI supportano innovazione e decisioni aziendali.",
-        "Gestire concetti base di costo, budget, risorse inutilizzate e ottimizzazione cloud.",
-        "Costruire una base solida prima di preparare Google Cloud Digital Leader.",
+        "Distinguere region, zone, servizi core, risorse cloud e modelli di scalabilità.",
+        "Conoscere i principali servizi dati e AI di Google Cloud a livello introduttivo.",
+        "Capire le basi di IAM, sicurezza cloud, infrastruttura, responsabilità condivisa e controllo degli accessi.",
+        "Scoprire compute, container, serverless e modernizzazione delle applicazioni con servizi come Cloud Run, GKE e App Engine.",
+        "Costruire una base solida prima di passare a Google Cloud Digital Leader o ad altri percorsi cloud.",
       ],
       en: [
         "Understand the fundamentals of cloud computing and the role of Google Cloud.",
-        "Learn regions, zones, virtual machines, storage, networking, and scalability.",
-        "Understand cloud security basics, IAM, encryption, and shared responsibility.",
-        "Learn how data, analytics, and AI support innovation and business decision-making.",
-        "Understand basic cost concepts, budgets, unused resources, and cloud optimization.",
-        "Build a strong foundation before preparing for Google Cloud Digital Leader.",
+        "Distinguish regions, zones, core services, cloud resources, and scalability models.",
+        "Learn the main Google Cloud data and AI services at an introductory level.",
+        "Understand IAM, cloud security, infrastructure, shared responsibility, and access control basics.",
+        "Explore compute, containers, serverless, and application modernization with services such as Cloud Run, GKE, and App Engine.",
+        "Build a solid foundation before moving to Google Cloud Digital Leader or other cloud learning paths.",
       ],
       fr: [
-        "Comprendre les concepts fondamentaux du cloud computing et le rôle de Google Cloud.",
-        "Apprendre les régions, zones, machines virtuelles, stockage, réseau et scalabilité.",
-        "Comprendre les bases de la sécurité cloud, IAM, chiffrement et responsabilité partagée.",
-        "Comprendre comment les données, l'analytics et l'IA soutiennent l'innovation et la prise de décision.",
-        "Comprendre les coûts, budgets, ressources inutilisées et optimisation cloud.",
-        "Construire une base solide avant Google Cloud Digital Leader.",
+        "Comprendre les fondamentaux du cloud computing et le rôle de Google Cloud.",
+        "Distinguer régions, zones, services principaux, ressources cloud et modèles de scalabilité.",
+        "Découvrir les principaux services de données et d’IA de Google Cloud à un niveau introductif.",
+        "Comprendre les bases de l’IAM, de la sécurité cloud, de l’infrastructure, de la responsabilité partagée et du contrôle d’accès.",
+        "Découvrir le compute, les conteneurs, le serverless et la modernisation des applications avec Cloud Run, GKE et App Engine.",
+        "Construire une base solide avant de passer à Google Cloud Digital Leader ou à d’autres parcours cloud.",
       ],
       es: [
-        "Comprender los conceptos fundamentales del cloud computing y el papel de Google Cloud.",
-        "Aprender regiones, zonas, máquinas virtuales, almacenamiento, redes y escalabilidad.",
-        "Comprender seguridad cloud, IAM, cifrado y responsabilidad compartida.",
-        "Entender cómo datos, analytics e IA impulsan innovación y decisiones empresariales.",
-        "Comprender costos, presupuestos, recursos no utilizados y optimización cloud.",
-        "Crear una base sólida antes de preparar Google Cloud Digital Leader.",
+        "Comprender los fundamentos del cloud computing y el papel de Google Cloud.",
+        "Distinguir regiones, zonas, servicios principales, recursos cloud y modelos de escalabilidad.",
+        "Conocer los principales servicios de datos e IA de Google Cloud a nivel introductorio.",
+        "Comprender IAM, seguridad cloud, infraestructura, responsabilidad compartida y control de acceso.",
+        "Explorar compute, contenedores, serverless y modernización de aplicaciones con Cloud Run, GKE y App Engine.",
+        "Crear una base sólida antes de avanzar hacia Google Cloud Digital Leader u otros recorridos cloud.",
       ],
     },
 
     whyChoose: {
       it: [
-        "È il punto di partenza ideale per chi vuole capire Google Cloud da zero.",
-        "È un percorso proprietario CertifyQuiz pensato per studenti, junior e profili non tecnici.",
-        "Non richiede esperienza tecnica avanzata o conoscenza precedente di Google Cloud.",
-        "Collega cloud, sicurezza, costi, dati e AI in un unico percorso pratico.",
-        "Aiuta a prepararsi meglio alla certificazione ufficiale Google Cloud Digital Leader.",
+        "È gratuito e pensato come punto di ingresso semplice nel mondo Google Cloud.",
+        "È ideale per principianti, studenti, junior e persone che arrivano da percorsi non tecnici.",
+        "Ti permette di capire il cloud prima di affrontare certificazioni ufficiali più strutturate.",
+        "Unisce teoria, servizi reali Google Cloud e quiz pratici in un percorso leggero ma utile.",
+        "È un buon primo step prima di Google Cloud Digital Leader, Cloud Digital Leader o altri percorsi cloud.",
       ],
       en: [
-        "It is the ideal starting point for learning Google Cloud from zero.",
-        "It is a proprietary CertifyQuiz path designed for students, juniors, and non-technical profiles.",
-        "It does not require advanced technical experience or previous Google Cloud knowledge.",
-        "It connects cloud, security, costs, data, and AI in one practical path.",
-        "It helps you prepare more effectively for the official Google Cloud Digital Leader certification.",
+        "It is free and designed as a simple entry point into the Google Cloud ecosystem.",
+        "It is ideal for beginners, students, junior profiles, and learners from non-technical backgrounds.",
+        "It helps you understand cloud concepts before approaching more structured official certifications.",
+        "It combines theory, real Google Cloud services, and practical quizzes in a light but useful path.",
+        "It is a good first step before Google Cloud Digital Leader or other cloud learning paths.",
       ],
       fr: [
-        "C'est le point de départ idéal pour apprendre Google Cloud depuis zéro.",
-        "C'est un parcours propriétaire CertifyQuiz conçu pour les étudiants, juniors et profils non techniques.",
-        "Aucune expérience technique avancée ni connaissance préalable de Google Cloud n'est requise.",
-        "Il relie cloud, sécurité, coûts, données et IA dans un parcours pratique.",
-        "Il aide à mieux préparer la certification officielle Google Cloud Digital Leader.",
+        "Il est gratuit et conçu comme un point d’entrée simple dans l’écosystème Google Cloud.",
+        "Il est idéal pour les débutants, étudiants, profils juniors et personnes issues de parcours non techniques.",
+        "Il aide à comprendre les concepts cloud avant d’aborder des certifications officielles plus structurées.",
+        "Il combine théorie, services réels Google Cloud et quiz pratiques dans un parcours léger mais utile.",
+        "C’est une bonne première étape avant Google Cloud Digital Leader ou d’autres parcours cloud.",
       ],
       es: [
-        "Es el punto de partida ideal para aprender Google Cloud desde cero.",
-        "Es una ruta propia de CertifyQuiz pensada para estudiantes, juniors y perfiles no técnicos.",
-        "No requiere experiencia técnica avanzada ni conocimiento previo de Google Cloud.",
-        "Conecta cloud, seguridad, costos, datos e IA en un camino práctico.",
-        "Ayuda a preparar mejor la certificación oficial Google Cloud Digital Leader.",
+        "Es gratuito y está diseñado como una entrada sencilla al ecosistema Google Cloud.",
+        "Es ideal para principiantes, estudiantes, perfiles junior y personas de áreas no técnicas.",
+        "Ayuda a entender el cloud antes de preparar certificaciones oficiales más estructuradas.",
+        "Combina teoría, servicios reales de Google Cloud y quizzes prácticos en una ruta ligera pero útil.",
+        "Es un buen primer paso antes de Google Cloud Digital Leader u otros recorridos cloud.",
       ],
     },
 
@@ -212,73 +219,73 @@ const GoogleCloud = {
       it: [
         {
           q: "Google Cloud Foundations by CertifyQuiz è una certificazione ufficiale Google?",
-          a: "No. È un percorso proprietario CertifyQuiz sui fondamenti di Google Cloud. La certificazione ufficiale consigliata dopo questo percorso è Google Cloud Digital Leader.",
+          a: "No. È un percorso proprietario CertifyQuiz sui fondamenti di Google Cloud. È pensato come base gratuita prima di eventuali certificazioni ufficiali.",
         },
         {
-          q: "Devo studiare Google Cloud Foundations prima della Digital Leader?",
-          a: "Non è obbligatorio, ma è consigliato se parti da zero o vuoi rafforzare cloud, dati, AI, sicurezza e costi prima di affrontare una certificazione ufficiale.",
+          q: "Questo percorso sarà gratuito?",
+          a: "Sì. Google Cloud Foundations rientra nei percorsi base CertifyQuiz pensati per aiutare gli utenti a iniziare senza barriere.",
         },
         {
-          q: "I quiz sono utili per la certificazione Google Cloud Digital Leader?",
-          a: "Sì. I quiz coprono concetti fondamentali che aiutano a preparare meglio il percorso verso Google Cloud Digital Leader.",
+          q: "È utile prima di Google Cloud Digital Leader?",
+          a: "Sì. Aiuta a costruire le basi su cloud, dati, AI, sicurezza, infrastruttura e modernizzazione prima di affrontare Google Cloud Digital Leader.",
         },
         {
           q: "Serve esperienza tecnica avanzata?",
-          a: "No. Il percorso è pensato per principianti, studenti, profili junior e professionisti business-tech.",
+          a: "No. Il percorso è pensato per principianti, studenti, profili junior e persone che vogliono entrare nel cloud da zero.",
         },
       ],
       en: [
         {
           q: "Is Google Cloud Foundations by CertifyQuiz an official Google certification?",
-          a: "No. It is a proprietary CertifyQuiz path focused on Google Cloud fundamentals. The recommended official certification after this path is Google Cloud Digital Leader.",
+          a: "No. It is a proprietary CertifyQuiz path focused on Google Cloud fundamentals. It is designed as a free foundation before official certifications.",
         },
         {
-          q: "Should I study Google Cloud Foundations before Digital Leader?",
-          a: "It is not mandatory, but it is recommended if you are starting from zero or want to strengthen cloud, data, AI, security, and cost concepts before an official certification.",
+          q: "Will this path be free?",
+          a: "Yes. Google Cloud Foundations belongs to the CertifyQuiz foundation paths designed to help users start without barriers.",
         },
         {
-          q: "Are the quizzes useful for Google Cloud Digital Leader?",
-          a: "Yes. The quizzes cover fundamental concepts that help you prepare more effectively for Google Cloud Digital Leader.",
+          q: "Is it useful before Google Cloud Digital Leader?",
+          a: "Yes. It helps you build foundations in cloud, data, AI, security, infrastructure, and modernization before approaching Google Cloud Digital Leader.",
         },
         {
           q: "Do I need advanced technical experience?",
-          a: "No. The path is designed for beginners, students, junior profiles, and business-tech professionals.",
+          a: "No. The path is designed for beginners, students, junior profiles, and learners who want to start cloud from zero.",
         },
       ],
       fr: [
         {
           q: "Google Cloud Foundations by CertifyQuiz est-elle une certification officielle Google ?",
-          a: "Non. C'est un parcours propriétaire CertifyQuiz sur les fondamentaux de Google Cloud. La certification officielle recommandée ensuite est Google Cloud Digital Leader.",
+          a: "Non. C’est un parcours propriétaire CertifyQuiz sur les fondamentaux de Google Cloud. Il sert de base gratuite avant d’éventuelles certifications officielles.",
         },
         {
-          q: "Dois-je étudier Google Cloud Foundations avant Digital Leader ?",
-          a: "Ce n'est pas obligatoire, mais recommandé si vous partez de zéro ou souhaitez renforcer cloud, données, IA, sécurité et coûts avant une certification officielle.",
+          q: "Ce parcours sera-t-il gratuit ?",
+          a: "Oui. Google Cloud Foundations fait partie des parcours de base CertifyQuiz conçus pour aider les utilisateurs à commencer sans barrière.",
         },
         {
-          q: "Les quiz sont-ils utiles pour Google Cloud Digital Leader ?",
-          a: "Oui. Les quiz couvrent des concepts fondamentaux utiles pour mieux préparer Google Cloud Digital Leader.",
+          q: "Est-il utile avant Google Cloud Digital Leader ?",
+          a: "Oui. Il aide à construire les bases du cloud, des données, de l’IA, de la sécurité, de l’infrastructure et de la modernisation avant Google Cloud Digital Leader.",
         },
         {
           q: "Faut-il une expérience technique avancée ?",
-          a: "Non. Le parcours est conçu pour les débutants, étudiants, profils juniors et professionnels business-tech.",
+          a: "Non. Le parcours est conçu pour les débutants, étudiants, profils juniors et personnes qui veulent commencer le cloud depuis zéro.",
         },
       ],
       es: [
         {
           q: "¿Google Cloud Foundations by CertifyQuiz es una certificación oficial de Google?",
-          a: "No. Es una ruta propia de CertifyQuiz sobre fundamentos de Google Cloud. La certificación oficial recomendada después es Google Cloud Digital Leader.",
+          a: "No. Es una ruta propia de CertifyQuiz sobre fundamentos de Google Cloud. Está pensada como base gratuita antes de certificaciones oficiales.",
         },
         {
-          q: "¿Debo estudiar Google Cloud Foundations antes de Digital Leader?",
-          a: "No es obligatorio, pero sí recomendable si empiezas desde cero o quieres reforzar cloud, datos, IA, seguridad y costos antes de una certificación oficial.",
+          q: "¿Esta ruta será gratuita?",
+          a: "Sí. Google Cloud Foundations forma parte de las rutas base de CertifyQuiz pensadas para ayudar a los usuarios a empezar sin barreras.",
         },
         {
-          q: "¿Los quizzes sirven para Google Cloud Digital Leader?",
-          a: "Sí. Los quizzes cubren conceptos fundamentales que ayudan a preparar mejor Google Cloud Digital Leader.",
+          q: "¿Sirve antes de Google Cloud Digital Leader?",
+          a: "Sí. Ayuda a construir bases sobre cloud, datos, IA, seguridad, infraestructura y modernización antes de Google Cloud Digital Leader.",
         },
         {
           q: "¿Necesito experiencia técnica avanzada?",
-          a: "No. La ruta está diseñada para principiantes, estudiantes, perfiles junior y profesionales business-tech.",
+          a: "No. La ruta está diseñada para principiantes, estudiantes, perfiles junior y personas que quieren empezar en cloud desde cero.",
         },
       ],
     },
