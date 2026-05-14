@@ -1,5 +1,6 @@
-import AdminClient from "./AdminClient";
+// src/app/admin/feedback/page.tsx
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <AdminClient />;
+  redirect("/admin");
 }

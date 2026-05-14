@@ -538,7 +538,7 @@ useEffect(() => {
 
                 {isAdminLocal && (
     <Link
-      href="/admin/feedback"
+      href="/admin"
       className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
       onClick={() => setOpenDrawer(false)}
     >
