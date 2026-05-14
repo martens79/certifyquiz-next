@@ -183,6 +183,10 @@ const [fbText, setFbText] = useState("");
 const [fbSending, setFbSending] = useState(false);
 const [fbSent, setFbSent] = useState(false);
 
+const [reportEmail, setReportEmail] = useState("");
+const [reportSending, setReportSending] = useState(false);
+const [reportMessage, setReportMessage] = useState<string | null>(null);
+
 const openFeedback = () => {
   setActionsOpen(false);      // se usi il menu azioni
   setFbType("typo");
@@ -665,7 +669,85 @@ if (!completedTrackedRef.current) {
   clearProgress(scopedKey);
 }
 
+const submitAssessmentReport = async () => {
+  if (!lastSummary) return;
 
+  const email = reportEmail.trim().toLowerCase();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setReportMessage(
+      lang === "it"
+        ? "Inserisci un'email valida."
+        : lang === "fr"
+        ? "Entre une adresse email valide."
+        : lang === "es"
+        ? "Introduce un email válido."
+        : "Enter a valid email."
+    );
+    return;
+  }
+
+  setReportSending(true);
+  setReportMessage(null);
+
+  try {
+    const res = await fetch("/api/backend/assessment-report", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        lang,
+        source: "assessment_result",
+        certification: context?.certificationName ?? null,
+        topic: context?.topicTitle ?? null,
+        kind: context?.kind ?? null,
+        scorePct: lastSummary.scorePct,
+        correct: lastSummary.correct,
+        total: lastSummary.total,
+      }),
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.ok) {
+      throw new Error(data?.message || "Report failed");
+    }
+
+    trackQuizEvent("assessment_email_submitted", {
+      lang,
+      source: "assessment_result",
+      certification: context?.certificationName ?? null,
+      topic: context?.topicTitle ?? null,
+      score_pct: lastSummary.scorePct,
+    });
+
+    setReportMessage(
+      lang === "it"
+        ? "Perfetto. Ti invieremo il report e i prossimi quiz consigliati."
+        : lang === "fr"
+        ? "Parfait. Nous t’enverrons le rapport et les prochains quiz conseillés."
+        : lang === "es"
+        ? "Perfecto. Te enviaremos el informe y los próximos cuestionarios recomendados."
+        : "Perfect. We’ll send your report and recommended next quizzes."
+    );
+  } catch (e) {
+    console.error("assessment report submit failed", e);
+    setReportMessage(
+      lang === "it"
+        ? "Errore durante l'invio. Riprova tra poco."
+        : lang === "fr"
+        ? "Erreur pendant l’envoi. Réessaie dans un instant."
+        : lang === "es"
+        ? "Error durante el envío. Inténtalo de nuevo en un momento."
+        : "Send failed. Please try again in a moment."
+    );
+  } finally {
+    setReportSending(false);
+  }
+};
 
   const restart = () => {
   clearProgress(scopedKey);
@@ -843,6 +925,8 @@ const assessmentCopy =
                 <div className="text-xs uppercase text-emerald-700">
                   {label('correctLabel', lang)}
                 </div>
+
+
                 <div className="text-xl font-semibold text-emerald-900">
                   {correct}
                 </div>
@@ -864,6 +948,87 @@ const assessmentCopy =
                 </div>
               </div>
             </div>
+
+            {isAssessmentResult && (
+  <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+    <h2 className="text-lg font-bold text-emerald-950">
+      {lang === "it"
+        ? "📩 Ricevi il report del tuo risultato"
+        : lang === "fr"
+        ? "📩 Reçois le rapport de ton résultat"
+        : lang === "es"
+        ? "📩 Recibe el informe de tu resultado"
+        : "📩 Get your result report"}
+    </h2>
+
+    <p className="mt-2 text-sm leading-relaxed text-emerald-900">
+      {lang === "it"
+        ? "Ti invieremo il riepilogo del test, i prossimi quiz consigliati e consigli pratici per migliorare."
+        : lang === "fr"
+        ? "Nous t’enverrons le résumé du test, les prochains quiz conseillés et des conseils pratiques pour progresser."
+        : lang === "es"
+        ? "Te enviaremos el resumen del test, los próximos cuestionarios recomendados y consejos prácticos para mejorar."
+        : "We’ll send your test summary, recommended next quizzes, and practical tips to improve."}
+    </p>
+
+    <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+      <input
+        type="email"
+        value={reportEmail}
+        onChange={(e) => setReportEmail(e.target.value)}
+        placeholder={
+          lang === "it"
+            ? "La tua email"
+            : lang === "fr"
+            ? "Ton email"
+            : lang === "es"
+            ? "Tu email"
+            : "Your email"
+        }
+        className="min-w-0 flex-1 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none focus:border-emerald-500"
+      />
+
+      <button
+        type="button"
+        disabled={reportSending}
+        onClick={submitAssessmentReport}
+        className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+      >
+        {reportSending
+          ? lang === "it"
+            ? "Invio..."
+            : lang === "fr"
+            ? "Envoi..."
+            : lang === "es"
+            ? "Enviando..."
+            : "Sending..."
+          : lang === "it"
+          ? "Invia report"
+          : lang === "fr"
+          ? "Envoyer le rapport"
+          : lang === "es"
+          ? "Enviar informe"
+          : "Send report"}
+      </button>
+    </div>
+
+    {reportMessage && (
+      <p className="mt-2 text-xs font-medium text-emerald-900">
+        {reportMessage}
+      </p>
+    )}
+
+    <p className="mt-2 text-[11px] text-emerald-900/70">
+      {lang === "it"
+        ? "Niente spam. Puoi disiscriverti quando vuoi."
+        : lang === "fr"
+        ? "Pas de spam. Tu peux te désinscrire à tout moment."
+        : lang === "es"
+        ? "Sin spam. Puedes darte de baja cuando quieras."
+        : "No spam. You can unsubscribe anytime."}
+    </p>
+  </div>
+)}
 
            {!isAssessmentResult && !!wrongDetails.length && (
               <div className="mt-4 border-t pt-4">
