@@ -205,6 +205,29 @@ export default function AdminClient() {
                   value={filteredLeads.length}
                   hint="Dopo filtri e ricerca"
                 />
+            <KpiCard
+            label="Premium click"
+            value={funnelSummary?.events.find((e) => e.event === "premium_clicked")?.total ?? 0}
+            hint="Utenti che hanno cliccato Premium"
+            />
+
+            <KpiCard
+            label="Result viewed"
+            value={funnelSummary?.events.find((e) => e.event === "result_viewed")?.total ?? 0}
+            hint="Risultati assessment visualizzati"
+            />
+
+            <KpiCard
+            label="Assessment started"
+            value={funnelSummary?.events.find((e) => e.event === "assessment_started")?.total ?? 0}
+            hint="Assessment iniziati"
+            />
+
+            <KpiCard
+            label="Lead caldi"
+            value={hotLeads.length}
+            hint="Score alto o interesse Premium"
+            />
               </div>
 
               <div style={styles.insightGrid}>
@@ -292,6 +315,108 @@ export default function AdminClient() {
               <div style={styles.empty}>Nessun lead trovato con questi filtri.</div>
             )}
           </div>
+
+          {hotLeads.length > 0 && (
+  <div style={{ ...styles.tableCard, marginTop: 24 }}>
+    <div style={styles.tableHeader}>
+      <div>
+        <h2 style={styles.sectionTitle}>Lead caldi</h2>
+        <p style={styles.sectionHint}>
+          Utenti con score alto, più eventi o click Premium.
+        </p>
+      </div>
+    </div>
+
+    <div style={styles.tableWrap}>
+      <table style={styles.table}>
+        <thead>
+          <tr>
+            <Th>Email</Th>
+            <Th>Cert</Th>
+            <Th>Lang</Th>
+            <Th>Best score</Th>
+            <Th>Premium click</Th>
+            <Th>Eventi</Th>
+            <Th>Ultimo evento</Th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {hotLeads.map((lead, idx) => (
+            <tr key={`${lead.email}-${idx}`} style={styles.row}>
+              <Td strong>{lead.email}</Td>
+              <Td>{lead.cert_slug || "-"}</Td>
+              <Td>{lead.lang || "-"}</Td>
+              <Td>
+                {lead.best_score !== null && lead.best_score !== undefined ? (
+                  <ScoreBadge score={lead.best_score} />
+                ) : (
+                  "-"
+                )}
+              </Td>
+              <Td>{lead.premium_clicks}</Td>
+              <Td>{lead.total_events}</Td>
+              <Td>{formatDate(lead.last_event_at)}</Td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+<div style={{ ...styles.tableCard, marginTop: 24 }}>
+  <div style={styles.tableHeader}>
+    <div>
+      <h2 style={styles.sectionTitle}>Funnel events</h2>
+      <p style={styles.sectionHint}>
+        Qui vedi assessment_started, result_viewed, premium_clicked e altri eventi.
+      </p>
+    </div>
+  </div>
+
+  <div style={styles.tableWrap}>
+    <table style={styles.table}>
+      <thead>
+        <tr>
+          <Th>Email</Th>
+          <Th>Evento</Th>
+          <Th>Cert</Th>
+          <Th>Topic</Th>
+          <Th>Score</Th>
+          <Th>Lang</Th>
+          <Th>Data</Th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {funnelEvents.map((ev) => (
+          <tr key={ev.id} style={styles.row}>
+            <Td strong>{ev.email || "-"}</Td>
+            <Td>
+              <EventBadge event={ev.event} />
+            </Td>
+            <Td>{ev.cert_slug || "-"}</Td>
+            <Td>{ev.topic_slug || "-"}</Td>
+            <Td>
+              {ev.score !== null && ev.score !== undefined ? (
+                <ScoreBadge score={ev.score} />
+              ) : (
+                "-"
+              )}
+            </Td>
+            <Td>{ev.lang || "-"}</Td>
+            <Td>{formatDate(ev.created_at)}</Td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {!loading && funnelEvents.length === 0 && (
+    <div style={styles.empty}>Nessun evento funnel ancora registrato.</div>
+  )}
+</div>
         </section>
       )}
 
@@ -350,6 +475,18 @@ function ModeBadge({ mode }: { mode: string | null }) {
       : styles.badgeNeutral;
 
   return <span style={style}>{label}</span>;
+}
+function EventBadge({ event }: { event: string }) {
+  const style =
+    event === "premium_clicked"
+      ? styles.badgePremium
+      : event === "assessment_started"
+      ? styles.badgeAssessment
+      : event === "result_viewed"
+      ? styles.badgeLead
+      : styles.badgeNeutral;
+
+  return <span style={style}>{event}</span>;
 }
 
 function ScoreBadge({ score }: { score: number }) {
@@ -667,4 +804,13 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "60px auto",
     padding: 24,
   },
+  badgePremium: {
+  background: "#fef3c7",
+  color: "#92400e",
+  border: "1px solid #fde68a",
+  padding: "4px 9px",
+  borderRadius: 999,
+  fontSize: 12,
+  fontWeight: 900,
+},
 };
