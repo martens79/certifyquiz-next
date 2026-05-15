@@ -484,6 +484,17 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
     try {
       setIsLoading(true);
+      // ✅ Tracking funnel: click Premium dalla pagina pricing/coming soon
+    fetch("/api/backend/funnel-event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: "premium_clicked",
+        lang,
+      }),
+    }).catch(console.error);
 
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
