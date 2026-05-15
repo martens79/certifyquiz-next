@@ -4,6 +4,7 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/quiz-types";
 import { pricingPath } from "@/lib/paths";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type Props = {
   lang?: Locale;
@@ -43,7 +44,9 @@ const COPY = {
 } as const;
 
 function safeLang(lang?: Locale): Locale {
-  return lang === "it" || lang === "en" || lang === "fr" || lang === "es" ? lang : "en";
+  return lang === "it" || lang === "en" || lang === "fr" || lang === "es"
+    ? lang
+    : "en";
 }
 
 export default function PremiumTeaserBox({
@@ -53,6 +56,9 @@ export default function PremiumTeaserBox({
   ctaLabel,
 }: Props) {
   const L = safeLang(lang);
+
+  // ✅ Recupera utente loggato per tracking funnel
+  const { user } = useAuth();
 
   const finalTitle = title ?? COPY.title[L];
   const finalFeatures = features ?? COPY.features[L];
@@ -72,6 +78,20 @@ export default function PremiumTeaserBox({
 
       <Link
         href={pricingPath(L)}
+        onClick={() => {
+          // ✅ Tracking click Premium nel funnel
+          fetch("/api/backend/funnel-event", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              event: "premium_clicked",
+              email: user?.email || null,
+              lang: L,
+            }),
+          }).catch(console.error);
+        }}
         className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
       >
         {finalCta}
