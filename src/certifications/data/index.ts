@@ -50,6 +50,17 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "ccnp-enterprise": 40,
   "kcna-kubernetes-cloud-native": 41,
   "pmp": 42,
+
+  "networking-foundations": 43,
+  "cloud-foundations": 44,
+  "cybersecurity-foundations": 45,
+  "database-foundations": 46,
+  "programming-foundations": 47,
+  "virtualization-foundations": 48,
+  "project-management-foundations": 49,
+  "data-analytics-foundations": 50,
+  "pl-300-power-bi-data-analyst": 51,
+  "dp-900-azure-data-fundamentals": 52,
 };
 
 /* ---------------------------------------------------------------------
@@ -97,6 +108,18 @@ import NvidiaGenerativeAI from "./NvidiaGenerativeAI";
 import CCNPEnterprise from "./CCNPEnterprise";
 import KubernetesKCNA from "./KubernetesKCNA";
 import PMP from "./PMP";
+// 🔽 AGGIUNGI QUESTI IMPORT sotto gli altri import
+
+import NetworkingFoundations from "./networking-foundations";
+import CloudFoundations from "./cloud-foundations";
+import CybersecurityFoundations from "./cybersecurity-foundations";
+import DatabaseFoundations from "./database-foundations";
+import ProgrammingFoundations from "./programming-foundations";
+import VirtualizationFoundations from "./virtualization-foundations";
+import ProjectManagementFoundations from "./project-management-foundations";
+import DataAnalyticsFoundations from "./data-analytics-foundations";
+import PL300PowerBIDataAnalyst from "./PL300PowerBIDataAnalyst";
+import DP900AzureDataFundamentals from "./DP900AzureDataFundamentals";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -145,6 +168,18 @@ const RAW_CERTS = [
   CCNPEnterprise,             // slug: "ccnp-enterprise"
   KubernetesKCNA,             // slug: "kcna-kubernetes-cloud-native"
   PMP,                        // slug: "pmp"
+  // 🔽 AGGIUNGI QUESTI ELEMENTI in fondo a RAW_CERTS
+
+  NetworkingFoundations,
+  CloudFoundations,
+  CybersecurityFoundations,
+  DatabaseFoundations,
+  ProgrammingFoundations,
+  VirtualizationFoundations,
+  ProjectManagementFoundations,
+  DataAnalyticsFoundations,
+  PL300PowerBIDataAnalyst,
+  DP900AzureDataFundamentals,
 ] as const;
 
 /**
