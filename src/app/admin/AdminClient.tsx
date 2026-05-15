@@ -136,7 +136,7 @@ export default function AdminClient() {
 } finally {
   setLoading(false);
 }
-
+}
   useEffect(() => {
     if (token && tab === "dashboard") loadDashboard();
   }, [token, tab]);
@@ -668,4 +668,3 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 24,
   },
 };
-}
