@@ -26,6 +26,31 @@ type Overview = {
   topCerts: { cert_slug: string; total: number }[];
   topTopics: { topic_slug: string; total: number }[];
 };
+type FunnelEvent = {
+  id: number;
+  email: string | null;
+  event: string;
+  cert_slug: string | null;
+  topic_slug: string | null;
+  lang: string | null;
+  score: number | null;
+  created_at: string;
+};
+
+type FunnelSummary = {
+  events: { event: string; total: number }[];
+  topCerts: { cert_slug: string; event: string; total: number }[];
+};
+
+type HotLead = {
+  email: string;
+  cert_slug: string | null;
+  lang: string | null;
+  best_score: number | null;
+  premium_clicks: number;
+  total_events: number;
+  last_event_at: string;
+};
 
 export default function AdminClient() {
   const { user, isAdmin, token } = useAuth();
@@ -33,6 +58,9 @@ export default function AdminClient() {
   const [tab, setTab] = useState<"dashboard" | "feedback">("dashboard");
   const [overview, setOverview] = useState<Overview | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [funnelSummary, setFunnelSummary] = useState<FunnelSummary | null>(null);
+    const [funnelEvents, setFunnelEvents] = useState<FunnelEvent[]>([]);
+    const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -61,30 +89,53 @@ export default function AdminClient() {
     setLoading(true);
     setError("");
 
-    try {
-      const [overviewRes, leadsRes] = await Promise.all([
-        fetch("/api/backend/admin/leads-overview", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/leads", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+   try {
+  const [
+    overviewRes,
+    leadsRes,
+    funnelSummaryRes,
+    funnelEventsRes,
+    hotLeadsRes,
+  ] = await Promise.all([
+    fetch("/api/backend/admin/leads-overview", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/backend/admin/leads", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/backend/admin/funnel-summary", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/backend/admin/funnel-events", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+    fetch("/api/backend/admin/hot-leads", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  ]);
 
-      if (!overviewRes.ok) throw new Error(`Overview HTTP ${overviewRes.status}`);
-      if (!leadsRes.ok) throw new Error(`Leads HTTP ${leadsRes.status}`);
+  if (!overviewRes.ok) throw new Error(`Overview HTTP ${overviewRes.status}`);
+  if (!leadsRes.ok) throw new Error(`Leads HTTP ${leadsRes.status}`);
+  if (!funnelSummaryRes.ok) throw new Error(`Funnel summary HTTP ${funnelSummaryRes.status}`);
+  if (!funnelEventsRes.ok) throw new Error(`Funnel events HTTP ${funnelEventsRes.status}`);
+  if (!hotLeadsRes.ok) throw new Error(`Hot leads HTTP ${hotLeadsRes.status}`);
 
-      const overviewJson = await overviewRes.json();
-      const leadsJson = await leadsRes.json();
+  const overviewJson = await overviewRes.json();
+  const leadsJson = await leadsRes.json();
+  const funnelSummaryJson = await funnelSummaryRes.json();
+  const funnelEventsJson = await funnelEventsRes.json();
+  const hotLeadsJson = await hotLeadsRes.json();
 
-      setOverview(overviewJson);
-      setLeads(leadsJson.leads ?? []);
-    } catch (e: any) {
-      setError(e?.message || "Errore caricamento dashboard");
-    } finally {
-      setLoading(false);
-    }
-  }
+  setOverview(overviewJson);
+  setLeads(leadsJson.leads ?? []);
+  setFunnelSummary(funnelSummaryJson);
+  setFunnelEvents(funnelEventsJson.events ?? []);
+  setHotLeads(hotLeadsJson.hotLeads ?? []);
+} catch (e: any) {
+  setError(e?.message || "Errore caricamento dashboard");
+} finally {
+  setLoading(false);
+}
 
   useEffect(() => {
     if (token && tab === "dashboard") loadDashboard();
@@ -617,3 +668,4 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 24,
   },
 };
+}
