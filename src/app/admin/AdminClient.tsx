@@ -59,37 +59,53 @@ export default function AdminClient() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [funnelSummary, setFunnelSummary] = useState<FunnelSummary | null>(null);
-    const [funnelEvents, setFunnelEvents] = useState<FunnelEvent[]>([]);
-    const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
+  const [funnelEvents, setFunnelEvents] = useState<FunnelEvent[]>([]);
+  const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
+  const [eventFilter, setEventFilter] = useState("all");
+  const [langFilter, setLangFilter] = useState("all");
+  const [certFilter, setCertFilter] = useState("all");
   const [modeFilter, setModeFilter] = useState<"all" | "assessment" | "lead_magnet">("all");
 
   const filteredLeads = useMemo(() => {
-    return leads.filter((lead) => {
-      const matchesMode = modeFilter === "all" || lead.mode === modeFilter;
-      const q = search.trim().toLowerCase();
+  return leads.filter((lead) => {
+    const matchesMode = modeFilter === "all" || lead.mode === modeFilter;
+    const q = search.trim().toLowerCase();
 
-      const matchesSearch =
-        !q ||
-        lead.email?.toLowerCase().includes(q) ||
-        lead.cert_slug?.toLowerCase().includes(q) ||
-        lead.topic_slug?.toLowerCase().includes(q) ||
-        lead.lang?.toLowerCase().includes(q);
+    const matchesSearch =
+      !q ||
+      lead.email?.toLowerCase().includes(q) ||
+      lead.cert_slug?.toLowerCase().includes(q) ||
+      lead.topic_slug?.toLowerCase().includes(q) ||
+      lead.lang?.toLowerCase().includes(q);
 
-      return matchesMode && matchesSearch;
-    });
-  }, [leads, search, modeFilter]);
+    return matchesMode && matchesSearch;
+  });
+}, [leads, search, modeFilter]);
 
-  async function loadDashboard() {
-    if (!token) return;
+const filteredFunnelEvents = useMemo(() => {
+  return funnelEvents.filter((ev) => {
+    const matchesEvent = eventFilter === "all" || ev.event === eventFilter;
+    const matchesLang = langFilter === "all" || ev.lang === langFilter;
+    const matchesCert =
+      certFilter === "all" ||
+      ev.cert_slug?.toLowerCase().includes(certFilter.toLowerCase());
 
-    setLoading(true);
-    setError("");
+    return matchesEvent && matchesLang && matchesCert;
+  });
+}, [funnelEvents, eventFilter, langFilter, certFilter]);
 
-   try {
+async function loadDashboard() {
+  if (!token) return;
+
+  setLoading(true);
+  setError("");
+
+  try {
+    
   const [
     overviewRes,
     leadsRes,
