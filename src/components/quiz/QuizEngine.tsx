@@ -636,6 +636,32 @@ const goToFirstUnanswered = () => {
 
   setLastSummary(summary);
 
+
+  // ✅ Funnel tracking — result_viewed
+// Salva nel DB quando l’utente vede il risultato dell’assessment.
+// Questo evento serve per misurare quanti utenti completano davvero il free test,
+// con score e contesto certificazione/topic per hot leads e analisi funnel.
+
+if (effectiveMode === "assessment") {
+  fetch("/api/funnel-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      event: "result_viewed",
+      certification: context?.certificationName ?? null,
+      topic: context?.topicTitle ?? null,
+      lang,
+      score: scorePct,
+      total_questions: total,
+      correct,
+      duration_sec: elapsedSec,
+    }),
+  }).catch(console.error);
+}
+
   // ✅ Analytics — completamento quiz / assessment.
 // Serve per capire quanti utenti finiscono davvero il free test.
 if (!completedTrackedRef.current) {

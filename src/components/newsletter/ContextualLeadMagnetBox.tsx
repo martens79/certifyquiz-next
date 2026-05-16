@@ -1,6 +1,7 @@
 // src/components/newsletter/ContextualLeadMagnetBox.tsx
 
 import Link from "next/link";
+import { authFetch } from "@/lib/auth";
 
 type Lang = "it" | "en" | "fr" | "es";
 type Variant = "topic" | "cert";
@@ -232,15 +233,29 @@ const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link
-          href={href}
-          data-cta="lead-magnet"
-          data-variant={variant}
-          data-cert={certificationSlug ?? "general"}
-          data-topic={topicSlug ?? "general"}
-          className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800"
-        >
-          {button}
-        </Link>
+  href={href}
+  data-cta="lead-magnet"
+  data-variant={variant}
+  data-cert={certificationSlug ?? "general"}
+  data-topic={topicSlug ?? "general"}
+  onClick={() => {
+    authFetch("/api/funnel-event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event: "assessment_started",
+        certification: certificationSlug ?? "general",
+        topic: topicSlug ?? "general",
+        lang: safeLang,
+      }),
+    }).catch(console.error);
+  }}
+  className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800"
+>
+  {button}
+</Link>
 
         <p className="text-xs leading-relaxed text-slate-500">
           {t.emailText}
