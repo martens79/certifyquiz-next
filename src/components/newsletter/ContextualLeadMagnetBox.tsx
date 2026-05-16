@@ -1,5 +1,5 @@
 // src/components/newsletter/ContextualLeadMagnetBox.tsx
-
+"use client";
 import Link from "next/link";
 import { authFetch } from "@/lib/auth";
 
