@@ -132,6 +132,16 @@ const ICON_BY_SLUG: Record<string, string> = {
 "nvidia-generative-ai-llm": "/images/certifications/nvidia-generative-ai.png",
 "ccnp-enterprise": "/images/certifications/ccnp-enterprise.png",
 "kcna-kubernetes-cloud-native": "/images/certifications/kubernetes-kcna.png",
+
+// Foundations by CertifyQuiz
+"networking-foundations": "/images/certifications/networking-foundations.png",
+"cloud-foundations": "/images/certifications/cloud-foundations.png",
+"cybersecurity-foundations": "/images/certifications/cybersecurity-foundations.png",
+"database-foundations": "/images/certifications/database-foundations.png",
+"programming-foundations": "/images/certifications/programming-foundations.png",
+"virtualization-foundations": "/images/certifications/virtualization-foundations.png",
+"project-management-foundations": "/images/certifications/pmp2.png",
+"data-analytics-foundations": "/images/certifications/data-analytics-foundations.png",
 };
 
 /* ---------------------------- SEO TEXT ---------------------------- */
