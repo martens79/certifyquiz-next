@@ -245,11 +245,11 @@ const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        event: "assessment_started",
-        certification: certificationSlug ?? "general",
-        topic: topicSlug ?? "general",
-        lang: safeLang,
-      }),
+  event: "assessment_started",
+  cert_slug: certificationSlug ?? "general",
+  topic_slug: topicSlug ?? "general",
+  lang: safeLang,
+}),
     }).catch(console.error);
   }}
   className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800"

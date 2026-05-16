@@ -33,9 +33,10 @@ export type QuizContext = {
   certificationName: string;
   certificationSlug?: string;
   topicTitle?: string;
+  topicSlug?: string;
   backLabel?: string;
   backHref?: string;
-
+  
   // Premium infra (ready-to-flip, non invasivo)
   isPremiumUser?: boolean;
   premiumLocked?: boolean;

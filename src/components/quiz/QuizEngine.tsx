@@ -649,16 +649,13 @@ if (effectiveMode === "assessment") {
       "Content-Type": "application/json",
     },
     credentials: "include",
-    body: JSON.stringify({
-      event: "result_viewed",
-      certification: context?.certificationName ?? null,
-      topic: context?.topicTitle ?? null,
-      lang,
-      score: scorePct,
-      total_questions: total,
-      correct,
-      duration_sec: elapsedSec,
-    }),
+  body: JSON.stringify({
+  event: "result_viewed",
+  cert_slug: context?.certificationSlug ?? null,
+  topic_slug: context?.topicSlug ?? null,
+  lang,
+  score: scorePct,
+}),
   }).catch(console.error);
 }
 
