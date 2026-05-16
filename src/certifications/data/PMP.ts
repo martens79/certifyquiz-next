@@ -3,7 +3,7 @@
 
 const PMP = {
   slug: "pmp",
-  imageUrl: "/images/certifications/pmp.png",
+  imageUrl: "/images/certifications/pmp2.png",
   officialUrl: "https://www.pmi.org/certifications/project-management-pmp",
 
   title: {
