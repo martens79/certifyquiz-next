@@ -643,7 +643,7 @@ const goToFirstUnanswered = () => {
 // con score e contesto certificazione/topic per hot leads e analisi funnel.
 
 if (effectiveMode === "assessment") {
-  fetch("/api/funnel-event", {
+  fetch("/api/backend/funnel-event", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

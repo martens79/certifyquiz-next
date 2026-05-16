@@ -239,7 +239,7 @@ const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
   data-cert={certificationSlug ?? "general"}
   data-topic={topicSlug ?? "general"}
   onClick={() => {
-    authFetch("/api/funnel-event", {
+    authFetch("/api/backend/funnel-event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
