@@ -1105,18 +1105,35 @@ const assessmentCopy =
     type="button"
     className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer"
     onClick={() => {
-      trackQuizEvent('premium_cta_clicked', {
-        lang,
-        mode: effectiveMode,
-        source: 'assessment_result',
-        storage_scope: storageScope,
-        certification: context?.certificationName ?? null,
-        topic: context?.topicTitle ?? null,
-        score_pct: scorePct,
-      });
+  // ✅ GA / analytics frontend
+  trackQuizEvent('premium_cta_clicked', {
+    lang,
+    mode: effectiveMode,
+    source: 'assessment_result',
+    storage_scope: storageScope,
+    certification: context?.certificationName ?? null,
+    topic: context?.topicTitle ?? null,
+    score_pct: scorePct,
+  });
 
-      router.push(pricingPath(lang));
-    }}
+  // ✅ Funnel tracking backend → DB/admin
+  fetch("/api/backend/funnel-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      event: "premium_clicked",
+      cert_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null,
+      lang,
+      score: scorePct,
+    }),
+  }).catch(console.error);
+
+  router.push(pricingPath(lang));
+}}
   >
     {assessmentCopy.cta[lang]}
   </button>
@@ -1127,7 +1144,12 @@ const assessmentCopy =
             {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
             {!isAssessmentResult && !isPremiumUser && (
   <div className="pt-2">
-    <PremiumTeaserBox lang={lang} />
+    <PremiumTeaserBox
+  lang={lang}
+  certificationSlug={context?.certificationSlug}
+  topicSlug={context?.topicSlug}
+  score={scorePct}
+/>
   </div>
 )}
 
@@ -1305,21 +1327,23 @@ if (freeLimitReached) {
   const freeWrongCount = Math.max(freeTotalAnswered - freeCorrectCount, 0);
 
   return (
-    <div className={`min-h-[100dvh] ${gradient}`}>
-      <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
-        <PremiumQuestionLimitGate
-          lang={lang}
-          currentCount={FREE_LIMIT}
-          freeLimit={FREE_LIMIT}
-          mode={effectiveMode}
-          correctCount={freeCorrectCount}
-          wrongCount={freeWrongCount}
-          totalAnswered={freeTotalAnswered}
-          onBack={() => setIdx(FREE_LIMIT - 1)}
-        />
-      </div>
+  <div className={`min-h-[100dvh] ${gradient}`}>
+    <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
+      <PremiumQuestionLimitGate
+        lang={lang}
+        currentCount={FREE_LIMIT}
+        freeLimit={FREE_LIMIT}
+        mode={effectiveMode}
+        certificationSlug={context?.certificationSlug}
+        topicSlug={context?.topicSlug}
+        correctCount={freeCorrectCount}
+        wrongCount={freeWrongCount}
+        totalAnswered={freeTotalAnswered}
+        onBack={() => setIdx(FREE_LIMIT - 1)}
+      />
     </div>
-  );
+  </div>
+);
 }
 
 return (

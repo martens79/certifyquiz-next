@@ -9,7 +9,10 @@ import { useAuth } from "@/components/auth/AuthProvider";
 type Props = {
   lang?: Locale;
 
-  // opzionali: override per casi speciali (se un giorno vuoi)
+  certificationSlug?: string;
+  topicSlug?: string;
+  score?: number;
+
   title?: string;
   features?: string[];
   ctaLabel?: string;
@@ -51,6 +54,9 @@ function safeLang(lang?: Locale): Locale {
 
 export default function PremiumTeaserBox({
   lang,
+  certificationSlug,
+  topicSlug,
+  score,
   title,
   features,
   ctaLabel,
@@ -86,10 +92,13 @@ export default function PremiumTeaserBox({
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              event: "premium_clicked",
-              email: user?.email || null,
-              lang: L,
-            }),
+            event: "premium_clicked",
+            email: user?.email || null,
+            cert_slug: certificationSlug ?? null,
+            topic_slug: topicSlug ?? null,
+            lang: L,
+            score: score ?? null,
+}),
           }).catch(console.error);
         }}
         className="inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:opacity-90"

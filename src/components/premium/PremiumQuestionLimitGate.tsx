@@ -11,7 +11,9 @@ type Props = {
   mode?: "training" | "exam";
   onBack?: () => void;
 
-  // ✅ Dati risultato free test
+  certificationSlug?: string;
+  topicSlug?: string;
+
   correctCount?: number;
   wrongCount?: number;
   totalAnswered?: number;
@@ -241,6 +243,8 @@ export default function PremiumQuestionLimitGate({
   currentCount,
   freeLimit,
   onBack,
+  certificationSlug,
+  topicSlug,
   correctCount,
   wrongCount,
   totalAnswered,
@@ -268,19 +272,23 @@ export default function PremiumQuestionLimitGate({
     if (isLoading) return;
 
     try {
-      setIsLoading(true);
-      fetch("/api/backend/funnel-event", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    event: "premium_clicked",
-    lang: L,
-    score: percentage,
-  }),
-}).catch(console.error);
+  setIsLoading(true);
 
+  // ✅ Funnel tracking — Premium click dal free limit gate
+  fetch("/api/backend/funnel-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      event: "premium_clicked",
+      cert_slug: certificationSlug ?? null,
+      topic_slug: topicSlug ?? null,
+      lang: L,
+      score: percentage,
+    }),
+  }).catch(console.error);
+  
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: {
