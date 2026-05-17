@@ -121,7 +121,7 @@ const nextConfig: NextConfig = {
       { source: "/en/terms-conditions", destination: "/terms-conditions", permanent: true },
       { source: "/fr/terms-conditions", destination: "/fr/conditions", permanent: true },
       { source: "/en/privacy-policy", destination: "/privacy", permanent: true },
-      { source: "/en/cookie-policy", destination: "/cookies", permanent: true },
+      { source: "/en/cookie-policy", destination: "/cookie", permanent: true },
 
       // ---------------------------------------------------------------------
       // ✅ ICDL / ECDL canonicalization — CERTIFICATIONS
@@ -236,6 +236,134 @@ const nextConfig: NextConfig = {
             "/certifications/ai-foundations/generative-ai-real-world-applications",
           permanent: true,
         },
+        /**
+ * REDIRECT DA AGGIUNGERE in next.config.ts
+ * Generati da analisi Search Console 2026-05-17 — 127 URL non coperti
+ * Slug categorie verificati da src/lib/paths.ts (CAT_KEY_TO_SLUG)
+ *
+ * Incolla dentro il return[] di redirects(), PRIMA del blocco "Garbage / bot paths".
+ */
+
+// -----------------------------------------------------------------------
+// 🐛 BUG: URL con /&/undefined/ — redirect temporanei (permanent: false)
+//    Il vero fix è nel codice: cerca href con variabile slug/categoria undefined.
+//    Rimuovi questi redirect dopo aver fixato il bug.
+// -----------------------------------------------------------------------
+{ source: "/&/undefined/programmazione",   destination: "/it/categorie/programmazione",           permanent: false },
+{ source: "/&/undefined/sicurezza",        destination: "/it/categorie/sicurezza",                permanent: false },
+{ source: "/&/undefined/reti",             destination: "/it/categorie/reti",                     permanent: false },
+{ source: "/&/undefined/cloud",            destination: "/it/categorie/cloud",                    permanent: false },
+{ source: "/&/undefined/database",         destination: "/it/categorie/database",                 permanent: false },
+{ source: "/&/undefined/base",             destination: "/it/categorie/base",                     permanent: false },
+{ source: "/&/undefined/ai",               destination: "/it/categorie/intelligenza-artificiale", permanent: false },
+{ source: "/&/undefined/virtualizzazione", destination: "/it/categorie/virtualizzazione",         permanent: false },
+
+// -----------------------------------------------------------------------
+// 🐛 BUG: altri path malformati
+// -----------------------------------------------------------------------
+{ source: "/quiz-suggeriti/undefined/:path*", destination: "/", permanent: false },
+{ source: "/login/blog",                      destination: "/it/blog", permanent: true },
+
+// -----------------------------------------------------------------------
+// ✅ IT: slug rinominati
+// -----------------------------------------------------------------------
+{ source: "/it/certificazioni/comptia-network-plus",         destination: "/it/certificazioni/network-plus",        permanent: true },
+{ source: "/it/certificazioni/comptia-network-plus/:path*",  destination: "/it/certificazioni/network-plus/:path*", permanent: true },
+{ source: "/it/certificazioni/python",                       destination: "/it/certificazioni/python-developer",    permanent: true },
+
+// -----------------------------------------------------------------------
+// ✅ IT: "foundations" — redirect a categoria
+//    permanent: false finché non crei le pagine vere, poi cambia in true
+// -----------------------------------------------------------------------
+{ source: "/it/certificazioni/cloud-foundations",              destination: "/it/categorie/cloud",                    permanent: false },
+{ source: "/it/certificazioni/networking-foundations",         destination: "/it/categorie/reti",                     permanent: false },
+{ source: "/it/certificazioni/database-foundations",           destination: "/it/categorie/database",                 permanent: false },
+{ source: "/it/certificazioni/programming-foundations",        destination: "/it/categorie/programmazione",           permanent: false },
+{ source: "/it/certificazioni/data-analytics-foundations",     destination: "/it/categorie/analisi-dei-dati",         permanent: false },
+{ source: "/it/certificazioni/cybersecurity-foundations",      destination: "/it/categorie/sicurezza",                permanent: false },
+{ source: "/it/certificazioni/virtualization-foundations",     destination: "/it/categorie/virtualizzazione",         permanent: false },
+{ source: "/it/certificazioni/project-management-foundations", destination: "/it/categorie/management",               permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ EN (root): "foundations" → categoria (slug da CAT_KEY_TO_SLUG en)
+// -----------------------------------------------------------------------
+{ source: "/certifications/cloud-foundations",              destination: "/categories/cloud",            permanent: false },
+{ source: "/certifications/networking-foundations",         destination: "/categories/networking",       permanent: false },
+{ source: "/certifications/database-foundations",           destination: "/categories/databases",        permanent: false },
+{ source: "/certifications/programming-foundations",        destination: "/categories/programming",      permanent: false },
+{ source: "/certifications/data-analytics-foundations",     destination: "/categories/data-analytics",   permanent: false },
+{ source: "/certifications/cybersecurity-foundations",      destination: "/categories/security",         permanent: false },
+{ source: "/certifications/virtualization-foundations",     destination: "/categories/virtualization",   permanent: false },
+{ source: "/certifications/project-management-foundations", destination: "/categories/management",       permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ FR: "foundations" → categoria (slug da CAT_KEY_TO_SLUG fr)
+// -----------------------------------------------------------------------
+{ source: "/fr/certifications/cloud-foundations",              destination: "/fr/categories/cloud",               permanent: false },
+{ source: "/fr/certifications/networking-foundations",         destination: "/fr/categories/reseaux",             permanent: false },
+{ source: "/fr/certifications/database-foundations",           destination: "/fr/categories/bases-de-donnees",    permanent: false },
+{ source: "/fr/certifications/programming-foundations",        destination: "/fr/categories/programmation",       permanent: false },
+{ source: "/fr/certifications/data-analytics-foundations",     destination: "/fr/categories/analyse-des-donnees", permanent: false },
+{ source: "/fr/certifications/cybersecurity-foundations",      destination: "/fr/categories/securite",            permanent: false },
+{ source: "/fr/certifications/virtualization-foundations",     destination: "/fr/categories/virtualisation",      permanent: false },
+{ source: "/fr/certifications/project-management-foundations", destination: "/fr/categories/management",          permanent: false },
+
+// FR: alias e rinominati
+{ source: "/fr/certifications/comptia-a",                     destination: "/fr/certifications/comptia-a-plus",             permanent: true },
+{ source: "/fr/certifications/comptia-network",               destination: "/fr/certifications/network-plus",               permanent: true },
+{ source: "/fr/certifications/comptia-security",              destination: "/fr/certifications/security-plus",              permanent: true },
+{ source: "/fr/certifications/cisco-ccst",                    destination: "/fr/certifications/cisco-ccst-networking",      permanent: true },
+{ source: "/fr/certifications/google-cloud",                  destination: "/fr/certifications/google-cloud-digital-leader", permanent: true },
+{ source: "/fr/certifications/mysql-certification",           destination: "/fr/certifications/mysql",                      permanent: true },
+{ source: "/fr/certifications/aws-solutions-architect",       destination: "/fr/certifications/aws-cloud-practitioner",     permanent: false },
+// FR: cert non ancora create → homepage FR
+{ source: "/fr/certifications/ibm-cloud-v5",                  destination: "/fr", permanent: false },
+{ source: "/fr/certifications/jncie",                         destination: "/fr", permanent: false },
+{ source: "/fr/certifications/vmware-certified-professional",  destination: "/fr", permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ ES: "foundations" → categoria (slug da CAT_KEY_TO_SLUG es)
+// -----------------------------------------------------------------------
+{ source: "/es/certificaciones/cloud-foundations",              destination: "/es/categorias/cloud",              permanent: false },
+{ source: "/es/certificaciones/networking-foundations",         destination: "/es/categorias/redes",              permanent: false },
+{ source: "/es/certificaciones/database-foundations",           destination: "/es/categorias/bases-de-datos",     permanent: false },
+{ source: "/es/certificaciones/programming-foundations",        destination: "/es/categorias/programacion",       permanent: false },
+{ source: "/es/certificaciones/data-analytics-foundations",     destination: "/es/categorias/analisis-de-datos",  permanent: false },
+{ source: "/es/certificaciones/cybersecurity-foundations",      destination: "/es/categorias/seguridad",          permanent: false },
+{ source: "/es/certificaciones/virtualization-foundations",     destination: "/es/categorias/virtualizacion",     permanent: false },
+{ source: "/es/certificaciones/project-management-foundations", destination: "/es/categorias/gestion-management", permanent: false },
+
+// ES: altri
+{ source: "/es/certificaciones/network-plus/:path*", destination: "/es/certificaciones/network-plus", permanent: false },
+{ source: "/es/certificaciones",                     destination: "/es",                               permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ Blog multilingua — redirect a IT (unica versione esistente)
+//    Se in futuro crei il blog EN, aggiorna /fr e /es → /en/blog
+// -----------------------------------------------------------------------
+{ source: "/fr/blog",         destination: "/it/blog",         permanent: false },
+{ source: "/fr/blog/:path*",  destination: "/it/blog/:path*",  permanent: false },
+{ source: "/es/blog",         destination: "/it/blog",         permanent: false },
+{ source: "/es/blog/:path*",  destination: "/it/blog/:path*",  permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ Pagine statiche FR/ES con slug errato
+// -----------------------------------------------------------------------
+{ source: "/fr/fonctionnement",               destination: "/fr",                          permanent: true },
+{ source: "/fr/categories/virtualizzazione",  destination: "/fr/categories/virtualisation", permanent: true },
+{ source: "/es/categorias/programmazione",    destination: "/es/categorias/programacion",   permanent: true },
+{ source: "/es/contactos",                    destination: "/es",                           permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ Legal pages — slug da verificare nelle tue pagine Next.js
+//    Se i tuoi slug sono diversi (es. /it/informativa-privacy) aggiorna qui
+// -----------------------------------------------------------------------
+{ source: "/it/privacy-policy",   destination: "/it/privacy",   permanent: true },
+{ source: "/es/privacy-policy",   destination: "/es/privacy",   permanent: true },
+{ source: "/es/terms-conditions", destination: "/es/terminos",   permanent: true },
+{ source: "/fr/privacy-policy",   destination: "/fr/privacy",   permanent: true },
+{ source: "/fr/cookie-policy",    destination: "/fr/cookie",   permanent: true },
+{ source: "/es/cookie-policy",    destination: "/es/cookie",   permanent: true },
       // ---------------------------------------------------------------------
       // ✅ Garbage / bot paths
       // ---------------------------------------------------------------------
