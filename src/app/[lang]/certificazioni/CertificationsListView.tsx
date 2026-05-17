@@ -142,6 +142,9 @@ const ICON_BY_SLUG: Record<string, string> = {
 "virtualization-foundations": "/images/certifications/virtualization-foundations.png",
 "project-management-foundations": "/images/certifications/pmp2.png",
 "data-analytics-foundations": "/images/certifications/data-analytics-foundations.png",
+
+"pl-300-power-bi-data-analyst": "/images/certifications/pl-300-power-bi-data-analyst.png",
+"dp-900-azure-data-fundamentals": "/images/certifications/dp-900-azure-data-fundamentals.png",
 };
 
 /* ---------------------------- SEO TEXT ---------------------------- */
