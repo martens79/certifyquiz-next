@@ -236,7 +236,7 @@ const pageTopics =
 <div className="mt-2 mb-6 text-center">
   <Link
     href={quizHref}
-    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
+    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-linear-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
   >
     <span className="text-lg">🚀</span>
     {({

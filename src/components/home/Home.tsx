@@ -21,6 +21,7 @@ import {
   Layers,
   Cpu,
   BriefcaseBusiness,
+  BarChart3,
 } from "lucide-react";
 
 /* Helpers */
@@ -77,6 +78,12 @@ const CATEGORY_UI: Record<
     bg: "bg-slate-50",
     border: "border-slate-300",
     ring: "hover:ring-2 hover:ring-slate-300/60",
+
+    },
+    "data-analytics": {
+    bg: "bg-teal-50",
+    border: "border-teal-200",
+    ring: "hover:ring-2 hover:ring-teal-200/60",
   },
 } as const;
 
@@ -268,6 +275,28 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         safeLang
       ),
     },
+    {
+  key: "data-analytics",
+  icon: <BarChart3 size={20} aria-hidden="true" />,
+  title: L(
+    {
+      it: "Data & Analytics",
+      en: "Data & Analytics",
+      fr: "Data & Analytics",
+      es: "Datos y Analítica",
+    },
+    safeLang
+  ),
+  desc: L(
+    {
+      it: "Power BI, SQL, dashboard, KPI, analisi dati e business intelligence.",
+      en: "Power BI, SQL, dashboards, KPI, data analysis and business intelligence.",
+      fr: "Power BI, SQL, tableaux de bord, KPI et analyse de données.",
+      es: "Power BI, SQL, dashboards, KPI y análisis de datos.",
+    },
+    safeLang
+  ),
+},
   ];
 
   const TRENDING_CERTS: Array<{
@@ -678,7 +707,11 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 <section className="mt-5 md:mt-6" aria-label="Categories">
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
     {allCategories
-      .filter((cat) => cat.key !== "management")
+      .filter(
+  (cat) =>
+    cat.key !== "management" &&
+    cat.key !== "data-analytics"
+)
       .map((cat) => {
         const ui = CATEGORY_UI[cat.key];
 
@@ -701,45 +734,61 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       })}
   </div>
 
+  <div className="grid md:grid-cols-2 gap-3 mt-3">
   {allCategories
-    .filter((cat) => cat.key === "management")
+    .filter(
+      (cat) =>
+        cat.key === "management" ||
+        cat.key === "data-analytics"
+    )
     .map((cat) => {
       const ui = CATEGORY_UI[cat.key];
 
       return (
-        <Link
-          key={cat.key}
-          href={categoryPath(safeLang, cat.key)}
-          className={`mt-3 flex items-center justify-between gap-4 transition p-4 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="shrink-0 text-slate-800">{cat.icon}</div>
+  <Link
+    key={cat.key}
+    href={categoryPath(safeLang, cat.key)}
+    className={`mt-3 flex items-center justify-between gap-4 transition p-4 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
+  >
+    <div className="flex items-center gap-3">
+      <div className="shrink-0 text-slate-800">{cat.icon}</div>
 
-            <div>
-              <div className="text-sm font-bold text-slate-800">
-                {cat.title}
-              </div>
+      <div>
+        <div className="text-sm font-bold text-slate-800">
+          {cat.title}
+        </div>
 
-              <div className="text-xs text-slate-600 leading-tight">
-                {cat.desc}
-              </div>
-            </div>
-          </div>
+        <div className="text-xs text-slate-600 leading-tight">
+          {cat.desc}
+        </div>
+      </div>
+    </div>
 
-          <span className="hidden sm:inline text-xs font-semibold text-slate-600">
-            {L(
-              {
-                it: "Project manager, Agile, leadership →",
-                en: "Project managers, Agile, leadership →",
-                fr: "Gestion de projet, Agile, leadership →",
-                es: "Gestión de proyectos, Agile, liderazgo →",
-              },
-              safeLang
-            )}
-          </span>
-        </Link>
-      );
+    <span className="hidden sm:inline text-xs font-semibold text-slate-600">
+      {cat.key === "management"
+        ? L(
+            {
+              it: "Project manager, Agile, leadership →",
+              en: "Project managers, Agile, leadership →",
+              fr: "Gestion de projet, Agile, leadership →",
+              es: "Gestión de proyectos, Agile, liderazgo →",
+            },
+            safeLang
+          )
+        : L(
+            {
+              it: "Power BI, SQL, KPI, dashboard →",
+              en: "Power BI, SQL, KPI, dashboards →",
+              fr: "Power BI, SQL, KPI, dashboards →",
+              es: "Power BI, SQL, KPI, dashboards →",
+            },
+            safeLang
+          )}
+    </span>
+  </Link>
+);
     })}
+    </div>
 
   <div className="text-center mt-5">
     <Link

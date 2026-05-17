@@ -9,23 +9,35 @@ import Link from "next/link";
 
 import { CERT_SLUGS } from "@/certifications/data";
 import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "@/lib/primary-cert-by-category";
-import { seoPrefix, quizPrefix } from "@/lib/paths";
+
+import {
+  seoPrefix,
+  quizPrefix,
+  CAT_KEY_TO_SLUG,
+  CAT_SLUG_TO_KEY,
+  type CategoryKey,
+} from "@/lib/paths";
 
 import {
   getCategoryStyle,
   CERT_CATEGORY_BY_SLUG,
-  type CategoryKey,
 } from "@/lib/certs";
-import { getCertCardDesc, type CertDescLocale } from "@/lib/cert-descriptions";
+
+import {
+  getCertCardDesc,
+  type CertDescLocale,
+} from "@/lib/cert-descriptions";
 
 /* -------------------------------- Config -------------------------------- */
+
 const LOCALES = ["it", "en", "fr", "es"] as const;
+
 type Locale = (typeof LOCALES)[number];
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
-  /\/+$/,
-  ""
-);
+const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  "https://www.certifyquiz.com"
+).replace(/\/+$/, "");
 
 /* ------------------------------------------------------------------------ */
 /*                       CATEGORY META — MULTILINGUA                         */
@@ -168,6 +180,22 @@ const CATEGORY_META: Record<
       es: "Gestión de proyectos, liderazgo, Agile, gobernanza y organización empresarial.",
     },
   },
+    "data-analytics": {
+    key: "data-analytics",
+    emoji: "📊",
+    title: {
+      it: "Data & Analytics",
+      en: "Data & Analytics",
+      fr: "Data & Analytics",
+      es: "Datos y Analítica",
+    },
+    subtitle: {
+      it: "Power BI, SQL, dashboard, KPI, analisi dati e business intelligence.",
+      en: "Power BI, SQL, dashboards, KPI, data analysis and business intelligence.",
+      fr: "Power BI, SQL, tableaux de bord, KPI et analyse de données.",
+      es: "Power BI, SQL, dashboards, KPI y análisis de datos.",
+    },
+  },
 };
 
 
@@ -181,114 +209,11 @@ const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
   virtualizzazione: "virtualization",
   ai: "ai",
   management: "management",
+  "data-analytics": "data-analytics"
 };
 
 
-/* ------------------------------------------------------------------------ */
-/*                           Slug mapping                                   */
-/* ------------------------------------------------------------------------ */
 
-const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
-  it: {
-    base: "base",
-    sicurezza: "sicurezza",
-    reti: "reti",
-    cloud: "cloud",
-    database: "database",
-    programmazione: "programmazione",
-    virtualizzazione: "virtualizzazione",
-     management: "management",
-    "intelligenza-artificiale": "ai",
-  },
-  en: {
-    fundamentals: "base",
-    basics: "base",
-    security: "sicurezza",
-    networking: "reti",
-    cloud: "cloud",
-    databases: "database",
-    programming: "programmazione",
-    virtualization: "virtualizzazione",
-     management: "management",
-    "artificial-intelligence": "ai",
-  },
-  fr: {
-    fondamentaux: "base",
-    bases: "base",
-    securite: "sicurezza",
-    reseaux: "reti",
-    cloud: "cloud",
-    "bases-de-donnees": "database",
-    programmation: "programmazione",
-    virtualisation: "virtualizzazione",
-     management: "management",
-    "intelligence-artificielle": "ai",
-  },
-  es: {
-    fundamentos: "base",
-    basico: "base",
-    seguridad: "sicurezza",
-    redes: "reti",
-    cloud: "cloud",
-    "bases-de-datos": "database",
-    programacion: "programmazione",
-    virtualizacion: "virtualizzazione",
-    "gestion-management": "management",
-     management: "management",
-    "inteligencia-artificial": "ai",
-  },
-};
-
-const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
-  it: {
-    default: "base",
-    base: "base",
-    sicurezza: "sicurezza",
-    reti: "reti",
-    cloud: "cloud",
-    database: "database",
-    programmazione: "programmazione",
-    virtualizzazione: "virtualizzazione",
-    management: "management",
-    ai: "intelligenza-artificiale",
-  },
-  en: {
-    default: "fundamentals",
-    base: "fundamentals",
-    sicurezza: "security",
-    reti: "networking",
-    cloud: "cloud",
-    database: "databases",
-    programmazione: "programming",
-    virtualizzazione: "virtualization",
-    management: "management",
-    ai: "artificial-intelligence",
-  },
-  fr: {
-    default: "fondamentaux",
-    base: "fondamentaux",
-    sicurezza: "securite",
-    reti: "reseaux",
-    cloud: "cloud",
-    database: "bases-de-donnees",
-    programmazione: "programmation",
-    virtualizzazione: "virtualisation",
-    management: "management",
-    ai: "intelligence-artificielle",
-  },
-  es: {
-    default: "fundamentos",
-    base: "fundamentos",
-    sicurezza: "seguridad",
-    reti: "redes",
-    cloud: "cloud",
-    database: "bases-de-datos",
-    programmazione: "programacion",
-    virtualizzazione: "virtualizacion",
-    management: "management",
-    ai: "inteligencia-artificial",
-  },
-};
 
 function resolveInternalKey(lang: Locale, slug: string): CategoryKey | null {
   const s = (slug || "").trim();

@@ -46,6 +46,7 @@ export type CategoryKey =
   | "virtualizzazione"
   | "ai"
   | "management"
+  | "data-analytics"
   | "default";
 
 export type CatStyle = {
@@ -92,6 +93,11 @@ export const CATEGORY_STYLES: Record<CategoryKey, CatStyle> = {
     wrapper: "bg-slate-50 border border-slate-300 hover:ring-2 hover:ring-slate-300/70",
     header: "bg-slate-50 border border-slate-300",
   },
+  "data-analytics": {
+  wrapper:
+    "bg-teal-50 border border-teal-200 hover:ring-2 hover:ring-teal-200/70",
+  header: "bg-teal-50 border border-teal-200",
+},
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
     header: "bg-gray-50 border border-gray-200",
@@ -162,6 +168,11 @@ f5: "reti",
   mysql: "database",
   "mysql-certification": "database",
   "mongodb-developer": "database",
+
+  // Data & Analytics
+"data-analytics-foundations": "data-analytics",
+"pl-300-power-bi-data-analyst": "data-analytics",
+"dp-900-azure-data-fundamentals": "data-analytics",
 
   // Programmazione
   "java-se": "programmazione",

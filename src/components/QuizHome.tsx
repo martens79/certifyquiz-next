@@ -278,6 +278,21 @@ cloud: [
   { name: "OpenAI", link: null },
 
 ],
+
+"data-analytics": [
+  {
+    name: "Data Analytics Foundations",
+    link: "/quiz/data-analytics-foundations",
+  },
+  {
+    name: "Microsoft PL-300 Power BI Data Analyst",
+    link: "/quiz/pl-300-power-bi-data-analyst",
+  },
+  {
+    name: "Microsoft DP-900 Azure Data Fundamentals",
+    link: "/quiz/dp-900-azure-data-fundamentals",
+  },
+],
 };
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();

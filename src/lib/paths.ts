@@ -105,7 +105,8 @@ export type CategoryKey =
   | "programmazione"
   | "virtualizzazione"
   | "management"
-  | "ai";
+  | "ai"
+  | "data-analytics";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
@@ -119,6 +120,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualizzazione",
     management: "management",
     ai: "intelligenza-artificiale",
+    "data-analytics": "analisi-dei-dati",
   },
 
   en: {
@@ -132,6 +134,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualization",
     management: "management",
     ai: "artificial-intelligence",
+    "data-analytics": "data-analytics",
   },
 
   fr: {
@@ -145,6 +148,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualisation",
     management: "management",
     ai: "intelligence-artificielle",
+    "data-analytics": "analyse-des-donnees",
   },
 
   es: {
@@ -158,6 +162,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualizacion",
     management: "gestion-management",
     ai: "inteligencia-artificial",
+    "data-analytics": "analisis-de-datos",
   },
 };
 
@@ -172,6 +177,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     virtualizzazione: "virtualizzazione",
     management: "management",
     "intelligenza-artificiale": "ai",
+    "analisi-dei-dati": "data-analytics",
   },
 
   en: {
@@ -184,6 +190,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     virtualization: "virtualizzazione",
     management: "management",
     "artificial-intelligence": "ai",
+    "data-analytics": "data-analytics",
   },
 
   fr: {
@@ -196,6 +203,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     virtualisation: "virtualizzazione",
     management: "management",
     "intelligence-artificielle": "ai",
+    "analyse-des-donnees": "data-analytics",
   },
 
   es: {
@@ -208,6 +216,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     virtualizacion: "virtualizzazione",
     "gestion-management": "management",
     "inteligencia-artificial": "ai",
+    "analisis-de-datos": "data-analytics",
   },
 };
 
