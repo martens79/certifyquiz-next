@@ -128,7 +128,7 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   pmp: "management",
   "project-management-professional": "management",
   "itil-4-foundation": "management",
-  
+  "project-management-foundations": "management",
   // Sicurezza
   "security-plus": "sicurezza",
   
@@ -207,6 +207,27 @@ openai: "ai",
 // Nuove certificazioni AI
 "ai-foundations": "ai", // ✅ tua certificazione
 "aws-ai-practitioner": "ai", // ⚠️ qui AI per UX (anche se è cloud lato SEO)
+
+// Sicurezza
+"cybersecurity-foundations": "sicurezza",
+
+// Reti
+"networking-foundations": "reti",
+
+// Cloud
+"cloud-foundations": "cloud",
+
+// Database
+"database-foundations": "database",
+
+// Programmazione
+"programming-foundations": "programmazione",
+
+// Virtualizzazione
+"virtualization-foundations": "virtualizzazione",
+
+// Management
+"project-management-foundations": "management",
 };
 
 /* ======================  ID <-> SLUG (DERIVED)  ====================== */

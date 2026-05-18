@@ -11,6 +11,9 @@ const EN_TO_KEY: Record<string, string> = {
   programming: "programmazione",
   virtualization: "virtualizzazione",
   "artificial-intelligence": "ai",
+  ai: "ai",
+  management: "management",
+  "data-analytics": "data-analytics",
 };
 
 export default async function Page({
