@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 type Locale = "it" | "en" | "es" | "fr";
+import RoadmapStepCard from "@/components/roadmaps/RoadmapStepCard";
 
 type RoadmapQuizSlug = string;
 type RoadmapCertSlug = string;
@@ -63,87 +64,26 @@ export default function VirtualizationRoadmapPage({
         </div>
       </header>
 
-      <section className="space-y-6">
-        {t.levels.map((lvl) => (
-          <div
-            key={lvl.title}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <h2 className="text-xl font-bold">{lvl.title}</h2>
-            <p className="mt-2 text-slate-700 leading-relaxed">{lvl.body}</p>
+      {/* ROADMAP */}
+<section className="relative mt-10">
+  <div className="absolute bottom-0 left-5 top-0 hidden w-px bg-slate-200 md:block" />
 
-            {lvl.recommended?.length ? (
-              <ul className="mt-3 list-disc pl-5 text-slate-700">
-                {lvl.recommended.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
-              </ul>
-            ) : null}
-
-            {lvl.goal ? (
-              <p className="mt-3 text-slate-600">
-                <span className="font-semibold">{t.goalLabel}</span> {lvl.goal}
-              </p>
-            ) : null}
-
-            {/* REALITY CHECK */}
-{lvl.reality ? (
-  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-    <p className="text-sm font-bold text-amber-900">Reality check</p>
-    <p className="mt-1 text-sm leading-relaxed text-amber-900">
-      {lvl.reality}
-    </p>
+  <div className="space-y-6 md:pl-10">
+    {t.levels.map((lvl, index) => (
+      <RoadmapStepCard
+        key={lvl.title}
+        level={lvl}
+        index={index}
+        lang={lang}
+        quizHref={quiz}
+        certHref={cert}
+        goalLabel={t.goalLabel}
+        practiceCta={t.practiceCta}
+        certCta={t.certCta}
+      />
+    ))}
   </div>
-) : null}
-
-{/* COMMON MISTAKES */}
-{lvl.mistakes?.length ? (
-  <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
-    <p className="text-sm font-bold text-rose-900">Common mistakes</p>
-    <ul className="mt-2 list-disc pl-5 text-sm leading-relaxed text-rose-900">
-      {lvl.mistakes.map((mistake) => (
-        <li key={mistake}>{mistake}</li>
-      ))}
-    </ul>
-  </div>
-) : null}
-
-{/* OUTCOMES */}
-{lvl.outcomes?.length ? (
-  <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-    <p className="text-sm font-bold text-emerald-900">Outcomes</p>
-    <ul className="mt-2 list-disc pl-5 text-sm leading-relaxed text-emerald-900">
-      {lvl.outcomes.map((outcome) => (
-        <li key={outcome}>{outcome}</li>
-      ))}
-    </ul>
-  </div>
-) : null}
-
-            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
-              <div className="mt-4 flex flex-col items-start gap-2">
-                {lvl.ctaQuizSlug ? (
-                  <Link
-                    href={quiz(lang, lvl.ctaQuizSlug)}
-                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                  >
-                    {lvl.ctaPrimaryText ?? t.practiceCta}
-                  </Link>
-                ) : null}
-
-                {lvl.ctaCertSlug ? (
-                  <Link
-                    href={cert(lang, lvl.ctaCertSlug)}
-                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
-                  >
-                    {lvl.ctaSecondaryText ?? t.certCta}
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </section>
+</section>
 
       <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-extrabold">{t.salaryTitle}</h2>

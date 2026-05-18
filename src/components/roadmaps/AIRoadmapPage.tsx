@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RoadmapStepCard from "@/components/roadmaps/RoadmapStepCard";
 
 type Locale = "it" | "en" | "es" | "fr";
 
@@ -81,106 +82,26 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
       </header>
 
       {/* ROADMAP */}
-      <section className="space-y-6">
-        {t.levels.map((lvl) => (
-          <div
-            key={lvl.title}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <h2 className="text-xl font-bold">
-              {lvl.title}
-            </h2>
+<section className="relative mt-10">
+  {/* Timeline verticale desktop */}
+  <div className="absolute bottom-0 left-5 top-0 hidden w-px bg-slate-200 md:block" />
 
-            <p className="mt-2 text-slate-700 leading-relaxed">
-              {lvl.body}
-            </p>
-
-            {lvl.recommended?.length ? (
-              <ul className="mt-3 list-disc pl-5 text-slate-700">
-                {lvl.recommended.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
-              </ul>
-            ) : null}
-
-            {lvl.goal ? (
-              <p className="mt-3 text-slate-600">
-                <span className="font-semibold">
-                  {t.goalLabel}
-                </span>{" "}
-                {lvl.goal}
-              </p>
-            ) : null}
-
-            {/* REALITY CHECK */}
-            {lvl.reality ? (
-              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                <p className="font-semibold text-amber-900">
-                  ⚠️ Reality check
-                </p>
-
-                <p className="mt-1 text-amber-800">
-                  {lvl.reality}
-                </p>
-              </div>
-            ) : null}
-
-            {/* COMMON MISTAKES */}
-            {lvl.mistakes?.length ? (
-              <div className="mt-4">
-                <p className="font-semibold text-slate-900">
-                  Common mistakes
-                </p>
-
-                <ul className="mt-2 list-disc pl-5 text-slate-700">
-                  {lvl.mistakes.map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {/* OUTCOMES */}
-            {lvl.outcomes?.length ? (
-              <div className="mt-4">
-                <p className="font-semibold text-slate-900">
-                  What you can realistically achieve
-                </p>
-
-                <ul className="mt-2 list-disc pl-5 text-slate-700">
-                  {lvl.outcomes.map((o) => (
-                    <li key={o}>{o}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {/* Level CTA */}
-            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
-              <div className="mt-4 flex flex-col items-start gap-2">
-                {lvl.ctaQuizSlug ? (
-                  <Link
-                    href={quiz(lang, lvl.ctaQuizSlug)}
-                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                  >
-                    {lvl.ctaPrimaryText ?? t.practiceCta}
-                  </Link>
-                ) : null}
-
-                {lvl.ctaCertSlug ? (
-                  <Link
-                    href={cert(lang, lvl.ctaCertSlug)}
-                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
-                  >
-                    {lvl.ctaSecondaryText ?? t.certCta}
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </section>
-
+  <div className="space-y-6 md:pl-10">
+    {t.levels.map((lvl, index) => (
+      <RoadmapStepCard
+        key={lvl.title}
+        level={lvl}
+        index={index}
+        lang={lang}
+        quizHref={quiz}
+        certHref={cert}
+        goalLabel={t.goalLabel}
+        practiceCta={t.practiceCta}
+        certCta={t.certCta}
+      />
+    ))}
+  </div>
+</section>
       {/* SALARY */}
       <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-extrabold">{t.salaryTitle}</h2>

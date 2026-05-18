@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RoadmapStepCard from "@/components/roadmaps/RoadmapStepCard";
 
 type Locale = "it" | "en" | "es" | "fr";
 
@@ -60,62 +61,26 @@ export default function CloudRoadmapPage({ lang }: { lang: Locale }) {
         </div>
       </header>
 
-      {/* ROADMAP */}
-      <section className="space-y-6">
-        {t.levels.map((lvl) => (
-          <div
-            key={lvl.title}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-          >
-            <h2 className="text-xl font-bold">
-              {lvl.title}
-            </h2>
+{/* ROADMAP */}
+<section className="relative mt-10">
+  <div className="absolute bottom-0 left-5 top-0 hidden w-px bg-slate-200 md:block" />
 
-            <p className="mt-2 text-slate-700 leading-relaxed">
-              {lvl.body}
-            </p>
-
-            {lvl.recommended?.length ? (
-              <ul className="mt-3 list-disc pl-5 text-slate-700">
-                {lvl.recommended.map((x) => (
-                  <li key={x}>{x}</li>
-                ))}
-              </ul>
-            ) : null}
-
-            {lvl.goal ? (
-              <p className="mt-3 text-slate-600">
-                <span className="font-semibold">
-                  {t.goalLabel}
-                </span>{" "}
-                {lvl.goal}
-              </p>
-            ) : null}
-
-            {lvl.ctaQuizSlug || lvl.ctaCertSlug ? (
-              <div className="mt-4 flex flex-col items-start gap-2">
-                {lvl.ctaQuizSlug ? (
-                  <Link
-                    href={quiz(lvl.ctaQuizSlug)}
-                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800 transition"
-                  >
-                    {lvl.ctaPrimaryText ?? t.practiceCta}
-                  </Link>
-                ) : null}
-
-                {lvl.ctaCertSlug ? (
-                  <Link
-                    href={cert(lvl.ctaCertSlug)}
-                    className="text-sm font-medium text-blue-700 underline underline-offset-2 hover:text-blue-800"
-                  >
-                    {lvl.ctaSecondaryText ?? t.certCta}
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
-        ))}
-      </section>
+  <div className="space-y-6 md:pl-10">
+    {t.levels.map((lvl, index) => (
+      <RoadmapStepCard
+        key={lvl.title}
+        level={lvl}
+        index={index}
+        lang={lang}
+        quizHref={(l, slug) => quiz(slug)}
+        certHref={(l, slug) => cert(slug)}
+        goalLabel={t.goalLabel}
+        practiceCta={t.practiceCta}
+        certCta={t.certCta}
+      />
+    ))}
+  </div>
+</section>
 
       {/* SALARY */}
       <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
