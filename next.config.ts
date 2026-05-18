@@ -364,6 +364,79 @@ const nextConfig: NextConfig = {
 { source: "/fr/privacy-policy",   destination: "/fr/privacy",   permanent: true },
 { source: "/fr/cookie-policy",    destination: "/fr/cookie",   permanent: true },
 { source: "/es/cookie-policy",    destination: "/es/cookie",   permanent: true },
+
+/**
+ * SECONDO BLOCCO REDIRECT — 35 URL ancora in 404 (analisi 18 mag 2026)
+ * Aggiungi in next.config.ts insieme agli altri, PRIMA del blocco "Garbage / bot paths"
+ */
+
+// -----------------------------------------------------------------------
+// ✅ EN: slug che non esistono o rinominati
+// -----------------------------------------------------------------------
+{ source: "/certifications/google-tensorflow",          destination: "/certifications/google-tensorflow-developer", permanent: true },
+{ source: "/certifications/python",                     destination: "/certifications/python-developer",            permanent: true },
+{ source: "/certifications/comptia-network-plus",       destination: "/certifications/network-plus",                permanent: true },
+{ source: "/certifications/comptia-network-plus/:path*",destination: "/certifications/network-plus/:path*",         permanent: true },
+{ source: "/certifications/dp-900-azure-data-fundamentals",  destination: "/certifications/dp-900",             permanent: true },
+{ source: "/certifications/pl-300-power-bi-data-analyst",    destination: "/certifications/pl-300",             permanent: true },
+
+// -----------------------------------------------------------------------
+// ✅ IT: slug che non esistono o rinominati
+// -----------------------------------------------------------------------
+{ source: "/it/certificazioni/google-tensorflow",            destination: "/it/certificazioni/google-tensorflow-developer", permanent: true },
+{ source: "/it/certificazioni/dp-900-azure-data-fundamentals", destination: "/it/certificazioni/dp-900",         permanent: true },
+{ source: "/it/certificazioni/pl-300-power-bi-data-analyst",   destination: "/it/certificazioni/pl-300",         permanent: true },
+
+// -----------------------------------------------------------------------
+// ✅ FR: slug che non esistono o rinominati
+// -----------------------------------------------------------------------
+{ source: "/fr/certifications/comptia-a-plus",               destination: "/fr/certifications/comptia-a-plus",   permanent: true }, // verifica esista
+{ source: "/fr/certifications/comptia-network-plus",         destination: "/fr/certifications/network-plus",     permanent: true },
+{ source: "/fr/certifications/dp-900-azure-data-fundamentals", destination: "/fr/certifications/dp-900",         permanent: true },
+{ source: "/fr/certifications/pl-300-power-bi-data-analyst",   destination: "/fr/certifications/pl-300",         permanent: true },
+{ source: "/fr/certifications/eipass",                       destination: "/fr/certifications/eipass",           permanent: true }, // verifica slug FR esatto
+{ source: "/fr/certifications/microsoft-csharp",             destination: "/fr/certifications/microsoft-csharp", permanent: true }, // verifica esista in FR
+
+// -----------------------------------------------------------------------
+// ✅ ES: slug che non esistono o rinominati
+// -----------------------------------------------------------------------
+{ source: "/es/certificaciones/comptia-a-plus",              destination: "/es/certificaciones/comptia-a-plus",  permanent: true }, // verifica esista
+{ source: "/es/certificaciones/comptia-network-plus",        destination: "/es/certificaciones/network-plus",    permanent: true },
+{ source: "/es/certificaciones/dp-900-azure-data-fundamentals", destination: "/es/certificaciones/dp-900",       permanent: true },
+{ source: "/es/certificaciones/pl-300-power-bi-data-analyst",   destination: "/es/certificaciones/pl-300",       permanent: true },
+{ source: "/es/certificaciones/google-tensorflow",           destination: "/es/certificaciones/google-tensorflow-developer", permanent: true },
+{ source: "/es/certificaciones/microsoft-csharp",            destination: "/es/certificaciones/microsoft-csharp", permanent: true }, // verifica esista in ES
+{ source: "/es/certificaciones/mysql-certification",         destination: "/es/certificaciones/mysql",            permanent: true },
+{ source: "/es/certificaciones/python",                      destination: "/es/certificaciones/python-developer", permanent: true },
+{ source: "/es/certificaciones/vmware-certified-professional", destination: "/es/certificaciones/vmware-certified-professional", permanent: true }, // verifica esista
+
+// -----------------------------------------------------------------------
+// 🐛 BUG: /roadmap-management/undefined/... e altri /undefined/
+//    Stesso bug &/undefined — variabile undefined nel codice
+// -----------------------------------------------------------------------
+{ source: "/roadmap-management/undefined/:path*", destination: "/roadmap-management", permanent: false },
+{ source: "/how-it-works/undefined/:path*",       destination: "/",                  permanent: false },
+{ source: "/privacy/undefined/:path*",            destination: "/privacy",            permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ Pagine statiche mancanti
+// -----------------------------------------------------------------------
+{ source: "/it/come-funziona",   destination: "/",   permanent: true }, // non esiste in IT? → homepage
+{ source: "/es/como-funciona",   destination: "/es", permanent: true }, // idem ES
+{ source: "/es/contactos",       destination: "/es", permanent: true }, // già nel primo blocco, ma ripetilo per sicurezza
+
+// -----------------------------------------------------------------------
+// ✅ Blog IT: post non trovato
+// -----------------------------------------------------------------------
+// /it/blog/come-funziona-certifyquiz → probabilmente esiste in /it/blog/{slug-corretto}
+// Verifica lo slug esatto in Sanity, poi aggiorna:
+{ source: "/it/blog/come-funziona-certifyquiz", destination: "/it/blog", permanent: false },
+
+// -----------------------------------------------------------------------
+// ✅ Categorie con slug errato (già nel primo blocco ma mancava ES/FR)
+// -----------------------------------------------------------------------
+{ source: "/es/categorias/programmazione",   destination: "/es/categorias/programacion",   permanent: true },
+{ source: "/fr/categories/virtualizzazione", destination: "/fr/categories/virtualisation", permanent: true },
       // ---------------------------------------------------------------------
       // ✅ Garbage / bot paths
       // ---------------------------------------------------------------------
