@@ -110,7 +110,7 @@ export default function RegistrationGate({
       <h2 className="mb-1 text-xl font-semibold text-gray-900">{COPY.title[lang]}</h2>
       <p className="mb-6 text-sm text-gray-600">{COPY.sub[lang]}</p>
 
-      
+      <a 
         href={googleHref}
         className="mb-3 flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
       >
@@ -123,7 +123,7 @@ export default function RegistrationGate({
         {COPY.google[lang]}
       </a>
 
-      
+      <a
         href={registerHref}
         className="mb-4 flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
       >
