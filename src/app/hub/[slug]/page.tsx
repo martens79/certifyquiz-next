@@ -90,32 +90,76 @@ export default async function HubEnRootPage({
   const hub: HubData | undefined = HUBS_BY_SLUG[slug];
   if (!hub) return notFound();
 
-  // -------------------- Vendor overview (google) --------------------
-  if (hub.hubKind === "vendor") {
-    return (
-      <main className="mx-auto w-full max-w-5xl px-4 py-10">
-        <h1 className="text-3xl font-bold tracking-tight">{hub.title.en}</h1>
-        <p className="mt-2 text-base text-neutral-600">{hub.description.en}</p>
+ // -------------------- Vendor overview --------------------
+if (hub.hubKind === "vendor") {
+  const vendorLabel = hub.vendorKey?.toUpperCase?.() ?? "VENDOR";
 
-        <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {hub.sections.map((s: HubSection, idx: number) => (
-            <a
-              key={idx}
-              href={s.hrefByLang(lang)}
-              className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:bg-neutral-50"
-            >
-              <div className="text-base font-semibold">{s.title.en}</div>
-              {s.description?.en ? (
-                <div className="mt-1 text-sm text-neutral-600">{s.description.en}</div>
-              ) : null}
-              <div className="mt-3 text-sm font-semibold">→ Open</div>
-            </a>
-          ))}
-        </section>
-      </main>
-    );
-  }
+  return (
+    <main className="mx-auto w-full max-w-6xl px-4 py-10">
+      {/* HERO */}
+      <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50 p-8 shadow-sm">
+        <div className="max-w-3xl">
+          <div className="mb-4 flex flex-wrap gap-2">
+            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+              {vendorLabel}
+            </span>
 
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+              CERTIFICATION HUB
+            </span>
+          </div>
+
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-950 md:text-5xl">
+            {hub.title.en}
+          </h1>
+
+          <p className="mt-4 text-lg leading-relaxed text-slate-600">
+            {hub.description.en}
+          </p>
+        </div>
+      </section>
+
+      {/* HUB SECTIONS */}
+      <section className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+        {hub.sections.map((s: HubSection, idx: number) => (
+          <a
+            key={idx}
+            href={s.hrefByLang(lang)}
+            className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="text-3xl">
+                {idx === 0 && "☁️"}
+                {idx === 1 && "🏗️"}
+                {idx === 2 && "⚙️"}
+                {idx === 3 && "🔐"}
+                {idx === 4 && "📊"}
+              </div>
+
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-700">
+                PATH
+              </span>
+            </div>
+
+            <h2 className="mt-5 text-2xl font-extrabold text-slate-950">
+              {s.title.en}
+            </h2>
+
+            {s.description?.en ? (
+              <p className="mt-3 leading-relaxed text-slate-600">
+                {s.description.en}
+              </p>
+            ) : null}
+
+            <div className="mt-6 inline-flex items-center text-sm font-bold text-blue-700 transition group-hover:translate-x-1">
+              Open path →
+            </div>
+          </a>
+        ))}
+      </section>
+    </main>
+  );
+}
   // -------------------- Hub con certificazioni (google-cloud, ecc.) --------------------
   const resolved: HubResolvedCert[] = hub.certs
     .map((item) => {

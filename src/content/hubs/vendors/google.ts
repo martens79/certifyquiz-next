@@ -8,7 +8,7 @@ const hubHref = (slug: string) => (lang: Locale) =>
 
 /**
  * Google Vendor Hub (central)
- * Goal: SEO + conversion (practice-driven), without overpromising.
+ * Goal: SEO + conversion, collegato alle certificazioni e roadmap reali.
  */
 export const googleVendorHub: HubData = {
   hubKind: "vendor",
@@ -16,72 +16,100 @@ export const googleVendorHub: HubData = {
   vendorKey: "google",
 
   title: {
-    it: "Certificazioni Google: percorsi, quiz e pratica d’esame",
-    en: "Google Certifications: paths, quizzes and exam practice",
-    fr: "Certifications Google : parcours, quiz et entraînement",
-    es: "Certificaciones de Google: rutas, quizzes y práctica",
+    it: "Certificazioni Google: Cloud, AI e TensorFlow",
+    en: "Google Certifications: Cloud, AI and TensorFlow",
+    fr: "Certifications Google : Cloud, IA et TensorFlow",
+    es: "Certificaciones Google: Cloud, IA y TensorFlow",
   },
 
   description: {
-    it: "Un unico hub per prepararti alle certificazioni Google: scegli un percorso (Cloud, AI & Data, Career, Marketing, Education) e vai subito ai quiz. Contenuti in crescita, aggiornati e organizzati per area.",
-    en: "One hub to prepare for Google certifications: choose a path (Cloud, AI & Data, Career, Marketing, Education) and jump straight to quizzes. Growing, updated content organized by domain.",
-    fr: "Un hub unique pour préparer les certifications Google : choisissez un parcours (Cloud, IA & Data, Career, Marketing, Éducation) et accédez directement aux quiz. Contenu en croissance, organisé par domaine.",
-    es: "Un solo hub para preparar certificaciones de Google: elige una ruta (Cloud, IA y Datos, Career, Marketing, Educación) y ve directo a los quizzes. Contenido en crecimiento, organizado por área.",
+    it: "Hub Google su CertifyQuiz per prepararti ai percorsi Google Cloud, AI e TensorFlow. Parti dalle basi cloud, passa a Google Cloud Digital Leader e approfondisci AI, machine learning e strumenti Google.",
+    en: "Google hub on CertifyQuiz to prepare for Google Cloud, AI and TensorFlow paths. Start from cloud foundations, move into Google Cloud Digital Leader and explore AI, machine learning and Google tools.",
+    fr: "Hub Google sur CertifyQuiz pour préparer les parcours Google Cloud, IA et TensorFlow. Commencez par les bases cloud, passez à Google Cloud Digital Leader puis explorez l’IA, le machine learning et les outils Google.",
+    es: "Hub Google en CertifyQuiz para preparar rutas de Google Cloud, IA y TensorFlow. Empieza por fundamentos cloud, avanza hacia Google Cloud Digital Leader y explora IA, machine learning y herramientas Google.",
   },
 
   sections: [
-    // ✅ LIVE (oggi)
     {
-      title: { it: "Google Cloud", en: "Google Cloud", fr: "Google Cloud", es: "Google Cloud" },
+      title: {
+        it: "Google Cloud Foundations",
+        en: "Google Cloud Foundations",
+        fr: "Google Cloud Foundations",
+        es: "Google Cloud Foundations",
+      },
       description: {
-        it: "Certificazioni Google Cloud da foundational a professional: scegli la tua e allenati con quiz in stile esame.",
-        en: "Google Cloud certifications from foundational to professional: pick yours and train with exam-style quizzes.",
-        fr: "Certifications Google Cloud du niveau débutant au professionnel : entraînez-vous avec des quiz type examen.",
-        es: "Certificaciones de Google Cloud de nivel básico a profesional: practica con quizzes estilo examen.",
+        it: "Percorso introduttivo per comprendere cloud, infrastruttura Google, servizi principali, sicurezza, costi e concetti fondamentali.",
+        en: "Introductory path to understand cloud, Google infrastructure, core services, security, costs and foundational concepts.",
+        fr: "Parcours introductif pour comprendre le cloud, l’infrastructure Google, les services principaux, la sécurité, les coûts et les concepts fondamentaux.",
+        es: "Ruta introductoria para comprender cloud, infraestructura Google, servicios principales, seguridad, costes y conceptos fundamentales.",
       },
       hrefByLang: hubHref("google-cloud"),
     },
 
-    // 🚧 FUTURE (pagine esistono, ma contenuti/certs cresceranno)
     {
-      title: { it: "Google AI & Data", en: "Google AI & Data", fr: "Google IA & Data", es: "Google IA & Datos" },
+      title: {
+        it: "Google Cloud Digital Leader",
+        en: "Google Cloud Digital Leader",
+        fr: "Google Cloud Digital Leader",
+        es: "Google Cloud Digital Leader",
+      },
       description: {
-        it: "Percorsi su intelligenza artificiale e dati nell’ecosistema Google: basi, strumenti e pratica (in arrivo).",
-        en: "AI and data paths in the Google ecosystem: fundamentals, tools and practice (coming soon).",
-        fr: "Parcours IA et data dans l’écosystème Google : bases, outils et pratique (bientôt).",
-        es: "Rutas de IA y datos en el ecosistema Google: fundamentos, herramientas y práctica (próximamente).",
+        it: "Percorso business-oriented su trasformazione digitale, innovazione, AI, dati e servizi Google Cloud.",
+        en: "Business-oriented path covering digital transformation, innovation, AI, data and Google Cloud services.",
+        fr: "Parcours orienté business sur transformation digitale, innovation, IA, données et services Google Cloud.",
+        es: "Ruta orientada a negocio sobre transformación digital, innovación, IA, datos y servicios de Google Cloud.",
+      },
+      hrefByLang: hubHref("google-cloud"),
+    },
+
+    {
+      title: {
+        it: "TensorFlow & AI",
+        en: "TensorFlow & AI",
+        fr: "TensorFlow & IA",
+        es: "TensorFlow & IA",
+      },
+      description: {
+        it: "Machine learning, AI foundations, TensorFlow, modelli, workflow e strumenti Google collegati all’intelligenza artificiale.",
+        en: "Machine learning, AI foundations, TensorFlow, models, workflows and Google tools related to artificial intelligence.",
+        fr: "Machine learning, foundations IA, TensorFlow, modèles, workflows et outils Google liés à l’intelligence artificielle.",
+        es: "Machine learning, fundamentos de IA, TensorFlow, modelos, workflows y herramientas Google relacionadas con inteligencia artificial.",
       },
       hrefByLang: hubHref("google-ai"),
     },
+
     {
-      title: { it: "Google Career Certificates", en: "Google Career Certificates", fr: "Google Career Certificates", es: "Google Career Certificates" },
-      description: {
-        it: "Certificati professionali Google (IT, Data, Project, Cybersecurity…): percorsi guidati + quiz (in arrivo).",
-        en: "Google Professional Certificates (IT, Data, Project, Cybersecurity…): guided paths + quizzes (coming soon).",
-        fr: "Certificats professionnels Google (IT, Data, Project, Cybersécurité…) : parcours + quiz (bientôt).",
-        es: "Certificados profesionales de Google (TI, Datos, Project, Ciberseguridad…): rutas + quizzes (próximamente).",
+      title: {
+        it: "Cloud Roadmap",
+        en: "Cloud Roadmap",
+        fr: "Roadmap Cloud",
+        es: "Roadmap Cloud",
       },
-      hrefByLang: hubHref("google-career"),
+      description: {
+        it: "Non sai da dove iniziare? Segui la roadmap Cloud: foundations, AWS, Azure, Google Cloud, Kubernetes e operations.",
+        en: "Not sure where to start? Follow the Cloud roadmap: foundations, AWS, Azure, Google Cloud, Kubernetes and operations.",
+        fr: "Vous ne savez pas par où commencer ? Suivez la roadmap Cloud : foundations, AWS, Azure, Google Cloud, Kubernetes et operations.",
+        es: "¿No sabes por dónde empezar? Sigue la roadmap Cloud: foundations, AWS, Azure, Google Cloud, Kubernetes y operations.",
+      },
+      hrefByLang: (lang: Locale) =>
+        lang === "en" ? "/roadmap-cloud" : `/${lang}/roadmap-cloud`,
     },
+
     {
-      title: { it: "Google Marketing", en: "Google Marketing", fr: "Google Marketing", es: "Google Marketing" },
-      description: {
-        it: "Google Ads, Analytics e digital marketing: concetti chiave e simulazioni quiz (in arrivo).",
-        en: "Google Ads, Analytics and digital marketing: key concepts and quiz practice (coming soon).",
-        fr: "Google Ads, Analytics et marketing digital : notions clés et quiz (bientôt).",
-        es: "Google Ads, Analytics y marketing digital: conceptos clave y práctica (próximamente).",
+      title: {
+        it: "AI Roadmap",
+        en: "AI Roadmap",
+        fr: "Roadmap IA",
+        es: "Roadmap IA",
       },
-      hrefByLang: hubHref("google-marketing"),
-    },
-    {
-      title: { it: "Google for Education", en: "Google for Education", fr: "Google for Education", es: "Google for Education" },
       description: {
-        it: "Percorsi per docenti e scuole: preparazione strutturata e quiz (in arrivo).",
-        en: "Education paths for teachers and schools: structured prep and quizzes (coming soon).",
-        fr: "Parcours éducation pour enseignants et écoles : préparation et quiz (bientôt).",
-        es: "Rutas para educación: preparación estructurada y quizzes (próximamente).",
+        it: "Percorso AI completo: foundations, strumenti moderni, AI generativa, machine learning e certificazioni introduttive.",
+        en: "Complete AI path: foundations, modern tools, generative AI, machine learning and introductory certifications.",
+        fr: "Parcours IA complet : foundations, outils modernes, IA générative, machine learning et certifications introductives.",
+        es: "Ruta completa IA: foundations, herramientas modernas, IA generativa, machine learning y certificaciones introductorias.",
       },
-      hrefByLang: hubHref("google-education"),
+      hrefByLang: (lang: Locale) =>
+        lang === "en" ? "/roadmap-ai" : `/${lang}/roadmap-ai`,
     },
   ],
 };

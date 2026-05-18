@@ -13,51 +13,102 @@ export const ciscoVendorHub: HubData = {
   vendorKey: "cisco",
 
   title: {
-    it: "Certificazioni Cisco: percorsi, quiz e pratica d’esame",
-    en: "Cisco Certifications: paths, quizzes and exam practice",
-    fr: "Certifications Cisco : parcours, quiz et entraînement",
-    es: "Certificaciones de Cisco: rutas, quizzes y práctica",
+    it: "Certificazioni Cisco: CCNA, CCST Networking e Cybersecurity",
+    en: "Cisco Certifications: CCNA, CCST Networking and Cybersecurity",
+    fr: "Certifications Cisco : CCNA, CCST Networking et Cybersecurity",
+    es: "Certificaciones Cisco: CCNA, CCST Networking y Cybersecurity",
   },
 
   description: {
-    it: "Hub centrale per prepararti alle certificazioni Cisco: scegli un percorso (Networking, Entry-level, Security) e vai ai quiz. Contenuti in crescita e organizzati per area.",
-    en: "Central hub for Cisco certifications: choose a path (Networking, Entry-level, Security) and jump to quizzes. Growing content organized by domain.",
-    fr: "Hub central pour les certifications Cisco : choisissez un parcours (Réseau, Débutant, Sécurité) et accédez aux quiz. Contenu en croissance, organisé par domaine.",
-    es: "Hub central para certificaciones Cisco: elige una ruta (Redes, Nivel inicial, Seguridad) y ve a los quizzes. Contenido en crecimiento, organizado por área.",
+    it: "Hub Cisco per prepararti alle certificazioni più importanti su CertifyQuiz: CCNA, Cisco CCST Networking e Cisco CCST Cybersecurity. Parti dalle basi di rete, consolida routing e switching, poi esplora i fondamenti della sicurezza.",
+    en: "Cisco hub to prepare for the main Cisco certifications on CertifyQuiz: CCNA, Cisco CCST Networking and Cisco CCST Cybersecurity. Start with networking basics, strengthen routing and switching, then explore security fundamentals.",
+    fr: "Hub Cisco pour préparer les principales certifications Cisco sur CertifyQuiz : CCNA, Cisco CCST Networking et Cisco CCST Cybersecurity. Commencez par les bases réseau, renforcez routing et switching, puis explorez les fondamentaux de la sécurité.",
+    es: "Hub Cisco para preparar las principales certificaciones Cisco en CertifyQuiz: CCNA, Cisco CCST Networking y Cisco CCST Cybersecurity. Empieza con fundamentos de redes, refuerza routing y switching y después explora fundamentos de seguridad.",
   },
 
   sections: [
     {
-      title: { it: "Networking (CCNA)", en: "Networking (CCNA)", fr: "Réseau (CCNA)", es: "Redes (CCNA)" },
+      title: {
+        it: "Cisco CCST Networking",
+        en: "Cisco CCST Networking",
+        fr: "Cisco CCST Networking",
+        es: "Cisco CCST Networking",
+      },
       description: {
-        it: "Routing, switching, IP services e security basics: pratica d’esame in stile CCNA.",
-        en: "Routing, switching, IP services and security basics: CCNA-style exam practice.",
-        fr: "Routage, switching, services IP et bases sécurité : entraînement type CCNA.",
-        es: "Routing, switching, servicios IP y bases de seguridad: práctica estilo CCNA.",
+        it: "Percorso entry-level Cisco per iniziare con reti, indirizzamento IP, dispositivi, protocolli, troubleshooting e basi operative.",
+        en: "Cisco entry-level path to start with networking, IP addressing, devices, protocols, troubleshooting and operational basics.",
+        fr: "Parcours Cisco débutant pour commencer avec les réseaux, l’adressage IP, les équipements, les protocoles, le troubleshooting et les bases opérationnelles.",
+        es: "Ruta Cisco de nivel inicial para empezar con redes, direccionamiento IP, dispositivos, protocolos, troubleshooting y bases operativas.",
+      },
+      hrefByLang: hubHref("cisco-ccst-networking"),
+    },
+
+    {
+      title: {
+        it: "CCNA",
+        en: "CCNA",
+        fr: "CCNA",
+        es: "CCNA",
+      },
+      description: {
+        it: "La certificazione Cisco più importante per consolidare networking, routing, switching, IP services, security basics, automation e troubleshooting.",
+        en: "Cisco’s key certification to strengthen networking, routing, switching, IP services, security basics, automation and troubleshooting.",
+        fr: "La certification Cisco clé pour renforcer réseaux, routing, switching, services IP, bases sécurité, automatisation et troubleshooting.",
+        es: "La certificación Cisco clave para reforzar redes, routing, switching, servicios IP, bases de seguridad, automatización y troubleshooting.",
       },
       hrefByLang: hubHref("cisco-networking"),
     },
 
     {
-      title: { it: "Cisco CCST", en: "Cisco CCST", fr: "Cisco CCST", es: "Cisco CCST" },
-      description: {
-        it: "Percorsi entry-level Cisco: networking e cybersecurity (in crescita).",
-        en: "Cisco entry-level paths: networking and cybersecurity (growing).",
-        fr: "Parcours Cisco niveau débutant : réseau et cybersécurité (en croissance).",
-        es: "Rutas Cisco de nivel inicial: redes y ciberseguridad (en crecimiento).",
+      title: {
+        it: "Cisco CCST Cybersecurity",
+        en: "Cisco CCST Cybersecurity",
+        fr: "Cisco CCST Cybersecurity",
+        es: "Cisco CCST Cybersecurity",
       },
-      hrefByLang: hubHref("cisco-ccst"),
+      description: {
+        it: "Percorso entry-level per comprendere minacce, sicurezza di rete, access control, vulnerabilità, difesa e concetti cyber fondamentali.",
+        en: "Entry-level path to understand threats, network security, access control, vulnerabilities, defense and core cybersecurity concepts.",
+        fr: "Parcours débutant pour comprendre menaces, sécurité réseau, contrôle d’accès, vulnérabilités, défense et concepts fondamentaux cyber.",
+        es: "Ruta de nivel inicial para comprender amenazas, seguridad de red, control de acceso, vulnerabilidades, defensa y conceptos cyber fundamentales.",
+      },
+      hrefByLang: hubHref("cisco-ccst-cybersecurity"),
     },
 
     {
-      title: { it: "Security", en: "Security", fr: "Sécurité", es: "Seguridad" },
-      description: {
-        it: "Tecnologie e concetti di security Cisco: VPN, AAA, hardening e practice (in arrivo).",
-        en: "Cisco security concepts and tech: VPNs, AAA, hardening and practice (coming soon).",
-        fr: "Concepts et technologies sécurité Cisco : VPN, AAA, durcissement et entraînement (bientôt).",
-        es: "Conceptos y tecnologías de seguridad Cisco: VPN, AAA, hardening y práctica (próximamente).",
+      title: {
+        it: "Networking Roadmap",
+        en: "Networking Roadmap",
+        fr: "Roadmap Réseaux",
+        es: "Roadmap Redes",
       },
-      hrefByLang: hubHref("cisco-security"),
+      description: {
+        it: "Non sai da dove iniziare? Segui la roadmap Networking: foundations, CCST, Network+, CCNA e troubleshooting.",
+        en: "Not sure where to start? Follow the Networking roadmap: foundations, CCST, Network+, CCNA and troubleshooting.",
+        fr: "Vous ne savez pas par où commencer ? Suivez la roadmap Réseaux : foundations, CCST, Network+, CCNA et troubleshooting.",
+        es: "¿No sabes por dónde empezar? Sigue la roadmap Redes: foundations, CCST, Network+, CCNA y troubleshooting.",
+      },
+      hrefByLang: (lang: Locale) =>
+        lang === "en" ? "/roadmap-networking" : `/${lang}/roadmap-networking`,
+    },
+
+    {
+      title: {
+        it: "Cybersecurity Roadmap",
+        en: "Cybersecurity Roadmap",
+        fr: "Roadmap Cybersécurité",
+        es: "Roadmap Ciberseguridad",
+      },
+      description: {
+        it: "Se il tuo obiettivo è la sicurezza, parti dalla roadmap Cybersecurity: basi, ISC2 CC, Security+, CCST Cybersecurity e CEH.",
+        en: "If your goal is security, start from the Cybersecurity roadmap: basics, ISC2 CC, Security+, CCST Cybersecurity and CEH.",
+        fr: "Si votre objectif est la sécurité, commencez par la roadmap Cybersécurité : bases, ISC2 CC, Security+, CCST Cybersecurity et CEH.",
+        es: "Si tu objetivo es seguridad, empieza con la roadmap Ciberseguridad: bases, ISC2 CC, Security+, CCST Cybersecurity y CEH.",
+      },
+      hrefByLang: (lang: Locale) =>
+        lang === "en"
+          ? "/roadmap-cybersecurity"
+          : `/${lang}/roadmap-cybersecurity`,
     },
   ],
 };

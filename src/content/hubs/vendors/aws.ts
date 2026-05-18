@@ -14,73 +14,99 @@ export const awsVendorHub: HubData = {
   vendorKey: "aws",
 
   title: {
-    it: "Certificazioni AWS: percorsi, quiz e pratica d’esame",
-    en: "AWS Certifications: paths, quizzes and exam practice",
-    fr: "Certifications AWS : parcours, quiz et entraînement",
-    es: "Certificaciones de AWS: rutas, quizzes y práctica",
+    it: "Certificazioni AWS: Cloud, Architecting e AI",
+    en: "AWS Certifications: Cloud, Architecting and AI",
+    fr: "Certifications AWS : Cloud, Architecture et IA",
+    es: "Certificaciones AWS: Cloud, Arquitectura e IA",
   },
 
   description: {
-    it: "Hub centrale per prepararti alle certificazioni AWS: scegli un percorso (Cloud Foundations, Architecting, DevOps, Security, Data) e vai ai quiz. Contenuti in crescita e organizzati per area.",
-    en: "Central hub to prepare for AWS certifications: pick a path (Cloud Foundations, Architecting, DevOps, Security, Data) and jump to quizzes. Growing content, organized by domain.",
-    fr: "Hub central pour préparer les certifications AWS : choisissez un parcours (Fondations Cloud, Architecture, DevOps, Sécurité, Data) et accédez aux quiz. Contenu en croissance, organisé par domaine.",
-    es: "Hub central para preparar certificaciones de AWS: elige una ruta (Fundamentos Cloud, Arquitectura, DevOps, Seguridad, Datos) y ve a los quizzes. Contenido en crecimiento, organizado por área.",
+    it: "Hub AWS per prepararti alle certificazioni più importanti su CertifyQuiz: AWS Cloud Practitioner, AWS Solutions Architect e AWS AI Practitioner. Parti dalle basi cloud, passa all’architettura e poi approfondisci AI e servizi moderni.",
+    en: "AWS hub to prepare for the main AWS certifications on CertifyQuiz: AWS Cloud Practitioner, AWS Solutions Architect and AWS AI Practitioner. Start with cloud fundamentals, move into architecture and then explore AI and modern AWS services.",
+    fr: "Hub AWS pour préparer les principales certifications AWS sur CertifyQuiz : AWS Cloud Practitioner, AWS Solutions Architect et AWS AI Practitioner. Commencez par les bases du cloud, passez à l’architecture puis explorez l’IA et les services AWS modernes.",
+    es: "Hub AWS para preparar las principales certificaciones de AWS en CertifyQuiz: AWS Cloud Practitioner, AWS Solutions Architect y AWS AI Practitioner. Empieza con fundamentos cloud, avanza hacia arquitectura y después explora IA y servicios modernos de AWS.",
   },
 
   sections: [
     {
-      title: { it: "AWS Cloud (Foundational)", en: "AWS Cloud (Foundational)", fr: "AWS Cloud (Débutant)", es: "AWS Cloud (Fundacional)" },
+      title: {
+        it: "AWS Cloud Practitioner",
+        en: "AWS Cloud Practitioner",
+        fr: "AWS Cloud Practitioner",
+        es: "AWS Cloud Practitioner",
+      },
       description: {
-        it: "Percorso per iniziare: concetti cloud, billing, sicurezza base e servizi principali. Ideale per Cloud Practitioner.",
-        en: "Start here: cloud concepts, billing, core security and main services. Great for Cloud Practitioner.",
-        fr: "Commencez ici : concepts cloud, facturation, sécurité de base et services principaux. Idéal pour Cloud Practitioner.",
-        es: "Empieza aquí: conceptos cloud, facturación, seguridad base y servicios principales. Ideal para Cloud Practitioner.",
+        it: "Il punto di partenza per AWS: concetti cloud, responsabilità condivisa, billing, servizi principali, sicurezza base e casi d’uso.",
+        en: "The starting point for AWS: cloud concepts, shared responsibility, billing, core services, basic security and common use cases.",
+        fr: "Le point de départ pour AWS : concepts cloud, responsabilité partagée, facturation, services principaux, sécurité de base et cas d’usage.",
+        es: "El punto de partida para AWS: conceptos cloud, responsabilidad compartida, facturación, servicios principales, seguridad básica y casos de uso.",
       },
       hrefByLang: hubHref("aws-cloud"),
     },
 
     {
-      title: { it: "Architecture (Architect)", en: "Architecture (Architect)", fr: "Architecture (Architect)", es: "Arquitectura (Architect)" },
+      title: {
+        it: "AWS Solutions Architect",
+        en: "AWS Solutions Architect",
+        fr: "AWS Solutions Architect",
+        es: "AWS Solutions Architect",
+      },
       description: {
-        it: "Progettazione di soluzioni su AWS: networking, storage, resilienza e best practice (in arrivo).",
-        en: "Design solutions on AWS: networking, storage, resilience and best practices (coming soon).",
-        fr: "Concevoir des solutions sur AWS : réseau, stockage, résilience et bonnes pratiques (bientôt).",
-        es: "Diseñar soluciones en AWS: redes, almacenamiento, resiliencia y buenas prácticas (próximamente).",
+        it: "Percorso per imparare a progettare soluzioni AWS: compute, storage, networking, resilienza, IAM, costi e best practice architetturali.",
+        en: "Path to learn how to design AWS solutions: compute, storage, networking, resilience, IAM, costs and architectural best practices.",
+        fr: "Parcours pour apprendre à concevoir des solutions AWS : compute, stockage, réseau, résilience, IAM, coûts et bonnes pratiques d’architecture.",
+        es: "Ruta para aprender a diseñar soluciones AWS: compute, almacenamiento, redes, resiliencia, IAM, costes y buenas prácticas arquitectónicas.",
       },
       hrefByLang: hubHref("aws-architecture"),
     },
 
     {
-      title: { it: "DevOps", en: "DevOps", fr: "DevOps", es: "DevOps" },
-      description: {
-        it: "CI/CD, automazione, osservabilità e operations su AWS (in arrivo).",
-        en: "CI/CD, automation, observability and operations on AWS (coming soon).",
-        fr: "CI/CD, automatisation, observabilité et opérations sur AWS (bientôt).",
-        es: "CI/CD, automatización, observabilidad y operaciones en AWS (próximamente).",
+      title: {
+        it: "AWS AI Practitioner",
+        en: "AWS AI Practitioner",
+        fr: "AWS AI Practitioner",
+        es: "AWS AI Practitioner",
       },
-      hrefByLang: hubHref("aws-devops"),
+      description: {
+        it: "Percorso per comprendere AI, machine learning, generative AI e servizi AWS collegati all’intelligenza artificiale.",
+        en: "Path to understand AI, machine learning, generative AI and AWS services related to artificial intelligence.",
+        fr: "Parcours pour comprendre l’IA, le machine learning, l’IA générative et les services AWS liés à l’intelligence artificielle.",
+        es: "Ruta para comprender IA, machine learning, IA generativa y servicios de AWS relacionados con inteligencia artificial.",
+      },
+      hrefByLang: hubHref("aws-ai"),
     },
 
     {
-      title: { it: "Security", en: "Security", fr: "Sécurité", es: "Seguridad" },
+      title: {
+        it: "Cloud Roadmap",
+        en: "Cloud Roadmap",
+        fr: "Roadmap Cloud",
+        es: "Roadmap Cloud",
+      },
       description: {
-        it: "Identity, logging, incident response e best practice security su AWS (in arrivo).",
-        en: "Identity, logging, incident response and AWS security best practices (coming soon).",
-        fr: "Identité, logs, réponse à incident et bonnes pratiques sécurité AWS (bientôt).",
-        es: "Identidad, logs, respuesta a incidentes y buenas prácticas de seguridad en AWS (próximamente).",
+        it: "Non sai da dove iniziare? Segui la roadmap Cloud: foundations, AWS, Azure, architettura, Kubernetes e operations.",
+        en: "Not sure where to start? Follow the Cloud roadmap: foundations, AWS, Azure, architecture, Kubernetes and operations.",
+        fr: "Vous ne savez pas par où commencer ? Suivez la roadmap Cloud : foundations, AWS, Azure, architecture, Kubernetes et operations.",
+        es: "¿No sabes por dónde empezar? Sigue la roadmap Cloud: foundations, AWS, Azure, arquitectura, Kubernetes y operations.",
+      },
+      hrefByLang: (lang: Locale) =>
+        lang === "en" ? "/roadmap-cloud" : `/${lang}/roadmap-cloud`,
+    },
+
+    {
+      title: {
+        it: "AWS Security & Operations",
+        en: "AWS Security & Operations",
+        fr: "AWS Sécurité & Operations",
+        es: "AWS Seguridad & Operations",
+      },
+      description: {
+        it: "Area futura per sicurezza, logging, IAM avanzato, monitoring, incident response e gestione operativa su AWS.",
+        en: "Future area for security, logging, advanced IAM, monitoring, incident response and AWS operations.",
+        fr: "Future zone pour sécurité, logs, IAM avancé, monitoring, réponse à incident et operations AWS.",
+        es: "Área futura para seguridad, logs, IAM avanzado, monitoring, respuesta a incidentes y operations en AWS.",
       },
       hrefByLang: hubHref("aws-security"),
-    },
-
-    {
-      title: { it: "Data & Analytics", en: "Data & Analytics", fr: "Data & Analytics", es: "Datos y Analítica" },
-      description: {
-        it: "Servizi dati (database, lake, analytics) e casi d’uso (in arrivo).",
-        en: "Data services (databases, lakes, analytics) and use cases (coming soon).",
-        fr: "Services data (bases de données, data lake, analytics) et cas d’usage (bientôt).",
-        es: "Servicios de datos (bases de datos, data lake, analítica) y casos de uso (próximamente).",
-      },
-      hrefByLang: hubHref("aws-data"),
     },
   ],
 };
