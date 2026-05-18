@@ -23,10 +23,10 @@ const CERT_SEGMENT_BY_LANG: Record<Lang, string> = {
 };
 
 const staticPages: Record<Lang, string[]> = {
-  it: ["come-funziona", "contatti", "privacy", "termini", "cookie"],
-  es: ["como-funciona", "contactos", "privacidad", "terminos", "cookies"],
-  en: ["how-it-works", "contact", "privacy", "terms", "cookies"],
-  fr: ["fonctionnement", "contact", "confidentialite", "conditions", "cookies"],
+  it: ["privacy", "termini", "cookie"],
+  es: ["privacy", "cookies"],
+  en: ["privacy", "terms", "cookies"],
+  fr: ["privacy", "cookies"],
 };
 
 const BLOG_SEGMENT_BY_LANG: Record<Lang, string> = {
