@@ -15,6 +15,9 @@ import { pricingPath } from "@/lib/paths";
 import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 import PremiumQuestionLimitGate from '@/components/premium/PremiumQuestionLimitGate';
 
+import RegistrationGate from '@/components/quiz/RegistrationGate';
+import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
+
 
 // ------------------------------------------------------------------
 // Local labels (indipendenti da QuizDict)
@@ -153,6 +156,14 @@ export default function QuizEngine({
   //const isPremiumUser = false;
   const premiumLocked = !!context?.premiumLocked;
   const FREE_LIMIT = 20;
+
+// Soglia domande per mostrare il gate di registrazione agli utenti non loggati.
+// Deve essere < FREE_LIMIT per intercettare l'utente prima del paywall Premium.
+const isLoggedIn = !!context?.isAuthenticated || !!context?.isPremiumUser;
+
+// Traccia le domande risposte dagli utenti guest in localStorage.
+// Se l'utente è loggato, l'hook è inattivo (non incrementa, non scatta mai).
+const { registerLimitReached, increment } = useGuestQuizCount(isLoggedIn);
 
   // ---------------- Sticky timer (UI-only) ----------------
   const examDurationSec = durationsByMode?.exam ?? durationSec ?? null;
@@ -527,8 +538,9 @@ clearProgress(`${storageScope}:assessment`);
 
   /* ----------------------------- HANDLER ------------------------------ */
  const choose = (q: Question, a: Answer) => {
-  setActionsOpen(false); // ✅ chiude menu se era aperto
+  setActionsOpen(false);
   setMarked((m) => ({ ...m, [q.id]: a.id }));
+  if (!isLoggedIn) increment(); // ✅ aggiunto
 };
 
   const next = () => {
@@ -1262,32 +1274,36 @@ const canGoNext =
   idx < questions.length - 1 ||
   (effectiveMode === 'training' && reviewPositions.length > 0);
    /* ============================================================
-   PREMIUM — GATING QUIZ + SPIEGAZIONI
+   GATING QUIZ — 3 livelli
 
-   Regole attuali:
-   - usare SOLO context.premiumLocked e context.isPremiumUser
-   - NON ricalcolare premium dentro QuizEngine
-   - utente free:
-       - può fare fino a FREE_LIMIT domande
-       - alla domanda successiva vede il paywall Premium
-   - utente premium/admin:
-       - nessun blocco sul numero di domande
-       - accesso completo al quiz
+   1. REGISTRATION GATE (guest, dopo 5 domande)
+      - utente non loggato che ha risposto >= 5 domande
+      - mostra RegistrationGate con score parziale
+      - escape hatch: "Continua senza account" (onBack vuoto)
+      - NON scatta in modalità assessment
 
-   Gating spiegazioni:
-   - premiumLocked arriva dal context (single source of truth)
-   - se il backend locka le spiegazioni per i free:
-       - q.explanation può arrivare null
-   - se q.explanation è presente:
-       - premium/admin: spiegazione completa
-       - free: preview + CTA
-   - il quiz deve restare giocabile fino al limite free
+   2. PREMIUM GATE (free loggato, dopo 20 domande)
+      - utente loggato ma non premium
+      - mostra PremiumQuestionLimitGate con score reale
+      - "Continua gratis domani" → torna all'ultima domanda free
+      - NON scatta in modalità assessment
+
+   3. SPIEGAZIONI LOCKED (free loggato, in training)
+      - premiumLocked arriva dal context (single source of truth)
+      - se backend locka: q.explanation arriva null per i free
+      - premium/admin: spiegazione completa
+      - free: preview + CTA
+
+   Regole generali:
+   - NON ricalcolare isPremiumUser/premiumLocked dentro QuizEngine
+   - usare SOLO context.isPremiumUser, context.premiumLocked, context.isAuthenticated
+   - l'assessment bypassa tutti i gate (ha il suo flusso)
 
    Backend contract:
    - explanation === null quando lock attivo + utente free
    - explanation !== null per premium/admin
 
-   Flags previste:
+   Flags:
    - Railway: PREMIUM_ENABLED=1, PREMIUM_LOCK_EXPLANATIONS=1
    - Vercel:  NEXT_PUBLIC_PREMIUM_ENABLED=1,
               NEXT_PUBLIC_PREMIUM_LOCK_EXPLANATIONS=1
@@ -1295,17 +1311,49 @@ const canGoNext =
 
 // ------------------------------------------------------------------
 // PREMIUM (frontend) — single source of truth
+// - isLoggedIn: context.isAuthenticated || context.isPremiumUser
 // - isPremiumUser: viene dal context
 // - premiumLocked: viene dal context
 // - q.explanation: se backend locka, può arrivare null per i free
-// - FREE_LIMIT: blocca il quiz free dopo 20 domande
+// - REGISTER_LIMIT: gate registrazione dopo 5 domande (guest)
+// - FREE_LIMIT: gate Premium dopo 20 domande (free loggato)
 // ------------------------------------------------------------------
 
 const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
 const explainPreview = explainText ? makePreview(explainText, 260) : '';
 
+// ------------------------------------------------------------------
+// GATE 1 — Registrazione (guest, non assessment)
+// ------------------------------------------------------------------
+if (!isLoggedIn && registerLimitReached && !isAssessment) {
+  const answeredValues = Object.values(marked).filter(v => v != null);
+  const correctSoFar = questions.slice(0, 5).filter(q => {
+    const chosen = marked[q.id];
+    const right = q.answers.find(a => !!a.isCorrect)?.id;
+    return chosen != null && right != null && Number(chosen) === Number(right);
+  }).length;
+
+  return (
+    <div className={`min-h-[100dvh] ${gradient}`}>
+      <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
+        <RegistrationGate
+          lang={lang}
+          certificationSlug={context?.certificationSlug}
+          topicSlug={context?.topicSlug}
+          correctCount={correctSoFar}
+          totalAnswered={Math.min(answeredValues.length, 5)}
+          onBack={() => {}}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------
+// GATE 2 — Premium (free loggato, non assessment)
+// ------------------------------------------------------------------
 if (freeLimitReached) {
-  // ✅ Calcola il risultato reale delle prime 20 domande gratuite
+  // Calcola il risultato reale delle prime FREE_LIMIT domande
   const freeQuestions = questions.slice(0, FREE_LIMIT);
 
   let freeCorrectCount = 0;

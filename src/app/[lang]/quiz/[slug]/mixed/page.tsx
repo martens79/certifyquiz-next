@@ -172,34 +172,36 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
-  const premium = getPremiumState({
+ const premium = getPremiumState({
   user: null, // finché non colleghi /me reale
 });
-  // slug non mappato
-  if (!certId) {
-    return (
-      <div className="mx-auto max-w-3xl p-6 text-center">
-        <h1 className="text-lg font-semibold text-red-700">
-          {currentLang === 'it'
-            ? 'Quiz misto non disponibile'
-            : currentLang === 'fr'
-            ? 'Quiz mixte indisponible'
-            : currentLang === 'es'
-            ? 'Quiz mixto no disponible'
-            : 'Mixed quiz not available'}
-        </h1>
-        <p className="mt-2 text-sm text-slate-700">
-          {currentLang === 'it'
-            ? 'Questa certificazione non è mappata .'
-            : currentLang === 'fr'
-            ? "Cette certification n'est pas mappée."
-            : currentLang === 'es'
-            ? 'Esta certificación no está mapeada .'
-            : 'This certification is not mapped '}
-        </p>
-      </div>
-    );
-  }
+const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
+
+// slug non mappato
+if (!certId) {
+  return (
+    <div className="mx-auto max-w-3xl p-6 text-center">
+      <h1 className="text-lg font-semibold text-red-700">
+        {currentLang === 'it'
+          ? 'Quiz misto non disponibile'
+          : currentLang === 'fr'
+          ? 'Quiz mixte indisponible'
+          : currentLang === 'es'
+          ? 'Quiz mixto no disponible'
+          : 'Mixed quiz not available'}
+      </h1>
+      <p className="mt-2 text-sm text-slate-700">
+        {currentLang === 'it'
+          ? 'Questa certificazione non è mappata .'
+          : currentLang === 'fr'
+          ? "Cette certification n'est pas mappée."
+          : currentLang === 'es'
+          ? 'Esta certificación no está mapeada .'
+          : 'This certification is not mapped '}
+      </p>
+    </div>
+  );
+}
 
   /* --------------------- poolTotal (light call) --------------------- */
   useEffect(() => {
@@ -339,22 +341,23 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   hideModeSwitch={isAssessmentMode}
 
   context={{
-    kind: 'mixed',
-    certificationName: currentSlug.toUpperCase(),
-    certificationSlug: currentSlug,
-    backHref: withLang(currentLang, `/quiz/${currentSlug}`),
-    backLabel:
-      currentLang === 'it'
-        ? '← Torna alla certificazione'
-        : currentLang === 'es'
-        ? '← Volver a la certificación'
-        : currentLang === 'fr'
-        ? '← Retour à la certification'
-        : '← Back to certification',
+  kind: 'mixed',
+  certificationName: currentSlug.toUpperCase(),
+  certificationSlug: currentSlug,
+  backHref: withLang(currentLang, `/quiz/${currentSlug}`),
+  backLabel:
+    currentLang === 'it'
+      ? '← Torna alla certificazione'
+      : currentLang === 'es'
+      ? '← Volver a la certificación'
+      : currentLang === 'fr'
+      ? '← Retour à la certification'
+      : '← Back to certification',
 
-    isPremiumUser: premium.isPremiumUser,
-    premiumLocked: premium.premiumLocked,
-  }}
+  isPremiumUser: premium.isPremiumUser,
+  premiumLocked: premium.premiumLocked,
+  isAuthenticated, // ✅ aggiunto
+}}
 
   initialMode={mode}
 

@@ -44,8 +44,9 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   const L = lang;
   const numericId = topicId;
 
-  // ✅ PREMIUM / ADMIN source-of-truth (Provider globale)
-  const { isPremiumUser, premiumLocked } = useAuth();
+  // ✅ PREMIUM / ADMIN source-of-truth (Provider globale)  
+  const { isPremiumUser, premiumLocked, user } = useAuth();
+  const isAuthenticated = !!user;
 
   /* ─────────────────────────────────────────────────────────────
      STATE (core)
@@ -244,6 +245,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         // ✅ GLOBAL AUTH/PREMIUM FLAGS
         isPremiumUser,
         premiumLocked,
+        isAuthenticated,
       }}
       onFeedback={async ({ questionId, type, description }) => {
         const token = getAccessToken();

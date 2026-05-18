@@ -420,32 +420,6 @@ function ComparisonTable({
   );
 }
 
-function Testimonials({ t }: { t: CopyEntry }) {
-  return (
-    <section className="mt-6">
-      <div className="mb-4 text-lg font-semibold text-gray-900">
-        {t.testimonialsTitle}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {t.testimonials.map((item, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"
-          >
-            <div className="mb-3 text-yellow-400">★★★★★</div>
-            <p className="text-sm text-gray-700 italic">"{item.text}"</p>
-            <div className="mt-4">
-              <div className="text-sm font-semibold text-gray-900">
-                {item.name}
-              </div>
-              <div className="text-xs text-gray-500">{item.cert}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 function Guarantee({ t }: { t: CopyEntry }) {
   return (
@@ -601,8 +575,6 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           {/* Garanzia */}
           <Guarantee t={t} />
 
-          {/* Testimonials */}
-          <Testimonials t={t} />
 
           {/* CTA finale */}
           <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">

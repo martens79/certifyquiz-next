@@ -1,189 +1,186 @@
 // src/app/[lang]/(marketing)/_pricing/PricingPage.tsx
-// Shared Pricing page (server component)
-// Wrapper pages must pass `lang` explicitly:
-// - /it/prezzi, /fr/prix, /es/precios -> lang={params.lang}
-// - EN root /pricing -> lang="en"
-
 import Link from "next/link";
 import StructuredData from "@/components/StructuredData";
 import type { Locale } from "@/lib/paths";
 import { quizHomePath, seoPrefix } from "@/lib/paths";
 
-/* -------------------------------- Labels -------------------------------- */
-
 const labels = {
   h1: {
-    it: "Come funziona l’accesso Premium",
-    en: "How Premium access works",
-    fr: "Comment fonctionne l’accès Premium",
-    es: "Cómo funciona el acceso Premium",
+    it: "CertifyQuiz Premium",
+    en: "CertifyQuiz Premium",
+    fr: "CertifyQuiz Premium",
+    es: "CertifyQuiz Premium",
   },
   subtitle: {
-    it: "Scegli se abbonarti o sbloccare solo ciò che ti serve.",
-    en: "Choose between a subscription or unlocking only what you need.",
-    fr: "Choisissez un abonnement ou débloquez seulement ce dont vous avez besoin.",
-    es: "Elige entre suscripción o desbloquear solo lo que necesitas.",
+    it: "Tutto quello che ti serve per passare la certificazione.",
+    en: "Everything you need to pass your certification.",
+    fr: "Tout ce dont vous avez besoin pour réussir votre certification.",
+    es: "Todo lo que necesitas para aprobar tu certificación.",
   },
-  betaBanner: {
-    it: "🚧 Sito in beta: per ora l’accesso è completamente gratuito. I prezzi qui sotto sono indicativi e potranno cambiare al lancio.",
-    en: "🚧 Beta version: for now access is completely free. Prices below are indicative and may change at launch.",
-    fr: "🚧 Version bêta : pour l’instant l’accès est entièrement gratuit. Les prix ci-dessous sont indicatifs et pourront changer au lancement.",
-    es: "🚧 Versión beta: por ahora el acceso es completamente gratuito. Los precios siguientes son orientativos y podrán cambiar en el lanzamiento.",
+  price: {
+    it: "9,99 €",
+    en: "€9.99",
+    fr: "9,99 €",
+    es: "9,99 €",
   },
-
-  weekly: { it: "Premium settimanale", en: "Weekly Premium", fr: "Premium hebdomadaire", es: "Premium semanal" },
-  weeklyUnit: { it: "settimana", en: "week", fr: "semaine", es: "semana" },
-  weeklyDesc: {
-    it: "Perfetto per un ripasso intensivo prima dell’esame.",
-    en: "Perfect for an intensive review right before the exam.",
-    fr: "Parfait pour une révision intensive juste avant l’examen.",
-    es: "Perfecto para un repaso intenso justo antes del examen.",
+  perMonth: {
+    it: "/ mese",
+    en: "/ month",
+    fr: "/ mois",
+    es: "/ mes",
   },
-  weeklyBullets1: {
-    it: "Accesso completo alle spiegazioni dei quiz inclusi.",
-    en: "Full access to explanations for included quizzes.",
-    fr: "Accès complet aux explications des quiz inclus.",
-    es: "Acceso completo a las explicaciones de los cuestionarios incluidos.",
+  cancelAnytime: {
+    it: "Disdici quando vuoi",
+    en: "Cancel anytime",
+    fr: "Annulez quand vous voulez",
+    es: "Cancela cuando quieras",
   },
-  weeklyBullets2: {
-    it: "Statistiche di base sui tuoi tentativi.",
-    en: "Basic stats on your attempts.",
-    fr: "Statistiques de base sur vos tentatives",
-    es: "Estadísticas básicas de tus intentos.",
+  guarantee: {
+    it: "Garanzia 7 giorni — rimborso senza domande",
+    en: "7-day money-back guarantee — no questions asked",
+    fr: "Garantie 7 jours — remboursement sans conditions",
+    es: "Garantía 7 días — reembolso sin preguntas",
   },
-
-  monthly: { it: "Premium mensile", en: "Monthly Premium", fr: "Premium mensuel", es: "Premium mensual" },
-  monthlyUnit: { it: "mese", en: "month", fr: "mois", es: "mes" },
-  monthlyDesc: {
-    it: "La scelta ideale se stai preparando più certificazioni.",
-    en: "The ideal choice if you're preparing multiple certifications.",
-    fr: "Le choix idéal si vous préparez plusieurs certifications.",
-    es: "La opción ideal si estás preparando varias certificaciones.",
+  ctaPrimary: {
+    it: "Sblocca Premium – 9,99€/mese",
+    en: "Unlock Premium – €9.99/month",
+    fr: "Débloquez Premium – 9,99€/mois",
+    es: "Desbloquea Premium – 9,99€/mes",
   },
-  monthlyBullets1: {
-    it: "Accesso a tutte le spiegazioni delle certificazioni incluse.",
-    en: "Access to all explanations for included certifications.",
-    fr: "Accès à toutes les explications pour les certifications incluses.",
-    es: "Acceso a todas las explicaciones de las certificaciones incluidas.",
+  featuresTitle: {
+    it: "Cosa include Premium",
+    en: "What Premium includes",
+    fr: "Ce que Premium inclut",
+    es: "Qué incluye Premium",
   },
-  monthlyBullets2: {
-    it: "Nuovi quiz e aggiornamenti inclusi automaticamente.",
-    en: "New quizzes and updates automatically included.",
-    fr: "Nouveaux quiz et mises à jour inclus automatiquement.",
-    es: "Nuevos cuestionarios y actualizaciones incluidos automáticamente.",
+  features: {
+    it: [
+      { title: "Quiz illimitati", desc: "Nessun limite giornaliero. Studia quanto vuoi, quando vuoi." },
+      { title: "Spiegazioni complete", desc: "Ogni domanda ha una spiegazione dettagliata per capire davvero gli errori." },
+      { title: "Modalità esame reale", desc: "Simulazioni con timer e punteggio finale, come l'esame ufficiale." },
+      { title: "Ripasso errori", desc: "Concentrati sui punti deboli invece di ricominciare ogni volta da zero." },
+      { title: "Tutte le certificazioni", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft e molto altro." },
+      { title: "Accesso multilingua", desc: "Italiano, inglese, francese e spagnolo." },
+    ],
+    en: [
+      { title: "Unlimited quizzes", desc: "No daily limit. Study as much as you want, whenever you want." },
+      { title: "Full explanations", desc: "Every question has a detailed explanation so you truly understand your mistakes." },
+      { title: "Real exam mode", desc: "Timed simulations with a final score, just like the official exam." },
+      { title: "Error review", desc: "Focus on weak spots instead of starting over every time." },
+      { title: "All certifications", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft and much more." },
+      { title: "Multilingual access", desc: "Italian, English, French and Spanish." },
+    ],
+    fr: [
+      { title: "Quiz illimités", desc: "Aucune limite journalière. Étudiez autant que vous voulez, quand vous voulez." },
+      { title: "Explications complètes", desc: "Chaque question a une explication détaillée pour vraiment comprendre vos erreurs." },
+      { title: "Mode examen réel", desc: "Simulations chronométrées avec score final, comme l'examen officiel." },
+      { title: "Révision des erreurs", desc: "Concentrez-vous sur vos points faibles plutôt que de recommencer à zéro." },
+      { title: "Toutes les certifications", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft et bien plus." },
+      { title: "Accès multilingue", desc: "Italien, anglais, français et espagnol." },
+    ],
+    es: [
+      { title: "Quizzes ilimitados", desc: "Sin límite diario. Estudia cuanto quieras, cuando quieras." },
+      { title: "Explicaciones completas", desc: "Cada pregunta tiene una explicación detallada para entender de verdad tus errores." },
+      { title: "Modo examen real", desc: "Simulaciones con temporizador y puntuación final, como el examen oficial." },
+      { title: "Repaso de errores", desc: "Céntrate en tus puntos débiles en lugar de empezar desde cero cada vez." },
+      { title: "Todas las certificaciones", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft y mucho más." },
+      { title: "Acceso multilingüe", desc: "Italiano, inglés, francés y español." },
+    ],
   },
-  monthlyBullets3: {
-    it: "Badge e obiettivi per monitorare i tuoi progressi.",
-    en: "Badges and goals to track your progress.",
-    fr: "Badges et objectifs pour suivre vos progrès.",
-    es: "Insignias y objetivos para seguir tu progreso.",
+  tableTitle: {
+    it: "Free vs Premium",
+    en: "Free vs Premium",
+    fr: "Gratuit vs Premium",
+    es: "Gratis vs Premium",
   },
-
-  single: { it: "Certificazione singola", en: "Single certification", fr: "Certification à l’unité", es: "Certificación individual" },
-  singleUnit: { it: "una tantum", en: "one-time", fr: "paiement unique", es: "pago único" },
-  singleDesc: {
-    it: "Sblocca per sempre una certificazione o un singolo esame.",
-    en: "Unlock a single certification or exam forever.",
-    fr: "Débloquez une certification ou un examen unique pour toujours.",
-    es: "Desbloquea una certificación o examen único para siempre.",
+  tableRows: {
+    it: [
+      { label: "Quiz al giorno", free: "20", premium: "Illimitati" },
+      { label: "Spiegazioni risposte", free: "❌", premium: "✅ Tutte" },
+      { label: "Modalità esame reale", free: "❌", premium: "✅" },
+      { label: "Ripasso errori", free: "❌", premium: "✅" },
+      { label: "Tutte le certificazioni", free: "✅", premium: "✅" },
+      { label: "Accesso multilingua", free: "✅", premium: "✅" },
+    ],
+    en: [
+      { label: "Quizzes per day", free: "20", premium: "Unlimited" },
+      { label: "Answer explanations", free: "❌", premium: "✅ All" },
+      { label: "Real exam mode", free: "❌", premium: "✅" },
+      { label: "Error review", free: "❌", premium: "✅" },
+      { label: "All certifications", free: "✅", premium: "✅" },
+      { label: "Multilingual access", free: "✅", premium: "✅" },
+    ],
+    fr: [
+      { label: "Quiz par jour", free: "20", premium: "Illimités" },
+      { label: "Explications", free: "❌", premium: "✅ Toutes" },
+      { label: "Mode examen réel", free: "❌", premium: "✅" },
+      { label: "Révision des erreurs", free: "❌", premium: "✅" },
+      { label: "Toutes les certifications", free: "✅", premium: "✅" },
+      { label: "Accès multilingue", free: "✅", premium: "✅" },
+    ],
+    es: [
+      { label: "Quizzes por día", free: "20", premium: "Ilimitados" },
+      { label: "Explicaciones", free: "❌", premium: "✅ Todas" },
+      { label: "Modo examen real", free: "❌", premium: "✅" },
+      { label: "Repaso de errores", free: "❌", premium: "✅" },
+      { label: "Todas las certificaciones", free: "✅", premium: "✅" },
+      { label: "Acceso multilingüe", free: "✅", premium: "✅" },
+    ],
   },
-  singleBullets1: { it: "Paghi una sola volta, senza abbonamento.", en: "Pay once, no subscription.", fr: "Vous payez une seule fois, sans abonnement.", es: "Pagas una sola vez, sin suscripción." },
-  singleBullets2: {
-    it: "Accesso finché la certificazione resta su CertifyQuiz.",
-    en: "Access as long as the certification remains on CertifyQuiz.",
-    fr: "Accès tant que la certification reste disponible sur CertifyQuiz.",
-    es: "Acceso mientras la certificación siga disponible en CertifyQuiz.",
+  faqTitle: {
+    it: "Domande frequenti",
+    en: "Frequently asked questions",
+    fr: "Questions fréquentes",
+    es: "Preguntas frecuentes",
   },
-
-  availableAtLaunch: { it: "Disponibile al lancio", en: "Available at launch", fr: "Disponible au lancement", es: "Disponible en el lanzamiento" },
-
-  whichTitle: { it: "Qual è la soluzione giusta per te?", en: "Which option is right for you?", fr: "Quelle option est faite pour vous ?", es: "¿Qué opción es mejor para ti?" },
-  whichA: {
-    it: "Scegli l’abbonamento Premium se stai preparando più certificazioni o vuoi avere sempre nuovi quiz.",
-    en: "Choose Premium if you're preparing multiple certifications or want a steady flow of new quizzes.",
-    fr: "Choisissez Premium si vous préparez plusieurs certifications ou souhaitez de nouveaux quiz en continu.",
-    es: "Elige Premium si estás preparando varias certificaciones o quieres nuevos cuestionarios de forma continua.",
+  ctaBottom: {
+    it: "Sblocca Premium",
+    en: "Unlock Premium",
+    fr: "Débloquer Premium",
+    es: "Desbloquear Premium",
   },
-  whichB: {
-    it: "Scegli l’acquisto singolo se ti serve solo una certificazione specifica o vuoi testare CertifyQuiz su un singolo esame.",
-    en: "Choose a one-time purchase if you only need one certification or want to test CertifyQuiz on a single exam.",
-    fr: "Choisissez l’achat à l’unité si vous n’avez besoin que d’une certification ou souhaitez tester CertifyQuiz sur un seul examen.",
-    es: "Elige compra única si solo necesitas una certificación o quieres probar CertifyQuiz con un único examen.",
+  ctaFree: {
+    it: "Continua gratis",
+    en: "Continue for free",
+    fr: "Continuer gratuitement",
+    es: "Continuar gratis",
   },
-
-  faqTitle: { it: "Domande frequenti", en: "Frequently Asked Questions", fr: "Questions fréquentes", es: "Preguntas frecuentes" },
-
-  ctaQuizzes: { it: "Vai ai quiz", en: "Go to quizzes", fr: "Accéder aux quiz", es: "Ir a los cuestionarios" },
-  ctaRegister: { it: "Crea un account gratuito", en: "Create a free account", fr: "Créer un compte gratuit", es: "Crear una cuenta gratuita" },
 } as const;
 
-function L(map: Record<Locale, string>, lang: Locale): string {
-  return map[lang] ?? map.it;
+function T(map: Record<Locale, string>, lang: Locale): string {
+  return map[lang] ?? map.en;
 }
 
-/* -------------------------------- Page -------------------------------- */
+const pricingPath = (lang: Locale) => {
+  if (lang === "it") return "/it/prezzi";
+  if (lang === "fr") return "/fr/prix";
+  if (lang === "es") return "/es/precios";
+  return "/pricing";
+};
 
 export default function PricingPage({ lang }: { lang: Locale }) {
   const faq =
-    lang === "it"
-      ? [
-          {
-            q: "Qual è la differenza tra Premium e acquisto singolo?",
-            a: "Con Premium hai accesso a più certificazioni e a tutte le spiegazioni incluse nel piano. Con l’acquisto singolo sblocchi solo una certificazione, un argomento o un pacchetto specifico, senza abbonamento.",
-          },
-          {
-            q: "Posso iniziare con un acquisto singolo e poi passare a Premium?",
-            a: "Sì, in futuro potrai passare a un abbonamento Premium anche se hai già sbloccato certificazioni singole.",
-          },
-          {
-            q: "Per quanto tempo rimane valido un acquisto singolo?",
-            a: "L’acquisto singolo rimane valido finché la relativa certificazione è disponibile su CertifyQuiz.",
-          },
-        ]
-      : lang === "en"
-      ? [
-          {
-            q: "What is the difference between Premium and a one-time purchase?",
-            a: "With Premium you get access to multiple certifications and all explanations included in the plan. With a one-time purchase you only unlock a specific certification, topic or bundle, with no subscription.",
-          },
-          {
-            q: "Can I start with a one-time purchase and upgrade to Premium later?",
-            a: "Yes, in the future you will be able to upgrade to a Premium subscription even if you already unlocked single certifications.",
-          },
-          {
-            q: "How long does a one-time purchase remain valid?",
-            a: "Your one-time purchase remains valid as long as the related certification is available on CertifyQuiz.",
-          },
-        ]
-      : lang === "fr"
-      ? [
-          {
-            q: "Quelle est la différence entre Premium et un achat à l’unité ?",
-            a: "Avec Premium, vous avez accès à plusieurs certifications et à toutes les explications incluses dans l’abonnement. Avec un achat à l’unité, vous débloquez seulement une certification, un sujet ou un pack spécifique, sans abonnement.",
-          },
-          {
-            q: "Puis-je commencer par un achat à l’unité puis passer à Premium ?",
-            a: "Oui, vous pourrez passer à un abonnement Premium même si vous avez déjà débloqué des certifications individuelles.",
-          },
-          {
-            q: "Combien de temps un achat à l’unité reste-t-il valide ?",
-            a: "Votre achat à l’unité reste valide tant que la certification correspondante est disponible sur CertifyQuiz.",
-          },
-        ]
-      : [
-          {
-            q: "¿Cuál es la diferencia entre Premium y una compra única?",
-            a: "Con Premium tienes acceso a varias certificaciones y a todas las explicaciones incluidas en el plan. Con una compra única solo desbloqueas una certificación, tema o paquete específico, sin suscripción.",
-          },
-          {
-            q: "¿Puedo empezar con una compra única y luego pasar a Premium?",
-            a: "Sí, en el futuro podrás pasar a una suscripción Premium incluso si ya has desbloqueado certificaciones individuales.",
-          },
-          {
-            q: "¿Durante cuánto tiempo es válida una compra única?",
-            a: "Tu compra única sigue siendo válida mientras la certificación correspondiente esté disponible en CertifyQuiz.",
-          },
-        ];
+    lang === "it" ? [
+      { q: "Posso disdire quando voglio?", a: "Sì, puoi annullare in qualsiasi momento dal tuo profilo. Non ci sono vincoli o penali." },
+      { q: "C'è una garanzia soddisfatti o rimborsati?", a: "Sì. Se nei primi 7 giorni non sei soddisfatto, ti rimborsiamo senza fare domande." },
+      { q: "Cosa succede alle mie domande gratuite?", a: "Con Premium non hai più limiti. Puoi fare tutti i quiz che vuoi ogni giorno." },
+      { q: "Il prezzo cambierà in futuro?", a: "Il prezzo attuale è bloccato per chi si abbona ora. Gli abbonati esistenti non subiscono variazioni di prezzo." },
+    ] : lang === "fr" ? [
+      { q: "Puis-je annuler à tout moment ?", a: "Oui, vous pouvez annuler à tout moment depuis votre profil. Aucun engagement ni pénalité." },
+      { q: "Y a-t-il une garantie satisfait ou remboursé ?", a: "Oui. Si dans les 7 premiers jours vous n'êtes pas satisfait, nous vous remboursons sans poser de questions." },
+      { q: "Que devient ma limite de questions gratuites ?", a: "Avec Premium, il n'y a plus de limite. Vous pouvez faire autant de quiz que vous voulez chaque jour." },
+      { q: "Le prix changera-t-il à l'avenir ?", a: "Le prix actuel est garanti pour les abonnés actuels. Les abonnés existants ne subiront aucune variation de prix." },
+    ] : lang === "es" ? [
+      { q: "¿Puedo cancelar cuando quiera?", a: "Sí, puedes cancelar en cualquier momento desde tu perfil. Sin compromisos ni penalizaciones." },
+      { q: "¿Hay garantía de devolución?", a: "Sí. Si en los primeros 7 días no estás satisfecho, te reembolsamos sin preguntas." },
+      { q: "¿Qué pasa con mis preguntas gratuitas?", a: "Con Premium no hay límites. Puedes hacer todos los quizzes que quieras cada día." },
+      { q: "¿Cambiará el precio en el futuro?", a: "El precio actual está garantizado para quienes se suscriban ahora. Los suscriptores existentes no verán cambios de precio." },
+    ] : [
+      { q: "Can I cancel anytime?", a: "Yes, you can cancel at any time from your profile. No commitments or penalties." },
+      { q: "Is there a money-back guarantee?", a: "Yes. If you're not satisfied within the first 7 days, we'll refund you — no questions asked." },
+      { q: "What happens to my free question limit?", a: "With Premium there's no limit. You can do as many quizzes as you want every day." },
+      { q: "Will the price change in the future?", a: "The current price is locked in for anyone who subscribes now. Existing subscribers won't see price changes." },
+    ];
 
   const faqLd = {
     "@context": "https://schema.org",
@@ -195,154 +192,127 @@ export default function PricingPage({ lang }: { lang: Locale }) {
     })),
   } as const;
 
-  // ✅ QUIZ must always be prefixed (EN included)
+  const checkoutHref = `${seoPrefix(lang)}/premium`;
   const quizzesHref = quizHomePath(lang);
-
-  // ✅ SEO pages: EN root (no /en)
-  const registerHref = `${seoPrefix(lang)}/register`;
 
   return (
     <>
       <StructuredData id="ld-pricing-faq" data={faqLd} />
 
-      <main id="main" className="mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm">
-          {L(labels.betaBanner, lang)}
-        </div>
+      <main id="main" className="mx-auto max-w-4xl px-4 py-10">
 
+        {/* Header */}
         <header className="mb-10 text-center">
-          <h1 className="text-3xl font-extrabold text-slate-900">
-            {L(labels.h1, lang)}
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            {T(labels.h1, lang)}
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
-            {L(labels.subtitle, lang)}
+          <p className="mt-2 text-base text-gray-600">
+            {T(labels.subtitle, lang)}
           </p>
         </header>
 
+        {/* Piano unico */}
         <section className="mb-10">
-          <div className="grid gap-4 md:grid-cols-3">
-            <article className="flex flex-col rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-blue-700">
-                {L(labels.weekly, lang)}
-              </h2>
-              <p className="mt-3 text-3xl font-extrabold text-slate-900">
-                4,99 €
-                <span className="ml-1 text-xs font-medium text-slate-500">
-                  / {L(labels.weeklyUnit, lang)}
-                </span>
-              </p>
-              <p className="mt-2 text-xs text-slate-600">
-                {L(labels.weeklyDesc, lang)}
-              </p>
-              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
-                <li>{L(labels.weeklyBullets1, lang)}</li>
-                <li>{L(labels.weeklyBullets2, lang)}</li>
-              </ul>
-              <button
-                type="button"
-                className="mt-4 cursor-not-allowed rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
-              >
-                {L(labels.availableAtLaunch, lang)}
-              </button>
-            </article>
+          <div className="mx-auto max-w-sm rounded-2xl border-2 border-gray-900 bg-white p-6 shadow-lg text-center">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white">
+              ✦ Premium
+            </div>
+            <div className="mt-2 text-5xl font-bold text-gray-900">
+              {T(labels.price, lang)}
+              <span className="text-lg font-normal text-gray-500">
+                {T(labels.perMonth, lang)}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-gray-400">{T(labels.cancelAnytime, lang)}</p>
 
-            <article className="flex flex-col rounded-2xl border border-violet-200 bg-gradient-to-b from-violet-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-violet-700">
-                {L(labels.monthly, lang)}
-              </h2>
-              <p className="mt-3 text-3xl font-extrabold text-slate-900">
-                8,99 €
-                <span className="ml-1 text-xs font-medium text-slate-500">
-                  / {L(labels.monthlyUnit, lang)}
-                </span>
-              </p>
-              <p className="mt-2 text-xs text-slate-600">
-                {L(labels.monthlyDesc, lang)}
-              </p>
-              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
-                <li>{L(labels.monthlyBullets1, lang)}</li>
-                <li>{L(labels.monthlyBullets2, lang)}</li>
-                <li>{L(labels.monthlyBullets3, lang)}</li>
-              </ul>
-              <button
-                type="button"
-                className="mt-4 cursor-not-allowed rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
-              >
-                {L(labels.availableAtLaunch, lang)}
-              </button>
-            </article>
+            <Link
+              href={checkoutHref}
+              className="mt-5 flex w-full items-center justify-center rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              {T(labels.ctaPrimary, lang)}
+            </Link>
 
-            <article className="flex flex-col rounded-2xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-5 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-                {L(labels.single, lang)}
-              </h2>
-              <p className="mt-3 text-3xl font-extrabold text-slate-900">
-                3,99 €
-                <span className="ml-1 text-xs font-medium text-slate-500">
-                  / {L(labels.singleUnit, lang)}
-                </span>
-              </p>
-              <p className="mt-2 text-xs text-slate-600">
-                {L(labels.singleDesc, lang)}
-              </p>
-              <ul className="mt-3 flex-1 list-disc space-y-1 pl-4 text-xs text-slate-700">
-                <li>{L(labels.singleBullets1, lang)}</li>
-                <li>{L(labels.singleBullets2, lang)}</li>
-              </ul>
-              <button
-                type="button"
-                className="mt-4 cursor-not-allowed rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white opacity-70"
-              >
-                {L(labels.availableAtLaunch, lang)}
-              </button>
-            </article>
+            <p className="mt-3 text-xs text-gray-400">{T(labels.guarantee, lang)}</p>
           </div>
         </section>
 
-        <section className="mb-10 rounded-2xl border bg-slate-50 p-5">
-          <h2 className="mb-2 text-lg font-bold text-slate-900">
-            {L(labels.whichTitle, lang)}
+        {/* Features */}
+        <section className="mb-10">
+          <h2 className="mb-5 text-center text-lg font-semibold text-gray-900">
+            {T(labels.featuresTitle, lang)}
           </h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-            <li>{L(labels.whichA, lang)}</li>
-            <li>{L(labels.whichB, lang)}</li>
-          </ul>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {labels.features[lang].map((f) => (
+              <div key={f.title} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                <div className="mb-1 text-sm font-semibold text-gray-900">✓ {f.title}</div>
+                <div className="text-xs text-gray-600">{f.desc}</div>
+              </div>
+            ))}
+          </div>
         </section>
 
+        {/* Tabella Free vs Premium */}
+        <section className="mb-10 overflow-hidden rounded-2xl border border-gray-200">
+          <div className="bg-gray-50 px-5 py-3 text-sm font-semibold text-gray-900">
+            {T(labels.tableTitle, lang)}
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="px-5 py-3 text-left font-medium text-gray-500">
+                  {lang === "it" ? "Funzionalità" : lang === "fr" ? "Fonctionnalité" : lang === "es" ? "Función" : "Feature"}
+                </th>
+                <th className="px-5 py-3 text-center font-medium text-gray-400">
+                  {lang === "it" ? "Gratis" : lang === "fr" ? "Gratuit" : lang === "es" ? "Gratis" : "Free"}
+                </th>
+                <th className="px-5 py-3 text-center font-semibold text-gray-900">Premium</th>
+              </tr>
+            </thead>
+            <tbody>
+              {labels.tableRows[lang].map((row, i) => (
+                <tr key={row.label} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <td className="px-5 py-3 text-gray-700">{row.label}</td>
+                  <td className="px-5 py-3 text-center text-gray-400">{row.free}</td>
+                  <td className="px-5 py-3 text-center font-medium text-emerald-700">{row.premium}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        {/* FAQ */}
         <section className="mb-10">
-          <h2 className="mb-3 text-lg font-bold text-slate-900">
-            {L(labels.faqTitle, lang)}
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">
+            {T(labels.faqTitle, lang)}
           </h2>
           <div className="space-y-3">
-            {faq.map((item, idx) => (
-              <details
-                key={idx}
-                className="rounded-xl border bg-white p-3 text-sm shadow-sm"
-              >
-                <summary className="cursor-pointer font-semibold text-slate-900">
+            {faq.map((item, i) => (
+              <details key={i} className="rounded-xl border border-gray-200 bg-white p-4 text-sm">
+                <summary className="cursor-pointer font-semibold text-gray-900">
                   {item.q}
                 </summary>
-                <p className="mt-1 text-slate-700">{item.a}</p>
+                <p className="mt-2 text-gray-600">{item.a}</p>
               </details>
             ))}
           </div>
         </section>
 
+        {/* CTA finale */}
         <div className="flex flex-wrap justify-center gap-3">
           <Link
-            href={quizzesHref}
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
+            href={checkoutHref}
+            className="rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
-            {L(labels.ctaQuizzes, lang)}
+            {T(labels.ctaBottom, lang)}
           </Link>
-
           <Link
-            href={registerHref}
-            className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            href={quizzesHref}
+            className="rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
           >
-            {L(labels.ctaRegister, lang)}
+            {T(labels.ctaFree, lang)}
           </Link>
         </div>
+
       </main>
     </>
   );

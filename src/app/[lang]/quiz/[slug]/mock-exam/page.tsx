@@ -16,6 +16,7 @@ import {
   getMixedQuestions,
   saveExam,
   type Question as ApiQuestion,
+  getAccessToken, // ✅
 } from '@/lib/apiClient';
 
 import { getExamSpecForCert } from '@/lib/exam-specs';
@@ -46,6 +47,7 @@ export default function MockExamPage() {
 
   // Nome “leggibile”
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
+  const isAuthenticated = !!getAccessToken();
 
   // slug non mappato
   if (!certId) {
@@ -201,21 +203,35 @@ export default function MockExamPage() {
 
 
       {/* Quiz (EXAM ONLY) */}
-      <QuizEngine
-        key={`mock:${currentSlug}:${currentLang}`}
-        lang={currentLang}
-        storageScope={`mock-exam:${currentSlug}:${currentLang}`}
-        categoryColor="from-orange-900 to-orange-700"
-        initialMode="exam"
-        hideModeSwitch // ✅ nasconde Training/Exam switch
-        durationsByMode={{
-          training: undefined,
-          exam: examSpec.durationSec,
-        }}
-        limitsByMode={{
-          training: 0,
-          exam: examSpec.questions,
-        }}
+<QuizEngine
+  key={`mock:${currentSlug}:${currentLang}`}
+  lang={currentLang}
+  storageScope={`mock-exam:${currentSlug}:${currentLang}`}
+  categoryColor="from-orange-900 to-orange-700"
+  initialMode="exam"
+  hideModeSwitch
+  context={{
+    kind: 'mock',
+    certificationName: certName.toUpperCase(),
+    certificationSlug: currentSlug,
+    backHref: withLang(currentLang, `/quiz/${currentSlug}`),
+    backLabel:
+      currentLang === 'it' ? '← Torna alla certificazione'
+      : currentLang === 'es' ? '← Volver a la certificación'
+      : currentLang === 'fr' ? '← Retour à la certification'
+      : '← Back to certification',
+    isPremiumUser: false,
+    premiumLocked: false,
+    isAuthenticated, // ✅ aggiunto
+  }}
+  durationsByMode={{
+    training: undefined,
+    exam: examSpec.durationSec,
+  }}
+  limitsByMode={{
+    training: 0,
+    exam: examSpec.questions,
+  }}
         // 🔒 blocca cambio modalità (mock exam = solo exam)
         onModeChange={() => {}}
         fetchQuestions={async () => {

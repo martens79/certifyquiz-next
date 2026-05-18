@@ -36,6 +36,7 @@ export type QuizContext = {
   topicSlug?: string;
   backLabel?: string;
   backHref?: string;
+  isAuthenticated?: boolean;
   
   // Premium infra (ready-to-flip, non invasivo)
   isPremiumUser?: boolean;
