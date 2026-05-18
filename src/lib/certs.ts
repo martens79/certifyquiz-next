@@ -226,8 +226,7 @@ openai: "ai",
 // Virtualizzazione
 "virtualization-foundations": "virtualizzazione",
 
-// Management
-"project-management-foundations": "management",
+
 };
 
 /* ======================  ID <-> SLUG (DERIVED)  ====================== */
