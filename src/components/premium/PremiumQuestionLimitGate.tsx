@@ -85,11 +85,17 @@ const COPY = {
     fr: "Vous avez fait {wrong} erreurs. Premium vous aide à comprendre pourquoi et à corriger vos lacunes.",
     es: "Has cometido {wrong} errores. Premium te ayuda a entender por qué y a corregir tus lagunas.",
   },
+  urgencyLine: {
+    it: "Hai usato le tue 20 domande gratuite di oggi. Torni domani — o sblocchi Premium e continui adesso.",
+    en: "You've used your 20 free questions for today. Come back tomorrow — or unlock Premium and keep going now.",
+    fr: "Vous avez utilisé vos 20 questions gratuites d'aujourd'hui. Revenez demain — ou débloquez Premium et continuez maintenant.",
+    es: "Has usado tus 20 preguntas gratuitas de hoy. Vuelve mañana — o desbloquea Premium y continúa ahora.",
+  },
   ctaHook: {
-    it: "Continua il tuo percorso senza interruzioni.",
-    en: "Keep going without interruptions.",
-    fr: "Continue sans interruption.",
-    es: "Continúa sin interrupciones.",
+    it: "Non perdere il ritmo. Continua adesso senza aspettare.",
+    en: "Don't lose your momentum. Keep going now without waiting.",
+    fr: "Ne perdez pas votre élan. Continuez maintenant sans attendre.",
+    es: "No pierdas el ritmo. Continúa ahora sin esperar.",
   },
   pizzaLine: {
     it: "Al prezzo di una pizza, sblocchi quiz illimitati, spiegazioni e ripasso errori.",
@@ -116,10 +122,10 @@ const COPY = {
     es: "Acceso inmediato · Cancela cuando quieras · Garantía 7 días",
   },
   back: {
-    it: "Continua gratis domani",
-    en: "Continue for free tomorrow",
-    fr: "Continuer gratuitement demain",
-    es: "Continuar gratis mañana",
+    it: "Aspetto domani",
+    en: "I'll wait until tomorrow",
+    fr: "J'attendrai demain",
+    es: "Esperaré hasta mañana",
   },
   detailsToggle: {
     it: "Cosa include Premium",
@@ -291,7 +297,8 @@ export default function PremiumQuestionLimitGate({
       </div>
 
       {/* CTA block */}
-      <p className="mb-1 text-sm font-semibold text-gray-900">{COPY.ctaHook[L]}</p>
+      <p className="mb-1 text-sm font-semibold text-amber-900">{COPY.urgencyLine[L]}</p>
+<p className="mb-1 text-sm font-semibold text-gray-900">{COPY.ctaHook[L]}</p>
       <p className="mb-4 text-sm text-gray-500">{COPY.pizzaLine[L]}</p>
 
       <button
