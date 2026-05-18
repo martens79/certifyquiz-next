@@ -85,12 +85,24 @@ const COPY = {
     fr: "Vous avez fait {wrong} erreurs. Premium vous aide à comprendre pourquoi et à corriger vos lacunes.",
     es: "Has cometido {wrong} errores. Premium te ayuda a entender por qué y a corregir tus lagunas.",
   },
-  urgencyLine: {
-    it: "Hai usato le tue 20 domande gratuite di oggi. Torni domani — o sblocchi Premium e continui adesso.",
-    en: "You've used your 20 free questions for today. Come back tomorrow — or unlock Premium and keep going now.",
-    fr: "Vous avez utilisé vos 20 questions gratuites d'aujourd'hui. Revenez demain — ou débloquez Premium et continuez maintenant.",
-    es: "Has usado tus 20 preguntas gratuitas de hoy. Vuelve mañana — o desbloquea Premium y continúa ahora.",
-  },
+  urgencyLineGood: {
+  it: "Hai fatto 20 domande e sei già al {score}%. Sei vicino — non perdere il ritmo adesso.",
+  en: "You answered 20 questions and you're already at {score}%. You're close — don't lose momentum now.",
+  fr: "Vous avez répondu à 20 questions et vous êtes déjà à {score}%. Vous êtes proche — ne perdez pas votre élan.",
+  es: "Has respondido 20 preguntas y ya estás al {score}%. Estás cerca — no pierdas el ritmo ahora.",
+},
+urgencyLineMedium: {
+  it: "Hai usato le 20 domande gratuite di oggi. Con {wrong} errori da correggere, aspettare domani ti costa.",
+  en: "You've used your 20 free questions today. With {wrong} mistakes to fix, waiting until tomorrow costs you.",
+  fr: "Vous avez utilisé vos 20 questions gratuites. Avec {wrong} erreurs à corriger, attendre demain vous coûte.",
+  es: "Has usado tus 20 preguntas gratuitas. Con {wrong} errores por corregir, esperar a mañana te cuesta.",
+},
+urgencyLineLow: {
+  it: "Hai usato le 20 domande gratuite di oggi. Con questo livello, non puoi permetterti di aspettare domani.",
+  en: "You've used your 20 free questions today. At this level, you can't afford to wait until tomorrow.",
+  fr: "Vous avez utilisé vos 20 questions gratuites. À ce niveau, vous ne pouvez pas vous permettre d'attendre.",
+  es: "Has usado tus 20 preguntas gratuitas. Con este nivel, no puedes permitirte esperar hasta mañana.",
+},
   ctaHook: {
     it: "Non perdere il ritmo. Continua adesso senza aspettare.",
     en: "Don't lose your momentum. Keep going now without waiting.",
@@ -297,7 +309,16 @@ export default function PremiumQuestionLimitGate({
       </div>
 
       {/* CTA block */}
-      <p className="mb-1 text-sm font-semibold text-amber-900">{COPY.urgencyLine[L]}</p>
+      <p className="mb-1 text-sm font-semibold text-amber-900">
+  {interpolate(
+    resultLevel === "good"
+      ? COPY.urgencyLineGood[L]
+      : resultLevel === "medium"
+      ? COPY.urgencyLineMedium[L]
+      : COPY.urgencyLineLow[L],
+    { score: percentage, wrong }
+  )}
+</p>
 <p className="mb-1 text-sm font-semibold text-gray-900">{COPY.ctaHook[L]}</p>
       <p className="mb-4 text-sm text-gray-500">{COPY.pizzaLine[L]}</p>
 
