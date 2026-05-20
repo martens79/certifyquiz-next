@@ -4,6 +4,15 @@ import { useState } from "react";
 import { authFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/quiz-types";
 
+type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
+
+type PlanOption = {
+  id: Plan;
+  label: string;
+  price: string;
+  badge?: string;
+};
+
 type Props = {
   lang: Locale;
   currentCount: number;
@@ -12,10 +21,33 @@ type Props = {
   onBack?: () => void;
   certificationSlug?: string;
   topicSlug?: string;
-  certificationName?: string; // ✅ aggiunto
+  certificationName?: string;
   correctCount?: number;
   wrongCount?: number;
   totalAnswered?: number;
+};
+
+const PLANS: Record<Locale, PlanOption[]> = {
+  it: [
+    { id: "premium_monthly", label: "Mensile", price: "9,99€/mese" },
+    { id: "premium_quarterly", label: "Trimestrale", price: "19,99€", badge: "-33%" },
+    { id: "premium_annual", label: "Annuale", price: "59,99€", badge: "-50%" },
+  ],
+  en: [
+    { id: "premium_monthly", label: "Monthly", price: "€9.99/mo" },
+    { id: "premium_quarterly", label: "Quarterly", price: "€19.99", badge: "-33%" },
+    { id: "premium_annual", label: "Annual", price: "€59.99", badge: "-50%" },
+  ],
+  fr: [
+    { id: "premium_monthly", label: "Mensuel", price: "9,99€/mois" },
+    { id: "premium_quarterly", label: "Trimestriel", price: "19,99€", badge: "-33%" },
+    { id: "premium_annual", label: "Annuel", price: "59,99€", badge: "-50%" },
+  ],
+  es: [
+    { id: "premium_monthly", label: "Mensual", price: "9,99€/mes" },
+    { id: "premium_quarterly", label: "Trimestral", price: "19,99€", badge: "-33%" },
+    { id: "premium_annual", label: "Anual", price: "59,99€", badge: "-50%" },
+  ],
 };
 
 const COPY = {
@@ -43,24 +75,9 @@ const COPY = {
     fr: "Résultat du test",
     es: "Resultado del test",
   },
-  correct: {
-    it: "Corrette",
-    en: "Correct",
-    fr: "Correctes",
-    es: "Correctas",
-  },
-  score: {
-    it: "Punteggio",
-    en: "Score",
-    fr: "Score",
-    es: "Puntuación",
-  },
-  mistakes: {
-    it: "Errori",
-    en: "Mistakes",
-    fr: "Erreurs",
-    es: "Errores",
-  },
+  correct: { it: "Corrette", en: "Correct", fr: "Correctes", es: "Correctas" },
+  score: { it: "Punteggio", en: "Score", fr: "Score", es: "Puntuación" },
+  mistakes: { it: "Errori", en: "Mistakes", fr: "Erreurs", es: "Errores" },
   diagnosisGood: {
     it: "Buon inizio. Ma l'esame reale è più lungo e meno permissivo.",
     en: "Good start. But the real exam is longer and less forgiving.",
@@ -86,23 +103,23 @@ const COPY = {
     es: "Has cometido {wrong} errores. Premium te ayuda a entender por qué y a corregir tus lagunas.",
   },
   urgencyLineGood: {
-  it: "Hai fatto 20 domande e sei già al {score}%. Sei vicino — non perdere il ritmo adesso.",
-  en: "You answered 20 questions and you're already at {score}%. You're close — don't lose momentum now.",
-  fr: "Vous avez répondu à 20 questions et vous êtes déjà à {score}%. Vous êtes proche — ne perdez pas votre élan.",
-  es: "Has respondido 20 preguntas y ya estás al {score}%. Estás cerca — no pierdas el ritmo ahora.",
-},
-urgencyLineMedium: {
-  it: "Hai usato le 20 domande gratuite di oggi. Con {wrong} errori da correggere, aspettare domani ti costa.",
-  en: "You've used your 20 free questions today. With {wrong} mistakes to fix, waiting until tomorrow costs you.",
-  fr: "Vous avez utilisé vos 20 questions gratuites. Avec {wrong} erreurs à corriger, attendre demain vous coûte.",
-  es: "Has usado tus 20 preguntas gratuitas. Con {wrong} errores por corregir, esperar a mañana te cuesta.",
-},
-urgencyLineLow: {
-  it: "Hai usato le 20 domande gratuite di oggi. Con questo livello, non puoi permetterti di aspettare domani.",
-  en: "You've used your 20 free questions today. At this level, you can't afford to wait until tomorrow.",
-  fr: "Vous avez utilisé vos 20 questions gratuites. À ce niveau, vous ne pouvez pas vous permettre d'attendre.",
-  es: "Has usado tus 20 preguntas gratuitas. Con este nivel, no puedes permitirte esperar hasta mañana.",
-},
+    it: "Hai fatto 20 domande e sei già al {score}%. Sei vicino — non perdere il ritmo adesso.",
+    en: "You answered 20 questions and you're already at {score}%. You're close — don't lose momentum now.",
+    fr: "Vous avez répondu à 20 questions et vous êtes déjà à {score}%. Vous êtes proche — ne perdez pas votre élan.",
+    es: "Has respondido 20 preguntas y ya estás al {score}%. Estás cerca — no pierdas el ritmo ahora.",
+  },
+  urgencyLineMedium: {
+    it: "Hai usato le 20 domande gratuite di oggi. Con {wrong} errori da correggere, aspettare domani ti costa.",
+    en: "You've used your 20 free questions today. With {wrong} mistakes to fix, waiting until tomorrow costs you.",
+    fr: "Vous avez utilisé vos 20 questions gratuites. Avec {wrong} erreurs à corriger, attendre demain vous coûte.",
+    es: "Has usado tus 20 preguntas gratuitas. Con {wrong} errores por corregir, esperar a mañana te cuesta.",
+  },
+  urgencyLineLow: {
+    it: "Hai usato le 20 domande gratuite di oggi. Con questo livello, non puoi permetterti di aspettare domani.",
+    en: "You've used your 20 free questions today. At this level, you can't afford to wait until tomorrow.",
+    fr: "Vous avez utilisé vos 20 questions gratuites. À ce niveau, vous ne pouvez pas vous permettre d'attendre.",
+    es: "Has usado tus 20 preguntas gratuitas. Con este nivel, no puedes permitirte esperar hasta mañana.",
+  },
   ctaHook: {
     it: "Non perdere il ritmo. Continua adesso senza aspettare.",
     en: "Don't lose your momentum. Keep going now without waiting.",
@@ -116,10 +133,10 @@ urgencyLineLow: {
     es: "Por el precio de una pizza, desbloquea quizzes ilimitados, explicaciones y repaso de errores.",
   },
   cta: {
-    it: "Sblocca Premium – 9,99€/mese",
-    en: "Unlock Premium – €9.99/month",
-    fr: "Débloquez Premium – 9,99€/mois",
-    es: "Desbloquea Premium – 9,99€/mes",
+    it: "Sblocca Premium",
+    en: "Unlock Premium",
+    fr: "Débloquez Premium",
+    es: "Desbloquea Premium",
   },
   ctaLoading: {
     it: "Apertura checkout...",
@@ -146,30 +163,10 @@ urgencyLineLow: {
     es: "Qué incluye Premium",
   },
   features: {
-    it: [
-      "Quiz illimitati",
-      "Spiegazioni complete per ogni domanda",
-      "Modalità esame reale",
-      "Ripasso errori mirati",
-    ],
-    en: [
-      "Unlimited quizzes",
-      "Full explanations for every question",
-      "Real exam mode",
-      "Targeted error review",
-    ],
-    fr: [
-      "Quiz illimités",
-      "Explications complètes pour chaque question",
-      "Mode examen réel",
-      "Révision des erreurs ciblée",
-    ],
-    es: [
-      "Quizzes ilimitados",
-      "Explicaciones completas para cada pregunta",
-      "Modo examen real",
-      "Repaso de errores específico",
-    ],
+    it: ["Quiz illimitati", "Spiegazioni complete per ogni domanda", "Modalità esame reale", "Ripasso errori mirati"],
+    en: ["Unlimited quizzes", "Full explanations for every question", "Real exam mode", "Targeted error review"],
+    fr: ["Quiz illimités", "Explications complètes pour chaque question", "Mode examen réel", "Révision des erreurs ciblée"],
+    es: ["Quizzes ilimitados", "Explicaciones completas para cada pregunta", "Modo examen real", "Repaso de errores específico"],
   },
   checkoutError: {
     it: "Errore durante l'apertura del checkout. Riprova.",
@@ -180,8 +177,7 @@ urgencyLineLow: {
 } as const;
 
 function safeLang(lang?: Locale): Locale {
-  return lang === "it" || lang === "en" || lang === "fr" || lang === "es"
-    ? lang : "en";
+  return lang === "it" || lang === "en" || lang === "fr" || lang === "es" ? lang : "en";
 }
 
 function interpolate(value: string, vars: Record<string, string | number>) {
@@ -203,23 +199,22 @@ export default function PremiumQuestionLimitGate({
   const L = safeLang(lang);
   const [isLoading, setIsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_annual");
+
+  const plans = PLANS[L];
 
   const total = totalAnswered ?? currentCount ?? freeLimit;
   const correct = correctCount ?? 0;
   const wrong = wrongCount ?? Math.max(total - correct, 0);
   const percentage = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-  const resultLevel =
-    percentage >= 80 ? "good" : percentage >= 60 ? "medium" : "low";
+  const resultLevel = percentage >= 80 ? "good" : percentage >= 60 ? "medium" : "low";
 
   const diagnosis =
-    resultLevel === "good"
-      ? COPY.diagnosisGood[L]
-      : resultLevel === "medium"
-      ? COPY.diagnosisMedium[L]
-      : COPY.diagnosisLow[L];
+    resultLevel === "good" ? COPY.diagnosisGood[L]
+    : resultLevel === "medium" ? COPY.diagnosisMedium[L]
+    : COPY.diagnosisLow[L];
 
-  // ✅ Titolo contestuale con nome certificazione
   const title = certificationName
     ? COPY.titleWithCert[L](certificationName)
     : COPY.titleGeneric[L];
@@ -237,13 +232,14 @@ export default function PremiumQuestionLimitGate({
           topic_slug: topicSlug ?? null,
           lang: L,
           score: percentage,
+          plan: selectedPlan,
         }),
       }).catch(console.error);
 
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": L },
-        body: JSON.stringify({ lang: L }),
+        body: JSON.stringify({ lang: L, plan: selectedPlan }),
       });
 
       const data: { url?: string; error?: string } = await res.json();
@@ -264,7 +260,7 @@ export default function PremiumQuestionLimitGate({
         🔒 {COPY.badge[L]}
       </div>
 
-      {/* Titolo contestuale */}
+      {/* Titolo */}
       <h2 className="mb-4 text-xl font-semibold leading-snug tracking-tight text-gray-900 sm:text-2xl">
         {title}
       </h2>
@@ -297,7 +293,6 @@ export default function PremiumQuestionLimitGate({
           />
         </div>
 
-        {/* Diagnosi */}
         <p className="mt-3 text-sm text-gray-600">
           {diagnosis}{" "}
           {wrong > 0 && (
@@ -308,20 +303,48 @@ export default function PremiumQuestionLimitGate({
         </p>
       </div>
 
-      {/* CTA block */}
+      {/* Urgency */}
       <p className="mb-1 text-sm font-semibold text-amber-900">
-  {interpolate(
-    resultLevel === "good"
-      ? COPY.urgencyLineGood[L]
-      : resultLevel === "medium"
-      ? COPY.urgencyLineMedium[L]
-      : COPY.urgencyLineLow[L],
-    { score: percentage, wrong }
-  )}
-</p>
-<p className="mb-1 text-sm font-semibold text-gray-900">{COPY.ctaHook[L]}</p>
+        {interpolate(
+          resultLevel === "good" ? COPY.urgencyLineGood[L]
+          : resultLevel === "medium" ? COPY.urgencyLineMedium[L]
+          : COPY.urgencyLineLow[L],
+          { score: percentage, wrong }
+        )}
+      </p>
+      <p className="mb-1 text-sm font-semibold text-gray-900">{COPY.ctaHook[L]}</p>
       <p className="mb-4 text-sm text-gray-500">{COPY.pizzaLine[L]}</p>
 
+      {/* Selettore piano */}
+      <div className="mb-3 grid grid-cols-3 gap-2">
+        {plans.map((plan) => {
+          const isSelected = plan.id === selectedPlan;
+          return (
+            <button
+              key={plan.id}
+              type="button"
+              onClick={() => setSelectedPlan(plan.id)}
+              className={`relative rounded-xl border-2 p-2.5 text-center transition ${
+                isSelected
+                  ? "border-gray-900 bg-gray-900 text-white"
+                  : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
+              }`}
+            >
+              {plan.badge && (
+                <span className={`absolute -top-2 right-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  isSelected ? "bg-white text-black" : "bg-gray-900 text-white"
+                }`}>
+                  {plan.badge}
+                </span>
+              )}
+              <div className="text-xs font-semibold">{plan.label}</div>
+              <div className="text-xs mt-0.5 font-bold">{plan.price}</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* CTA */}
       <button
         type="button"
         onClick={startPremiumCheckout}
@@ -333,7 +356,7 @@ export default function PremiumQuestionLimitGate({
 
       <p className="mt-2 text-center text-xs text-gray-400">{COPY.cancelNote[L]}</p>
 
-      {/* ✅ "Torna indietro" degradato a link testuale */}
+      {/* Link torna indietro */}
       {onBack && (
         <button
           type="button"
@@ -344,7 +367,7 @@ export default function PremiumQuestionLimitGate({
         </button>
       )}
 
-      {/* ✅ Accordion dettagli — collassato di default */}
+      {/* Accordion dettagli */}
       <div className="mt-5 border-t border-gray-100">
         <button
           type="button"
