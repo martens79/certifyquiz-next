@@ -232,6 +232,15 @@ const pageTopics =
           </section>
         )}
 
+
+         {/* 👇 LEAD MAGNET */}
+<ContextualLeadMagnetBox
+  lang={lang}
+  variant="cert"
+  certificationSlug={data.slug}
+  className="mb-8"
+/>
+
         {/* CTA quiz */}
 <div className="mt-2 mb-6 text-center">
   <Link
@@ -248,13 +257,6 @@ const pageTopics =
   </Link>
 </div>
 
-{/* 👇 LEAD MAGNET */}
-<ContextualLeadMagnetBox
-  lang={lang}
-  variant="cert"
-  certificationSlug={data.slug}
-  className="mb-8"
-/>
 
         {/* Practice box */}
         <CertificationPracticeBox
