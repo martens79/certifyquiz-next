@@ -6,7 +6,10 @@ import { usePathname } from "next/navigation";
 import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import type { Locale } from "@/lib/i18n";
 
-import { AuthProvider } from "@/components/auth/AuthProvider"; // <-- metti il path giusto
+import { AuthProvider } from "@/components/auth/AuthProvider";
+
+// 👇 IMPORT NUOVO
+import LanguageSuggestionBanner from "@/components/i18n/LanguageSuggestionBanner";
 
 export default function RootShellClient({ children }: { children: ReactNode }) {
   const p = usePathname() ?? "/";
@@ -16,7 +19,14 @@ export default function RootShellClient({ children }: { children: ReactNode }) {
 
   return (
     <AuthProvider>
-      <LayoutShellClient lang={lang}>{children}</LayoutShellClient>
+
+      {/* 👇 Banner suggerimento lingua */}
+      <LanguageSuggestionBanner />
+
+      <LayoutShellClient lang={lang}>
+        {children}
+      </LayoutShellClient>
+
     </AuthProvider>
   );
 }
