@@ -169,6 +169,11 @@ const pageTopics =
 
   const basePath = lang === "en" ? "" : `/${lang}`;
 
+
+  //solo le cert foundations hanno il riquadro con le guide 
+  const isFoundationCert =
+  data.slug.includes("foundations") || data.slug.includes("foundation");
+
   const quizHref = data.quizRoute?.[lang] ?? data.quizRoute?.it ?? `${basePath}/quiz/${data.slug}`;
 
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
@@ -299,7 +304,7 @@ const pageTopics =
 
           {/* Exam references */}
           {examRefs.length > 0 && (
-            <div className="bg-blue-100 p-4 rounded-xl shadow">
+          <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
                 {({
                   it: "Esami ufficiali di riferimento",
@@ -330,6 +335,37 @@ const pageTopics =
             </div>
           )}
 
+
+            {isFoundationCert && (
+  <div className="bg-blue-100 p-4 rounded-xl shadow">
+    <h2 className="text-lg font-semibold text-blue-800 mb-2">
+      {({
+        it: "Materiale di ripasso",
+        en: "Study materials",
+        fr: "Ressources de révision",
+        es: "Material de repaso",
+      } as const)[lang]}
+    </h2>
+
+    <p className="text-sm text-gray-800 mb-4">
+      {({
+        it: "Guide e materiali dedicati saranno disponibili presto.",
+        en: "Guides and study materials will be available soon.",
+        fr: "Des guides et supports seront bientôt disponibles.",
+        es: "Las guías y materiales estarán disponibles pronto.",
+      } as const)[lang]}
+    </p>
+
+    <button
+      disabled
+      className="inline-flex items-center justify-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white cursor-not-allowed"
+    >
+      🚧 Coming Soon
+    </button>
+  </div>
+)}
+
+    
           {/* Why choose */}
           {whyChoose.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow col-span-full">
