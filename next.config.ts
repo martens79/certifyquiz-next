@@ -166,17 +166,17 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/ccst/:path*", destination: "/fr/certifications/cisco-ccst-networking/:path*", permanent: true },
       { source: "/es/certificaciones/ccst", destination: "/es/certificaciones/cisco-ccst-networking", permanent: true },
       { source: "/es/certificaciones/ccst/:path*", destination: "/es/certificaciones/cisco-ccst-networking/:path*", permanent: true },
-{ source: "/certifications/cisco-ccst-cybersecurity", destination: "/certifications/cisco-ccst-security", permanent: true },
-{ source: "/certifications/cisco-ccst-cybersecurity/:path*", destination: "/certifications/cisco-ccst-security/:path*", permanent: true },
+{ source: "/certifications/cisco-ccst-security", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-security/:path*", destination: "/certifications/cisco-ccst-cybersecurity/:path*", permanent: true },
 
-{ source: "/it/certificazioni/cisco-ccst-cybersecurity", destination: "/it/certificazioni/cisco-ccst-security", permanent: true },
-{ source: "/it/certificazioni/cisco-ccst-cybersecurity/:path*", destination: "/it/certificazioni/cisco-ccst-security/:path*", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-security", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-security/:path*", destination: "/it/certificazioni/cisco-ccst-cybersecurity/:path*", permanent: true },
 
-{ source: "/fr/certifications/cisco-ccst-cybersecurity", destination: "/fr/certifications/cisco-ccst-security", permanent: true },
-{ source: "/fr/certifications/cisco-ccst-cybersecurity/:path*", destination: "/fr/certifications/cisco-ccst-security/:path*", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-security", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-security/:path*", destination: "/fr/certifications/cisco-ccst-cybersecurity/:path*", permanent: true },
 
-{ source: "/es/certificaciones/cisco-ccst-cybersecurity", destination: "/es/certificaciones/cisco-ccst-security", permanent: true },
-{ source: "/es/certificaciones/cisco-ccst-cybersecurity/:path*", destination: "/es/certificaciones/cisco-ccst-security/:path*", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-security", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-security/:path*", destination: "/es/certificaciones/cisco-ccst-cybersecurity/:path*", permanent: true },
 
       // CompTIA Network+
       { source: "/certifications/comptia-network-plus", destination: "/certifications/network-plus", permanent: true },
