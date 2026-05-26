@@ -40,7 +40,8 @@ const normalizeSlug = (raw: unknown) => {
   if (s === "comptia-security-plus") return "security-plus";
 
   // alias CCST cybersecurity (vecchio/DB) → slug canonico che ESISTE (security)
-  if (s === "cisco-ccst-cybersecurity") return "cisco-ccst-security";
+  // alias vecchio → nuovo canonico
+if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
 
   return s;
 };
@@ -60,7 +61,7 @@ const LIVE = new Set([
 
   // ✅ canonici corretti
   "security-plus",
-  "cisco-ccst-security",
+  "cisco-ccst-cybersecurity"
 ]);
 
 /* ---------------------------- Helpers & guards ---------------------------- */
