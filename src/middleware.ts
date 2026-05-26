@@ -71,14 +71,6 @@ export function middleware(req: NextRequest) {
     return redirect301(req, "/it/termini");
   }
 
-  // CCST Cybersecurity alias -> canonical slug
-  if (pathname === "/certifications/cisco-ccst-cybersecurity") {
-    return redirect301(req, "/certifications/cisco-ccst-security");
-  }
-  if (pathname === "/it/certificazioni/cisco-ccst-cybersecurity") {
-    return redirect301(req, "/it/certificazioni/cisco-ccst-security");
-  }
-
   // Slug legacy (certifications)
   if (pathname === "/certifications/tensorflow-developer")
     return redirect301(req, "/certifications/tensorflow");
