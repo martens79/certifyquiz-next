@@ -300,6 +300,18 @@ const nextConfig: NextConfig = {
       { source: "/favicon.ico/:path*", destination: "/favicon.ico", permanent: true },
     ];
   },
+  async headers() {
+    return [
+      {
+        source: '/:lang(it|fr|es)/login',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+      {
+        source: '/login',  // EN (root, senza prefisso lingua)
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
