@@ -124,10 +124,7 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
     alternates: { canonical, languages },
 
     // 🔥 anti-duplicati: /en/* non indicizzabile
-    robots:
-      L === "en"
-        ? { index: false, follow: true }
-        : { index: true, follow: true },
+   robots: { index: true, follow: true },
 
     openGraph: {
       type: "website",
