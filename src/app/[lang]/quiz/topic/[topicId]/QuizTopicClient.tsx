@@ -246,6 +246,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         isPremiumUser,
         premiumLocked,
         isAuthenticated,
+        isAdmin: user?.role === "admin",
       }}
       onFeedback={async ({ questionId, type, description }) => {
         const token = getAccessToken();

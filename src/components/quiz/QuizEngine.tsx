@@ -1225,8 +1225,13 @@ const isExam = effectiveMode === 'exam';
 const isAssessment = effectiveMode === 'assessment';
 const isTestLike = isExam || isAssessment;
 
+const isAdmin = !!context?.isAdmin;
+
 const freeLimitReached =
-  !isAssessment && !isPremiumUser && idx >= FREE_LIMIT;
+  !isAssessment &&
+  !isPremiumUser &&
+  !isAdmin &&
+  idx >= FREE_LIMIT;
 
 console.log("QUIZ DEBUG", {
   idx,
