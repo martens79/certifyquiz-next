@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from "@/components/auth/AuthProvider";
 
 import QuizEngine from '@/components/quiz/QuizEngine';
 import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
@@ -172,9 +173,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
- const premium = getPremiumState({
-  user: null, // finché non colleghi /me reale
-});
+const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
 // slug non mappato
@@ -354,8 +353,9 @@ if (!certId) {
       ? '← Retour à la certification'
       : '← Back to certification',
 
-  isPremiumUser: premium.isPremiumUser,
-  premiumLocked: premium.premiumLocked,
+  isPremiumUser,
+  premiumLocked,
+  isAdmin,
   isAuthenticated, // ✅ aggiunto
 }}
 
