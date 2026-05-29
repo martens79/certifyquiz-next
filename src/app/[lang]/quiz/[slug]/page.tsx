@@ -224,23 +224,89 @@ function resolveQuizSlug(inputRaw: string): string {
 
 function categoryLabel(key: CategoryKey, lang: Locale) {
   const map: Record<CategoryKey, { it: string; en: string; fr: string; es: string }> = {
-    default: { it: "Categoria", en: "Category", fr: "Catégorie", es: "Categoría" },
-    base: { it: "Base", en: "Basic", fr: "Bases", es: "Básico" },
-    sicurezza: { it: "Sicurezza", en: "Security", fr: "Sécurité", es: "Seguridad" },
-    reti: { it: "Reti", en: "Networking", fr: "Réseaux", es: "Redes" },
-    cloud: { it: "Cloud", en: "Cloud", fr: "Cloud", es: "Cloud" },
-    database: { it: "Database", en: "Database", fr: "Base de données", es: "Base de datos" },
-    programmazione: { it: "Programmazione", en: "Programming", fr: "Programmation", es: "Programación" },
-    virtualizzazione: { it: "Virtualizzazione", en: "Virtualization", fr: "Virtualisation", es: "Virtualización" },
-    ai: { it: "Intelligenza Artificiale", en: "Artificial Intelligence", fr: "Intelligence Artificielle", es: "Inteligencia Artificial" },
-    management: { it: "Management", en: "Management", fr: "Management", es: "Management" },
+    default: {
+      it: "Categoria",
+      en: "Category",
+      fr: "Catégorie",
+      es: "Categoría",
+    },
+
+    base: {
+      it: "Base",
+      en: "Basic",
+      fr: "Bases",
+      es: "Básico",
+    },
+
+    sicurezza: {
+      it: "Sicurezza",
+      en: "Security",
+      fr: "Sécurité",
+      es: "Seguridad",
+    },
+
+    reti: {
+      it: "Reti",
+      en: "Networking",
+      fr: "Réseaux",
+      es: "Redes",
+    },
+
+    cloud: {
+      it: "Cloud",
+      en: "Cloud",
+      fr: "Cloud",
+      es: "Cloud",
+    },
+
+    database: {
+      it: "Database",
+      en: "Database",
+      fr: "Base de données",
+      es: "Base de datos",
+    },
+
+    programmazione: {
+      it: "Programmazione",
+      en: "Programming",
+      fr: "Programmation",
+      es: "Programación",
+    },
+
+    virtualizzazione: {
+      it: "Virtualizzazione",
+      en: "Virtualization",
+      fr: "Virtualisation",
+      es: "Virtualización",
+    },
+
+    ai: {
+      it: "Intelligenza Artificiale",
+      en: "Artificial Intelligence",
+      fr: "Intelligence Artificielle",
+      es: "Inteligencia Artificial",
+    },
+
+    management: {
+      it: "Management",
+      en: "Management",
+      fr: "Management",
+      es: "Management",
+    },
+
     "data-analytics": {
-  it: "Data & Analytics",
-  en: "Data & Analytics",
-  fr: "Data & Analytics",
-  es: "Datos y Analítica",
-  foundations: { it: "Foundations", en: "Foundations", fr: "Foundations", es: "Foundations" }
-},
+      it: "Data & Analytics",
+      en: "Data & Analytics",
+      fr: "Data & Analytics",
+      es: "Datos y Analítica",
+    },
+
+    foundations: {
+      it: "Foundations by CertifyQuiz",
+      en: "Foundations by CertifyQuiz",
+      fr: "Foundations by CertifyQuiz",
+      es: "Foundations by CertifyQuiz",
+    },
   };
 
   const o = map[key] ?? map.default;
