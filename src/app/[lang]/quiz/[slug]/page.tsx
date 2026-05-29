@@ -447,33 +447,41 @@ export default async function QuizTopicsPage({
       ? "Lancer le quiz mixte →"
       : "Iniciar quiz mixto →";
 
-  const mockLabel = "Mock exam";
-  const mockDesc =
-    L === "it"
-      ? "Simulazione d’esame con timer e punteggio finale."
-      : L === "en"
-      ? "Real exam simulation with time limit and final score."
-      : L === "fr"
-      ? "Simulation d’examen avec chronomètre et score final."
-      : "Simulación de examen con temporizador y puntuación final.";
+  const mockLabel =
+  L === "it"
+    ? "Simulazione d'esame"
+    : L === "en"
+    ? "Mock Exam"
+    : L === "fr"
+    ? "Examen blanc"
+    : "Simulación de examen";
 
-  const mockCta =
-    L === "it"
-      ? "Avvia mock exam 🎯 →"
-      : L === "en"
-      ? "Start mock exam 🎯 →"
-      : L === "fr"
-      ? "Démarrer le mock exam 🎯 →"
-      : "Iniciar mock exam 🎯 →";
+const mockDesc =
+  L === "it"
+    ? "Simulazione d’esame con timer e punteggio finale."
+    : L === "en"
+    ? "Real exam simulation with time limit and final score."
+    : L === "fr"
+    ? "Examen blanc avec chronomètre et score final."
+    : "Simulación de examen con temporizador y puntuación final.";
 
-  const certBtnLabel =
-    L === "it"
-      ? "Pagina certificazione"
-      : L === "en"
-      ? "View certification"
-      : L === "fr"
-      ? "Voir la certification"
-      : "Ver certificación";
+const mockCta =
+  L === "it"
+    ? "Avvia simulazione 🎯 →"
+    : L === "en"
+    ? "Start Mock Exam 🎯 →"
+    : L === "fr"
+    ? "Lancer l'examen blanc 🎯 →"
+    : "Iniciar simulación 🎯 →";
+
+    const certBtnLabel =
+  L === "it"
+    ? "Pagina certificazione"
+    : L === "en"
+    ? "View certification"
+    : L === "fr"
+    ? "Voir la certification"
+    : "Ver certificación";
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
