@@ -239,6 +239,7 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
   en: "Data & Analytics",
   fr: "Data & Analytics",
   es: "Datos y Analítica",
+  foundations: { it: "Foundations", en: "Foundations", fr: "Foundations", es: "Foundations" }
 },
   };
 

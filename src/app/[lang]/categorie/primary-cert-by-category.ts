@@ -12,4 +12,5 @@ export const PRIMARY_CERT_SLUG_BY_CATEGORY: Record<CategoryKey, string> = {
   ai: "ai-foundations",
   management: "pmp",
   "data-analytics": "data-analytics-foundations",
+  foundations: "foundations",
 };

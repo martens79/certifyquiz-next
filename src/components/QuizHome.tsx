@@ -292,6 +292,18 @@ cloud: [
     name: "Microsoft DP-900 Azure Data Fundamentals",
     link: "/quiz/dp-900-azure-data-fundamentals",
   },
+  
+],
+foundations: [
+  { name: "AI Foundations", link: "/quiz/ai-foundations" },
+  { name: "Networking Foundations", link: "/quiz/networking-foundations" },
+  { name: "Cloud Foundations", link: "/quiz/cloud-foundations" },
+  { name: "Cybersecurity Foundations", link: "/quiz/cybersecurity-foundations" },
+  { name: "Database Foundations", link: "/quiz/database-foundations" },
+  { name: "Programming Foundations", link: "/quiz/programming-foundations" },
+  { name: "Virtualization Foundations", link: "/quiz/virtualization-foundations" },
+  { name: "Project Management Foundations", link: "/quiz/project-management-foundations" },
+  { name: "Data Analytics Foundations", link: "/quiz/data-analytics-foundations" },
 ],
 };
 
