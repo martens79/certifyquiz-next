@@ -106,7 +106,8 @@ export type CategoryKey =
   | "virtualizzazione"
   | "management"
   | "ai"
-  | "data-analytics";
+  | "data-analytics"
+  | "foundations";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
@@ -121,6 +122,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "intelligenza-artificiale",
     "data-analytics": "analisi-dei-dati",
+    foundations: "fondamenti",
   },
 
   en: {
@@ -135,6 +137,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "artificial-intelligence",
     "data-analytics": "data-analytics",
+    foundations: "foundations",
   },
 
   fr: {
@@ -149,6 +152,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "intelligence-artificielle",
     "data-analytics": "analyse-des-donnees",
+    foundations: "fondamentaux",
   },
 
   es: {
@@ -163,6 +167,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "gestion-management",
     ai: "inteligencia-artificial",
     "data-analytics": "analisis-de-datos",
+    foundations: "fundamentos",
   },
 };
 
@@ -178,6 +183,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     management: "management",
     "intelligenza-artificiale": "ai",
     "analisi-dei-dati": "data-analytics",
+    fondamenti: "foundations",
   },
 
   en: {
@@ -191,33 +197,36 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     management: "management",
     "artificial-intelligence": "ai",
     "data-analytics": "data-analytics",
+    foundations: "foundations",
   },
 
-  fr: {
-    fondamentaux: "base",
-    securite: "sicurezza",
-    reseaux: "reti",
-    cloud: "cloud",
-    "bases-de-donnees": "database",
-    programmation: "programmazione",
-    virtualisation: "virtualizzazione",
-    management: "management",
-    "intelligence-artificielle": "ai",
-    "analyse-des-donnees": "data-analytics",
-  },
+ fr: {
+  bases: "base",
+  securite: "sicurezza",
+  reseaux: "reti",
+  cloud: "cloud",
+  "bases-de-donnees": "database",
+  programmation: "programmazione",
+  virtualisation: "virtualizzazione",
+  management: "management",
+  "intelligence-artificielle": "ai",
+  "analyse-des-donnees": "data-analytics",
+  fondamentaux: "foundations",
+},
 
-  es: {
-    fundamentos: "base",
-    seguridad: "sicurezza",
-    redes: "reti",
-    cloud: "cloud",
-    "bases-de-datos": "database",
-    programacion: "programmazione",
-    virtualizacion: "virtualizzazione",
-    "gestion-management": "management",
-    "inteligencia-artificial": "ai",
-    "analisis-de-datos": "data-analytics",
-  },
+es: {
+  basico: "base",
+  seguridad: "sicurezza",
+  redes: "reti",
+  cloud: "cloud",
+  "bases-de-datos": "database",
+  programacion: "programmazione",
+  virtualizacion: "virtualizzazione",
+  "gestion-management": "management",
+  "inteligencia-artificial": "ai",
+  "analisis-de-datos": "data-analytics",
+  fundamentos: "foundations",
+},
 };
 
 const categorySection = (lang: Locale): string =>

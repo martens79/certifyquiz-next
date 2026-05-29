@@ -196,6 +196,22 @@ const CATEGORY_META: Record<
       es: "Power BI, SQL, dashboards, KPI y análisis de datos.",
     },
   },
+  foundations: {
+  key: "foundations",
+  emoji: "🚀",
+  title: {
+    it: "Foundations by CertifyQuiz",
+    en: "Foundations by CertifyQuiz",
+    fr: "Foundations by CertifyQuiz",
+    es: "Foundations by CertifyQuiz",
+  },
+  subtitle: {
+    it: "Certificazioni gratuite create da CertifyQuiz per costruire solide basi IT.",
+    en: "Free certifications created by CertifyQuiz to build strong IT fundamentals.",
+    fr: "Certifications gratuites créées par CertifyQuiz pour construire de solides bases IT.",
+    es: "Certificaciones gratuitas creadas por CertifyQuiz para construir bases sólidas de IT.",
+  },
+},
 };
 
 
@@ -209,7 +225,8 @@ const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
   virtualizzazione: "virtualization",
   ai: "ai",
   management: "management",
-  "data-analytics": "data-analytics"
+  "data-analytics": "data-analytics",
+  foundations: "fundamentals",
 };
 
 
@@ -391,7 +408,22 @@ const roadmapLabel =
     : "Not sure where to start? Open the roadmap →";
 
 
-  const certSlugs = CERT_SLUGS.filter((s) => CERT_CATEGORY_BY_SLUG[s] === key);
+  const FOUNDATION_CERT_SLUGS = [
+  "ai-foundations",
+  "networking-foundations",
+  "cloud-foundations",
+  "cybersecurity-foundations",
+  "database-foundations",
+  "programming-foundations",
+  "virtualization-foundations",
+  "project-management-foundations",
+  "data-analytics-foundations",
+];
+
+const certSlugs =
+  key === "foundations"
+    ? FOUNDATION_CERT_SLUGS
+    : CERT_SLUGS.filter((s) => CERT_CATEGORY_BY_SLUG[s] === key);
 
   const breadcrumb = {
     "@context": "https://schema.org",

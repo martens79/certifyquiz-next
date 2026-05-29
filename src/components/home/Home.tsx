@@ -22,6 +22,7 @@ import {
   Cpu,
   BriefcaseBusiness,
   BarChart3,
+  Rocket,
 } from "lucide-react";
 
 /* Helpers */
@@ -84,6 +85,11 @@ const CATEGORY_UI: Record<
     bg: "bg-teal-50",
     border: "border-teal-200",
     ring: "hover:ring-2 hover:ring-teal-200/60",
+  },
+  foundations: {
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    ring: "hover:ring-2 hover:ring-indigo-200/60",
   },
 } as const;
 
@@ -635,7 +641,31 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 );
     })}
     </div>
+{/* FOUNDATIONS */}
+<Link
+  href={categoryPath(safeLang, "foundations" as any)}
+  className="mt-4 block w-full rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-5 shadow-sm hover:ring-2 hover:ring-indigo-200/60 transition"
+>
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="max-w-3xl">
+      <div className="text-xs font-bold uppercase tracking-wide text-indigo-700">
+        FREE • CERTIFYQUIZ
+      </div>
 
+      <h3 className="mt-1 text-xl font-extrabold text-slate-800">
+        🚀 Foundations by CertifyQuiz
+      </h3>
+
+      <p className="mt-2 text-sm text-slate-600">
+        Start with free beginner certifications created by CertifyQuiz.
+      </p>
+    </div>
+
+    <span className="shrink-0 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white">
+      Explore Foundations →
+    </span>
+  </div>
+</Link>
   <div className="text-center mt-5">
     <Link
       href={withLang(safeLang as any, "/quiz-suggeriti")}

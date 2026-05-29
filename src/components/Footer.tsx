@@ -22,13 +22,18 @@ export default function Footer({ lang }: { lang: Locale }) {
   const year = new Date().getFullYear();
 
   // ✅ user (come in Header)
-  const [user, setUser] = useState<MinimalUser | null>(() => getUser());
+  const [user, setUser] = useState<MinimalUser | null>(null);
 
   // ✅ newsletter state
   const [email, setEmail] = useState("");
   const [hp, setHp] = useState(""); // honeypot
   const [status, setStatus] = useState<Status>("idle");
   const [msg, setMsg] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ✅ già iscritto (browser)
   const [alreadySubscribed, setAlreadySubscribed] = useState(false);
@@ -227,7 +232,7 @@ export default function Footer({ lang }: { lang: Locale }) {
         <div>
           <h3 className="mb-2 text-sm font-semibold">{t.newsletterTitle ?? "Newsletter"}</h3>
 
-          {hideNewsletter ? (
+          {mounted && hideNewsletter ? (
             <p className="text-sm text-gray-600">
               {t.newsletterOk ?? "Subscribed!"}
             </p>

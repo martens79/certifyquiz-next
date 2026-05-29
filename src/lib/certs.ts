@@ -47,6 +47,7 @@ export type CategoryKey =
   | "ai"
   | "management"
   | "data-analytics"
+  | "foundations"
   | "default";
 
 export type CatStyle = {
@@ -97,6 +98,11 @@ export const CATEGORY_STYLES: Record<CategoryKey, CatStyle> = {
   wrapper:
     "bg-teal-50 border border-teal-200 hover:ring-2 hover:ring-teal-200/70",
   header: "bg-teal-50 border border-teal-200",
+},
+foundations: {
+  wrapper:
+    "bg-indigo-50 border border-indigo-200 hover:ring-2 hover:ring-indigo-200/70",
+  header: "bg-indigo-50 border border-indigo-200",
 },
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
