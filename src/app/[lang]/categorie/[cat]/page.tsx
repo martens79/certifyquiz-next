@@ -464,22 +464,41 @@ const certSlugs =
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
 
-      <header className={`rounded-2xl p-6 shadow-sm mb-8 ${css.header}`}>
-        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <span>{meta.emoji}</span> {meta.title[lang]}
-        </h1>
-        <p className="mt-1 opacity-80">{meta.subtitle[lang]}</p>
-        {roadmapHref && (
-  <Link
-    href={roadmapHref}
-    prefetch={false}
-    className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
-  >
-    {roadmapLabel}
-  </Link>
-)}
+     <header className={`rounded-2xl p-6 shadow-sm mb-8 ${css.header}`}>
+  <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+    <span>{meta.emoji}</span> {meta.title[lang]}
+  </h1>
 
-      </header>
+  <p className="mt-3 text-base opacity-90 max-w-4xl">
+    {lang === "it"
+      ? "Le Foundations by CertifyQuiz sono certificazioni gratuite progettate per aiutare studenti, principianti e professionisti in transizione a costruire solide basi IT prima di affrontare certificazioni come CCNA, Security+, AWS, Azure, Google Cloud, CISSP o PMP."
+      : lang === "fr"
+      ? "Les Foundations by CertifyQuiz sont des certifications gratuites conçues pour construire des bases solides avant les certifications professionnelles."
+      : lang === "es"
+      ? "Las Foundations by CertifyQuiz son certificaciones gratuitas diseñadas para construir bases sólidas antes de afrontar certificaciones profesionales."
+      : "Foundations by CertifyQuiz are free beginner certifications designed to build strong IT fundamentals before moving to professional certifications."}
+  </p>
+
+  <p className="mt-3 opacity-80 max-w-4xl">
+    {lang === "it"
+      ? "Scegli un percorso tra Networking, Cloud, Cybersecurity, AI, Programmazione, Database, Virtualizzazione, Project Management e Data Analytics."
+      : lang === "fr"
+      ? "Choisissez un parcours parmi les réseaux, le cloud, la cybersécurité, l’IA, la programmation, les bases de données, la virtualisation, la gestion de projet et l’analyse de données."
+      : lang === "es"
+      ? "Elige una ruta entre redes, cloud, ciberseguridad, IA, programación, bases de datos, virtualización, gestión de proyectos y analítica de datos."
+      : "Choose a learning path covering Networking, Cloud, Cybersecurity, AI, Programming, Databases, Virtualization, Project Management and Data Analytics."}
+  </p>
+
+  {roadmapHref && (
+    <Link
+      href={roadmapHref}
+      prefetch={false}
+      className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:underline"
+    >
+      {roadmapLabel}
+    </Link>
+  )}
+</header>
 
       {certSlugs.length === 0 ? (
         <p className="text-gray-700">
@@ -516,7 +535,33 @@ const certSlugs =
 
           
         </div>
+        
       )}
+      {key === "foundations" && (
+  <section className="mt-12 rounded-2xl border bg-white p-6 shadow-sm">
+    <h2 className="text-xl font-bold mb-4">
+      Why start with Foundations?
+    </h2>
+
+    <div className="space-y-3 text-sm text-slate-700">
+      <p>
+        Many learners jump directly into advanced certifications without mastering the fundamentals first.
+      </p>
+
+      <p>
+        Foundations provide a structured and free path into Networking, Cloud, Cybersecurity, AI, Programming, Databases, Virtualization, Project Management and Data Analytics.
+      </p>
+
+      <ul className="list-disc pl-5 space-y-1">
+        <li>Free access</li>
+        <li>Beginner friendly</li>
+        <li>Quiz-based learning</li>
+        <li>Preparation for advanced certifications</li>
+        <li>Clear career progression</li>
+      </ul>
+    </div>
+  </section>
+)}
     </main>
   );
 }
