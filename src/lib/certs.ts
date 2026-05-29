@@ -119,6 +119,18 @@ export const getCategoryStyle = (key?: string | null): CatStyle => {
  * Fallback slug → categoria.
  * Supporta sia gli slug "vecchi" del frontend sia quelli reali del DB.
  */
+const FOUNDATION_CERT_SLUGS = [
+  "ai-foundations",
+  "networking-foundations",
+  "cloud-foundations",
+  "cybersecurity-foundations",
+  "database-foundations",
+  "programming-foundations",
+  "virtualization-foundations",
+  "project-management-foundations",
+  "data-analytics-foundations",
+];
+
 export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   // Base
   itfplus: "base",
