@@ -1164,7 +1164,42 @@ const assessmentCopy =
 />
   </div>
 )}
+<div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+  <h2 className="text-lg font-bold text-blue-950">
+    {lang === "it"
+      ? "Continua ad allenarti"
+      : lang === "fr"
+      ? "Continuez à vous entraîner"
+      : lang === "es"
+      ? "Sigue practicando"
+      : "Keep practicing"}
+  </h2>
 
+  <p className="mt-2 text-sm leading-relaxed text-blue-900">
+    {lang === "it"
+      ? "Hai completato questo quiz. Puoi tornare alla certificazione e continuare con gli altri argomenti."
+      : lang === "fr"
+      ? "Vous avez terminé ce quiz. Vous pouvez revenir à la certification et continuer avec les autres sujets."
+      : lang === "es"
+      ? "Has completado este quiz. Puedes volver a la certificación y continuar con los otros temas."
+      : "You completed this quiz. You can go back to the certification and continue with the other topics."}
+  </p>
+
+  {context?.backHref && (
+    <Link
+      href={context.backHref}
+      className="mt-4 inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+    >
+      {lang === "it"
+        ? "Torna alla certificazione"
+        : lang === "fr"
+        ? "Retour à la certification"
+        : lang === "es"
+        ? "Volver a la certificación"
+        : "Back to certification"}
+    </Link>
+  )}
+</div>
             <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-2 text-sm">
                 <button
@@ -1830,28 +1865,42 @@ return (
   {isTestLike ? (
   <button
     type="button"
-    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm font-semibold"
     onClick={() => doFinish(false)}
   >
     {isAssessment
-      ? (lang === 'it'
-          ? 'Vedi risultato'
-          : lang === 'fr'
-          ? 'Voir le résultat'
-          : lang === 'es'
-          ? 'Ver resultado'
-          : 'See result')
-      : label('finish', lang)}
+      ? lang === "it"
+        ? "Vedi risultato"
+        : lang === "fr"
+        ? "Voir le résultat"
+        : lang === "es"
+        ? "Ver resultado"
+        : "See result"
+      : label("finish", lang)}
+  </button>
+) : idx === questions.length - 1 ? (
+  <button
+    type="button"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-emerald-500 text-sm font-semibold text-white"
+    onClick={() => doFinish(false)}
+  >
+    {lang === "it"
+      ? "Vedi risultato"
+      : lang === "fr"
+      ? "Voir le résultat"
+      : lang === "es"
+      ? "Ver resultado"
+      : "See result"}
   </button>
 ) : (
-    <button
-      type="button"
-      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
-      onClick={restart}
-    >
-      {label('restart', lang)}
-    </button>
-  )}
+  <button
+    type="button"
+    className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
+    onClick={restart}
+  >
+    {label("restart", lang)}
+  </button>
+)}
 </div>
 
       </div>
