@@ -1153,53 +1153,18 @@ const assessmentCopy =
  </div>
 )}
 
-            {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
-            {!isAssessmentResult && !isPremiumUser && (
+           {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
+{!isAssessmentResult && !isPremiumUser && (
   <div className="pt-2">
     <PremiumTeaserBox
-  lang={lang}
-  certificationSlug={context?.certificationSlug}
-  topicSlug={context?.topicSlug}
-  score={scorePct}
-/>
+      lang={lang}
+      certificationSlug={context?.certificationSlug}
+      topicSlug={context?.topicSlug}
+      score={scorePct}
+    />
   </div>
 )}
-<div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
-  <h2 className="text-lg font-bold text-blue-950">
-    {lang === "it"
-      ? "Continua ad allenarti"
-      : lang === "fr"
-      ? "Continuez à vous entraîner"
-      : lang === "es"
-      ? "Sigue practicando"
-      : "Keep practicing"}
-  </h2>
 
-  <p className="mt-2 text-sm leading-relaxed text-blue-900">
-    {lang === "it"
-      ? "Hai completato questo quiz. Puoi tornare alla certificazione e continuare con gli altri argomenti."
-      : lang === "fr"
-      ? "Vous avez terminé ce quiz. Vous pouvez revenir à la certification et continuer avec les autres sujets."
-      : lang === "es"
-      ? "Has completado este quiz. Puedes volver a la certificación y continuar con los otros temas."
-      : "You completed this quiz. You can go back to the certification and continue with the other topics."}
-  </p>
-
-  {context?.backHref && (
-    <Link
-      href={context.backHref}
-      className="mt-4 inline-flex rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-    >
-      {lang === "it"
-        ? "Torna alla certificazione"
-        : lang === "fr"
-        ? "Retour à la certification"
-        : lang === "es"
-        ? "Volver a la certificación"
-        : "Back to certification"}
-    </Link>
-  )}
-</div>
 <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
   <h2 className="text-lg font-bold text-blue-950">
     {lang === "it"
@@ -1268,53 +1233,26 @@ const assessmentCopy =
     )}
   </div>
 </div>
-            <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
-              <div className="flex flex-wrap gap-2 text-sm">
-                <button
-                  type="button"
-                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
-                  onClick={restart}
-                >
-                  {label('restart', lang)}
-                </button>
-                <button
-                  type="button"
-                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
-                  onClick={() => router.push(backUrl)}
-                >
-                  {label('backToQuizHome', lang)}
-                </button>
-                <button
-                  type="button"
-                  className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
-                  onClick={() => router.push(withLang(lang, '/profile'))}
-                >
-                  {label('seeProfile', lang)}
-                </button>
-              </div>
 
-             {!isAssessmentResult && !isPremiumUser && (
-  <button
-    type="button"
-    className="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 cursor-pointer"
-    onClick={() => {
-      trackQuizEvent('premium_cta_clicked', {
-        lang,
-        mode: effectiveMode,
-        source: 'quiz_result',
-        storage_scope: storageScope,
-        certification: context?.certificationName ?? null,
-        topic: context?.topicTitle ?? null,
-        score_pct: scorePct,
-      });
+<div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
+  <div className="flex flex-wrap gap-2 text-sm">
+    <button
+      type="button"
+      className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+      onClick={() => router.push(backUrl)}
+    >
+      {label("backToQuizHome", lang)}
+    </button>
 
-      router.push(pricingPath(lang));
-    }}
-  >
-    {label('seePremium', lang)}
-  </button>
-)}
-            </div>
+    <button
+      type="button"
+      className="px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer"
+      onClick={() => router.push(withLang(lang, "/profile"))}
+    >
+      {label("seeProfile", lang)}
+    </button>
+  </div>
+</div>
           </div>
         </div>
       </div>
