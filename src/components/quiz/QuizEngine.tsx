@@ -1200,6 +1200,74 @@ const assessmentCopy =
     </Link>
   )}
 </div>
+<div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+  <h2 className="text-lg font-bold text-blue-950">
+    {lang === "it"
+      ? "Continua ad allenarti"
+      : lang === "fr"
+      ? "Continuez à vous entraîner"
+      : lang === "es"
+      ? "Sigue practicando"
+      : "Keep practicing"}
+  </h2>
+
+  <p className="mt-2 text-sm leading-relaxed text-blue-900">
+    {lang === "it"
+      ? "Hai completato questo quiz. Ora puoi tornare alla certificazione, riprovare il quiz o continuare la preparazione con altri argomenti."
+      : lang === "fr"
+      ? "Vous avez terminé ce quiz. Vous pouvez maintenant revenir à la certification, refaire le quiz ou continuer votre préparation avec d’autres sujets."
+      : lang === "es"
+      ? "Has completado este quiz. Ahora puedes volver a la certificación, repetir el quiz o continuar la preparación con otros temas."
+      : "You completed this quiz. You can now go back to the certification, retry the quiz, or continue preparing with other topics."}
+  </p>
+
+  <div className="mt-4 flex flex-wrap gap-2">
+    {context?.backHref && (
+      <Link
+        href={context.backHref}
+        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+      >
+        {lang === "it"
+          ? "Torna alla certificazione"
+          : lang === "fr"
+          ? "Retour à la certification"
+          : lang === "es"
+          ? "Volver a la certificación"
+          : "Back to certification"}
+      </Link>
+    )}
+
+    <button
+      type="button"
+      onClick={restart}
+      className="rounded-xl border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100"
+    >
+      {lang === "it"
+        ? "Riprova il quiz"
+        : lang === "fr"
+        ? "Refaire le quiz"
+        : lang === "es"
+        ? "Repetir el quiz"
+        : "Retry quiz"}
+    </button>
+
+    {!isPremiumUser && (
+      <button
+        type="button"
+        onClick={() => router.push(pricingPath(lang))}
+        className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
+      >
+        {lang === "it"
+          ? "Sblocca spiegazioni Premium"
+          : lang === "fr"
+          ? "Débloquer les explications Premium"
+          : lang === "es"
+          ? "Desbloquear explicaciones Premium"
+          : "Unlock Premium explanations"}
+      </button>
+    )}
+  </div>
+</div>
             <div className="mt-4 flex flex-wrap gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-2 text-sm">
                 <button
