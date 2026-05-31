@@ -1193,12 +1193,12 @@ const assessmentCopy =
         className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
       >
         {lang === "it"
-          ? "Torna alla certificazione"
-          : lang === "fr"
-          ? "Retour à la certification"
-          : lang === "es"
-          ? "Volver a la certificación"
-          : "Back to certification"}
+  ? "Prova altri topic"
+  : lang === "fr"
+  ? "Essayer d’autres sujets"
+  : lang === "es"
+  ? "Probar otros temas"
+  : "Try other topics"}
       </Link>
     )}
 

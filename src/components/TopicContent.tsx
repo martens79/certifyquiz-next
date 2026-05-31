@@ -17,6 +17,10 @@ const quizLabels: Record<Locale, string> = {
   es: "🚀 Empezar quiz",
 };
 
+function looksLikeHtml(value: string) {
+  return /<\/?[a-z][\s\S]*>/i.test(value);
+}
+
 export default function TopicContent({
   content,
   quizRoute,
@@ -24,17 +28,20 @@ export default function TopicContent({
 }: TopicContentProps) {
   if (!content) return null;
 
+  const isHtml = looksLikeHtml(content);
+
   return (
     <section className="mt-8">
-      {/* Renderizza il contenuto del topic in Markdown:
-          ## diventa titolo, - diventa lista, ecc. */}
       <div className="prose prose-slate max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {content}
-        </ReactMarkdown>
+        {isHtml ? (
+          <div dangerouslySetInnerHTML={{ __html: content }} />
+        ) : (
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {content}
+          </ReactMarkdown>
+        )}
       </div>
 
-      {/* CTA verso il quiz collegato al topic/certificazione */}
       <div className="mt-8 text-center">
         <Link
           href={quizRoute}
