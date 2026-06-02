@@ -262,6 +262,70 @@ export function middleware(req: NextRequest) {
   if (pathname === "/es/certificaciones/comptia-network-plus") {
     return redirect301(req, "/es/certificaciones/network-plus");
   }
+    // ---------------------------------------------------------------------
+  // STATIC LEGACY PAGES
+  // Vecchie pagine statiche/localizzate non più esistenti
+  // ---------------------------------------------------------------------
+
+  if (pathname === "/it/come-funziona") {
+    return redirect301(req, "/it/percorsi");
+  }
+
+  if (pathname === "/es/como-funciona") {
+    return redirect301(req, "/es/rutas");
+  }
+
+  if (pathname === "/fr/fonctionnement") {
+    return redirect301(req, "/fr/parcours");
+  }
+
+  if (pathname === "/es/contactos") {
+    return redirect301(req, "/es");
+  }
+
+  if (pathname === "/fr/inizia") {
+    return redirect301(req, "/fr");
+  }
+
+  // ---------------------------------------------------------------------
+  // LEGACY HUBS
+  // ---------------------------------------------------------------------
+
+  if (pathname === "/hub/security") {
+    return redirect301(req, "/categories/security");
+  }
+
+  if (pathname === "/it/hub/security") {
+    return redirect301(req, "/it/categorie/sicurezza");
+  }
+
+  if (pathname === "/es/hub/security") {
+    return redirect301(req, "/es/categorias/seguridad");
+  }
+
+  if (pathname === "/fr/hub/security") {
+    return redirect301(req, "/fr/categories/securite");
+  }
+
+  // ---------------------------------------------------------------------
+  // ECDL -> ICDL
+  // ---------------------------------------------------------------------
+
+  if (pathname === "/certifications/ecdl" || pathname === "/en/certifications/ecdl") {
+    return redirect301(req, "/certifications/icdl");
+  }
+
+  if (pathname === "/it/certificazioni/ecdl") {
+    return redirect301(req, "/it/certificazioni/icdl");
+  }
+
+  if (pathname === "/fr/certifications/ecdl") {
+    return redirect301(req, "/fr/certifications/icdl");
+  }
+
+  if (pathname === "/es/certificaciones/ecdl") {
+    return redirect301(req, "/es/certificaciones/icdl");
+  }
   // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION TOPIC URLS
   //
