@@ -27,6 +27,7 @@ import { googleEducationHub } from "./vendor-domains/google-education";
    AWS – vendor domains
    ====================================================== */
 import { awsCloudHub } from "./vendor-domains/aws-cloud";
+import { awsAiHub } from "./vendor-domains/aws-ai";
 import { awsArchitectureHub } from "./vendor-domains/aws-architecture";
 import { awsDevOpsHub } from "./vendor-domains/aws-devops";
 import { awsSecurityHub } from "./vendor-domains/aws-security";
@@ -100,6 +101,7 @@ export const HUBS = [
   awsDevOpsHub,
   awsSecurityHub,
   awsDataHub,
+  awsAiHub,
 
   /* ---------------- Microsoft domains ---------------- */
   microsoftAzureHub,
