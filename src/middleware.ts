@@ -337,11 +337,16 @@ export function middleware(req: NextRequest) {
   //
   // Nuova struttura: redirect alla pagina certificazione.
   // ---------------------------------------------------------------------
-  const legacyCertTopicRedirect = redirectLegacyCertificationTopic(req, pathname);
-
-  if (legacyCertTopicRedirect) {
-    return legacyCertTopicRedirect;
-  }
+    // DISABILITATO:
+  // Questa regola era troppo aggressiva.
+  // Intercettava anche URL validi dei topic SEO / topic pages
+  // e riportava l'utente alla pagina certificazione invece che al topic/quiz.
+  //
+  // const legacyCertTopicRedirect = redirectLegacyCertificationTopic(req, pathname);
+  //
+  // if (legacyCertTopicRedirect) {
+  //   return legacyCertTopicRedirect;
+  // }
   // ---------------------------------------------------------------------
   // LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
   //
