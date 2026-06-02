@@ -21,7 +21,6 @@ const nextConfig: NextConfig = {
 
       // EN è root
       { source: "/en", destination: "/", permanent: true },
-      { source: "/en/:path*", destination: "/:path*", permanent: true },
 
       // Fix segmenti misti
       { source: "/fr/certificazioni/:path*", destination: "/fr/certifications/:path*", permanent: true },
@@ -298,7 +297,7 @@ const nextConfig: NextConfig = {
       { source: "/&/undefined/ai", destination: "/it/categorie/intelligenza-artificiale", permanent: false },
       { source: "/&/undefined/virtualizzazione", destination: "/it/categorie/virtualizzazione", permanent: false },
       { source: "/quiz-suggeriti/undefined/:path*", destination: "/", permanent: false },
-      { source: "/roadmap-management/undefined/:path*", destination: "/roadmap-management", permanent: false },
+      { source: "/roadmap-management/undefined/:path*", destination: "/paths", permanent: false },
       { source: "/how-it-works/undefined/:path*", destination: "/", permanent: false },
       { source: "/privacy/undefined/:path*", destination: "/privacy", permanent: false },
 
@@ -521,8 +520,6 @@ const nextConfig: NextConfig = {
 { source: "/fr/hub/ibm-cloud", destination: "/fr/certifications", permanent: true },
 { source: "/it/hub/aws-cloud", destination: "/it/certificazioni/aws-cloud-practitioner", permanent: true },
 { source: "/it/hub/aws-architecture", destination: "/it/certificazioni/aws-solutions-architect", permanent: true },
-{ source: "/es/certificaciones?search=1", destination: "/es/certificaciones", permanent: false },
-{ source: "/it/certificazioni?search=1", destination: "/it/certificazioni", permanent: false },
 { source: "/esundefined", destination: "/es", permanent: true },
 { source: "/base-quiz", destination: "/certifications", permanent: true },
 { source: "/terms", destination: "/terms-conditions", permanent: true },

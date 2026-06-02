@@ -1,27 +1,30 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const LOCALES = new Set(["it", "en", "fr", "es"]);
+
 function isLocale(s?: string) {
   return !!s && LOCALES.has(s);
 }
+
 function buildPath(parts: string[]) {
   return "/" + parts.filter(Boolean).join("/");
 }
 
-// ✅ detect locale from any pathname (supports EN-root)
+// Detect locale from any pathname.
+// EN root canonical: if no locale prefix, assume "en".
 function detectLocaleFromPath(pathname: string) {
   const first = pathname.split("/")[1];
   if (isLocale(first)) return first;
-  return "en"; // EN root canonical when no locale prefix
+  return "en";
 }
 
-// ✅ attach cookie used by RootLayout (<html lang>)
+// Attach cookie used by RootLayout (<html lang>)
 function withLangCookie(res: NextResponse, lang: string) {
   res.cookies.set("cq_lang", lang, { path: "/" });
   return res;
 }
 
-// 301 helper (SEO canonical) + ✅ set cookie
+// 301 helper + set language cookie
 function redirect301(req: NextRequest, pathname: string) {
   const url = req.nextUrl.clone();
   url.pathname = pathname;
@@ -50,15 +53,61 @@ export function middleware(req: NextRequest) {
   }
 
   // ---------------------------------------------------------------------
-  // QUICK TAPS (spam / crawler weird paths)
-  // es: /favicon.ico/undefined/database
+  // QUICK TRAPS
+  // Spam / crawler weird paths / broken generated URLs
   // ---------------------------------------------------------------------
+
+  // Asset sporchi tipo /favicon.ico/undefined/database
   if (pathname.startsWith("/favicon.ico/")) {
     return redirect301(req, "/favicon.ico");
   }
 
+  // URL rotti con "undefined" generati/scoperti da crawler o vecchi link.
+  // Esempi:
+  // /roadmap-management/undefined/database
+  // /how-it-works/undefined/reti
+  // /privacy/undefined/virtualizzazione
+  // /quiz-suggeriti/undefined/database
+  // /&/undefined/cloud
+  if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
+    if (pathname.startsWith("/it/")) {
+      return redirect301(req, "/it/percorsi");
+    }
+
+    if (pathname.startsWith("/es/")) {
+      return redirect301(req, "/es/rutas");
+    }
+
+    if (pathname.startsWith("/fr/")) {
+      return redirect301(req, "/fr/parcours");
+    }
+
+    if (pathname.startsWith("/roadmap-management")) {
+      return redirect301(req, "/paths");
+    }
+
+    if (pathname.startsWith("/how-it-works")) {
+  return redirect301(req, "/");
+}
+
+    if (pathname.startsWith("/privacy")) {
+      return redirect301(req, "/privacy");
+    }
+
+    if (pathname.startsWith("/quiz-suggeriti")) {
+      return redirect301(req, "/suggested");
+    }
+
+    if (pathname.startsWith("/&")) {
+      return redirect301(req, "/");
+    }
+
+    return redirect301(req, "/");
+  }
+
   // ---------------------------------------------------------------------
-  // ✅ HARD ALIASES (redirect stabili)
+  // HARD ALIASES
+  // Redirect stabili
   // ---------------------------------------------------------------------
 
   // IT: C# alias
@@ -71,100 +120,157 @@ export function middleware(req: NextRequest) {
     return redirect301(req, "/it/termini");
   }
 
-  // Slug legacy (certifications)
-  if (pathname === "/certifications/tensorflow-developer")
+  // Slug legacy certificazioni
+  if (pathname === "/certifications/tensorflow-developer") {
     return redirect301(req, "/certifications/tensorflow");
-  if (pathname === "/it/certificazioni/tensorflow-developer")
+  }
+
+  if (pathname === "/it/certificazioni/tensorflow-developer") {
     return redirect301(req, "/it/certificazioni/tensorflow");
+  }
 
-  if (pathname === "/certifications/mysql-certification")
+  if (pathname === "/certifications/mysql-certification") {
     return redirect301(req, "/certifications/mysql");
-  if (pathname === "/it/certificazioni/mysql-certification")
+  }
+
+  if (pathname === "/it/certificazioni/mysql-certification") {
     return redirect301(req, "/it/certificazioni/mysql");
+  }
 
-  if (pathname === "/certifications/csharp-certification")
+  if (pathname === "/certifications/csharp-certification") {
     return redirect301(req, "/certifications/csharp");
-  if (pathname === "/it/certificazioni/csharp-certification")
+  }
+
+  if (pathname === "/it/certificazioni/csharp-certification") {
     return redirect301(req, "/it/certificazioni/csharp");
+  }
 
-  if (pathname === "/certifications/microsoft-csharp")
+  if (pathname === "/certifications/microsoft-csharp") {
     return redirect301(req, "/certifications/csharp");
+  }
 
-  if (pathname === "/certifications/vmware-certified-professional")
+  if (pathname === "/certifications/vmware-certified-professional") {
     return redirect301(req, "/certifications/vmware-vcp");
-  if (pathname === "/it/certificazioni/vmware-certified-professional")
+  }
+
+  if (pathname === "/it/certificazioni/vmware-certified-professional") {
     return redirect301(req, "/it/certificazioni/vmware-vcp");
+  }
 
   // ---------------------------------------------------------------------
-  // ✅ QUIZ: EN canonical = /en/quiz/*
-  // - /quiz/* (root) -> /en/quiz/*
-  // - legacy specifici vengono portati direttamente a /en
+  // LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
+  //
+  // IMPORTANTE:
+  // Questo blocco deve stare PRIMA del redirect generale /quiz/* -> /en/quiz/*
+  // altrimenti /quiz/reti/mixed diventa /en/quiz/reti/mixed e resta rotto.
   // ---------------------------------------------------------------------
 
-  // Quiz legacy (root) -> canonical EN quiz
-  if (pathname === "/quiz/javascript")
+  if (pathname === "/quiz/sicurezza/mixed") {
+    return redirect301(req, "/it/quiz/security-plus/mixed");
+  }
+
+  if (pathname === "/quiz/reti/mixed") {
+    return redirect301(req, "/it/quiz/ccna/mixed");
+  }
+
+  if (pathname === "/quiz/cloud/mixed") {
+    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
+  }
+
+  if (pathname === "/quiz/database/mixed") {
+    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
+  }
+
+  if (pathname === "/quiz/programmazione/mixed") {
+    return redirect301(req, "/it/quiz/javascript-developer/mixed");
+  }
+
+  if (pathname === "/quiz/virtualizzazione/mixed") {
+    return redirect301(req, "/it/quiz/vmware-vcp/mixed");
+  }
+
+  if (pathname === "/quiz/intelligenza-artificiale/mixed") {
+    return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
+  }
+
+  if (pathname === "/it/quiz/sicurezza/mixed") {
+    return redirect301(req, "/it/quiz/security-plus/mixed");
+  }
+
+  if (pathname === "/it/quiz/reti/mixed") {
+    return redirect301(req, "/it/quiz/ccna/mixed");
+  }
+
+  if (pathname === "/it/quiz/cloud/mixed") {
+    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
+  }
+
+  if (pathname === "/it/quiz/database/mixed") {
+    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
+  }
+
+  if (pathname === "/it/quiz/programmazione/mixed") {
+    return redirect301(req, "/it/quiz/javascript-developer/mixed");
+  }
+
+  if (pathname === "/it/quiz/virtualizzazione/mixed") {
+    return redirect301(req, "/it/quiz/vmware-vcp/mixed");
+  }
+
+  if (pathname === "/it/quiz/intelligenza-artificiale/mixed") {
+    return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
+  }
+
+  // ---------------------------------------------------------------------
+  // QUIZ
+  // EN canonical = /en/quiz/*
+  //
+  // - /quiz/* root -> /en/quiz/*
+  // - legacy specifici vengono gestiti prima
+  // ---------------------------------------------------------------------
+
+  if (pathname === "/quiz/javascript") {
     return redirect301(req, "/en/quiz/javascript-developer");
+  }
 
-  // Quiz legacy IT (resta IT)
-  if (pathname === "/it/quiz/javascript")
+  if (pathname === "/it/quiz/javascript") {
     return redirect301(req, "/it/quiz/javascript-developer");
+  }
 
   // Qualsiasi /quiz/* senza prefisso lingua => /en/quiz/*
-  // (NON tocca /it/quiz, /fr/quiz, /es/quiz, /en/quiz)
+  // Non tocca /it/quiz, /fr/quiz, /es/quiz, /en/quiz
   if (pathname === "/quiz" || pathname.startsWith("/quiz/")) {
     return redirect301(req, `/en${pathname}`);
   }
 
   // ---------------------------------------------------------------------
-  // ✅ REVIEW ERRORS: EN-root
+  // REVIEW ERRORS
+  // EN-root
   // ---------------------------------------------------------------------
+
   if (pathname === "/review" || pathname.startsWith("/review/")) {
-    // ✅ set cookie also on pass-through
     return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
   }
+
   const reviewPrefixed = pathname.match(/^\/(it|en|fr|es)\/review(\/|$)/);
+
   if (reviewPrefixed) {
     return redirect301(req, pathname.replace(/^\/(it|en|fr|es)/, ""));
   }
 
   // ---------------------------------------------------------------------
-  // ✅ BLOG
-  // - EN root optional: /en/blog -> /blog
+  // BLOG
+  // EN root optional: /en/blog -> /blog
   // ---------------------------------------------------------------------
+
   if (pathname.startsWith("/en/blog")) {
-    return redirect301(req, pathname.replace(/^\/en/, "")); // /en/blog/x -> /blog/x
+    return redirect301(req, pathname.replace(/^\/en/, ""));
   }
 
   // ---------------------------------------------------------------------
-  // ✅ LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
+  // NORMALIZZAZIONE PREFISSI LINGUA + SEGMENTI SPORCHI
   // ---------------------------------------------------------------------
-  if (pathname === "/quiz/sicurezza/mixed")
-    return redirect301(req, "/it/quiz/security-plus/mixed");
-  if (pathname === "/quiz/reti/mixed")
-    return redirect301(req, "/it/quiz/ccna/mixed");
-  if (pathname === "/quiz/cloud/mixed")
-    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
-  if (pathname === "/quiz/database/mixed")
-    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
-  if (pathname === "/quiz/programmazione/mixed")
-    return redirect301(req, "/it/quiz/javascript-developer/mixed");
-  if (pathname === "/quiz/virtualizzazione/mixed")
-    return redirect301(req, "/it/quiz/vmware-vcp/mixed");
-  if (pathname === "/quiz/intelligenza-artificiale/mixed")
-    return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
 
-  if (pathname === "/it/quiz/sicurezza/mixed")
-    return redirect301(req, "/it/quiz/security-plus/mixed");
-  if (pathname === "/it/quiz/reti/mixed")
-    return redirect301(req, "/it/quiz/ccna/mixed");
-  if (pathname === "/it/quiz/cloud/mixed")
-    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
-  if (pathname === "/it/quiz/database/mixed")
-    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
-
-  // ---------------------------------------------------------------------
-  // ✅ NORMALIZZAZIONE PREFISSI LINGUA + SEGMENTI SPORCHI
-  // ---------------------------------------------------------------------
   const parts = pathname.split("/").filter(Boolean);
 
   if (parts.length === 0) {
@@ -173,30 +279,33 @@ export function middleware(req: NextRequest) {
 
   let changed = false;
 
-  // EN root: rimuovi /en SOLO per SEO pages (non quiz, non blog)
+  // EN root: rimuovi /en SOLO per SEO pages.
+  // Non rimuovere /en da quiz e blog.
   if (parts[0] === "en" && parts[1] !== "quiz" && parts[1] !== "blog") {
     parts.shift();
     changed = true;
   }
 
-  // doppia lingua: tieni solo la seconda
+  // Doppia lingua: /it/en/... -> /en/...
+  // Tiene solo la seconda lingua.
   if (isLocale(parts[0]) && isLocale(parts[1])) {
     const second = parts[1];
     parts.splice(0, 2, second);
     changed = true;
   }
 
-  // locale corrente
+  // Locale corrente
   const locale = isLocale(parts[0]) ? parts[0] : "en";
   const segIndex = isLocale(parts[0]) ? 1 : 0;
   const seg = parts[segIndex];
 
-  // segmenti canonici per lingua
+  // Segmenti canonici per lingua
   if (locale === "fr") {
     if (seg === "certificazioni") {
       parts[segIndex] = "certifications";
       changed = true;
     }
+
     if (seg === "categorie") {
       parts[segIndex] = "categories";
       changed = true;
@@ -208,10 +317,12 @@ export function middleware(req: NextRequest) {
       parts[segIndex] = "certificaciones";
       changed = true;
     }
+
     if (seg === "categorie") {
       parts[segIndex] = "categorias";
       changed = true;
     }
+
     if (seg === "certifications") {
       parts[segIndex] = "certificaciones";
       changed = true;
@@ -223,6 +334,7 @@ export function middleware(req: NextRequest) {
       parts[segIndex] = "certificazioni";
       changed = true;
     }
+
     if (seg === "categories") {
       parts[segIndex] = "categorie";
       changed = true;
