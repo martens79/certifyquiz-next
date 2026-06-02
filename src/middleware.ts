@@ -207,6 +207,61 @@ export function middleware(req: NextRequest) {
   if (pathname === "/it/certificazioni/vmware-certified-professional") {
     return redirect301(req, "/it/certificazioni/vmware-vcp");
   }
+    // ---------------------------------------------------------------------
+  // LEGACY CERTIFICATION SLUGS
+  // Vecchi slug singoli ancora indicizzati da Google
+  // ---------------------------------------------------------------------
+
+  // Google TensorFlow -> TensorFlow
+  if (pathname === "/certifications/google-tensorflow") {
+    return redirect301(req, "/certifications/tensorflow");
+  }
+
+  if (pathname === "/it/certificazioni/google-tensorflow") {
+    return redirect301(req, "/it/certificazioni/tensorflow");
+  }
+
+  if (pathname === "/fr/certifications/google-tensorflow") {
+    return redirect301(req, "/fr/certifications/tensorflow");
+  }
+
+  if (pathname === "/es/certificaciones/google-tensorflow") {
+    return redirect301(req, "/es/certificaciones/tensorflow");
+  }
+
+  // Python -> Python Developer
+  if (pathname === "/certifications/python") {
+    return redirect301(req, "/certifications/python-developer");
+  }
+
+  if (pathname === "/it/certificazioni/python") {
+    return redirect301(req, "/it/certificazioni/python-developer");
+  }
+
+  if (pathname === "/fr/certifications/python") {
+    return redirect301(req, "/fr/certifications/python-developer");
+  }
+
+  if (pathname === "/es/certificaciones/python") {
+    return redirect301(req, "/es/certificaciones/python-developer");
+  }
+
+  // CompTIA Network+ -> Network+
+  if (pathname === "/certifications/comptia-network-plus") {
+    return redirect301(req, "/certifications/network-plus");
+  }
+
+  if (pathname === "/it/certificazioni/comptia-network-plus") {
+    return redirect301(req, "/it/certificazioni/network-plus");
+  }
+
+  if (pathname === "/fr/certifications/comptia-network-plus") {
+    return redirect301(req, "/fr/certifications/network-plus");
+  }
+
+  if (pathname === "/es/certificaciones/comptia-network-plus") {
+    return redirect301(req, "/es/certificaciones/network-plus");
+  }
   // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION TOPIC URLS
   //
