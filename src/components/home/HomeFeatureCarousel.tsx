@@ -93,7 +93,7 @@ const getSlides = (lang: Lang): FeatureCard[][] => {
           },
           lang
         ),
-        items: ["CISSP", "Cisco CCST Cyber", "CEH", "Security+"],
+       items: ["ISC2 CC", "CISSP", "Security+", "CEH", "Cisco CCST Cyber"],
         tone: "red",
       },
       {
@@ -153,7 +153,7 @@ const getSlides = (lang: Lang): FeatureCard[][] => {
           },
           lang
         ),
-        href: `${p}/${certSegment}/ai-foundations`,
+        href: `${p}/${categorySegment}/foundations`,
         cta: T(
           {
             it: "Inizia gratis →",
