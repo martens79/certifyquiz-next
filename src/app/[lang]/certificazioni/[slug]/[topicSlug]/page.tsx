@@ -349,7 +349,9 @@ export default async function TopicPage({
     <TopicContent
       content={data.topic.content}
       quizRoute={quizHref}
+      reviewRoute={reviewHref}
       lang={lang}
+
     />
   </section>
 )}
