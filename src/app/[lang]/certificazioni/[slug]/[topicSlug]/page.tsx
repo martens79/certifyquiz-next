@@ -26,6 +26,13 @@ function getLabels(lang: Lang) {
       es: "🚀 Empezar quiz",
     }[lang],
 
+    quickReview: {
+  it: "📘 Ripasso rapido",
+  en: "📘 Quick review",
+  fr: "📘 Révision rapide",
+  es: "📘 Repaso rápido",
+}[lang],
+
     availableQuestions: {
       it: "Domande disponibili",
       en: "Available questions",
@@ -241,6 +248,15 @@ export default async function TopicPage({
       ? `/quiz/topic/${data.topic.id}`
       : `/${lang}/quiz/topic/${data.topic.id}`;
 
+  const reviewHref =
+  lang === "en"
+    ? `/certifications/${slug}/${topicSlug}/review`
+    : lang === "fr"
+      ? `/fr/certifications/${slug}/${topicSlug}/revision`
+      : lang === "es"
+        ? `/es/certificaciones/${slug}/${topicSlug}/repaso`
+        : `/it/certificazioni/${slug}/${topicSlug}/ripasso`;    
+
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-10 pb-28 md:pb-10">
@@ -260,21 +276,30 @@ export default async function TopicPage({
             {getLocalizedText(data.topic.description, lang)}
           </p>
 
-          {/* CTA principale: subito visibile anche su mobile */}
-          <div className="mb-6">
-            <Link
-              href={quizHref}
-              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
-            >
-              {labels.startQuiz}
-            </Link>
+         {/* CTA principale: subito visibile anche su mobile */}
+<div className="mb-6">
+  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <Link
+      href={reviewHref}
+      className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-6 py-3 font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100"
+    >
+      {labels.quickReview}
+    </Link>
 
-            {data.questionCount !== null && (
-              <p className="text-sm text-slate-500 mt-3">
-                {labels.availableQuestions}: {data.questionCount}
-              </p>
-            )}
-          </div>
+    <Link
+      href={quizHref}
+      className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
+    >
+      {labels.startQuiz}
+    </Link>
+  </div>
+
+  {data.questionCount !== null && (
+    <p className="text-sm text-slate-500 mt-3">
+      {labels.availableQuestions}: {data.questionCount}
+    </p>
+  )}
+</div>
 
           {/* Intro SEO sotto la CTA, non sopra */}
 {data.topic.intro && (
@@ -374,12 +399,21 @@ export default async function TopicPage({
       <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
         <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
           <div className="text-xs text-slate-500 mb-2">{labels.mobileHint}</div>
-          <Link
-            href={quizHref}
-            className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-5 py-3 rounded-full font-semibold text-slate-900"
-          >
-            {labels.startQuiz}
-          </Link>
+          <div className="grid grid-cols-2 gap-2">
+  <Link
+    href={reviewHref}
+    className="flex items-center justify-center w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700"
+  >
+    📘 Ripasso
+  </Link>
+
+  <Link
+    href={quizHref}
+    className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-3 py-3 rounded-full text-sm font-semibold text-slate-900"
+  >
+    🚀 Quiz
+  </Link>
+</div>
         </div>
       </div>
     </>

@@ -562,3 +562,53 @@ export const certPath = (lang: "it" | "en" | "fr" | "es", slug: string): string 
       return `/it/certificazioni/${slug}`;
   }
 };
+/* ------------------------- TOPIC REVIEW / RIPASSO ------------------------- */
+
+export type TopicReviewPage = {
+  id: number;
+  topicId: number;
+  certificationId: number;
+  certificationSlug: string;
+  certificationName: string;
+  topicSlug: string;
+  reviewSlug: string;
+  topicTitle: string;
+  title: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  intro: string | null;
+  content: string | null;
+  faq: string | null;
+};
+
+export async function getTopicReviewPage(params: {
+  certSlug: string;
+  topicSlug: string;
+  lang: Locale;
+}): Promise<TopicReviewPage | null> {
+  const { certSlug, topicSlug, lang } = params;
+
+  const res = await fetch(
+    `${API}/certifications/${encodeURIComponent(certSlug)}/topics/${encodeURIComponent(topicSlug)}/review?lang=${lang}`,
+    {
+      next: {
+        revalidate: 86400,
+        tags: [`topic-review:${certSlug}:${topicSlug}:${lang}`],
+      },
+    }
+  );
+
+  if (res.status === 404) return null;
+
+  if (!res.ok) {
+    console.error("Failed to fetch topic review page", {
+      certSlug,
+      topicSlug,
+      lang,
+      status: res.status,
+    });
+    return null;
+  }
+
+  return res.json();
+}
