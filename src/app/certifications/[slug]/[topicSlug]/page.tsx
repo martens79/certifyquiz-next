@@ -17,6 +17,18 @@ function getLabels(lang: Lang) {
       en: "🚀 Start quiz",
     }[lang],
 
+    quickReview: {
+      en: "📘 Quick review",
+    }[lang],
+
+    quickReviewShort: {
+      en: "📘 Review",
+    }[lang],
+
+    quizShort: {
+      en: "🚀 Quiz",
+    }[lang],
+
     availableQuestions: {
       en: "Available questions",
     }[lang],
@@ -46,7 +58,7 @@ function getLabels(lang: Lang) {
     }[lang],
 
     mobileHint: {
-      en: "🎯 Quick quiz on this topic",
+      en: "🎯 Review or practice this topic",
     }[lang],
   };
 }
@@ -83,59 +95,59 @@ export async function generateMetadata({
     data.topic.description ||
     "Practice certification topics on CertifyQuiz.";
 
- const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 
-const pageUrl = `${siteUrl}/certifications/${slug}/${topicSlug}`;
+  const pageUrl = `${siteUrl}/certifications/${slug}/${topicSlug}`;
 
-const category =
-  slug.includes("security") ||
-  slug.includes("ceh") ||
-  slug.includes("cissp") ||
-  slug.includes("isc2")
-    ? "security"
-    : slug.includes("aws") ||
-        slug.includes("azure") ||
-        slug.includes("google-cloud")
-      ? "cloud"
-      : slug.includes("ccna") || slug.includes("network")
-        ? "networking"
-        : "default";
+  const category =
+    slug.includes("security") ||
+    slug.includes("ceh") ||
+    slug.includes("cissp") ||
+    slug.includes("isc2")
+      ? "security"
+      : slug.includes("aws") ||
+          slug.includes("azure") ||
+          slug.includes("google-cloud")
+        ? "cloud"
+        : slug.includes("ccna") || slug.includes("network")
+          ? "networking"
+          : "default";
 
-const ogImage = `${siteUrl}/api/og?type=topic&title=${encodeURIComponent(
-  data.topic.title
-)}&subtitle=${encodeURIComponent(
-  `${data.certification.title} Free Practice Questions`
-)}&category=${category}`;
+  const ogImage = `${siteUrl}/api/og?type=topic&title=${encodeURIComponent(
+    data.topic.title
+  )}&subtitle=${encodeURIComponent(
+    `${data.certification.title} Free Practice Questions`
+  )}&category=${category}`;
 
-return {
-  title,
-  description,
-  alternates: {
-    canonical: pageUrl,
-  },
-  openGraph: {
+  return {
     title,
     description,
-    url: pageUrl,
-    siteName: "CertifyQuiz",
-    type: "website",
-    images: [
-      {
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${data.topic.title} - ${data.certification.title}`,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title,
-    description,
-    images: [ogImage],
-  },
-};
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: "CertifyQuiz",
+      type: "website",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${data.topic.title} - ${data.certification.title}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 export default async function TopicPageEn({
@@ -157,7 +169,9 @@ export default async function TopicPageEn({
   if (!data) return notFound();
 
   const labels = getLabels("en");
+
   const quizHref = `/quiz/topic/${data.topic.id}`;
+  const reviewHref = `/certifications/${slug}/${topicSlug}/review`;
 
   return (
     <>
@@ -178,14 +192,23 @@ export default async function TopicPageEn({
             {data.topic.description}
           </p>
 
-          {/* CTA spostata più in alto: visibile prima su mobile */}
+          {/* CTA above the fold */}
           <div className="mb-6">
-            <Link
-              href={quizHref}
-              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
-            >
-              {labels.startQuiz}
-            </Link>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href={reviewHref}
+                className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-6 py-3 font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100"
+              >
+                {labels.quickReview}
+              </Link>
+
+              <Link
+                href={quizHref}
+                className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
+              >
+                {labels.startQuiz}
+              </Link>
+            </div>
 
             {data.questionCount !== null && (
               <p className="text-sm text-slate-500 mt-3">
@@ -194,33 +217,35 @@ export default async function TopicPageEn({
             )}
           </div>
 
-         {/* Intro SEO lasciata sotto la CTA */}
-{data.topic.intro && (
-  <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-    <p>{data.topic.intro}</p>
-  </div>
-)}
+          {/* SEO intro below the CTA */}
+          {data.topic.intro && (
+            <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+              <p>{data.topic.intro}</p>
+            </div>
+          )}
 
-<ContextualLeadMagnetBox
-  lang="en"
-  variant="topic"
-  certificationSlug={slug}
-  topicSlug={topicSlug}
-  quizHref={quizHref}
-  className="mb-8"
-/>
+          <ContextualLeadMagnetBox
+            lang="en"
+            variant="topic"
+            certificationSlug={slug}
+            topicSlug={topicSlug}
+            quizHref={quizHref}
+            className="mb-8"
+          />
         </section>
 
         <section className="bg-white border rounded-2xl p-6 mb-8">
           <h2 className="text-2xl font-semibold text-slate-900 mb-3">
             {labels.whatYouWillLearn}
           </h2>
+
           <p className="text-slate-700 leading-7">
-            {labels.practiceIntro} <strong>{data.certification.title}</strong> path.
-            This page helps you understand what this topic covers, which concepts
-            matter most, and why practicing with a focused quiz can improve your
-            exam preparation.
+            {labels.practiceIntro} <strong>{data.certification.title}</strong>{" "}
+            path. This page helps you understand what this topic covers, which
+            concepts matter most, and why practicing with a focused quiz can
+            improve your exam preparation.
           </p>
+
           <p className="text-slate-700 leading-7 mt-4">
             The quiz on <strong>{data.topic.title}</strong> helps you focus on
             definitions, practical scenarios, recurring concepts, and the kind of
@@ -232,29 +257,32 @@ export default async function TopicPageEn({
           <h2 className="text-2xl font-semibold text-slate-900 mb-3">
             {labels.whyItMatters}
           </h2>
+
           <p className="text-slate-700 leading-7">
             Studying <strong>{data.topic.title}</strong> properly is important
             because it strengthens your overall understanding of the{" "}
             <strong>{data.certification.title}</strong> certification. Good
-            topic-level preparation makes it easier to answer both theoretical and
-            practical questions with more confidence and speed.
+            topic-level preparation makes it easier to answer both theoretical
+            and practical questions with more confidence and speed.
           </p>
+
           <p className="text-slate-700 leading-7 mt-4">
             Training one topic at a time also helps you identify weak points,
-            review more efficiently, and build a more structured preparation path
-            before moving to mixed quizzes or full exam simulations.
+            review more efficiently, and build a more structured preparation
+            path before moving to mixed quizzes or full exam simulations.
           </p>
         </section>
 
         {data.topic.content && (
-  <section className="bg-white border rounded-2xl p-6 mb-8">
-    <TopicContent
-      content={data.topic.content}
-      quizRoute={quizHref}
-      lang="en"
-    />
-  </section>
-)}
+          <section className="bg-white border rounded-2xl p-6 mb-8">
+            <TopicContent
+              content={data.topic.content}
+              quizRoute={quizHref}
+              reviewRoute={reviewHref}
+              lang="en"
+            />
+          </section>
+        )}
 
         {data.topic.faq && data.topic.faq.length > 0 && (
           <section className="bg-white border rounded-2xl p-6 mb-8">
@@ -286,23 +314,37 @@ export default async function TopicPageEn({
                 className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
               >
                 <div className="font-semibold text-slate-900">{t.title}</div>
-                <div className="text-sm text-slate-600 mt-2">{t.description}</div>
+                <div className="text-sm text-slate-600 mt-2">
+                  {t.description}
+                </div>
               </Link>
             ))}
           </div>
         </section>
       </div>
 
-      {/* CTA sticky mobile: sopra la bottom nav */}
+      {/* Sticky mobile CTA */}
       <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
         <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
-          <div className="text-xs text-slate-500 mb-2">{labels.mobileHint}</div>
-          <Link
-            href={quizHref}
-            className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-5 py-3 rounded-full font-semibold text-slate-900"
-          >
-            {labels.startQuiz}
-          </Link>
+          <div className="text-xs text-slate-500 mb-2">
+            {labels.mobileHint}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              href={reviewHref}
+              className="flex items-center justify-center w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700"
+            >
+              {labels.quickReviewShort}
+            </Link>
+
+            <Link
+              href={quizHref}
+              className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-3 py-3 rounded-full text-sm font-semibold text-slate-900"
+            >
+              {labels.quizShort}
+            </Link>
+          </div>
         </div>
       </div>
     </>
