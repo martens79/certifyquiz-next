@@ -733,16 +733,18 @@ const submitAssessmentReport = async () => {
       },
       credentials: "include",
       body: JSON.stringify({
-        email,
-        lang,
-        source: "assessment_result",
-        certification: context?.certificationName ?? null,
-        topic: context?.topicTitle ?? null,
-        kind: context?.kind ?? null,
-        scorePct: lastSummary.scorePct,
-        correct: lastSummary.correct,
-        total: lastSummary.total,
-      }),
+  email,
+  lang,
+  source: "assessment_result",
+
+  certification: context?.certificationSlug ?? null,
+  topic: context?.topicSlug ?? null,
+
+  kind: context?.kind ?? null,
+  scorePct: lastSummary.scorePct,
+  correct: lastSummary.correct,
+  total: lastSummary.total,
+}),
     });
 
     const data = await res.json().catch(() => null);
@@ -751,14 +753,13 @@ const submitAssessmentReport = async () => {
       throw new Error(data?.message || "Report failed");
     }
 
-    trackQuizEvent("assessment_email_submitted", {
-      lang,
-      source: "assessment_result",
-      certification: context?.certificationName ?? null,
-      topic: context?.topicTitle ?? null,
-      score_pct: lastSummary.scorePct,
-    });
-
+   trackQuizEvent("assessment_email_submitted", {
+  lang,
+  source: "assessment_result",
+  certification: context?.certificationSlug ?? null,
+  topic: context?.topicSlug ?? null,
+  score_pct: lastSummary.scorePct,
+});
     setReportMessage(
       lang === "it"
         ? "Perfetto. Ti invieremo il report e i prossimi quiz consigliati."
