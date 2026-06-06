@@ -21,6 +21,16 @@ export type Cert = {
   ogImage?: string;
   image?: string;
 };
+export type TopicReviewListItem = {
+  id: number;
+  topicId: number;
+  certificationId: number;
+  certificationTitle: string;
+  certSlug: string;
+  title: string;
+  href: string;
+};
+
 export type Locale = Cert["locale"];
 
 // Usa il proxy Next se non definisci API_BASE_URL (vedi app/api/backend/*)
@@ -30,6 +40,16 @@ const API_PROXY = "/api/backend";
 // build + server → remoto
 // client → proxy
 const API = typeof window === "undefined" ? API_REMOTE : API_PROXY;
+
+export async function getTopicReviewsList(lang: Locale) {
+  const res = await fetch(`${API}/topic-reviews?lang=${lang}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return [];
+
+  return (await res.json()) as TopicReviewListItem[];
+}
 
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 /** Normalizza slug "alias/vecchi" → slug canonici del frontend */

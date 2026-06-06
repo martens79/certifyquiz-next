@@ -32,6 +32,7 @@ const UI: Record<
     pricing: string;
     quiz: string;
     suggested: string;
+    reviews: string;
     profile: string;
     login: string;
     logout: string;
@@ -54,6 +55,7 @@ const UI: Record<
     profile: "Profilo",
     login: "Accedi",
     logout: "Esci",
+    reviews: "Ripassi",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -72,6 +74,7 @@ const UI: Record<
     profile: "Profile",
     login: "Log in",
     logout: "Log out",
+    reviews: "Reviews",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -90,6 +93,7 @@ const UI: Record<
     profile: "Profil",
     login: "Connexion",
     logout: "Déconnexion",
+    reviews: "Révisions",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -108,6 +112,7 @@ const UI: Record<
     profile: "Perfil",
     login: "Acceder",
     logout: "Cerrar sesión",
+    reviews: "Repasos",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -258,7 +263,29 @@ function IconSearch() {
     </svg>
   );
 }
-
+function IconReviews() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 5.25A2.25 2.25 0 0 1 6.75 3h10.5a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 17.25 21H6.75a2.25 2.25 0 0 1-2.25-2.25V5.25z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 7.5h8M8 11.5h8M8 15.5h5"
+      />
+    </svg>
+  );
+}
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
@@ -301,6 +328,15 @@ export default function Header({ lang }: Props) {
 
   const suggestedHref =
     lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
+
+    const reviewsHref =
+  lang === "en"
+    ? "/reviews"
+    : lang === "fr"
+    ? "/fr/revisions"
+    : lang === "es"
+    ? "/es/repasos"
+    : "/it/ripassi";
 
   const aboutHref =
     lang === "it"
@@ -349,9 +385,11 @@ export default function Header({ lang }: Props) {
 
     { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
 
-    { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
+   { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
 
-    { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
+{ href: reviewsHref, label: ui.reviews, icon: <IconReviews /> },
+
+{ href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
 }, [
   blogHref,
@@ -360,6 +398,7 @@ export default function Header({ lang }: Props) {
   pathsHref,   // 👈 IMPORTANTISSIMO
   pricingHref,
   quizHomeHref,
+  reviewsHref,
   suggestedHref,
   t.blog,
   t.certifications,
@@ -371,6 +410,7 @@ export default function Header({ lang }: Props) {
   ui.pricing,
   ui.quiz,
   ui.suggested,
+  ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
 
