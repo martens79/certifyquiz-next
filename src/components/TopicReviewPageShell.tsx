@@ -15,7 +15,7 @@ const labels = {
     badge: "Ripasso rapido",
     comingTitle: "Ripasso rapido in arrivo",
     comingText:
-      "Stiamo preparando una scheda di ripasso teorico per questo topic. Nel frattempo puoi comunque allenarti con il quiz e tornare alla pagina del topic.",
+      "Stiamo preparando una scheda di ripasso teorico per questo topic. Nel frattempo puoi tornare alla pagina del topic.",
     certification: "Certificazione",
     topic: "Topic",
     startQuiz: "🚀 Vai al quiz",
@@ -31,7 +31,7 @@ const labels = {
     badge: "Quick review",
     comingTitle: "Quick review coming soon",
     comingText:
-      "We are preparing a theory review sheet for this topic. In the meantime, you can still practice with the quiz and return to the topic page.",
+      "We are preparing a theory review sheet for this topic. In the meantime, you can return to the topic page.",
     certification: "Certification",
     topic: "Topic",
     startQuiz: "🚀 Start quiz",
@@ -47,7 +47,7 @@ const labels = {
     badge: "Révision rapide",
     comingTitle: "Révision rapide bientôt disponible",
     comingText:
-      "Nous préparons une fiche de révision théorique pour ce sujet. En attendant, vous pouvez vous entraîner avec le quiz et revenir à la page du sujet.",
+      "Nous préparons une fiche de révision théorique pour ce sujet. En attendant, vous pouvez revenir à la page du sujet.",
     certification: "Certification",
     topic: "Sujet",
     startQuiz: "🚀 Commencer le quiz",
@@ -63,7 +63,7 @@ const labels = {
     badge: "Repaso rápido",
     comingTitle: "Repaso rápido próximamente",
     comingText:
-      "Estamos preparando una ficha de repaso teórico para este tema. Mientras tanto, puedes practicar con el quiz y volver a la página del tema.",
+      "Estamos preparando una ficha de repaso teórico para este tema. Mientras tanto, puedes volver a la página del tema.",
     certification: "Certificación",
     topic: "Tema",
     startQuiz: "🚀 Ir al quiz",
@@ -88,8 +88,10 @@ function getTopicPath(lang: Locale, slug: string, topicSlug: string) {
   return `${getCertificationPath(lang, slug)}/${topicSlug}`;
 }
 
-function getQuizPath(lang: Locale, slug: string, topicSlug: string) {
-  return `/${lang}/quiz/${slug}/${topicSlug}`;
+function getQuizPath(lang: Locale, topicId: number) {
+  return lang === "en"
+    ? `/quiz/topic/${topicId}`
+    : `/${lang}/quiz/topic/${topicId}`;
 }
 
 export async function generateTopicReviewMetadata({
@@ -122,9 +124,7 @@ export async function generateTopicReviewMetadata({
       review.title ||
       `${review.topicTitle} | CertifyQuiz`,
     description:
-      review.metaDescription ||
-      review.intro ||
-      t.comingMetaDescription,
+      review.metaDescription || review.intro || t.comingMetaDescription,
   };
 }
 
@@ -143,7 +143,6 @@ export default async function TopicReviewPageShell({
 
   const certPath = getCertificationPath(lang, slug);
   const topicPath = getTopicPath(lang, slug, topicSlug);
-  const quizPath = getQuizPath(lang, slug, topicSlug);
 
   if (!review || !review.content) {
     return (
@@ -171,14 +170,7 @@ export default async function TopicReviewPageShell({
             {t.comingText}
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={quizPath}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700"
-            >
-              {t.startQuiz}
-            </Link>
-
+          <div className="mt-6">
             <Link
               href={topicPath}
               className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-white px-5 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
@@ -190,6 +182,8 @@ export default async function TopicReviewPageShell({
       </main>
     );
   }
+
+  const quizPath = getQuizPath(lang, review.topicId);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
