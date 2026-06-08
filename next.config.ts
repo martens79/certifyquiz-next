@@ -532,6 +532,29 @@ const nextConfig: NextConfig = {
 { source: "/es/privacidad", destination: "/es/privacy", permanent: true },
 { source: "/es/cookies", destination: "/es/cookie", permanent: true },
 { source: "/es/quiz-home", destination: "/es", permanent: true },
+
+//csharp vecchi link 
+
+{
+  source: "/it/certificazioni/microsoft-csharp",
+  destination: "/it/certificazioni/csharp",
+  permanent: true,
+},
+{
+  source: "/fr/certifications/microsoft-csharp",
+  destination: "/fr/certifications/csharp",
+  permanent: true,
+},
+{
+  source: "/certifications/microsoft-csharp",
+  destination: "/certifications/csharp",
+  permanent: true,
+},
+{
+  source: "/es/certificaciones/microsoft-csharp",
+  destination: "/es/certificaciones/csharp",
+  permanent: true,
+},
       // Garbage / bot paths
       { source: "/favicon.ico/:path*", destination: "/favicon.ico", permanent: true },
     ];
