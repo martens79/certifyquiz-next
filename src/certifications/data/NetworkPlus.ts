@@ -2,7 +2,7 @@
 // Modulo dati per "CompTIA Network+" (no React/JSX).
 
 const NetworkPlus = {
-  slug: "network-plus",
+  slug: "comptia-network-plus",
   imageUrl: "/images/certifications/networkplus.png",
 
   // Pagina ufficiale dell'esame

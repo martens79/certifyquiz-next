@@ -185,7 +185,26 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/comptia-network-plus", destination: "/fr/certifications/network-plus", permanent: true },
       { source: "/fr/certifications/comptia-network", destination: "/fr/certifications/network-plus", permanent: true },
       { source: "/es/certificaciones/comptia-network-plus", destination: "/es/certificaciones/network-plus", permanent: true },
-
+{
+  source: "/certifications/network-plus",
+  destination: "/certifications/comptia-network-plus",
+  permanent: true,
+},
+{
+  source: "/it/certificazioni/network-plus",
+  destination: "/it/certificazioni/comptia-network-plus",
+  permanent: true,
+},
+{
+  source: "/fr/certifications/network-plus",
+  destination: "/fr/certifications/comptia-network-plus",
+  permanent: true,
+},
+{
+  source: "/es/certificaciones/network-plus",
+  destination: "/es/certificaciones/comptia-network-plus",
+  permanent: true,
+},
       // Python
       { source: "/certifications/python", destination: "/certifications/python-developer", permanent: true },
       { source: "/it/certificazioni/python", destination: "/it/certificazioni/python-developer", permanent: true },
@@ -309,6 +328,14 @@ const nextConfig: NextConfig = {
       { source: "/it/certifications/microsoft-ai-fundamentals", destination: "/it/certificazioni/microsoft-ai-fundamentals", permanent: true },
       { source: "/it/certifications/microsoft-ai-fundamentals/:path*", destination: "/it/certificazioni/microsoft-ai-fundamentals/:path*", permanent: true },
       { source: "/it/certifications/google-tensorflow", destination: "/it/certificazioni/google-tensorflow", permanent: true },
+
+      // Google TensorFlow — slug finale: "tensorflow"
+      { source: "/certifications/tensorflow", destination: "/certifications/google-tensorflow", permanent: true },
+      { source: "/certifications/tensorflow/:path*", destination: "/certifications/google-tensorflow/:path*", permanent: true },
+
+      { source: "/it/certificazioni/tensorflow", destination: "/it/certificazioni/google-tensorflow", permanent: true },
+      { source: "/fr/certifications/tensorflow", destination: "/fr/certifications/google-tensorflow", permanent: true },
+      { source: "/es/certificaciones/tensorflow", destination: "/es/certificaciones/google-tensorflow", permanent: true },
       { source: "/it/certifications/google-tensorflow/:path*", destination: "/it/certificazioni/google-tensorflow/:path*", permanent: true },
       { source: "/it/certifications/google-tensorflow-developer", destination: "/it/certificazioni/google-tensorflow-developer", permanent: true },
       { source: "/it/certifications/google-tensorflow-developer/:path*", destination: "/it/certificazioni/google-tensorflow-developer/:path*", permanent: true },

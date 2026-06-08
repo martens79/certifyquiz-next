@@ -16,7 +16,8 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "isc2-cc": 8,
   "ceh": 9,
   "ccna": 10,
-  "network-plus": 11,
+  "comptia-network-plus": 11,
+"network-plus": 11, // alias legacy opzionale
   "ccst": 12,
   "comptia-cloud-plus": 13,
   "ibm-cloud-v5": 14,
@@ -31,7 +32,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "microsoft-virtualization": 23,
   "microsoft-ai-fundamentals": 24, // slug legacy
   "microsoft-ai": 24,
-  "tensorflow": 25,
+  "google-tensorflow": 25,
   "mongodb-developer": 26,
   "mysql": 27,
   "jncie": 28,
