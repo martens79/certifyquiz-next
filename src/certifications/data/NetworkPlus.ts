@@ -28,7 +28,19 @@ const NetworkPlus = {
     fr: "CompTIA Network+ valide les compétences essentielles pour gérer, configurer et sécuriser les réseaux d’entreprise.",
     es: "CompTIA Network+ valida habilidades esenciales para gestionar, configurar y asegurar redes empresariales.",
   },
+metaTitle: {
+  it: "CompTIA Network+ Practice Test 2026 – Quiz e Simulazione Esame | CertifyQuiz",
+  en: "CompTIA Network+ Practice Test 2026 – Network+ Quiz | CertifyQuiz",
+  fr: "CompTIA Network+ Test Pratique 2026 – Quiz Réseaux | CertifyQuiz",
+  es: "CompTIA Network+ Practice Test 2026 – Quiz de Redes | CertifyQuiz",
+},
 
+metaDescription: {
+  it: "Preparati all’esame CompTIA Network+ N10-009 con quiz in stile esame, domande pratiche su reti, sicurezza, troubleshooting e spiegazioni dettagliate.",
+  en: "Prepare for the CompTIA Network+ N10-009 exam with practice questions, network troubleshooting quizzes, security topics and clear explanations.",
+  fr: "Préparez l’examen CompTIA Network+ N10-009 avec des questions type examen, des quiz réseau, sécurité, dépannage et des explications claires.",
+  es: "Prepárate para el examen CompTIA Network+ N10-009 con preguntas tipo examen, quizzes de redes, seguridad, troubleshooting y explicaciones claras.",
+},
   topics: [
   {
     title: {
