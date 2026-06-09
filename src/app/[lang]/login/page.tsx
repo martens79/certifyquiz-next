@@ -25,7 +25,7 @@ export async function generateMetadata(
   return {
     title,
     description,
-    robots: { index: false, follow: false }, // 👈 importantissimo
+    robots: { index: false, follow: true }, // 👈 importantissimo
     openGraph: {
       title,
       description,
