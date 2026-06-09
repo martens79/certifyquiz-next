@@ -359,7 +359,7 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
   // 1) Prova endpoint dettaglio
   try {
     const r = await okOrThrow(
-      fetchWithTimeout(`${API}/certifications/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
+      fetchWithTimeout(`${API}/certifications/by-slug/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
         next: { tags: [`cert:${canonSlug}`, "certs:list"], revalidate: 86400 },
       } as NextFetchInit)
     );
