@@ -11,6 +11,7 @@ type Lang = Locale;
 /* ------------------------------- Slug redirects ---------------------------------- */
 
 const SLUG_REDIRECTS: Record<string, string> = {
+  "network-plus": "comptia-network-plus",
   "cisco-ccst-security": "cisco-ccst-cybersecurity",
   "microsoft-ai-fundamentals": "microsoft-ai",
   "csharp-certification": "microsoft-csharp",
@@ -84,11 +85,12 @@ export async function CertificationDetailView({
     redirect(`${prefix}/${seg}/${target}`);
   }
 
-  // ✅ Recupera i topic reali dal DB/API.
-  // Questo evita che CertificationPage usi slug statici vecchi dai file src/certifications/data/*.ts.
-  const dbTopics = await getTopicsByCertSlug(slug, lang);
+  const canonicalSlug = slug;
 
-  const reg = CERTS_BY_SLUG[slug];
+  // ✅ Recupera i topic reali dal DB/API usando lo slug canonico.
+  const dbTopics = await getTopicsByCertSlug(canonicalSlug, lang);
+
+  const reg = CERTS_BY_SLUG[canonicalSlug];
 
   // ✅ Certificazione presente nel registry statico:
   // usa testi/SEO dal registry, ma topic link dal DB.
@@ -97,7 +99,7 @@ export async function CertificationDetailView({
   }
 
   // ✅ Fallback per certificazioni prese dal backend.
-  const cert = await getCertBySlug(slug, lang);
+  const cert = await getCertBySlug(canonicalSlug, lang);
   if (!cert) return notFound();
 
   const data = adaptCertToRegistryShape(cert);
