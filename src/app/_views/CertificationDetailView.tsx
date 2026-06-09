@@ -14,13 +14,15 @@ const SLUG_REDIRECTS: Record<string, string> = {
   "cisco-ccst-security": "cisco-ccst-cybersecurity",
   "microsoft-ai-fundamentals": "microsoft-ai",
   "csharp-certification": "microsoft-csharp",
-  "tensorflow-developer": "google-tensorflow",
+
 };
 
 /* ------------------------------- Slug aliases ---------------------------------- */
 
 const normalizeCertSlug = (slug: string) => {
   if (slug === "network-plus") return "comptia-network-plus";
+  if (slug === "tensorflow") return "google-tensorflow";
+  if (slug === "tensorflow-developer") return "google-tensorflow";
   return slug;
 };
 
