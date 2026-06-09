@@ -56,6 +56,9 @@ export async function getTopicReviewsList(lang: Locale) {
 const normalizeSlug = (raw: unknown) => {
   const s = String(raw ?? "").trim();
 
+
+  if (s === "network-plus") return "comptia-network-plus";
+if (s === "tensorflow-developer") return "google-tensorflow";
   // alias CompTIA Security+
   if (s === "comptia-security-plus") return "security-plus";
 
@@ -82,6 +85,12 @@ const LIVE = new Set([
   // ✅ canonici corretti
   "security-plus",
   "cisco-ccst-cybersecurity",
+
+   // NUOVI
+  "comptia-network-plus",
+  "google-cloud",
+  "google-cloud-digital-leader",
+  "google-tensorflow",
 ]);
 
 /* ---------------------------- Helpers & guards ---------------------------- */
