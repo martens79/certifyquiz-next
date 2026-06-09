@@ -145,7 +145,27 @@ const nextConfig: NextConfig = {
       { source: "/es/certificaciones/csharp-certification/:path*", destination: "/es/certificaciones/csharp/:path*", permanent: true },
       { source: "/es/certificaciones/microsoft-csharp", destination: "/es/certificaciones/csharp", permanent: true },
       { source: "/es/certificaciones/microsoft-csharp/:path*", destination: "/es/certificaciones/csharp/:path*", permanent: true },
-
+// VMware VCP — slug finale: "vmware-vcp"
+      {
+  source: "/it/certificazioni/vmware-certified-professional/:path*",
+  destination: "/it/certificazioni/vmware-vcp/:path*",
+  permanent: true,
+},
+{
+  source: "/fr/certifications/vmware-certified-professional/:path*",
+  destination: "/fr/certifications/vmware-vcp/:path*",
+  permanent: true,
+},
+{
+  source: "/certifications/vmware-certified-professional/:path*",
+  destination: "/certifications/vmware-vcp/:path*",
+  permanent: true,
+},
+{
+  source: "/es/certificaciones/vmware-certified-professional/:path*",
+  destination: "/es/certificaciones/vmware-vcp/:path*",
+  permanent: true,
+},
       // Microsoft AI Fundamentals
       { source: "/certifications/microsoft-ai-fundamentals", destination: "/certifications/microsoft-ai", permanent: true },
       { source: "/certifications/microsoft-ai-fundamentals/:path*", destination: "/certifications/microsoft-ai/:path*", permanent: true },
