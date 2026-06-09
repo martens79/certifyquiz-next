@@ -11,11 +11,17 @@ type Lang = Locale;
 /* ------------------------------- Slug redirects ---------------------------------- */
 
 const SLUG_REDIRECTS: Record<string, string> = {
-  "network-plus": "comptia-network-plus",
   "cisco-ccst-security": "cisco-ccst-cybersecurity",
   "microsoft-ai-fundamentals": "microsoft-ai",
   "csharp-certification": "microsoft-csharp",
   "tensorflow-developer": "google-tensorflow",
+};
+
+/* ------------------------------- Slug aliases ---------------------------------- */
+
+const normalizeCertSlug = (slug: string) => {
+  if (slug === "network-plus") return "comptia-network-plus";
+  return slug;
 };
 
 /* ------------------------------- Adapter ---------------------------------- */
@@ -72,6 +78,7 @@ export async function CertificationDetailView({
   slug: string;
 }) {
   // ✅ Redirect slug legacy → slug canonico, tutte le lingue
+  // ❌ NON mettere network-plus qui, altrimenti può creare loop.
   if (SLUG_REDIRECTS[slug]) {
     const target = SLUG_REDIRECTS[slug];
     const prefix = lang === "en" ? "" : `/${lang}`;
@@ -85,20 +92,20 @@ export async function CertificationDetailView({
     redirect(`${prefix}/${seg}/${target}`);
   }
 
-  const canonicalSlug = slug;
+  // ✅ Alias interni senza redirect: evita loop tra network-plus e comptia-network-plus.
+  const canonicalSlug = normalizeCertSlug(slug);
 
   // ✅ Recupera i topic reali dal DB/API usando lo slug canonico.
   const dbTopics = await getTopicsByCertSlug(canonicalSlug, lang);
 
   const reg = CERTS_BY_SLUG[canonicalSlug];
 
-  // ✅ Certificazione presente nel registry statico:
-  // usa testi/SEO dal registry, ma topic link dal DB.
+  // ✅ Se presente nel registry statico, usa pagina ricca.
   if (reg) {
     return <CertificationPage lang={lang} data={reg} dbTopics={dbTopics} />;
   }
 
-  // ✅ Fallback per certificazioni prese dal backend.
+  // ✅ Fallback backend.
   const cert = await getCertBySlug(canonicalSlug, lang);
   if (!cert) return notFound();
 
