@@ -316,11 +316,11 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     return MOCK.find((c) => c.slug === canonSlug && c.locale === locale) ?? null;
   }
 
-  // selettore robusto dall'array (normalizza SEMPRE lo slug del backend)
+  // Selettore robusto dall'array
   const pickFromArray = (arr: unknown): Record<string, unknown> | undefined => {
     if (!Array.isArray(arr)) return undefined;
 
-    // 1) match slug (normalizzato)
+    // 1) match slug normalizzato
     for (const x of arr) {
       if (!isRecord(x)) continue;
       const s = normalizeSlug(getString(x, "slug"));
@@ -335,6 +335,28 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     return undefined;
   };
 
+  const toCert = (obj: Record<string, unknown>): Cert => {
+    const title = pickNameByLocale(obj, locale) || canonSlug;
+
+    return {
+      slug: canonSlug,
+      locale,
+      title,
+      h1: title,
+      intro: getString(obj, "intro") ?? getString(obj, "description") ?? "",
+      seoDescription:
+        getString(obj, "seoDescription") ??
+        getString(obj, "seo") ??
+        getString(obj, "description") ??
+        "",
+      faq: normalizeFaq(obj["faq"]),
+      imageUrl: pickImageUrl(obj),
+      ogImage: getString(obj, "ogImage") ?? undefined,
+      image: getString(obj, "image") ?? undefined,
+    };
+  };
+
+  // 1) Prova endpoint dettaglio
   try {
     const r = await okOrThrow(
       fetchWithTimeout(`${API}/certifications/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
@@ -342,60 +364,34 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
       } as NextFetchInit)
     );
 
-    let raw: unknown;
-    try {
-      raw = await r.json();
-    } catch {
-      raw = null;
-    }
+    const raw: unknown = await r.json().catch(() => null);
 
-    let obj: Record<string, unknown> | undefined =
+    const obj: Record<string, unknown> | undefined =
       Array.isArray(raw) ? pickFromArray(raw) : isRecord(raw) ? raw : undefined;
 
-    // Ultimo fallback: scarica la lista e filtra localmente
-    if (!obj) {
-      const rList = await okOrThrow(
-        fetchWithTimeout(`${API}/certifications?locale=${locale}`, {
-          next: { tags: ["certs:list"], revalidate: 86400 },
-        } as NextFetchInit)
-      );
-      const arr2: unknown = await rList.json();
-      obj = pickFromArray(arr2);
-    }
-
-    if (!obj) {
-      const fb = MOCK.find((c) => c.slug === canonSlug && c.locale === locale);
-      return fb ?? null;
-    }
-
-    const title = pickNameByLocale(obj, locale) || canonSlug;
-    const h1 = title;
-
-    const intro = getString(obj, "intro") ?? getString(obj, "description") ?? "";
-    const seoDescription =
-      getString(obj, "seoDescription") ??
-      getString(obj, "seo") ??
-      getString(obj, "description") ??
-      "";
-
-    const faq = normalizeFaq(obj["faq"]);
-
-    return {
-      slug: canonSlug,
-      locale,
-      title,
-      h1,
-      intro,
-      seoDescription,
-      faq,
-      imageUrl: pickImageUrl(obj),
-      ogImage: getString(obj, "ogImage") ?? undefined,
-      image: getString(obj, "image") ?? undefined,
-    };
+    if (obj) return toCert(obj);
   } catch {
-    const fb = MOCK.find((c) => c.slug === canonSlug && c.locale === locale);
-    return fb ?? null;
+    // Se l'endpoint dettaglio fallisce, NON mandare 404: prova la lista sotto
   }
+
+  // 2) Fallback online: lista certificazioni e filtro locale
+  try {
+    const rList = await okOrThrow(
+      fetchWithTimeout(`${API}/certifications?locale=${locale}`, {
+        next: { tags: ["certs:list"], revalidate: 86400 },
+      } as NextFetchInit)
+    );
+
+    const arr: unknown = await rList.json();
+    const obj = pickFromArray(arr);
+
+    if (obj) return toCert(obj);
+  } catch {
+    // Ultimo fallback sotto
+  }
+
+  // 3) Ultimo fallback mock
+  return MOCK.find((c) => c.slug === canonSlug && c.locale === locale) ?? null;
 }
 
 /** Lista per /[lang]/certificazioni */
