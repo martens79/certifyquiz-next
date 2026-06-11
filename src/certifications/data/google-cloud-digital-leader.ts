@@ -82,20 +82,7 @@ const GoogleCloudDigitalLeader = {
       es: "innovacion-con-datos-y-google-cloud",
     },
   },
-  {
-    title: {
-      it: "Modernizzazione di infrastrutture e applicazioni",
-      en: "Modernization of infrastructure and applications",
-      fr: "Modernisation de l'infrastructure et des applications",
-      es: "Modernización de infraestructura y aplicaciones",
-    },
-    slug: {
-      it: "modernizzazione-di-infrastrutture-e-applicazioni",
-      en: "modernization-of-infrastructure-and-applications",
-      fr: "modernisation-de-linfrastructure-et-des-applications",
-      es: "modernizacion-de-infraestructura-y-aplicaciones",
-    },
-  },
+
   {
     title: {
       it: "Sicurezza e operazioni con Google Cloud",
