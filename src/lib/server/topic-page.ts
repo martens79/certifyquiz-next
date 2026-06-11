@@ -67,7 +67,7 @@ export async function getTopicPageData({
   const normalizedCertSlug = normalizeCertSlug(certSlug);
 
   const res = await fetch(
-    `${API_BASE_URL}/api/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
+    `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
     {
       next: {
         revalidate: 3600,
