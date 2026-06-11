@@ -1,6 +1,6 @@
 //src/app/[lang]/certificazioni/[slug]/[topicSlug]/page.tsx
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
@@ -140,6 +140,19 @@ function getLabels(lang: Lang) {
   };
 }
 
+const CERT_SLUG_ALIASES: Record<string, string> = {
+  "vmware-certified-professional": "vmware-vcp",
+  "tensorflow": "google-tensorflow",
+  "tensorflow-developer": "google-tensorflow",
+  "network-plus": "comptia-network-plus",
+  "cisco-ccst-security": "cisco-ccst-cybersecurity",
+  "microsoft-csharp": "csharp",
+};
+
+function normalizeCertSlug(slug: string) {
+  return CERT_SLUG_ALIASES[slug] ?? slug;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -151,8 +164,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug, topicSlug } = await params;
 
+  const normalizedSlug = normalizeCertSlug(slug);
+
+if (normalizedSlug !== slug) {
+  redirect(topicSeoPath(lang, normalizedSlug, topicSlug));
+}
+
   const data = await getTopicPageData({
-    certSlug: slug,
+    certSlug: normalizedSlug,
     topicSlug,
     lang,
   });
@@ -233,8 +252,14 @@ export default async function TopicPage({
 }) {
   const { lang, slug, topicSlug } = await params;
 
+  const normalizedSlug = normalizeCertSlug(slug);
+
+  if (normalizedSlug !== slug) {
+    redirect(topicSeoPath(lang, normalizedSlug, topicSlug));
+  }
+
   const data = await getTopicPageData({
-    certSlug: slug,
+    certSlug: normalizedSlug,
     topicSlug,
     lang,
   });
@@ -249,19 +274,19 @@ export default async function TopicPage({
       : `/${lang}/quiz/topic/${data.topic.id}`;
 
   const reviewHref =
-  lang === "en"
-    ? `/certifications/${slug}/${topicSlug}/review`
-    : lang === "fr"
-      ? `/fr/certifications/${slug}/${topicSlug}/revision`
-      : lang === "es"
-        ? `/es/certificaciones/${slug}/${topicSlug}/repaso`
-        : `/it/certificazioni/${slug}/${topicSlug}/ripasso`;    
+    lang === "en"
+      ? `/certifications/${normalizedSlug}/${topicSlug}/review`
+      : lang === "fr"
+        ? `/fr/certifications/${normalizedSlug}/${topicSlug}/revision`
+        : lang === "es"
+          ? `/es/certificaciones/${normalizedSlug}/${topicSlug}/repaso`
+          : `/it/certificazioni/${normalizedSlug}/${topicSlug}/ripasso`;
 
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 py-8 md:py-10 pb-28 md:pb-10">
         <Link
-          href={certSeoPath(lang, slug)}
+          href={certSeoPath(lang, normalizedSlug)}
           className="text-sm text-blue-600 hover:underline"
         >
           {labels.back}
@@ -276,46 +301,44 @@ export default async function TopicPage({
             {getLocalizedText(data.topic.description, lang)}
           </p>
 
-         {/* CTA principale: subito visibile anche su mobile */}
-<div className="mb-6">
-  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-    <Link
-      href={reviewHref}
-      className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-6 py-3 font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100"
-    >
-      {labels.quickReview}
-    </Link>
+          <div className="mb-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Link
+                href={reviewHref}
+                className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-6 py-3 font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100"
+              >
+                {labels.quickReview}
+              </Link>
 
-    <Link
-      href={quizHref}
-      className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
-    >
-      {labels.startQuiz}
-    </Link>
-  </div>
+              <Link
+                href={quizHref}
+                className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
+              >
+                {labels.startQuiz}
+              </Link>
+            </div>
 
-  {data.questionCount !== null && (
-    <p className="text-sm text-slate-500 mt-3">
-      {labels.availableQuestions}: {data.questionCount}
-    </p>
-  )}
-</div>
+            {data.questionCount !== null && (
+              <p className="text-sm text-slate-500 mt-3">
+                {labels.availableQuestions}: {data.questionCount}
+              </p>
+            )}
+          </div>
 
-          {/* Intro SEO sotto la CTA, non sopra */}
-{data.topic.intro && (
-  <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-    <p>{getLocalizedText(data.topic.intro, lang)}</p>
-  </div>
-)}
+          {data.topic.intro && (
+            <div className="max-w-3xl text-slate-700 leading-7 mb-6">
+              <p>{getLocalizedText(data.topic.intro, lang)}</p>
+            </div>
+          )}
 
-<ContextualLeadMagnetBox
-  lang={lang}
-  variant="topic"
-  certificationSlug={slug}
-  topicSlug={topicSlug}
-  quizHref={quizHref}
-  className="mb-8"
-/>
+          <ContextualLeadMagnetBox
+            lang={lang}
+            variant="topic"
+            certificationSlug={normalizedSlug}
+            topicSlug={topicSlug}
+            quizHref={quizHref}
+            className="mb-8"
+          />
         </section>
 
         <section className="bg-white border rounded-2xl p-6 mb-8">
@@ -345,16 +368,15 @@ export default async function TopicPage({
         </section>
 
         {data.topic.content && (
-  <section className="bg-white border rounded-2xl p-6 mb-8">
-    <TopicContent
-      content={data.topic.content}
-      quizRoute={quizHref}
-      reviewRoute={reviewHref}
-      lang={lang}
-
-    />
-  </section>
-)}
+          <section className="bg-white border rounded-2xl p-6 mb-8">
+            <TopicContent
+              content={data.topic.content}
+              quizRoute={quizHref}
+              reviewRoute={reviewHref}
+              lang={lang}
+            />
+          </section>
+        )}
 
         {data.topic.faq && data.topic.faq.length > 0 && (
           <section className="bg-white border rounded-2xl p-6 mb-8">
@@ -382,40 +404,39 @@ export default async function TopicPage({
             {data.relatedTopics.map((t) => (
               <Link
                 key={t.id}
-                href={topicSeoPath(lang, slug, t.slug)}
+                href={topicSeoPath(lang, normalizedSlug, t.slug)}
                 className="block p-5 border rounded-2xl hover:bg-slate-50 transition"
               >
                 <div className="font-semibold text-slate-900">
-  {getLocalizedText(t.title, lang)}
-</div>
-<div className="text-sm text-slate-600 mt-2">
-  {getLocalizedText(t.description, lang)}
-</div>
+                  {getLocalizedText(t.title, lang)}
+                </div>
+                <div className="text-sm text-slate-600 mt-2">
+                  {getLocalizedText(t.description, lang)}
+                </div>
               </Link>
             ))}
           </div>
         </section>
       </div>
 
-      {/* CTA sticky solo mobile: resta sopra la bottom nav */}
       <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
         <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
           <div className="text-xs text-slate-500 mb-2">{labels.mobileHint}</div>
           <div className="grid grid-cols-2 gap-2">
-  <Link
-    href={reviewHref}
-    className="flex items-center justify-center w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700"
-  >
-    📘 Ripasso
-  </Link>
+            <Link
+              href={reviewHref}
+              className="flex items-center justify-center w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700"
+            >
+              📘 Ripasso
+            </Link>
 
-  <Link
-    href={quizHref}
-    className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-3 py-3 rounded-full text-sm font-semibold text-slate-900"
-  >
-    🚀 Quiz
-  </Link>
-</div>
+            <Link
+              href={quizHref}
+              className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-3 py-3 rounded-full text-sm font-semibold text-slate-900"
+            >
+              🚀 Quiz
+            </Link>
+          </div>
         </div>
       </div>
     </>

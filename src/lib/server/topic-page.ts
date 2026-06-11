@@ -42,6 +42,19 @@ export type TopicPageData = {
 
 const API_BASE_URL = process.env.API_BASE_URL!;
 
+const CERT_SLUG_ALIASES: Record<string, string> = {
+  "vmware-certified-professional": "vmware-vcp",
+  "tensorflow": "google-tensorflow",
+  "tensorflow-developer": "google-tensorflow",
+  "network-plus": "comptia-network-plus",
+  "cisco-ccst-security": "cisco-ccst-cybersecurity",
+  "microsoft-csharp": "csharp",
+};
+
+export function normalizeCertSlug(slug: string) {
+  return CERT_SLUG_ALIASES[slug] ?? slug;
+}
+
 export async function getTopicPageData({
   certSlug,
   topicSlug,
@@ -51,12 +64,14 @@ export async function getTopicPageData({
   topicSlug: string;
   lang: Lang;
 }): Promise<TopicPageData | null> {
+  const normalizedCertSlug = normalizeCertSlug(certSlug);
+
   const res = await fetch(
-    `${API_BASE_URL}/topic-pages/${certSlug}/${topicSlug}?lang=${lang}`,
+    `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
     {
       next: {
         revalidate: 3600,
-        tags: [`topic:${certSlug}:${topicSlug}:${lang}`],
+        tags: [`topic:${normalizedCertSlug}:${topicSlug}:${lang}`],
       },
     }
   );
