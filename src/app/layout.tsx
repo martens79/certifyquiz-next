@@ -1,10 +1,11 @@
-﻿// src/app/layout.tsx
+// src/app/layout.tsx
 import "@/app/globals.css";
 import { Inter, Manrope } from "next/font/google";
 import { cookies } from "next/headers";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import RootShellClient from "@/components/layout/RootShellClient";
 import { AuthProvider } from "@/components/auth/AuthProvider"; // ✅ aggiungi
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,6 +37,8 @@ export default async function RootLayout({
         <AuthProvider>
           <RootShellClient>{children}</RootShellClient>
         </AuthProvider>
+
+        <SpeedInsights />
       </body>
     </html>
   );

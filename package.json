@@ -23,6 +23,7 @@
     "@portabletext/react": "^4.0.3",
     "@sanity/client": "^7.13.2",
     "@tailwindcss/typography": "^0.5.19",
+    "@vercel/speed-insights": "^2.0.0",
     "gray-matter": "4.0.3",
     "groq": "^4.10.2",
     "html2canvas": "^1.4.1",
