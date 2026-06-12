@@ -314,10 +314,8 @@ export async function getAllCertSlugs(locale: Locale = "it"): Promise<string[]> 
 export async function getCertBySlug(slug: string, locale: Locale = "it"): Promise<Cert | null> {
   const canonSlug = normalizeSlug(slug);
 
-  // In fase di build: no fetch → mock
-  if (IS_BUILD) {
-    return MOCK.find((c) => c.slug === canonSlug && c.locale === locale) ?? null;
-  }
+  // In fase di build NON usare MOCK per i dettagli certificazione,
+// perché servono dati dinamici come questionCountByLang.
 
   // Selettore robusto dall'array
   const pickFromArray = (arr: unknown): Record<string, unknown> | undefined => {
