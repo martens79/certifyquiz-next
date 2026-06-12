@@ -107,10 +107,11 @@ export async function CertificationDetailView({
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
   const [dbTopics, cert] = await Promise.all([
+    
     getTopicsByCertSlug(dbSlug, lang),
     getCertBySlug(dbSlug, lang),
   ]);
-
+console.log("CERT DEBUG", dbSlug, cert?.questionCountByLang);
   if (reg) {
     const data: DynamicCertData = {
       ...reg,
