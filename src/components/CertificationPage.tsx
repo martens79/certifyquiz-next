@@ -237,6 +237,10 @@ const pageTopics =
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
+        <pre className="text-xs bg-red-100 p-2">
+  {JSON.stringify((data as any).questionCountByLang)}
+</pre>
+
         {questionCount > 0 && (
   <div className="mb-6 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-800">
     ✅ {questionCount}+ {questionLabel}
