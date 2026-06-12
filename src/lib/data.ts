@@ -370,12 +370,15 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
   };
 
   // 1) Prova endpoint dettaglio
-  try {
-    const r = await okOrThrow(
-      fetchWithTimeout(`${API}/certifications/by-slug/${encodeURIComponent(canonSlug)}?locale=${locale}`, {
-  cache: "no-store",
-} as NextFetchInit)
-    );
+try {
+  const r = await okOrThrow(
+    fetchWithTimeout(
+      `${API}/certifications/by-slug/${encodeURIComponent(canonSlug)}?locale=${locale}`,
+      {
+        cache: "no-store",
+      } as NextFetchInit
+    )
+  );
 
     const raw: unknown = await r.json().catch(() => null);
 
