@@ -111,7 +111,7 @@ export async function CertificationDetailView({
     getTopicsByCertSlug(dbSlug, lang),
     getCertBySlug(dbSlug, lang),
   ]);
-console.log("CERT DEBUG", dbSlug, cert?.questionCountByLang);
+
   if (reg) {
     const data: DynamicCertData = {
       ...reg,
