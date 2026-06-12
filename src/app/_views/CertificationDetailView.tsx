@@ -17,12 +17,7 @@ const SLUG_REDIRECTS: Record<string, string> = {
 };
 
 /* ------------------------------- DB/API slug aliases ---------------------------------- */
-/**
- * Alias interni usati SOLO per interrogare DB/API.
- * Non fanno redirect e non cambiano l'URL pubblico.
- *
- * Serve quando lo slug pubblico/statico è diverso dallo slug salvato nel DB.
- */
+
 const normalizeDbSlug = (slug: string) => {
   if (slug === "network-plus") return "comptia-network-plus";
   if (slug === "tensorflow") return "google-tensorflow";
@@ -51,7 +46,12 @@ const makeBackRoute = () =>
     es: "/es/certificaciones",
   } as const);
 
-function adaptCertToRegistryShape(cert: Cert): CertificationData {
+type DynamicCertData = CertificationData & {
+  questionCount?: number;
+  questionCountByLang?: Partial<Record<Lang, number>>;
+};
+
+function adaptCertToRegistryShape(cert: Cert): DynamicCertData {
   const title = cert.title || cert.h1 || "Certification";
   const desc = cert.seoDescription || cert.intro || cert.title || "";
   const img = cert.imageUrl ?? "/og/cert-default.png";
@@ -70,6 +70,9 @@ function adaptCertToRegistryShape(cert: Cert): CertificationData {
 
     quizRoute: makeQuizRoute(cert.slug),
     backRoute: makeBackRoute(),
+
+    questionCount: cert.questionCount,
+    questionCountByLang: cert.questionCountByLang,
   };
 }
 
@@ -84,9 +87,6 @@ export async function CertificationDetailView({
   lang: Lang;
   slug: string;
 }) {
-  // ✅ Redirect slug legacy → slug canonico, tutte le lingue.
-  // ❌ NON mettere qui network-plus / tensorflow / python-developer:
-  // sono alias DB/API, non redirect pubblici.
   if (SLUG_REDIRECTS[slug]) {
     const target = SLUG_REDIRECTS[slug];
     const prefix = lang === "en" ? "" : `/${lang}`;
@@ -100,26 +100,27 @@ export async function CertificationDetailView({
     redirect(`${prefix}/${seg}/${target}`);
   }
 
-  // ✅ Slug usato per DB/API.
   const dbSlug = normalizeDbSlug(slug);
 
-  // ✅ Cerca prima nel registry con lo slug pubblico.
-  // Se non lo trova, prova anche con lo slug DB normalizzato.
-  // Così non rompi network-plus, tensorflow e python-developer.
   const reg =
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[slug] ??
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
-  // ✅ Recupera i topic reali dal DB/API usando lo slug compatibile col DB.
-  const dbTopics = await getTopicsByCertSlug(dbSlug, lang);
+  const [dbTopics, cert] = await Promise.all([
+    getTopicsByCertSlug(dbSlug, lang),
+    getCertBySlug(dbSlug, lang),
+  ]);
 
-  // ✅ Se presente nel registry statico, usa pagina ricca.
   if (reg) {
-    return <CertificationPage lang={lang} data={reg} dbTopics={dbTopics} />;
+    const data: DynamicCertData = {
+      ...reg,
+      questionCount: cert?.questionCount,
+      questionCountByLang: cert?.questionCountByLang,
+    };
+
+    return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} />;
   }
 
-  // ✅ Fallback backend.
-  const cert = await getCertBySlug(dbSlug, lang);
   if (!cert) return notFound();
 
   const data = adaptCertToRegistryShape(cert);

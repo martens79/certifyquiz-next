@@ -37,7 +37,18 @@ function getList<T>(rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined, l
   const list = rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
   return Array.isArray(list) ? [...list] : [];
 }
+function getQuestionCountByLang(data: CertificationData, lang: Lang): number {
+  const counts = (data as CertificationData & {
+    questionCountByLang?: Partial<Record<Lang, number>>;
+    questionCount?: number;
+  }).questionCountByLang;
 
+  return (
+    counts?.[lang] ??
+    (data as CertificationData & { questionCount?: number }).questionCount ??
+    0
+  );
+}
 function isTopicLinkItem(value: unknown): value is TopicLinkItem {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return "title" in value;
@@ -112,6 +123,15 @@ export default function CertificationPage({
 
   const pageTitle = pickLabel(title, lang) || "Certification";
   const pageDescription = pickLabel(description, lang);
+  const questionCount = getQuestionCountByLang(data, lang);
+
+const questionLabel = {
+  it: "domande",
+  en: "questions",
+  fr: "questions",
+  es: "preguntas",
+}[lang];
+
   const levelText =
     pickLabel(
       level ?? { it: "Principiante", en: "Beginner", fr: "Débutant", es: "Principiante" },
@@ -216,6 +236,12 @@ const pageTopics =
         </header>
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
+
+        {questionCount > 0 && (
+  <div className="mb-6 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-800">
+    ✅ {questionCount}+ {questionLabel}
+  </div>
+)}
 
         {/* SEO booster */}
         {currentCertification.length > 0 && (

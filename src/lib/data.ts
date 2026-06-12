@@ -15,11 +15,14 @@ export type Cert = {
   intro: string;
   seoDescription: string;
   faq: { q: string; a: string }[];
-  // NEW: immagine opzionale per OG/cover
+
   imageUrl?: string;
-  // opzionali (se il backend usa nomi diversi)
   ogImage?: string;
   image?: string;
+
+  // Conteggi reali domande per lingua
+  questionCount?: number;
+  questionCountByLang?: Partial<Record<"it" | "en" | "fr" | "es", number>>;
 };
 export type TopicReviewListItem = {
   id: number;
@@ -339,21 +342,31 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     const title = pickNameByLocale(obj, locale) || canonSlug;
 
     return {
-      slug: canonSlug,
-      locale,
-      title,
-      h1: title,
-      intro: getString(obj, "intro") ?? getString(obj, "description") ?? "",
-      seoDescription:
-        getString(obj, "seoDescription") ??
-        getString(obj, "seo") ??
-        getString(obj, "description") ??
-        "",
-      faq: normalizeFaq(obj["faq"]),
-      imageUrl: pickImageUrl(obj),
-      ogImage: getString(obj, "ogImage") ?? undefined,
-      image: getString(obj, "image") ?? undefined,
-    };
+  slug: canonSlug,
+  locale,
+  title,
+  h1: title,
+  intro: getString(obj, "intro") ?? getString(obj, "description") ?? "",
+  seoDescription:
+    getString(obj, "seoDescription") ??
+    getString(obj, "seo") ??
+    getString(obj, "description") ??
+    "",
+  faq: normalizeFaq(obj["faq"]),
+  imageUrl: pickImageUrl(obj),
+  ogImage: getString(obj, "ogImage") ?? undefined,
+  image: getString(obj, "image") ?? undefined,
+
+  questionCount:
+    typeof obj["questionCount"] === "number"
+      ? obj["questionCount"]
+      : undefined,
+
+  questionCountByLang:
+    obj["questionCountByLang"] && typeof obj["questionCountByLang"] === "object"
+      ? (obj["questionCountByLang"] as Partial<Record<Locale, number>>)
+      : undefined,
+};
   };
 
   // 1) Prova endpoint dettaglio
