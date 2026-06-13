@@ -276,7 +276,7 @@ const getSlides = (lang: Lang): FeatureCard[][] => {
           },
           lang
         ),
-        href: `${p}/hub`,
+        href: `${p}/hub/vendors`,
         cta: T(
           {
             it: "Apri gli hub →",
