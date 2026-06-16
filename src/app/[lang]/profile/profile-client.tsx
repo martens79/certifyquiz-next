@@ -1181,33 +1181,41 @@ const avatarBorderClass =
     </p>
 
     <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-      {weakAreas.slice(0, 5).map((area) => (
-        <div
-          key={`${area.certification_id}-${area.topic_id}`}
-          className="rounded-xl border border-slate-200 bg-slate-50 p-3"
-        >
-          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {area.certification_name}
-          </div>
+     {weakAreas.slice(0, 5).map((area) => {
+  const topicPageHref =
+    lang === "en"
+      ? `/certifications/${area.certification_slug}/${area.topic_slug}`
+      : lang === "es"
+        ? `/es/certificaciones/${area.certification_slug}/${area.topic_slug}`
+        : `/${lang}/certificazioni/${area.certification_slug}/${area.topic_slug}`;
 
-          <div className="mt-1 font-bold text-slate-900">
-            {area.topic_title}
-          </div>
+  return (
+    <div
+      key={`${area.certification_id}-${area.topic_id}`}
+      className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+    >
+      <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        {area.certification_name}
+      </div>
 
-          <div className="mt-2 text-sm text-slate-600">
-            🔥 {area.wrongs} errori
-• {area.questions_with_errors} domande coinvolte
-          </div>
+      <div className="mt-1 font-bold text-slate-900">
+        {area.topic_title}
+      </div>
 
-         <Link
-  href={`/${lang}/quiz/${area.certification_slug}/${area.topic_slug}`}
-  className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
->
-  Allenati su questo argomento →
-</Link>
-        </div>
-      ))}
+      <div className="mt-2 text-sm text-slate-600">
+        🔥 {area.wrongs} errori • {area.questions_with_errors} domande coinvolte
+      </div>
+
+      <Link
+        href={topicPageHref}
+        className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+      >
+        Allenati su questo argomento →
+      </Link>
     </div>
+  );
+})}
+        </div>
   </div>
 )}
         {/* Badge */}
