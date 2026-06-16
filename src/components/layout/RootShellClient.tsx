@@ -7,9 +7,8 @@ import LayoutShellClient from "@/components/layout/LayoutShellClient";
 import type { Locale } from "@/lib/i18n";
 
 import { AuthProvider } from "@/components/auth/AuthProvider";
-
-// 👇 IMPORT NUOVO
 import LanguageSuggestionBanner from "@/components/i18n/LanguageSuggestionBanner";
+import PwaInstallPrompt from "@/components/pwa/PwaInstallPrompt";
 
 export default function RootShellClient({ children }: { children: ReactNode }) {
   const p = usePathname() ?? "/";
@@ -19,14 +18,11 @@ export default function RootShellClient({ children }: { children: ReactNode }) {
 
   return (
     <AuthProvider>
-
-      {/* 👇 Banner suggerimento lingua */}
       <LanguageSuggestionBanner />
 
-      <LayoutShellClient lang={lang}>
-        {children}
-      </LayoutShellClient>
+      <LayoutShellClient lang={lang}>{children}</LayoutShellClient>
 
+      <PwaInstallPrompt />
     </AuthProvider>
   );
 }
