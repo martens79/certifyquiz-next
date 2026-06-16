@@ -729,20 +729,21 @@ useEffect(() => {
   let alive = true;
 
   (async () => {
-    try {
-      const raw = await tryJson<any>("/certifications"); // ✅ NON /api/backend/...
-      const rows = normalizeCerts(raw);
-      if (alive) setCerts(rows);
-    } catch (e) {
-      console.error("[certs] fetch failed", e);
-      if (alive) setCerts([]);
-    }
+    const data = await tryJson<WeakAreasResponse>(
+      `/me/weak-areas?lang=${lang}`
+    );
+
+    console.log("WEAK AREAS", data);
+
+    if (!alive) return;
+
+    setWeakAreas(Array.isArray(data?.items) ? data.items : []);
   })();
 
   return () => {
     alive = false;
   };
-}, []);
+}, [lang]);
 
 
   const [selectedCertId, setSelectedCertId] = useState<string>(""); // "" = tutte
