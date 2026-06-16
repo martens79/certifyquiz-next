@@ -230,7 +230,8 @@ if (pathname === "/es/certificaciones/mysql-certification") {
   if (pathname === "/it/certificazioni/vmware-certified-professional") {
     return redirect301(req, "/it/certificazioni/vmware-vcp");
   }
-
+  
+  
   // ---------------------------------------------------------------------
 // RECENT 404 FIXES
 // ---------------------------------------------------------------------
@@ -265,6 +266,96 @@ if (pathname.startsWith("/es/certificaciones/microsoft-ai-fundamentals/")) {
 // CCST Cybersecurity vecchi topic IT non più validi
 if (pathname.startsWith("/it/certificazioni/cisco-ccst-cybersecurity/")) {
   return redirect301(req, "/it/certificazioni/cisco-ccst-cybersecurity");
+}
+
+if (
+  pathname.startsWith(
+    "/it/certificazioni/cisco-ccst-cybersecurity/"
+  )
+) {
+  return redirect301(
+    req,
+    "/it/certificazioni/cisco-ccst-cybersecurity"
+  );
+}
+// Networking roadmap legacy
+
+if (pathname === "/roadmaps/networking") {
+  return redirect301(req, "/roadmap-networking");
+}
+
+if (pathname === "/it/roadmaps/networking") {
+  return redirect301(req, "/it/roadmap-networking");
+}
+
+if (pathname === "/fr/roadmaps/networking") {
+  return redirect301(req, "/fr/roadmap-networking");
+}
+
+if (pathname === "/es/roadmaps/networking") {
+  return redirect301(req, "/es/roadmap-networking");
+}
+
+// Kubernetes legacy -> KCNA
+
+if (pathname === "/certifications/kubernetes") {
+  return redirect301(req, "/certifications/kcna-kubernetes-cloud-native");
+}
+
+if (pathname === "/it/certificazioni/kubernetes") {
+  return redirect301(req, "/it/certificazioni/kcna-kubernetes-cloud-native");
+}
+
+if (pathname === "/fr/certifications/kubernetes") {
+  return redirect301(req, "/fr/certifications/kcna-kubernetes-cloud-native");
+}
+
+if (pathname === "/es/certificaciones/kubernetes") {
+  return redirect301(req, "/es/certificaciones/kcna-kubernetes-cloud-native");
+}
+
+if (pathname.startsWith("/es/quiz/aws-cloud-practitioner/")) {
+  const topicSlug = pathname.replace(
+    "/es/quiz/aws-cloud-practitioner/",
+    ""
+  );
+
+  return redirect301(
+    req,
+    `/es/certificaciones/aws-cloud-practitioner/${topicSlug}`
+  );
+}
+
+// Cookie Policy legacy -> cookie pages
+
+if (pathname === "/cookie-policy") {
+  return redirect301(req, "/cookies");
+}
+
+if (pathname === "/en/cookie-policy") {
+  return redirect301(req, "/cookies");
+}
+
+if (pathname === "/it/cookie-policy") {
+  return redirect301(req, "/it/cookie");
+}
+
+if (pathname === "/fr/cookie-policy") {
+  return redirect301(req, "/fr/cookie");
+}
+
+if (pathname === "/es/cookie-policy") {
+  return redirect301(req, "/es/cookie");
+}
+// Google Cloud Digital Leader old IT topic slug
+if (
+  pathname ===
+  "/it/certificazioni/google-cloud-digital-leader/infrastruttura-sicurezza-costi-cloud"
+) {
+  return redirect301(
+    req,
+    "/it/certificazioni/google-cloud-digital-leader/sicurezza-e-operazioni-con-google-cloud"
+  );
 }
     // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION SLUGS
