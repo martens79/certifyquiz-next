@@ -120,41 +120,48 @@ export function middleware(req: NextRequest) {
   // /privacy/undefined/virtualizzazione
   // /quiz-suggeriti/undefined/database
   // /&/undefined/cloud
-  if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
-    if (pathname.startsWith("/it/")) {
-      return redirect301(req, "/it/percorsi");
-    }
+if (pathname.startsWith("/&/undefined/")) {
+  const category = pathname.split("/").pop();
 
-    if (pathname.startsWith("/es/")) {
-      return redirect301(req, "/es/rutas");
-    }
+  const map: Record<string, string> = {
+    sicurezza: "/it/categorie/sicurezza",
+    reti: "/it/categorie/reti",
+    cloud: "/it/categorie/cloud",
+    database: "/it/categorie/database",
+    base: "/it/categorie/base",
+    ai: "/it/categorie/intelligenza-artificiale",
+    virtualizzazione: "/it/categorie/virtualizzazione",
+    programmazione: "/it/categorie/programmazione",
+  };
 
-    if (pathname.startsWith("/fr/")) {
-      return redirect301(req, "/fr/parcours");
-    }
+  return redirect301(req, map[category ?? ""] ?? "/it/categorie");
+}
 
-    if (pathname.startsWith("/roadmap-management")) {
-      return redirect301(req, "/paths");
-    }
-
-    if (pathname.startsWith("/how-it-works")) {
+if (pathname.startsWith("/favicon.ico/undefined")) {
   return redirect301(req, "/");
 }
 
-    if (pathname.startsWith("/privacy")) {
-      return redirect301(req, "/privacy");
-    }
+if (pathname.startsWith("/quiz-suggeriti/undefined")) {
+  return redirect301(req, "/it/quiz");
+}
 
-    if (pathname.startsWith("/quiz-suggeriti")) {
-      return redirect301(req, "/suggested");
-    }
+if (pathname.startsWith("/roadmap-management/undefined")) {
+  return redirect301(req, "/paths");
+}
 
-    if (pathname.startsWith("/&")) {
-      return redirect301(req, "/");
-    }
+if (pathname.startsWith("/how-it-works/undefined")) {
+  return redirect301(req, "/");
+}
 
-    return redirect301(req, "/");
-  }
+if (pathname.startsWith("/privacy/undefined")) {
+  return redirect301(req, "/privacy");
+}
+
+if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
+  return redirect301(req, "/");
+}
+
+  
 
   // ---------------------------------------------------------------------
   // HARD ALIASES
@@ -207,6 +214,42 @@ export function middleware(req: NextRequest) {
   if (pathname === "/it/certificazioni/vmware-certified-professional") {
     return redirect301(req, "/it/certificazioni/vmware-vcp");
   }
+
+  // ---------------------------------------------------------------------
+// RECENT 404 FIXES
+// ---------------------------------------------------------------------
+
+// Legacy hub IBM Security
+if (pathname === "/hub/ibm-security") {
+  return redirect301(req, "/categories/security");
+}
+
+// Legacy hub Security
+if (pathname === "/hub/security") {
+  return redirect301(req, "/categories/security");
+}
+
+// Microsoft AI Fundamentals vecchio slug con topic figli
+if (pathname.startsWith("/certifications/microsoft-ai-fundamentals/")) {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+
+if (pathname.startsWith("/it/certificazioni/microsoft-ai-fundamentals/")) {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+
+if (pathname.startsWith("/fr/certifications/microsoft-ai-fundamentals/")) {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+
+if (pathname.startsWith("/es/certificaciones/microsoft-ai-fundamentals/")) {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
+// CCST Cybersecurity vecchi topic IT non più validi
+if (pathname.startsWith("/it/certificazioni/cisco-ccst-cybersecurity/")) {
+  return redirect301(req, "/it/certificazioni/cisco-ccst-cybersecurity");
+}
     // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION SLUGS
   // Vecchi slug singoli ancora indicizzati da Google
