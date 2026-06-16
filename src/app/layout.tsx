@@ -1,5 +1,5 @@
 ﻿// src/app/layout.tsx
-import "@/app/globals.css";
+import "./globals.css";
 import { Inter, Manrope } from "next/font/google";
 import { cookies } from "next/headers";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
@@ -18,6 +18,21 @@ const manrope = Manrope({
   display: "swap",
 });
 
+export const metadata = {
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "CertifyQuiz",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
+};
+
+export const viewport = {
+  themeColor: "#0f172a",
+};
 // 👇 DEVE essere async
 export default async function RootLayout({
   children,
