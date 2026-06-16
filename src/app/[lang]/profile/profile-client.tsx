@@ -1205,7 +1205,17 @@ const avatarBorderClass =
       <div className="mt-2 text-sm text-slate-600">
         🔥 {area.wrongs} errori • {area.questions_with_errors} domande coinvolte
       </div>
-
+      <div className="mt-2 h-2 rounded-full bg-slate-200 overflow-hidden">
+  <div
+    className="h-full rounded-full bg-red-500"
+    style={{
+      width: `${Math.min(
+        100,
+        Math.round((area.wrongs / Math.max(area.seen, 1)) * 100)
+      )}%`,
+    }}
+  />
+</div>
       <Link
         href={topicPageHref}
         className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
