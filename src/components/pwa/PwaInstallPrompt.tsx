@@ -44,6 +44,10 @@ export default function PwaInstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handler);
 
+    window.addEventListener("appinstalled", () => {
+      window.gtag?.("event", "pwa_installed");
+    });
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
     };
@@ -52,12 +56,16 @@ export default function PwaInstallPrompt() {
   const installApp = async () => {
     if (!deferredPrompt) return;
 
+    window.gtag?.("event", "pwa_install_clicked");
+
     await deferredPrompt.prompt();
 
     const choice = await deferredPrompt.userChoice;
 
     if (choice.outcome === "accepted") {
-      window.gtag?.("event", "pwa_installed");
+      window.gtag?.("event", "pwa_install_accepted");
+    } else {
+      window.gtag?.("event", "pwa_install_dismissed");
     }
 
     setVisible(false);
@@ -65,6 +73,7 @@ export default function PwaInstallPrompt() {
   };
 
   const dismiss = () => {
+    window.gtag?.("event", "pwa_install_banner_dismissed");
     localStorage.setItem("pwa_install_dismissed", "true");
     setVisible(false);
   };
@@ -84,6 +93,7 @@ export default function PwaInstallPrompt() {
           <p className="text-sm font-semibold text-slate-900">
             Installa CertifyQuiz
           </p>
+
           <p className="mt-1 text-xs text-slate-600">
             Apri quiz, ripassi e simulazioni più velocemente dal tuo telefono.
           </p>
