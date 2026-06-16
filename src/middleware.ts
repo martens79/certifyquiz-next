@@ -188,12 +188,28 @@ if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
   }
 
   if (pathname === "/certifications/mysql-certification") {
-    return redirect301(req, "/certifications/mysql");
-  }
+  return redirect301(req, "/certifications/mysql");
+}
 
-  if (pathname === "/it/certificazioni/mysql-certification") {
-    return redirect301(req, "/it/certificazioni/mysql");
-  }
+if (pathname === "/en/certifications/mysql-certification") {
+  return redirect301(req, "/certifications/mysql");
+}
+
+if (pathname === "/it/certificazioni/mysql-certification") {
+  return redirect301(req, "/it/certificazioni/mysql");
+}
+
+if (pathname === "/it/certifications/mysql-certification") {
+  return redirect301(req, "/it/certificazioni/mysql");
+}
+
+if (pathname === "/fr/certifications/mysql-certification") {
+  return redirect301(req, "/fr/certifications/mysql");
+}
+
+if (pathname === "/es/certificaciones/mysql-certification") {
+  return redirect301(req, "/es/certificaciones/mysql");
+}
 
   if (pathname === "/certifications/csharp-certification") {
     return redirect301(req, "/certifications/csharp");
