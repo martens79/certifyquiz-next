@@ -63,6 +63,22 @@ type CertStat = {
   max_score: number;
 } | null;
 
+type WeakArea = {
+  topic_id: number;
+  topic_title: string;
+  certification_id: number;
+  certification_slug: string;
+  certification_name: string;
+  wrongs: number;
+  seen: number;
+  questions_with_errors: number;
+  last_wrong_at: string | null;
+};
+
+type WeakAreasResponse = {
+  success: boolean;
+  items: WeakArea[];
+};
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
 const FEATURE_ERROR_REVIEW =
   process.env.NEXT_PUBLIC_FEATURE_ERROR_REVIEW === "1";
@@ -665,8 +681,11 @@ useEffect(() => {
 
 // —— Storico quiz (senza /exam-history, che è 404)
 const [history, setHistory] = useState<QuizHistoryRow[]>([]);
+const [weakAreas, setWeakAreas] = useState<WeakArea[]>([]);
+
 useEffect(() => {
   let alive = true;
+
   (async () => {
     const data =
       (await tryJsonMulti<any>([
@@ -679,11 +698,29 @@ useEffect(() => {
     const rows = normalizeHistory(data);
     if (alive) setHistory(rows);
   })();
+
   return () => {
     alive = false;
   };
 }, []);
 
+useEffect(() => {
+  let alive = true;
+
+  (async () => {
+    const data = await tryJson<WeakAreasResponse>(
+      `/me/weak-areas?lang=${lang}`
+    );
+
+    if (!alive) return;
+
+    setWeakAreas(Array.isArray(data?.items) ? data.items : []);
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, [lang]);
 
   // —— Certificazioni + filtro + stats
   const [certs, setCerts] = useState<CertRow[]>([]);
@@ -1131,7 +1168,45 @@ const avatarBorderClass =
             value={earnedBadges.length}
           />
         </div>
+{weakAreas.length > 0 && (
+  <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
+    <h3 className="text-lg font-bold text-slate-900">
+      🎯 Aree da migliorare
+    </h3>
 
+    <p className="mt-1 text-sm text-slate-600">
+      Argomenti dove hai accumulato più errori nei quiz.
+    </p>
+
+    <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {weakAreas.slice(0, 5).map((area) => (
+        <div
+          key={`${area.certification_id}-${area.topic_id}`}
+          className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+        >
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {area.certification_name}
+          </div>
+
+          <div className="mt-1 font-bold text-slate-900">
+            {area.topic_title}
+          </div>
+
+          <div className="mt-2 text-sm text-slate-600">
+            {area.wrongs} errori • {area.questions_with_errors} domande
+          </div>
+
+          <Link
+            href={`/${lang}/premium`}
+            className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+          >
+            Genera quiz mirato →
+          </Link>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
         {/* Badge */}
 <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
   <div className="flex items-center justify-between gap-3">
