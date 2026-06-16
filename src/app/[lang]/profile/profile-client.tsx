@@ -65,6 +65,7 @@ type CertStat = {
 
 type WeakArea = {
   topic_id: number;
+  topic_slug: string;
   topic_title: string;
   certification_id: number;
   certification_slug: string;
@@ -1194,15 +1195,16 @@ const avatarBorderClass =
           </div>
 
           <div className="mt-2 text-sm text-slate-600">
-            {area.wrongs} errori • {area.questions_with_errors} domande
+            🔥 {area.wrongs} errori
+• {area.questions_with_errors} domande coinvolte
           </div>
 
-          <Link
-            href={`/${lang}/premium`}
-            className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
-          >
-            Genera quiz mirato →
-          </Link>
+         <Link
+  href={`/${lang}/quiz/${area.certification_slug}/${area.topic_slug}`}
+  className="mt-3 inline-flex text-sm font-semibold text-blue-700 hover:underline"
+>
+  Allenati su questo argomento →
+</Link>
         </div>
       ))}
     </div>
