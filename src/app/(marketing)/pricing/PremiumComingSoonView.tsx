@@ -22,6 +22,7 @@ type PlanOption = {
   price: string;
   perMonth: string;
   badge?: string;
+  trialBadge?: string;
 };
 
 type CopyEntry = {
@@ -30,8 +31,11 @@ type CopyEntry = {
   subtitle: string;
   plans: PlanOption[];
   cta: string;
+  ctaMonthly: string;
   ctaLoading: string;
   subCta: string;
+  subCtaMonthly: string;
+  trialNote: string;
   featuresTitle: string;
   checkoutError: string;
   pizzaLine: string;
@@ -64,13 +68,16 @@ const COPY: Record<Lang, CopyEntry> = {
     subtitle:
       "Continua i quiz senza limiti e preparati davvero ai tuoi esami con spiegazioni complete, modalità esame e ripasso errori.",
     plans: [
-      { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese" },
+      { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
       { id: "premium_quarterly", label: "Trimestrale", price: "19,99€", perMonth: "6,66€/mese", badge: "Risparmia 33%" },
       { id: "premium_annual", label: "Annuale", price: "59,99€", perMonth: "5,00€/mese", badge: "Risparmia 50%" },
     ],
     cta: "Sblocca Premium",
+    ctaMonthly: "Inizia 7 giorni gratis",
     ctaLoading: "Apertura checkout...",
     subCta: "Accesso immediato. Nessun vincolo.",
+    subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
+    trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
     pizzaLine: "Al prezzo di una pizza, sblocchi una preparazione più seria, continua e completa.",
@@ -109,13 +116,16 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Desbloquea CertifyQuiz Premium",
     subtitle: "Continúa los quizzes sin límites y prepárate de verdad para tus exámenes con explicaciones completas, modo examen y repaso de errores.",
     plans: [
-      { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes" },
+      { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
       { id: "premium_quarterly", label: "Trimestral", price: "19,99€", perMonth: "6,66€/mes", badge: "Ahorra 33%" },
       { id: "premium_annual", label: "Anual", price: "59,99€", perMonth: "5,00€/mes", badge: "Ahorra 50%" },
     ],
     cta: "Desbloquea Premium",
+    ctaMonthly: "Empezar 7 días gratis",
     ctaLoading: "Abriendo checkout...",
     subCta: "Acceso inmediato. Sin compromiso.",
+    subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
+    trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
     pizzaLine: "Por el precio de una pizza, desbloqueas una preparación más seria, constante y completa.",
@@ -154,13 +164,16 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Unlock CertifyQuiz Premium",
     subtitle: "Keep practicing without limits and prepare seriously for your exams with full explanations, exam mode, and error review.",
     plans: [
-      { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month" },
+      { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
       { id: "premium_quarterly", label: "Quarterly", price: "€19.99", perMonth: "€6.66/month", badge: "Save 33%" },
       { id: "premium_annual", label: "Annual", price: "€59.99", perMonth: "€5.00/month", badge: "Save 50%" },
     ],
     cta: "Unlock Premium",
+    ctaMonthly: "Start 7-day free trial",
     ctaLoading: "Opening checkout...",
     subCta: "Instant access. No long-term commitment.",
+    subCtaMonthly: "7 days free · No charge today · Cancel anytime",
+    trialNote: "Try free for 7 days, then €9.99/month.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
     pizzaLine: "For the price of a pizza, you unlock a more serious, consistent, and complete way to prepare.",
@@ -199,13 +212,16 @@ const COPY: Record<Lang, CopyEntry> = {
     title: "Débloquez CertifyQuiz Premium",
     subtitle: "Continuez les quiz sans limite et préparez-vous sérieusement à vos examens avec des explications complètes, le mode examen et la révision des erreurs.",
     plans: [
-      { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois" },
+      { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
       { id: "premium_quarterly", label: "Trimestriel", price: "19,99€", perMonth: "6,66€/mois", badge: "Économisez 33%" },
       { id: "premium_annual", label: "Annuel", price: "59,99€", perMonth: "5,00€/mois", badge: "Économisez 50%" },
     ],
     cta: "Débloquez Premium",
+    ctaMonthly: "Commencer 7 jours gratuits",
     ctaLoading: "Ouverture du checkout...",
     subCta: "Accès immédiat. Sans engagement.",
+    subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
+    trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
     pizzaLine: "Pour le prix d'une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
@@ -255,6 +271,7 @@ function PlanSelector({
     <div className="grid grid-cols-3 gap-3 mt-5">
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
+        const activeBadge = plan.trialBadge ?? plan.badge;
         return (
           <button
             key={plan.id}
@@ -266,11 +283,13 @@ function PlanSelector({
                 : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
             }`}
           >
-            {plan.badge && (
+            {activeBadge && (
               <span className={`absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                isSelected ? "bg-white text-black" : "bg-black text-white"
+                plan.trialBadge
+                  ? isSelected ? "bg-emerald-400 text-white" : "bg-emerald-500 text-white"
+                  : isSelected ? "bg-white text-black" : "bg-black text-white"
               }`}>
-                {plan.badge}
+                {activeBadge}
               </span>
             )}
             <div className="text-sm font-semibold">{plan.label}</div>
@@ -281,6 +300,44 @@ function PlanSelector({
           </button>
         );
       })}
+    </div>
+  );
+}
+
+function CtaBlock({
+  t,
+  activePlan,
+  isLoading,
+  onCta,
+}: {
+  t: CopyEntry;
+  activePlan: PlanOption;
+  isLoading: boolean;
+  onCta: () => void;
+}) {
+  const isMonthly = activePlan.id === "premium_monthly";
+  return (
+    <div className="mt-5">
+      {isMonthly && (
+        <p className="mb-2 text-sm font-medium text-emerald-700">
+          🎁 {t.trialNote}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={onCta}
+        disabled={isLoading}
+        className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+      >
+        {isLoading
+          ? t.ctaLoading
+          : isMonthly
+          ? t.ctaMonthly
+          : `${t.cta} – ${activePlan.price}`}
+      </button>
+      <p className="mt-2 text-xs text-gray-500">
+        {isMonthly ? t.subCtaMonthly : t.subCta}
+      </p>
     </div>
   );
 }
@@ -300,7 +357,8 @@ function FeatureCard({ title, desc, variant }: { title: string; desc: string; va
   );
 }
 
-function ComparisonTable({ t, onCta, isLoading }: { t: CopyEntry; onCta: () => void; isLoading: boolean }) {
+function ComparisonTable({ t, onCta, isLoading, activePlan }: { t: CopyEntry; onCta: () => void; isLoading: boolean; activePlan: PlanOption }) {
+  const isMonthly = activePlan.id === "premium_monthly";
   return (
     <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200">
       <div className="bg-gray-50 px-6 py-4 text-lg font-semibold text-gray-900">{t.tableTitle}</div>
@@ -325,14 +383,20 @@ function ComparisonTable({ t, onCta, isLoading }: { t: CopyEntry; onCta: () => v
         </table>
       </div>
       <div className="border-t border-gray-200 px-6 py-4 text-center">
+        {isMonthly && (
+          <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>
+        )}
         <button
           type="button"
           onClick={onCta}
           disabled={isLoading}
           className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
         >
-          {isLoading ? t.ctaLoading : t.cta}
+          {isLoading ? t.ctaLoading : isMonthly ? t.ctaMonthly : t.cta}
         </button>
+        {isMonthly && (
+          <p className="mt-2 text-xs text-gray-500">{t.subCtaMonthly}</p>
+        )}
       </div>
     </section>
   );
@@ -366,6 +430,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
   const t = COPY[lang];
   const activePlan = t.plans.find((p) => p.id === selectedPlan) ?? t.plans[2];
+  const isMonthly = selectedPlan === "premium_monthly";
 
   async function startPremiumCheckout() {
     if (isLoading) return;
@@ -413,17 +478,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} />
 
           {/* CTA principale */}
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={startPremiumCheckout}
-              disabled={isLoading}
-              className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-            >
-              {isLoading ? t.ctaLoading : `${t.cta} – ${activePlan.price}`}
-            </button>
-            <p className="mt-2 text-xs text-gray-500">{t.subCta}</p>
-          </div>
+          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} onCta={startPremiumCheckout} />
 
           <div className="mt-4 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">{t.urgencyLine}</p>
@@ -437,18 +492,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
             <div className="rounded-2xl border border-gray-200 p-6">
               <div className="text-lg font-semibold text-gray-900">{t.title}</div>
               <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={startPremiumCheckout}
-                  disabled={isLoading}
-                  className="inline-flex items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-                >
-                  {isLoading ? t.ctaLoading : `${t.cta} – ${activePlan.price}`}
-                </button>
-                <p className="mt-3 text-sm text-gray-600">{t.subCta}</p>
-                <p className="mt-4 text-sm font-medium text-gray-900">{t.finalLine}</p>
-              </div>
+              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} onCta={startPremiumCheckout} />
+              <p className="mt-4 text-sm font-medium text-gray-900">{t.finalLine}</p>
             </div>
 
             <div>
@@ -462,23 +507,33 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
             </div>
           </section>
 
-          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} />
+          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
           <Guarantee t={t} />
 
           {/* CTA finale */}
           <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
             <p className="text-base font-semibold text-gray-900">{t.finalLine}</p>
-            {/* Selettore piani anche in fondo */}
             <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} />
-            <button
-              type="button"
-              onClick={startPremiumCheckout}
-              disabled={isLoading}
-              className="mt-5 inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
-            >
-              {isLoading ? t.ctaLoading : `${t.cta} – ${activePlan.price}`}
-            </button>
-            <p className="mt-2 text-xs text-gray-500">{t.subCta}</p>
+            <div className="mt-5 flex flex-col items-center">
+              {isMonthly && (
+                <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>
+              )}
+              <button
+                type="button"
+                onClick={startPremiumCheckout}
+                disabled={isLoading}
+                className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+              >
+                {isLoading
+                  ? t.ctaLoading
+                  : isMonthly
+                  ? t.ctaMonthly
+                  : `${t.cta} – ${activePlan.price}`}
+              </button>
+              <p className="mt-2 text-xs text-gray-500">
+                {isMonthly ? t.subCtaMonthly : t.subCta}
+              </p>
+            </div>
           </div>
         </div>
       </div>

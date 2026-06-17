@@ -25,26 +25,27 @@ type Props = {
   correctCount?: number;
   wrongCount?: number;
   totalAnswered?: number;
+  triggeredByGoodScore?: boolean;
 };
 
 const PLANS: Record<Locale, PlanOption[]> = {
   it: [
-    { id: "premium_monthly", label: "Mensile", price: "9,99€/mese" },
+    { id: "premium_monthly", label: "Mensile", price: "9,99€/mese", badge: "7gg gratis" },
     { id: "premium_quarterly", label: "Trimestrale", price: "19,99€", badge: "-33%" },
     { id: "premium_annual", label: "Annuale", price: "59,99€", badge: "-50%" },
   ],
   en: [
-    { id: "premium_monthly", label: "Monthly", price: "€9.99/mo" },
+    { id: "premium_monthly", label: "Monthly", price: "€9.99/mo", badge: "7 days free" },
     { id: "premium_quarterly", label: "Quarterly", price: "€19.99", badge: "-33%" },
     { id: "premium_annual", label: "Annual", price: "€59.99", badge: "-50%" },
   ],
   fr: [
-    { id: "premium_monthly", label: "Mensuel", price: "9,99€/mois" },
+    { id: "premium_monthly", label: "Mensuel", price: "9,99€/mois", badge: "7j gratuits" },
     { id: "premium_quarterly", label: "Trimestriel", price: "19,99€", badge: "-33%" },
     { id: "premium_annual", label: "Annuel", price: "59,99€", badge: "-50%" },
   ],
   es: [
-    { id: "premium_monthly", label: "Mensual", price: "9,99€/mes" },
+    { id: "premium_monthly", label: "Mensual", price: "9,99€/mes", badge: "7 días gratis" },
     { id: "premium_quarterly", label: "Trimestral", price: "19,99€", badge: "-33%" },
     { id: "premium_annual", label: "Anual", price: "59,99€", badge: "-50%" },
   ],
@@ -57,6 +58,12 @@ const COPY = {
     fr: "Limite gratuit atteint",
     es: "Límite gratuito alcanzado",
   },
+  badgeGoodScore: {
+    it: "Stai andando bene — non fermarti adesso",
+    en: "You're doing great — don't stop now",
+    fr: "Vous progressez bien — ne vous arrêtez pas",
+    es: "Lo estás haciendo bien — no te detengas ahora",
+  },
   titleGeneric: {
     it: "Non fermarti adesso.",
     en: "Don't stop now.",
@@ -68,6 +75,18 @@ const COPY = {
     en: (cert: string) => `You're preparing for ${cert} — don't stop now.`,
     fr: (cert: string) => `Tu prépares le ${cert} — ne t'arrête pas maintenant.`,
     es: (cert: string) => `Estás preparando el ${cert} — no te detengas ahora.`,
+  },
+  titleGoodScore: {
+    it: (score: number) => `Sei al ${score}% — sei vicino. Non perdere il ritmo adesso.`,
+    en: (score: number) => `You're at ${score}% — you're close. Don't lose momentum now.`,
+    fr: (score: number) => `Vous êtes à ${score}% — vous y êtes presque. Ne perdez pas votre élan.`,
+    es: (score: number) => `Estás al ${score}% — estás cerca. No pierdas el ritmo ahora.`,
+  },
+  titleGoodScoreWithCert: {
+    it: (cert: string, score: number) => `Sei al ${score}% su ${cert}. Sei vicino all'esame — non fermarti adesso.`,
+    en: (cert: string, score: number) => `You're at ${score}% on ${cert}. You're close to the exam — don't stop now.`,
+    fr: (cert: string, score: number) => `Vous êtes à ${score}% sur ${cert}. Vous êtes près de l'examen — ne vous arrêtez pas.`,
+    es: (cert: string, score: number) => `Estás al ${score}% en ${cert}. Estás cerca del examen — no te detengas.`,
   },
   resultTitle: {
     it: "Risultato del test",
@@ -133,6 +152,18 @@ const COPY = {
     es: "Por el precio de una pizza, desbloquea quizzes ilimitados, explicaciones y repaso de errores.",
   },
   cta: {
+    it: "Inizia 7 giorni gratis",
+    en: "Start 7-day free trial",
+    fr: "Commencer 7 jours gratuits",
+    es: "Empezar 7 días gratis",
+  },
+  ctaMonthly: {
+    it: "Inizia 7 giorni gratis",
+    en: "Start 7-day free trial",
+    fr: "Commencer 7 jours gratuits",
+    es: "Empezar 7 días gratis",
+  },
+  ctaOther: {
     it: "Sblocca Premium",
     en: "Unlock Premium",
     fr: "Débloquez Premium",
@@ -145,6 +176,12 @@ const COPY = {
     es: "Abriendo checkout...",
   },
   cancelNote: {
+    it: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
+    en: "7 days free · No charge now · Cancel anytime",
+    fr: "7 jours gratuits · Aucun débit maintenant · Annulez quand vous voulez",
+    es: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
+  },
+  cancelNoteOther: {
     it: "Accesso immediato · Disdici quando vuoi · Garanzia 7 giorni",
     en: "Instant access · Cancel anytime · 7-day guarantee",
     fr: "Accès immédiat · Annulez quand vous voulez · Garantie 7 jours",
@@ -195,6 +232,7 @@ export default function PremiumQuestionLimitGate({
   correctCount,
   wrongCount,
   totalAnswered,
+  triggeredByGoodScore = false,
 }: Props) {
   const L = safeLang(lang);
   const [isLoading, setIsLoading] = useState(false);
@@ -215,9 +253,24 @@ export default function PremiumQuestionLimitGate({
     : resultLevel === "medium" ? COPY.diagnosisMedium[L]
     : COPY.diagnosisLow[L];
 
-  const title = certificationName
-    ? COPY.titleWithCert[L](certificationName)
-    : COPY.titleGeneric[L];
+  const title = (() => {
+    if (triggeredByGoodScore) {
+      return certificationName
+        ? COPY.titleGoodScoreWithCert[L](certificationName, percentage)
+        : COPY.titleGoodScore[L](percentage);
+    }
+    return certificationName
+      ? COPY.titleWithCert[L](certificationName)
+      : COPY.titleGeneric[L];
+  })();
+
+  const badgeText = triggeredByGoodScore ? COPY.badgeGoodScore[L] : COPY.badge[L];
+
+  const badgeClass = triggeredByGoodScore
+    ? "mb-4 inline-flex items-center rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-900"
+    : "mb-4 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900";
+
+  const isMonthly = selectedPlan === "premium_monthly";
 
   async function startPremiumCheckout() {
     if (isLoading) return;
@@ -233,6 +286,7 @@ export default function PremiumQuestionLimitGate({
           lang: L,
           score: percentage,
           plan: selectedPlan,
+          triggered_by_good_score: triggeredByGoodScore,
         }),
       }).catch(console.error);
 
@@ -256,8 +310,8 @@ export default function PremiumQuestionLimitGate({
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
 
       {/* Badge */}
-      <div className="mb-4 inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">
-        🔒 {COPY.badge[L]}
+      <div className={badgeClass}>
+        {triggeredByGoodScore ? "🎯" : "🔒"} {badgeText}
       </div>
 
       {/* Titolo */}
@@ -344,19 +398,25 @@ export default function PremiumQuestionLimitGate({
         })}
       </div>
 
-      {/* CTA */}
+      {/* CTA — testo cambia in base al piano selezionato */}
       <button
         type="button"
         onClick={startPremiumCheckout}
         disabled={isLoading}
         className="w-full rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? COPY.ctaLoading[L] : COPY.cta[L]}
+        {isLoading
+          ? COPY.ctaLoading[L]
+          : isMonthly
+          ? COPY.ctaMonthly[L]
+          : COPY.ctaOther[L]}
       </button>
 
-      <p className="mt-2 text-center text-xs text-gray-400">{COPY.cancelNote[L]}</p>
+      {/* Nota sotto CTA — cambia in base al piano */}
+      <p className="mt-2 text-center text-xs text-gray-400">
+        {isMonthly ? COPY.cancelNote[L] : COPY.cancelNoteOther[L]}
+      </p>
 
-      {/* Link torna indietro */}
       {onBack && (
         <button
           type="button"
@@ -367,7 +427,6 @@ export default function PremiumQuestionLimitGate({
         </button>
       )}
 
-      {/* Accordion dettagli */}
       <div className="mt-5 border-t border-gray-100">
         <button
           type="button"

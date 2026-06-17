@@ -1399,13 +1399,37 @@ if (!isLoggedIn && registerLimitReached && !isAssessment) {
 // ------------------------------------------------------------------
 // GATE 2 — Premium (free loggato, non assessment)
 // ------------------------------------------------------------------
-if (freeLimitReached) {
-  // Calcola il risultato reale delle prime FREE_LIMIT domande
-  const freeQuestions = questions.slice(0, FREE_LIMIT);
+// ✅ NEW — gate anticipato per score alto
+const currentAnsweredCount = Object.values(marked).filter((v) => v != null).length;
+const currentCorrectCount = (() => {
+  let ok = 0;
+  for (const question of questions) {
+    const chosen = marked[question.id];
+    const right = question.answers.find((a) => !!a.isCorrect)?.id;
+    if (chosen != null && right != null && Number(chosen) === Number(right)) ok++;
+  }
+  return ok;
+})();
+const currentScorePct = currentAnsweredCount > 0
+  ? Math.round((currentCorrectCount / currentAnsweredCount) * 100)
+  : 0;
+
+const triggeredByGoodScore =
+  !isAssessment &&
+  !isPremiumUser &&
+  !isAdmin &&
+  !freeLimitReached &&
+  currentAnsweredCount >= 8 &&
+  currentScorePct >= 75;
+
+if (freeLimitReached || triggeredByGoodScore) {
+  const gateQuestions = freeLimitReached
+    ? questions.slice(0, FREE_LIMIT)
+    : questions.slice(0, currentAnsweredCount);
 
   let freeCorrectCount = 0;
 
-  for (const question of freeQuestions) {
+  for (const question of gateQuestions) {
     const chosen = marked[question.id];
     const right = question.answers.find((answer) => !!answer.isCorrect)?.id;
 
@@ -1418,24 +1442,26 @@ if (freeLimitReached) {
     }
   }
 
-  const freeTotalAnswered = freeQuestions.length;
-  const freeWrongCount = Math.max(freeTotalAnswered - freeCorrectCount, 0);
+ const freeTotalAnswered = gateQuestions.length;
+const freeWrongCount = Math.max(freeTotalAnswered - freeCorrectCount, 0);
 
   return (
   <div className={`min-h-[100dvh] ${gradient}`}>
     <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
-      <PremiumQuestionLimitGate
-        lang={lang}
-        currentCount={FREE_LIMIT}
-        freeLimit={FREE_LIMIT}
-        mode={effectiveMode}
-        certificationSlug={context?.certificationSlug}
-        topicSlug={context?.topicSlug}
-        correctCount={freeCorrectCount}
-        wrongCount={freeWrongCount}
-        totalAnswered={freeTotalAnswered}
-        onBack={() => setIdx(FREE_LIMIT - 1)}
-      />
+     <PremiumQuestionLimitGate
+  lang={lang}
+  currentCount={freeLimitReached ? FREE_LIMIT : currentAnsweredCount}
+  freeLimit={FREE_LIMIT}
+  mode={effectiveMode}
+  certificationSlug={context?.certificationSlug}
+  topicSlug={context?.topicSlug}
+  certificationName={context?.certificationName}
+  correctCount={freeCorrectCount}
+  wrongCount={freeWrongCount}
+  totalAnswered={freeTotalAnswered}
+  triggeredByGoodScore={triggeredByGoodScore}
+  onBack={() => setIdx(freeLimitReached ? FREE_LIMIT - 1 : Math.max(0, currentAnsweredCount - 1))}
+/>
     </div>
   </div>
 );
