@@ -13,6 +13,37 @@ declare global {
   }
 }
 
+function getLangFromPath() {
+  if (typeof window === "undefined") return "en";
+
+  const first = window.location.pathname.split("/").filter(Boolean)[0];
+
+  if (first === "it" || first === "fr" || first === "es") {
+    return first;
+  }
+
+  return "en";
+}
+
+async function trackPwaEvent(event: string) {
+  try {
+    const lang = getLangFromPath();
+
+    await fetch("/api/backend/admin/funnel-event", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event,
+        lang,
+      }),
+    });
+  } catch {
+    // tracking non deve mai bloccare la UX
+  }
+}
+
 export default function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -25,6 +56,7 @@ export default function PwaInstallPrompt() {
 
     if (isStandalone) {
       window.gtag?.("event", "pwa_open");
+      trackPwaEvent("pwa_open");
       return;
     }
 
@@ -39,17 +71,21 @@ export default function PwaInstallPrompt() {
       setTimeout(() => {
         setVisible(true);
         window.gtag?.("event", "pwa_install_prompt_shown");
+        trackPwaEvent("pwa_install_prompt_shown");
       }, 5000);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
-
-    window.addEventListener("appinstalled", () => {
+    const installedHandler = () => {
       window.gtag?.("event", "pwa_installed");
-    });
+      trackPwaEvent("pwa_installed");
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", installedHandler);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", installedHandler);
     };
   }, []);
 
@@ -57,6 +93,7 @@ export default function PwaInstallPrompt() {
     if (!deferredPrompt) return;
 
     window.gtag?.("event", "pwa_install_clicked");
+    trackPwaEvent("pwa_install_clicked");
 
     await deferredPrompt.prompt();
 
@@ -64,6 +101,7 @@ export default function PwaInstallPrompt() {
 
     if (choice.outcome === "accepted") {
       window.gtag?.("event", "pwa_install_accepted");
+      trackPwaEvent("pwa_install_accepted");
     } else {
       window.gtag?.("event", "pwa_install_dismissed");
     }
