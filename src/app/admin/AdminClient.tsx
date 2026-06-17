@@ -204,6 +204,29 @@ export default function AdminClient() {
     };
   }, [filteredLeads, filteredFunnelEvents, filteredHotLeads]);
 
+  const pwaStats = useMemo(() => {
+  const getEventTotal = (name: string) =>
+    funnelSummary?.events.find((e) => e.event === name)?.total ?? 0;
+
+  const promptShown = getEventTotal("pwa_install_prompt_shown");
+  const clicked = getEventTotal("pwa_install_clicked");
+  const accepted = getEventTotal("pwa_install_accepted");
+  const installed = getEventTotal("pwa_installed");
+  const opened = getEventTotal("pwa_open");
+
+  const conversion =
+    promptShown > 0 ? Math.round((installed / promptShown) * 1000) / 10 : 0;
+
+  return {
+    promptShown,
+    clicked,
+    accepted,
+    installed,
+    opened,
+    conversion,
+  };
+}, [funnelSummary]);
+
   const filteredTopCerts = useMemo(() => {
     return getTopItems(
       filteredLeads
@@ -515,6 +538,30 @@ export default function AdminClient() {
                   value={filteredStats.anonymousPremiumClicks}
                   hint="Click Premium senza email"
                 />
+
+                <KpiCard
+                  label="📱 PWA Prompt"
+                  value={pwaStats.promptShown}
+                  hint="Banner installazione mostrato"
+                />
+
+                <KpiCard
+                  label="📱 PWA Click"
+                  value={pwaStats.clicked}
+                  hint="Click sul bottone Installa"
+                />
+
+                <KpiCard
+                  label="📱 PWA Install"
+                  value={pwaStats.installed}
+                  hint={`Conversione: ${pwaStats.conversion}%`}
+                />
+
+                <KpiCard
+                  label="📱 PWA Open"
+                  value={pwaStats.opened}
+                  hint="Aperture da app installata"
+/>
               </div>
 
               <div style={styles.insightGrid}>
