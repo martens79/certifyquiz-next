@@ -1439,10 +1439,7 @@ const avatarBorderClass =
   <div
     className="h-full rounded-full bg-red-500"
     style={{
-      width: `${Math.min(
-        100,
-        Math.round((area.wrongs / Math.max(area.seen, 1)) * 100)
-      )}%`,
+      width: `${Math.min(100, Math.round((area.wrongs / Math.max(...weakAreas.map(a => a.wrongs), 1)) * 100))}%`,
     }}
   />
 </div>
