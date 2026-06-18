@@ -571,7 +571,42 @@ if (
   if (pathname === "/it/quiz/intelligenza-artificiale/mixed") {
     return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
   }
+// Google Cloud -> Google Cloud Digital Leader
+if (pathname.startsWith("/certifications/google-cloud/")) {
+  const topicSlug = pathname.replace("/certifications/google-cloud/", "");
 
+  return redirect301(
+    req,
+    `/certifications/google-cloud-digital-leader/${topicSlug}`
+  );
+}
+
+if (pathname.startsWith("/it/certificazioni/google-cloud/")) {
+  const topicSlug = pathname.replace("/it/certificazioni/google-cloud/", "");
+
+  return redirect301(
+    req,
+    `/it/certificazioni/google-cloud-digital-leader/${topicSlug}`
+  );
+}
+
+if (pathname.startsWith("/fr/certifications/google-cloud/")) {
+  const topicSlug = pathname.replace("/fr/certifications/google-cloud/", "");
+
+  return redirect301(
+    req,
+    `/fr/certifications/google-cloud-digital-leader/${topicSlug}`
+  );
+}
+
+if (pathname.startsWith("/es/certificaciones/google-cloud/")) {
+  const topicSlug = pathname.replace("/es/certificaciones/google-cloud/", "");
+
+  return redirect301(
+    req,
+    `/es/certificaciones/google-cloud-digital-leader/${topicSlug}`
+  );
+}
   // ---------------------------------------------------------------------
   // QUIZ
   // EN canonical = /en/quiz/*
