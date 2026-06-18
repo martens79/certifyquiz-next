@@ -121,23 +121,24 @@ const COPY = {
     fr: "Vous avez fait {wrong} erreurs. Premium vous aide à comprendre pourquoi et à corriger vos lacunes.",
     es: "Has cometido {wrong} errores. Premium te ayuda a entender por qué y a corregir tus lagunas.",
   },
+  // ✅ LOSS AVERSION — focus su cosa si perde, non su cosa si guadagna
   urgencyLineGood: {
-    it: "Hai fatto 20 domande e sei già al {score}%. Sei vicino — non perdere il ritmo adesso.",
-    en: "You answered 20 questions and you're already at {score}%. You're close — don't lose momentum now.",
-    fr: "Vous avez répondu à 20 questions et vous êtes déjà à {score}%. Vous êtes proche — ne perdez pas votre élan.",
-    es: "Has respondido 20 preguntas y ya estás al {score}%. Estás cerca — no pierdas el ritmo ahora.",
+    it: "Sei al {score}% — ma ti mancano ancora centinaia di domande per coprire tutto l'esame.",
+    en: "You're at {score}% — but you still need hundreds more questions to cover the full exam.",
+    fr: "Vous êtes à {score}% — mais il vous manque encore des centaines de questions pour couvrir tout l'examen.",
+    es: "Estás al {score}% — pero todavía te faltan cientos de preguntas para cubrir todo el examen.",
   },
   urgencyLineMedium: {
-    it: "Hai usato le 20 domande gratuite di oggi. Con {wrong} errori da correggere, aspettare domani ti costa.",
-    en: "You've used your 20 free questions today. With {wrong} mistakes to fix, waiting until tomorrow costs you.",
-    fr: "Vous avez utilisé vos 20 questions gratuites. Avec {wrong} erreurs à corriger, attendre demain vous coûte.",
-    es: "Has usado tus 20 preguntas gratuitas. Con {wrong} errores por corregir, esperar a mañana te cuesta.",
+    it: "Hai {wrong} errori da correggere e non hai ancora coperto tutto il programma d'esame.",
+    en: "You have {wrong} mistakes to fix and you haven't covered the full exam syllabus yet.",
+    fr: "Vous avez {wrong} erreurs à corriger et vous n'avez pas encore couvert tout le programme.",
+    es: "Tienes {wrong} errores por corregir y todavía no has cubierto todo el temario del examen.",
   },
   urgencyLineLow: {
-    it: "Hai usato le 20 domande gratuite di oggi. Con questo livello, non puoi permetterti di aspettare domani.",
-    en: "You've used your 20 free questions today. At this level, you can't afford to wait until tomorrow.",
-    fr: "Vous avez utilisé vos 20 questions gratuites. À ce niveau, vous ne pouvez pas vous permettre d'attendre.",
-    es: "Has usado tus 20 preguntas gratuitas. Con este nivel, no puedes permitirte esperar hasta mañana.",
+    it: "Con questo livello e {wrong} errori, non sei ancora pronto. Ogni giorno perso è un rischio in più.",
+    en: "At this level with {wrong} mistakes, you're not ready yet. Every day you wait is a risk.",
+    fr: "À ce niveau avec {wrong} erreurs, vous n'êtes pas encore prêt. Chaque jour perdu est un risque.",
+    es: "Con este nivel y {wrong} errores, todavía no estás listo. Cada día que esperas es un riesgo.",
   },
   ctaHook: {
     it: "Non perdere il ritmo. Continua adesso senza aspettare.",
@@ -398,7 +399,7 @@ export default function PremiumQuestionLimitGate({
         })}
       </div>
 
-      {/* CTA — testo cambia in base al piano selezionato */}
+      {/* CTA */}
       <button
         type="button"
         onClick={startPremiumCheckout}
@@ -412,7 +413,7 @@ export default function PremiumQuestionLimitGate({
           : COPY.ctaOther[L]}
       </button>
 
-      {/* Nota sotto CTA — cambia in base al piano */}
+      {/* Nota sotto CTA */}
       <p className="mt-2 text-center text-xs text-gray-400">
         {isMonthly ? COPY.cancelNote[L] : COPY.cancelNoteOther[L]}
       </p>
