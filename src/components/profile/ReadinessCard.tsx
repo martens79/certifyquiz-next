@@ -114,9 +114,9 @@ export default function ReadinessCard({
     (async () => {
       try {
         const token =
-          typeof window !== "undefined"
-            ? localStorage.getItem("cq:access")
-            : null;
+  typeof window !== "undefined"
+    ? (sessionStorage.getItem("cq:access") ?? localStorage.getItem("cq:access"))
+    : null;
 
         if (!token) {
           throw new Error(t(LBL.loginNeeded, lang));
