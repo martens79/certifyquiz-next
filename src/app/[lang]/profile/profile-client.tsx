@@ -866,7 +866,7 @@ useEffect(() => {
   );
 
   // —— Media generale (sempre su TUTTO lo storico, non filtrata)
-  const overallAverage = useMemo(() => {
+ const overallAverage = useMemo(() => {
   if (!validHistory.length) return null;
 
   const values = validHistory
@@ -880,6 +880,32 @@ useEffect(() => {
   ).toFixed(1);
 }, [validHistory]);
 
+const improvement = useMemo(() => {
+  if (validHistory.length < 2) return null;
+  const sorted = [...validHistory].sort((a, b) =>
+    new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
+  );
+  const first = computePercent(sorted[0]);
+  const last = computePercent(sorted[sorted.length - 1]);
+  if (first == null || last == null) return null;
+  return last - first;
+}, [validHistory]);
+  
+
+const firstQuizDate = useMemo(() => {
+  if (!validHistory.length) return null;
+  const sorted = [...validHistory].sort((a, b) =>
+    new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
+  );
+  const raw = sorted[0]?.created_at ?? sorted[0]?.date ?? null;
+  if (!raw) return null;
+  return new Intl.DateTimeFormat(localeMap[lang], {
+    timeZone: "UTC",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(raw));
+}, [validHistory, lang]);
 
   const earnedBadges = badges.filter(
     (b) =>
@@ -1040,11 +1066,18 @@ const avatarBorderClass =
           )}
 
           {/* Premium chip */}
-          {user?.premium && (
-            <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
-              ⭐ Premium attivo
-            </div>
-          )}
+{user?.premium && (
+  <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
+    ⭐ Premium attivo
+  </div>
+)}
+
+{/* Data primo quiz */}
+{firstQuizDate && (
+  <div className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700 ring-1 ring-indigo-200 text-xs mt-1 w-fit">
+    📅 {lang === "it" ? `Con CertifyQuiz dal ${firstQuizDate}` : lang === "fr" ? `Sur CertifyQuiz depuis le ${firstQuizDate}` : lang === "es" ? `En CertifyQuiz desde el ${firstQuizDate}` : `On CertifyQuiz since ${firstQuizDate}`}
+  </div>
+)}
         </div>
       </div>
     </div>
@@ -1165,10 +1198,14 @@ const avatarBorderClass =
 </div>
 
 
-          <StatCard
-            label={getLabel(LBL.badges, lang)}
-            value={earnedBadges.length}
-          />
+         <StatCard
+  label={getLabel(LBL.badges, lang)}
+  value={earnedBadges.length}
+/>
+<StatCard
+  label={lang === "it" ? "🎯 Quiz totali" : lang === "fr" ? "🎯 Quiz au total" : lang === "es" ? "🎯 Quiz totales" : "🎯 Total quizzes"}
+  value={validHistory.length}
+/>
         </div>
 {weakAreas.length > 0 && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
@@ -1300,8 +1337,7 @@ const avatarBorderClass =
 </div>
 
 
-   {/* Storico + Filtri/Stats + Categorie + Grafico */}
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
   {/* Colonna destra: filtro certificazione + grafico (PRIMA in mobile, DESTRA in desktop) */}
   <div className="order-1 lg:order-2 space-y-6">
     <FiltersAndStats
@@ -1310,6 +1346,7 @@ const avatarBorderClass =
       selectedCertId={selectedCertId}
       setSelectedCertId={setSelectedCertId}
       stats={certStats}
+      improvement={improvement}
     />
 
   {/* 🎯 Readiness: quanto manca all’esame */}
@@ -1516,7 +1553,8 @@ const FiltersAndStats: FC<{
   selectedCertId: string;
   setSelectedCertId: (v: string) => void;
   stats: CertStat;
-}> = ({ lang, certs, selectedCertId, setSelectedCertId, stats }) => (
+  improvement: number | null;
+}> = ({ lang, certs, selectedCertId, setSelectedCertId, stats, improvement }) => (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4 space-y-3">
     <div>
       <label className="block font-semibold mb-1">
@@ -1547,11 +1585,18 @@ const FiltersAndStats: FC<{
           {getLabel(LBL.avgScore, lang)}:{" "}
           {Number(stats.average_score).toFixed(1)}%
         </li>
+        {improvement != null && (
+          <li>
+            {lang === "it" ? "Miglioramento" : lang === "fr" ? "Progression" : lang === "es" ? "Mejora" : "Improvement"}:{" "}
+            <span className={improvement >= 0 ? "text-emerald-600 font-semibold" : "text-red-500 font-semibold"}>
+              {improvement >= 0 ? "+" : ""}{Math.round(improvement)}%
+            </span>
+          </li>
+        )}
       </ul>
     )}
   </div>
 );
-
 const CategoryTable: FC<{ lang: Locale; rows: CategoryProgressRow[] }> = ({
   lang,
   rows,

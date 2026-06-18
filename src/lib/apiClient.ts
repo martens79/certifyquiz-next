@@ -454,7 +454,7 @@ export const getQuestionsByTopic = (
 
   params.set("shuffle", (opts?.shuffle ?? true) ? "1" : "0");
 
-  const strict = opts?.strict ?? (lang === "es" || lang === "fr");
+ const strict = opts?.strict ?? (lang !== "it");
   if (strict) params.set("strict", "1");
 
   return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false);

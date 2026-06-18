@@ -23,6 +23,7 @@ type PlanOption = {
   perMonth: string;
   badge?: string;
   trialBadge?: string;
+  popular?: boolean;
 };
 
 type CopyEntry = {
@@ -49,6 +50,7 @@ type CopyEntry = {
   tableRows: { label: string; free: string; premium: string }[];
   guaranteeTitle: string;
   guaranteeDesc: string;
+  popularLabel: string;
   testimonialsTitle: string;
   testimonials: { text: string; name: string; cert: string }[];
 };
@@ -70,7 +72,7 @@ const COPY: Record<Lang, CopyEntry> = {
     plans: [
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
       { id: "premium_quarterly", label: "Trimestrale", price: "19,99€", perMonth: "6,66€/mese", badge: "Risparmia 33%" },
-      { id: "premium_annual", label: "Annuale", price: "59,99€", perMonth: "5,00€/mese", badge: "Risparmia 50%" },
+      { id: "premium_annual", label: "Annuale", price: "59,99€", perMonth: "5,00€/mese", badge: "Risparmia 50%", popular: true },
     ],
     cta: "Sblocca Premium",
     ctaMonthly: "Inizia 7 giorni gratis",
@@ -83,6 +85,7 @@ const COPY: Record<Lang, CopyEntry> = {
     pizzaLine: "Al prezzo di una pizza, sblocchi una preparazione più seria, continua e completa.",
     urgencyLine: "Molti si fermano dopo qualche quiz. Quelli che continuano sono quelli che arrivano preparati davvero.",
     finalLine: "Chi supera l'esame non è sempre il più bravo. Spesso è quello che non si ferma.",
+    popularLabel: "Più popolare",
     features: [
       { h: "Spiegazioni complete", p: "Sblocca tutte le spiegazioni per capire davvero gli errori e non limitarti a memorizzare." },
       { h: "Modalità esame reale", p: "Allenati in modo più vicino all'esperienza d'esame, con un approccio più serio e focalizzato." },
@@ -118,7 +121,7 @@ const COPY: Record<Lang, CopyEntry> = {
     plans: [
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
       { id: "premium_quarterly", label: "Trimestral", price: "19,99€", perMonth: "6,66€/mes", badge: "Ahorra 33%" },
-      { id: "premium_annual", label: "Anual", price: "59,99€", perMonth: "5,00€/mes", badge: "Ahorra 50%" },
+      { id: "premium_annual", label: "Anual", price: "59,99€", perMonth: "5,00€/mes", badge: "Ahorra 50%", popular: true },
     ],
     cta: "Desbloquea Premium",
     ctaMonthly: "Empezar 7 días gratis",
@@ -131,6 +134,7 @@ const COPY: Record<Lang, CopyEntry> = {
     pizzaLine: "Por el precio de una pizza, desbloqueas una preparación más seria, constante y completa.",
     urgencyLine: "Muchos se detienen después de unos pocos quizzes. Los que siguen son los que llegan realmente preparados.",
     finalLine: "Quien aprueba no siempre es el más brillante. Muchas veces es quien no se detiene.",
+    popularLabel: "Más popular",
     features: [
       { h: "Explicaciones completas", p: "Desbloquea todas las explicaciones para entender de verdad tus errores y no solo memorizar." },
       { h: "Modo examen real", p: "Entrena de una forma más cercana a la experiencia real del examen, con un enfoque más serio." },
@@ -166,7 +170,7 @@ const COPY: Record<Lang, CopyEntry> = {
     plans: [
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
       { id: "premium_quarterly", label: "Quarterly", price: "€19.99", perMonth: "€6.66/month", badge: "Save 33%" },
-      { id: "premium_annual", label: "Annual", price: "€59.99", perMonth: "€5.00/month", badge: "Save 50%" },
+      { id: "premium_annual", label: "Annual", price: "€59.99", perMonth: "€5.00/month", badge: "Save 50%", popular: true },
     ],
     cta: "Unlock Premium",
     ctaMonthly: "Start 7-day free trial",
@@ -179,6 +183,7 @@ const COPY: Record<Lang, CopyEntry> = {
     pizzaLine: "For the price of a pizza, you unlock a more serious, consistent, and complete way to prepare.",
     urgencyLine: "Many people stop after a few quizzes. The ones who keep going are the ones who show up prepared.",
     finalLine: "The one who passes is not always the smartest. Often, it's the one who doesn't stop.",
+    popularLabel: "Most popular",
     features: [
       { h: "Full explanations", p: "Unlock every explanation so you can actually understand mistakes instead of just memorizing answers." },
       { h: "Real exam mode", p: "Practice in a way that feels closer to the real exam experience, with a more focused approach." },
@@ -214,7 +219,7 @@ const COPY: Record<Lang, CopyEntry> = {
     plans: [
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
       { id: "premium_quarterly", label: "Trimestriel", price: "19,99€", perMonth: "6,66€/mois", badge: "Économisez 33%" },
-      { id: "premium_annual", label: "Annuel", price: "59,99€", perMonth: "5,00€/mois", badge: "Économisez 50%" },
+      { id: "premium_annual", label: "Annuel", price: "59,99€", perMonth: "5,00€/mois", badge: "Économisez 50%", popular: true },
     ],
     cta: "Débloquez Premium",
     ctaMonthly: "Commencer 7 jours gratuits",
@@ -227,6 +232,7 @@ const COPY: Record<Lang, CopyEntry> = {
     pizzaLine: "Pour le prix d'une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
     urgencyLine: "Beaucoup s'arrêtent après quelques quiz. Ceux qui continuent sont ceux qui arrivent vraiment préparés.",
     finalLine: "Celui qui réussit n'est pas toujours le plus fort. Souvent, c'est celui qui ne s'arrête pas.",
+    popularLabel: "Le plus populaire",
     features: [
       { h: "Explications complètes", p: "Débloquez toutes les explications pour vraiment comprendre vos erreurs." },
       { h: "Mode examen réel", p: "Entraînez-vous dans des conditions plus proches de l'examen réel." },
@@ -262,10 +268,12 @@ function PlanSelector({
   plans,
   selected,
   onChange,
+  popularLabel,
 }: {
   plans: PlanOption[];
   selected: Plan;
   onChange: (p: Plan) => void;
+  popularLabel: string;
 }) {
   return (
     <div className="grid grid-cols-3 gap-3 mt-5">
@@ -273,31 +281,42 @@ function PlanSelector({
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
         return (
-          <button
-            key={plan.id}
-            type="button"
-            onClick={() => onChange(plan.id)}
-            className={`relative rounded-2xl border-2 p-4 text-left transition ${
-              isSelected
-                ? "border-black bg-black text-white"
-                : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
-            }`}
-          >
-            {activeBadge && (
-              <span className={`absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                plan.trialBadge
-                  ? isSelected ? "bg-emerald-400 text-white" : "bg-emerald-500 text-white"
-                  : isSelected ? "bg-white text-black" : "bg-black text-white"
-              }`}>
-                {activeBadge}
-              </span>
+          <div key={plan.id} className="relative">
+            {/* Badge "Più popolare" sopra la card — solo annuale */}
+            {plan.popular && (
+              <div className="absolute -top-3 left-0 right-0 flex justify-center">
+                <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-white whitespace-nowrap">
+                  ⭐ {popularLabel}
+                </span>
+              </div>
             )}
-            <div className="text-sm font-semibold">{plan.label}</div>
-            <div className="mt-1 text-lg font-bold">{plan.price}</div>
-            <div className={`text-xs mt-0.5 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-              {plan.perMonth}
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() => onChange(plan.id)}
+              className={`relative w-full rounded-2xl border-2 p-4 text-left transition ${
+                plan.popular && !isSelected
+                  ? "border-emerald-400 bg-white text-gray-900 hover:border-emerald-500"
+                  : isSelected
+                  ? "border-black bg-black text-white"
+                  : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
+              } ${plan.popular ? "pt-5" : ""}`}
+            >
+              {activeBadge && (
+                <span className={`absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  plan.trialBadge
+                    ? isSelected ? "bg-emerald-400 text-white" : "bg-emerald-500 text-white"
+                    : isSelected ? "bg-white text-black" : "bg-black text-white"
+                }`}>
+                  {activeBadge}
+                </span>
+              )}
+              <div className="text-sm font-semibold">{plan.label}</div>
+              <div className="mt-1 text-lg font-bold">{plan.price}</div>
+              <div className={`text-xs mt-0.5 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
+                {plan.perMonth}
+              </div>
+            </button>
+          </div>
         );
       })}
     </div>
@@ -475,7 +494,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <p className="mt-3 max-w-2xl text-sm text-gray-700 sm:text-base">{t.subtitle}</p>
 
           {/* Selettore piani */}
-          <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} />
+          <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} popularLabel={t.popularLabel} />
 
           {/* CTA principale */}
           <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} onCta={startPremiumCheckout} />
@@ -513,7 +532,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           {/* CTA finale */}
           <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
             <p className="text-base font-semibold text-gray-900">{t.finalLine}</p>
-            <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} />
+            <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} popularLabel={t.popularLabel} />
             <div className="mt-5 flex flex-col items-center">
               {isMonthly && (
                 <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>

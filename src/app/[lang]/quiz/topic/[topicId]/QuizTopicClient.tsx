@@ -144,7 +144,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
     (async () => {
       try {
-        const res = await getQuestionsByTopic(numericId, L, { limit: 1, shuffle: false });
+        const res = await getQuestionsByTopic(numericId, L, {
+  limit: 1,
+  shuffle: false,
+  strict: L !== "it",
+});
 
         const poolTotalFromApi = (res as any)?.poolTotal;
 
@@ -278,7 +282,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       }}
       fetchQuestions={async (): Promise<UiQuestion[]> => {
         try {
-          const res = await getQuestionsByTopic(numericId, L, { limit: 500, shuffle: false });
+          const res = await getQuestionsByTopic(numericId, L, {
+  limit: 500,
+  shuffle: false,
+  strict: L !== "it",
+});
 
           const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
           return (raw ?? []).map(normalizeQuestion);
