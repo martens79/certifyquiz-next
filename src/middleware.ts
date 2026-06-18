@@ -236,6 +236,17 @@ if (pathname === "/es/certificaciones/mysql-certification") {
 // RECENT 404 FIXES
 // ---------------------------------------------------------------------
 
+if (pathname.startsWith("/it/quiz/data-analytics-foundations/")) {
+  const topicSlug = pathname.replace(
+    "/it/quiz/data-analytics-foundations/",
+    ""
+  );
+
+  return redirect301(
+    req,
+    `/it/certificazioni/data-analytics-foundations/${topicSlug}`
+  );
+}
 // Legacy hub IBM Security
 if (pathname === "/hub/ibm-security") {
   return redirect301(req, "/categories/security");
