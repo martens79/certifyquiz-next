@@ -39,7 +39,7 @@ function canonicalCertSlug(slug: string) {
     "vmware-certified-professional": "vmware-vcp",
     "tensorflow-developer": "tensorflow",
     "google-tensorflow": "tensorflow",
-    "mysql-certification": "mysql",
+
     "csharp-certification": "csharp",
     "comptia-security-plus": "security-plus",
     "comptia-network-plus": "network-plus",
