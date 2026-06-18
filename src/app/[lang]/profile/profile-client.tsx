@@ -633,38 +633,38 @@ useEffect(() => {
   }, []);
 
   // —— Streak
-  const [streak, setStreak] = useState<{ current: number; record: number }>(
-    {
-      current: 0,
-      record: 0,
-    }
-  );
+const [streak, setStreak] = useState<{ current: number; record: number; lastActivityDate: string | null }>({
+  current: 0,
+  record: 0,
+  lastActivityDate: null,
+});
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const data =
-        (await tryJson<any>("/user/slancio")) ||
-        (await tryJson<any>("/user/slancio/0"));
-      if (!alive) return;
-      const current = toNumFlexible(
-        data?.current ?? data?.current_streak ?? data?.streak,
-        0
-      );
-      const record = toNumFlexible(
-        data?.best_streak ??
-          data?.longest ??
-          data?.longest_streak ??
-          data?.max_streak ??
-          data?.record,
-        0
-      );
-      setStreak({ current, record });
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const data =
+      (await tryJson<any>("/user/slancio")) ||
+      (await tryJson<any>("/user/slancio/0"));
+    if (!alive) return;
+    const current = toNumFlexible(
+      data?.current ?? data?.current_streak ?? data?.streak,
+      0
+    );
+    const record = toNumFlexible(
+      data?.best_streak ??
+        data?.longest ??
+        data?.longest_streak ??
+        data?.max_streak ??
+        data?.record,
+      0
+    );
+    const lastActivityDate = data?.last_activity_date ?? data?.last ?? null;
+    setStreak({ current, record, lastActivityDate });
+  })();
+  return () => {
+    alive = false;
+  };
+}, []);
 
   // —— Badge (catalogo completo + stato utente)
 const [badges, setBadges] = useState<any[]>([]);
@@ -907,6 +907,65 @@ const firstQuizDate = useMemo(() => {
   }).format(new Date(raw));
 }, [validHistory, lang]);
 
+// —— Exam goals
+// —— Exam goals
+const [examGoals, setExamGoals] = useState<any[]>([]);
+const [examGoalCerts, setExamGoalCerts] = useState<{id: number; name: string}[]>([]);
+const [showAddGoal, setShowAddGoal] = useState(false);
+const [goalCertId, setGoalCertId] = useState("");
+const [goalDate, setGoalDate] = useState("");
+
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const data = await tryJson<any[]>("/user/exam-goals");
+    if (alive) setExamGoals(Array.isArray(data) ? data : []);
+  })();
+  return () => { alive = false; };
+}, []);
+
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const data = await tryJson<any[]>("/certifications");
+    if (!alive) return;
+    const certs = Array.isArray(data) ? data.map((c: any) => ({
+      id: c.id,
+      name: lang === "en" ? (c.name_en || c.name)
+          : lang === "fr" ? (c.name_fr || c.name)
+          : lang === "es" ? (c.name_es || c.name)
+          : c.name,
+    })) : [];
+    setExamGoalCerts(certs);
+  })();
+  return () => { alive = false; };
+}, [lang]);
+async function saveExamGoal() {
+  if (!goalCertId || !goalDate) return;
+  try {
+    await apiFetch("/user/exam-goals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ certification_id: Number(goalCertId), exam_date: goalDate }),
+    });
+    const data = await tryJson<any[]>("/user/exam-goals");
+    setExamGoals(Array.isArray(data) ? data : []);
+    setShowAddGoal(false);
+    setGoalCertId("");
+    setGoalDate("");
+  } catch (e) {
+    console.error("saveExamGoal error", e);
+  }
+}
+
+async function deleteExamGoal(certificationId: number) {
+  try {
+    await apiFetch(`/user/exam-goals/${certificationId}`, { method: "DELETE" });
+    setExamGoals((prev) => prev.filter((g) => g.certification_id !== certificationId));
+  } catch (e) {
+    console.error("deleteExamGoal error", e);
+  }
+}
   const earnedBadges = badges.filter(
     (b) =>
       b?.earned ||
@@ -1148,36 +1207,54 @@ const avatarBorderClass =
 </div>
 
 
-        {/* Stat cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            label={getLabel(LBL.streak, lang)}
-            value={`${streak.current} ${
-              lang === "it"
-                ? streak.current === 1
-                  ? "giorno"
-                  : "giorni"
-                : lang === "fr"
-                ? streak.current === 1
-                  ? "jour"
-                  : "jours"
-                : "days"
-            }`}
-          />
-          <StatCard
-            label={getLabel(LBL.bestStreak, lang)}
-            value={`${streak.record} ${
-              lang === "it"
-                ? streak.record === 1
-                  ? "giorno"
-                  : "giorni"
-                : lang === "fr"
-                ? streak.record === 1
-                  ? "jour"
-                  : "jours"
-                : "days"
-            }`}
-          />
+      {/* Streak status */}
+{(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const last = streak.lastActivityDate?.slice(0, 10) ?? null;
+  const atRisk = streak.current > 0 && last === yesterday;
+  const safe = last === today;
+  return atRisk ? (
+    <div className="col-span-2 md:col-span-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800">
+      ⚠️ {lang === "it" ? `Hai una serie di ${streak.current} giorni — fai un quiz oggi per non perderla!` : lang === "fr" ? `Vous avez une série de ${streak.current} jours — faites un quiz aujourd'hui pour ne pas la perdre !` : lang === "es" ? `Tienes una racha de ${streak.current} días — ¡haz un quiz hoy para no perderla!` : `You have a ${streak.current}-day streak — do a quiz today to keep it!`}
+    </div>
+  ) : safe ? (
+    <div className="col-span-2 md:col-span-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
+      ✅ {lang === "it" ? "Streak al sicuro per oggi!" : lang === "fr" ? "Série en sécurité pour aujourd'hui !" : lang === "es" ? "¡Racha a salvo por hoy!" : "Streak safe for today!"}
+    </div>
+  ) : null;
+})()}
+
+{/* Stat cards */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <StatCard
+    label={getLabel(LBL.streak, lang)}
+    value={`${streak.current} ${
+      lang === "it"
+        ? streak.current === 1
+          ? "giorno"
+          : "giorni"
+        : lang === "fr"
+        ? streak.current === 1
+          ? "jour"
+          : "jours"
+        : "days"
+    }`}
+  />
+  <StatCard
+    label={getLabel(LBL.bestStreak, lang)}
+    value={`${streak.record} ${
+      lang === "it"
+        ? streak.record === 1
+          ? "giorno"
+          : "giorni"
+        : lang === "fr"
+        ? streak.record === 1
+          ? "jour"
+          : "jours"
+        : "days"
+    }`}
+  />
          <div>
   <StatCard
     label={getLabel(LBL.average, lang)}
@@ -1207,6 +1284,204 @@ const avatarBorderClass =
   value={validHistory.length}
 />
         </div>
+{/* Obiettivo esame */}
+{examGoals.length > 0 && examGoals.map((goal) => {
+  const today = new Date();
+  const examDay = new Date(goal.exam_date);
+  const daysLeft = Math.ceil((examDay.getTime() - today.getTime()) / 86400000);
+  const urgentColor = daysLeft <= 7
+    ? "border-red-200 bg-red-50"
+    : daysLeft <= 30
+    ? "border-amber-200 bg-amber-50"
+    : "border-emerald-200 bg-emerald-50";
+  const textColor = daysLeft <= 7
+    ? "text-red-800"
+    : daysLeft <= 30
+    ? "text-amber-800"
+    : "text-emerald-800";
+  const emoji = daysLeft <= 7 ? "🚨" : daysLeft <= 30 ? "⏳" : "🎯";
+
+  return (
+    <div key={goal.id} className={`rounded-2xl border p-4 ${urgentColor}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className={`text-sm font-semibold ${textColor}`}>
+            {emoji} {lang === "it" ? "Obiettivo esame" : lang === "fr" ? "Objectif examen" : lang === "es" ? "Objetivo examen" : "Exam goal"}
+            {" — "}{goal.certification_name}
+          </div>
+          <div className={`mt-1 text-2xl font-extrabold ${textColor}`}>
+            {daysLeft <= 0
+              ? (lang === "it" ? "Oggi!" : lang === "fr" ? "Aujourd'hui !" : lang === "es" ? "¡Hoy!" : "Today!")
+              : `${daysLeft} ${lang === "it" ? daysLeft === 1 ? "giorno" : "giorni" : lang === "fr" ? daysLeft === 1 ? "jour" : "jours" : lang === "es" ? daysLeft === 1 ? "día" : "días" : daysLeft === 1 ? "day" : "days"}`}
+          </div>
+          <div className={`text-xs mt-0.5 ${textColor} opacity-70`}>
+            {examDay.toLocaleDateString(lang === "it" ? "it-IT" : lang === "fr" ? "fr-FR" : lang === "es" ? "es-ES" : "en-US", { day: "2-digit", month: "long", year: "numeric" })}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => deleteExamGoal(goal.certification_id)}
+          className={`text-xs underline underline-offset-2 opacity-60 hover:opacity-100 ${textColor}`}
+        >
+          {lang === "it" ? "Rimuovi" : lang === "fr" ? "Supprimer" : lang === "es" ? "Eliminar" : "Remove"}
+        </button>
+      </div>
+    </div>
+  );
+})}
+
+{/* Aggiungi obiettivo esame */}
+{showAddGoal ? (
+  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="text-sm font-semibold text-slate-900 mb-3">
+      🎯 {lang === "it" ? "Imposta obiettivo esame" : lang === "fr" ? "Définir un objectif d'examen" : lang === "es" ? "Establecer objetivo de examen" : "Set exam goal"}
+    </div>
+    <div className="flex flex-col sm:flex-row gap-2">
+      <select
+        className="flex-1 border rounded-lg px-3 py-2 text-sm"
+        value={goalCertId}
+        onChange={(e) => setGoalCertId(e.target.value)}
+      >
+        <option value="">{lang === "it" ? "Seleziona certificazione" : lang === "fr" ? "Sélectionner la certification" : lang === "es" ? "Seleccionar certificación" : "Select certification"}</option>
+        {examGoalCerts.map((c) => (
+          <option key={c.id} value={String(c.id)}>{c.name}</option>
+        ))}
+      </select>
+      <input
+        type="date"
+        className="border rounded-lg px-3 py-2 text-sm"
+        value={goalDate}
+        min={new Date().toISOString().slice(0, 10)}
+        onChange={(e) => setGoalDate(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={saveExamGoal}
+        disabled={!goalCertId || !goalDate}
+        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+      >
+        {lang === "it" ? "Salva" : lang === "fr" ? "Sauvegarder" : lang === "es" ? "Guardar" : "Save"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowAddGoal(false)}
+        className="text-sm text-slate-500 underline"
+      >
+        {lang === "it" ? "Annulla" : lang === "fr" ? "Annuler" : lang === "es" ? "Cancelar" : "Cancel"}
+      </button>
+    </div>
+  </div>
+) : (
+  <button
+    type="button"
+    onClick={() => setShowAddGoal(true)}
+    className="w-full rounded-2xl border border-dashed border-slate-300 bg-white py-3 text-sm font-semibold text-slate-500 hover:border-slate-400 hover:text-slate-700 transition"
+  >
+    + {lang === "it" ? "Aggiungi obiettivo esame" : lang === "fr" ? "Ajouter un objectif d'examen" : lang === "es" ? "Añadir objetivo de examen" : "Add exam goal"}
+  </button>
+)}
+
+
+{/* Obiettivo esame — countdown */}
+{examGoals.map((goal) => {
+  const today = new Date();
+  const examDay = new Date(goal.exam_date);
+  const daysLeft = Math.ceil((examDay.getTime() - today.getTime()) / 86400000);
+  const urgentColor = daysLeft <= 7
+    ? "border-red-200 bg-red-50"
+    : daysLeft <= 30
+    ? "border-amber-200 bg-amber-50"
+    : "border-emerald-200 bg-emerald-50";
+  const textColor = daysLeft <= 7
+    ? "text-red-800"
+    : daysLeft <= 30
+    ? "text-amber-800"
+    : "text-emerald-800";
+  const emoji = daysLeft <= 7 ? "🚨" : daysLeft <= 30 ? "⏳" : "🎯";
+
+  return (
+    <div key={goal.id} className={`rounded-2xl border p-4 ${urgentColor}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <div className={`text-sm font-semibold ${textColor}`}>
+            {emoji} {lang === "it" ? "Obiettivo esame" : lang === "fr" ? "Objectif examen" : lang === "es" ? "Objetivo examen" : "Exam goal"}
+            {" — "}{goal.certification_name}
+          </div>
+          <div className={`mt-1 text-2xl font-extrabold ${textColor}`}>
+            {daysLeft <= 0
+              ? (lang === "it" ? "Oggi!" : lang === "fr" ? "Aujourd'hui !" : lang === "es" ? "¡Hoy!" : "Today!")
+              : `${daysLeft} ${lang === "it" ? daysLeft === 1 ? "giorno" : "giorni" : lang === "fr" ? daysLeft === 1 ? "jour" : "jours" : lang === "es" ? daysLeft === 1 ? "día" : "días" : daysLeft === 1 ? "day" : "days"}`}
+          </div>
+          <div className={`text-xs mt-0.5 ${textColor} opacity-70`}>
+            {examDay.toLocaleDateString(
+              lang === "it" ? "it-IT" : lang === "fr" ? "fr-FR" : lang === "es" ? "es-ES" : "en-US",
+              { day: "2-digit", month: "long", year: "numeric" }
+            )}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => deleteExamGoal(goal.certification_id)}
+          className={`text-xs underline underline-offset-2 opacity-60 hover:opacity-100 ${textColor}`}
+        >
+          {lang === "it" ? "Rimuovi" : lang === "fr" ? "Supprimer" : lang === "es" ? "Eliminar" : "Remove"}
+        </button>
+      </div>
+    </div>
+  );
+})}
+
+{/* Aggiungi obiettivo esame */}
+{showAddGoal ? (
+  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="text-sm font-semibold text-slate-900 mb-3">
+      🎯 {lang === "it" ? "Imposta obiettivo esame" : lang === "fr" ? "Définir un objectif d'examen" : lang === "es" ? "Establecer objetivo de examen" : "Set exam goal"}
+    </div>
+    <div className="flex flex-col sm:flex-row gap-2">
+      <select
+        className="flex-1 border rounded-lg px-3 py-2 text-sm"
+        value={goalCertId}
+        onChange={(e) => setGoalCertId(e.target.value)}
+      >
+        <option value="">{lang === "it" ? "Seleziona certificazione" : lang === "fr" ? "Sélectionner la certification" : lang === "es" ? "Seleccionar certificación" : "Select certification"}</option>
+        {examGoalCerts.map((c) => (
+          <option key={c.id} value={String(c.id)}>{c.name}</option>
+        ))}
+      </select>
+      <input
+        type="date"
+        className="border rounded-lg px-3 py-2 text-sm"
+        value={goalDate}
+        min={new Date().toISOString().slice(0, 10)}
+        onChange={(e) => setGoalDate(e.target.value)}
+      />
+      <button
+        type="button"
+        onClick={saveExamGoal}
+        disabled={!goalCertId || !goalDate}
+        className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+      >
+        {lang === "it" ? "Salva" : lang === "fr" ? "Sauvegarder" : lang === "es" ? "Guardar" : "Save"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setShowAddGoal(false)}
+        className="text-sm text-slate-500 underline"
+      >
+        {lang === "it" ? "Annulla" : lang === "fr" ? "Annuler" : lang === "es" ? "Cancelar" : "Cancel"}
+      </button>
+    </div>
+  </div>
+) : (
+  <button
+    type="button"
+    onClick={() => setShowAddGoal(true)}
+    className="w-full rounded-2xl border border-dashed border-slate-300 bg-white py-3 text-sm font-semibold text-slate-500 hover:border-slate-400 hover:text-slate-700 transition"
+  >
+    + {lang === "it" ? "Aggiungi obiettivo esame" : lang === "fr" ? "Ajouter un objectif d'examen" : lang === "es" ? "Añadir objetivo de examen" : "Add exam goal"}
+  </button>
+)}
+
 {weakAreas.length > 0 && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
     <h3 className="text-lg font-bold text-slate-900">
