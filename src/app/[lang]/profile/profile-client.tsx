@@ -1143,54 +1143,12 @@ const avatarBorderClass =
             CQ
           </div>
 
-          {/* Badge Premium */}
-         {user?.premium && (
-  <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
-    ⭐ Premium attivo
-  </div>
-)}
-
-{subStatus?.status === "trialing" && subStatus.trialEnd && (
-  <div className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-blue-800 ring-1 ring-blue-200 text-xs font-semibold mt-1 w-fit">
-    🎁{" "}
-    {lang === "it"
-      ? `Prova gratuita fino al ${new Date(subStatus.trialEnd).toLocaleDateString("it-IT")}`
-      : lang === "fr"
-      ? `Essai gratuit jusqu'au ${new Date(subStatus.trialEnd).toLocaleDateString("fr-FR")}`
-      : lang === "es"
-      ? `Prueba gratuita hasta el ${new Date(subStatus.trialEnd).toLocaleDateString("es-ES")}`
-      : `Free trial until ${new Date(subStatus.trialEnd).toLocaleDateString("en-US")}`}
-  </div>
-)}
-
-{subStatus?.cancelAtPeriodEnd && subStatus.currentPeriodEnd && (
-  <div className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-red-800 ring-1 ring-red-200 text-xs font-semibold mt-1 w-fit">
-    ⚠️{" "}
-    {lang === "it"
-      ? `Cancellazione programmata per il ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("it-IT")}`
-      : `Cancellation scheduled for ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("en-US")}`}
-  </div>
-)}
-
-{user?.premium && (
-  <button
-    type="button"
-    onClick={handleManageSubscription}
-    disabled={portalLoading}
-    className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 underline underline-offset-4 mt-1 w-fit disabled:opacity-50"
-  >
-    ⚙️{" "}
-    {portalLoading
-      ? "..."
-      : lang === "it"
-      ? "Gestisci abbonamento"
-      : lang === "fr"
-      ? "Gérer l'abonnement"
-      : lang === "es"
-      ? "Gestionar suscripción"
-      : "Manage subscription"}
-  </button>
-)}
+          {/* Badge Premium (piccolo, sull'avatar) */}
+          {user?.premium && (
+            <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-400 text-xs px-1.5 py-0.5 shadow ring-1 ring-yellow-500 animate-pulse">
+              ⭐
+            </div>
+          )}
         </div>
       </div>
 
@@ -1224,11 +1182,11 @@ const avatarBorderClass =
           )}
 
           {/* Premium chip */}
-{user?.premium && (
-  <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
-    ⭐ Premium attivo
-  </div>
-)}
+          {user?.premium && (
+            <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
+              ⭐ Premium attivo
+            </div>
+          )}
 
 {/* Data primo quiz */}
 {firstQuizDate && (
@@ -1304,7 +1262,71 @@ const avatarBorderClass =
     </div>
   </div>
 </div>
+{/* Gestione abbonamento */}
+{user?.premium && (
+  <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <div className="text-sm font-semibold text-slate-900">
+          ⭐{" "}
+          {lang === "it"
+            ? "Il tuo abbonamento"
+            : lang === "fr"
+            ? "Votre abonnement"
+            : lang === "es"
+            ? "Tu suscripción"
+            : "Your subscription"}
+        </div>
 
+        {subStatus?.status === "trialing" && subStatus.trialEnd && (
+          <div className="mt-1 text-sm text-blue-700">
+            🎁{" "}
+            {lang === "it"
+              ? `Prova gratuita fino al ${new Date(subStatus.trialEnd).toLocaleDateString("it-IT")}`
+              : lang === "fr"
+              ? `Essai gratuit jusqu'au ${new Date(subStatus.trialEnd).toLocaleDateString("fr-FR")}`
+              : lang === "es"
+              ? `Prueba gratuita hasta el ${new Date(subStatus.trialEnd).toLocaleDateString("es-ES")}`
+              : `Free trial until ${new Date(subStatus.trialEnd).toLocaleDateString("en-US")}`}
+          </div>
+        )}
+
+        {subStatus?.cancelAtPeriodEnd && subStatus.currentPeriodEnd && (
+          <div className="mt-1 text-sm text-red-700">
+            ⚠️{" "}
+            {lang === "it"
+              ? `Cancellazione programmata per il ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("it-IT")}`
+              : `Cancellation scheduled for ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("en-US")}`}
+          </div>
+        )}
+
+        {subStatus?.status === "active" && !subStatus?.cancelAtPeriodEnd && (
+          <div className="mt-1 text-sm text-slate-600">
+            {lang === "it" ? "Abbonamento attivo" : lang === "fr" ? "Abonnement actif" : lang === "es" ? "Suscripción activa" : "Subscription active"}
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={handleManageSubscription}
+        disabled={portalLoading}
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 hover:bg-slate-800 px-4 py-2 text-white text-sm font-semibold shadow disabled:opacity-50 whitespace-nowrap"
+      >
+        ⚙️{" "}
+        {portalLoading
+          ? "..."
+          : lang === "it"
+          ? "Gestisci abbonamento"
+          : lang === "fr"
+          ? "Gérer l'abonnement"
+          : lang === "es"
+          ? "Gestionar suscripción"
+          : "Manage subscription"}
+      </button>
+    </div>
+  </div>
+)}
 
       {/* Streak status */}
 {(() => {
