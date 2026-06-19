@@ -63,6 +63,14 @@ type CertStat = {
   max_score: number;
 } | null;
 
+type SubscriptionStatus = {
+  premium: boolean;
+  status: string | null;
+  trialEnd?: string | null;
+  currentPeriodEnd?: string | null;
+  cancelAtPeriodEnd?: boolean;
+};
+
 type WeakArea = {
   topic_id: number;
   topic_slug: string;
@@ -666,7 +674,7 @@ useEffect(() => {
   };
 }, []);
 
-  // —— Badge (catalogo completo + stato utente)
+// —— Badge (catalogo completo + stato utente)
 const [badges, setBadges] = useState<any[]>([]);
 useEffect(() => {
   let alive = true;
@@ -678,6 +686,38 @@ useEffect(() => {
     alive = false;
   };
 }, []);
+
+// —— Subscription status (trial / cancellazione programmata)
+const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
+const [portalLoading, setPortalLoading] = useState(false);
+
+useEffect(() => {
+  let alive = true;
+  (async () => {
+    const data = await tryJson<SubscriptionStatus>("/billing/subscription-status");
+    if (alive) setSubStatus(data);
+  })();
+  return () => {
+    alive = false;
+  };
+}, []);
+
+async function handleManageSubscription() {
+  setPortalLoading(true);
+  try {
+    const res = await apiFetch("/billing/create-portal-session", { method: "POST" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+    }
+  } catch (e) {
+    console.error("portal session error", e);
+  }
+  setPortalLoading(false);
+}
 
 
 // —— Storico quiz (senza /exam-history, che è 404)
@@ -1104,11 +1144,53 @@ const avatarBorderClass =
           </div>
 
           {/* Badge Premium */}
-          {user?.premium && (
-            <div className="absolute -bottom-1 -right-1 rounded-full bg-yellow-400 text-xs px-1.5 py-0.5 shadow ring-1 ring-yellow-500 animate-pulse">
-              ⭐
-            </div>
-          )}
+         {user?.premium && (
+  <div className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-1 text-yellow-800 ring-1 ring-yellow-200 text-xs font-semibold mt-1 w-fit">
+    ⭐ Premium attivo
+  </div>
+)}
+
+{subStatus?.status === "trialing" && subStatus.trialEnd && (
+  <div className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-blue-800 ring-1 ring-blue-200 text-xs font-semibold mt-1 w-fit">
+    🎁{" "}
+    {lang === "it"
+      ? `Prova gratuita fino al ${new Date(subStatus.trialEnd).toLocaleDateString("it-IT")}`
+      : lang === "fr"
+      ? `Essai gratuit jusqu'au ${new Date(subStatus.trialEnd).toLocaleDateString("fr-FR")}`
+      : lang === "es"
+      ? `Prueba gratuita hasta el ${new Date(subStatus.trialEnd).toLocaleDateString("es-ES")}`
+      : `Free trial until ${new Date(subStatus.trialEnd).toLocaleDateString("en-US")}`}
+  </div>
+)}
+
+{subStatus?.cancelAtPeriodEnd && subStatus.currentPeriodEnd && (
+  <div className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-1 text-red-800 ring-1 ring-red-200 text-xs font-semibold mt-1 w-fit">
+    ⚠️{" "}
+    {lang === "it"
+      ? `Cancellazione programmata per il ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("it-IT")}`
+      : `Cancellation scheduled for ${new Date(subStatus.currentPeriodEnd).toLocaleDateString("en-US")}`}
+  </div>
+)}
+
+{user?.premium && (
+  <button
+    type="button"
+    onClick={handleManageSubscription}
+    disabled={portalLoading}
+    className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 underline underline-offset-4 mt-1 w-fit disabled:opacity-50"
+  >
+    ⚙️{" "}
+    {portalLoading
+      ? "..."
+      : lang === "it"
+      ? "Gestisci abbonamento"
+      : lang === "fr"
+      ? "Gérer l'abonnement"
+      : lang === "es"
+      ? "Gestionar suscripción"
+      : "Manage subscription"}
+  </button>
+)}
         </div>
       </div>
 
