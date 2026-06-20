@@ -51,7 +51,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "ccnp-enterprise": 40,
   "kcna-kubernetes-cloud-native": 41,
   "pmp": 42,
-
+  "psm-i": 53,
   "networking-foundations": 43,
   "cloud-foundations": 44,
   "cybersecurity-foundations": 45,
@@ -109,6 +109,7 @@ import NvidiaGenerativeAI from "./NvidiaGenerativeAI";
 import CCNPEnterprise from "./CCNPEnterprise";
 import KubernetesKCNA from "./KubernetesKCNA";
 import PMP from "./PMP";
+import PSMI from "./PSMI";
 // 🔽 AGGIUNGI QUESTI IMPORT sotto gli altri import
 
 import NetworkingFoundations from "./networking-foundations";
@@ -169,6 +170,7 @@ const RAW_CERTS = [
   CCNPEnterprise,             // slug: "ccnp-enterprise"
   KubernetesKCNA,             // slug: "kcna-kubernetes-cloud-native"
   PMP,                        // slug: "pmp"
+  PSMI,                       // slug: "psm-i"
   // 🔽 AGGIUNGI QUESTI ELEMENTI in fondo a RAW_CERTS
 
   NetworkingFoundations,
