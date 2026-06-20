@@ -142,11 +142,15 @@ export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
   icdl: "base",
     pekit: "base",
 
-  // Management
+    // Management
   pmp: "management",
   "project-management-professional": "management",
   "itil-4-foundation": "management",
   "project-management-foundations": "management",
+  "psm-i": "management",
+  "professional-scrum-master": "management",
+  "professional-scrum-master-i": "management",
+  
   // Sicurezza
   "security-plus": "sicurezza",
   

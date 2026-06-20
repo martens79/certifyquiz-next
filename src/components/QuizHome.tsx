@@ -205,7 +205,7 @@ const certificationNames: CertificationNames = {
     { name: "PMP", link: certPath(lang, "pmp") },
     { name: "ITIL 4 Foundation", link: certPath(lang, "itil-4-foundation") },
     { name: "CAPM", link: null, comingSoon: true },
-    { name: "Scrum Master", link: null, comingSoon: true },
+    { name: "PSM I Scrum Master", link: certPath(lang, "psm-i") },
     { name: "PRINCE2 Foundation", link: null, comingSoon: true },
   ],
 
