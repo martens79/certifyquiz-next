@@ -59,6 +59,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "microsoft-virtualization": "intermediate",
   "microsoft-azure-fundamentals": "intermediate",
   "microsoft-ai": "intermediate",
+  "psm-i": "intermediate",
   "microsoft-ai-fundamentals": "intermediate", // alias legacy
   "oracle-database-sql": "intermediate",
   mysql: "intermediate",
@@ -72,6 +73,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   jncie: "advanced",
   "aws-solutions-architect": "advanced",
   "vmware-vcp": "advanced",
+  "pmp": "advanced",
 };
 
 /* ------------------------- ICONE (canoniche) ------------------------- */
@@ -129,6 +131,8 @@ const ICON_BY_SLUG: Record<string, string> = {
 
   "csharp": "/images/certifications/csharp-icon.png",
 "itil-4-foundation": "/images/certifications/itil-4-foundation.png",
+"pmp": "/images/certifications/pmp2.png",
+"psm-i": "/images/certifications/psm-i.png",
 "nvidia-generative-ai-llm": "/images/certifications/nvidia-generative-ai.png",
 "ccnp-enterprise": "/images/certifications/ccnp-enterprise.png",
 "kcna-kubernetes-cloud-native": "/images/certifications/kubernetes-kcna.png",
