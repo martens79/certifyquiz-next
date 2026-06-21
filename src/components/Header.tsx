@@ -30,6 +30,7 @@ const UI: Record<
     paths: string;
     blog: string;
     pricing: string;
+    business: string;
     quiz: string;
     suggested: string;
     reviews: string;
@@ -50,6 +51,7 @@ const UI: Record<
     paths: "Percorsi",
     blog: "Blog",
     pricing: "Premium",
+    business: "Aziende",
     quiz: "Quiz",
     suggested: "Suggeriti",
     profile: "Profilo",
@@ -69,6 +71,7 @@ const UI: Record<
     paths: "Paths",
     blog: "Blog",
     pricing: "Premium",
+    business: "Business",
     quiz: "Quizzes",
     suggested: "Suggested",
     profile: "Profile",
@@ -88,6 +91,7 @@ const UI: Record<
     paths: "Parcours",
     blog: "Blog",
     pricing: "Premium",
+    business: "Entreprises",
     quiz: "Quiz",
     suggested: "Suggérés",
     profile: "Profil",
@@ -107,6 +111,7 @@ const UI: Record<
     paths: "Rutas",
     blog: "Blog",
     pricing: "Premium",
+    business: "Empresas",
     quiz: "Cuestionarios",
     suggested: "Sugeridos",
     profile: "Perfil",
@@ -204,6 +209,24 @@ function IconPricing() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 6v12m0-12c-2.5 0-4.5 1.25-4.5 2.75S9.5 11.5 12 11.5s4.5 1.25 4.5 2.75S14.5 17 12 17m0-11c2.5 0 4.5 1.25 4.5 2.75"
+      />
+    </svg>
+  );
+}
+function IconBusiness() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 21V5.25A1.5 1.5 0 0 1 5.5 3.75h6A1.5 1.5 0 0 1 13 5.25V21M4 21h16M13 21V10.5a1 1 0 0 1 1-1h4.5A1.5 1.5 0 0 1 20 11v10M7.5 7.5h2M7.5 11h2M7.5 14.5h2M15.5 13.5h2M15.5 16.5h2"
       />
     </svg>
   );
@@ -326,6 +349,15 @@ export default function Header({ lang }: Props) {
     ? "/es/rutas"
     : "/it/percorsi";
 
+  const businessHref =
+  lang === "en"
+    ? "/business"
+    : lang === "fr"
+    ? "/fr/entreprises"
+    : lang === "es"
+    ? "/es/empresas"
+    : "/it/aziende";
+
   const suggestedHref =
     lang === "en" ? "/suggested" : withLang(lang, "/quiz-suggeriti");
 
@@ -385,6 +417,8 @@ export default function Header({ lang }: Props) {
 
     { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
 
+    { href: businessHref, label: ui.business, icon: <IconBusiness /> },
+
    { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
 
 { href: reviewsHref, label: ui.reviews, icon: <IconReviews /> },
@@ -393,6 +427,7 @@ export default function Header({ lang }: Props) {
   ];
 }, [
   blogHref,
+  businessHref,
   certsHref,
   homeHref,
   pathsHref,   // 👈 IMPORTANTISSIMO
@@ -404,6 +439,7 @@ export default function Header({ lang }: Props) {
   t.certifications,
   t.pricing,
   ui.blog,
+  ui.business,
   ui.certifications,
   ui.home,
   ui.paths,    // 👈 IMPORTANTISSIMO

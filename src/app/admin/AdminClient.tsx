@@ -5,6 +5,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import AdminFeedbackClient from "./feedback/AdminFeedbackClient";
 import AdminSubscriptionsClient from "./subscriptions/AdminSubscriptionsClient";
+import AdminOrganizationsClient from "./organizations/AdminOrganizationsClient";
 type Lead = {
   id: number;
   email: string;
@@ -56,7 +57,7 @@ type HotLead = {
 
 type DateFilter = "today" | "7d" | "30d" | "all";
 type ModeFilter = "all" | "assessment" | "lead_magnet";
-type Tab = "dashboard" | "feedback" | "subscriptions";
+type Tab = "dashboard" | "feedback" | "subscriptions" | "organizations";
 
 export default function AdminClient() {
   const { user, isAdmin, token } = useAuth();
@@ -395,6 +396,13 @@ export default function AdminClient() {
            >
            Abbonamenti
            </button>
+
+          <button
+            onClick={() => setTab("organizations")}
+            style={tab === "organizations" ? styles.tabActive : styles.tab}
+          >
+            Aziende
+          </button>
 
           {tab === "dashboard" && (
             <button onClick={loadDashboard} disabled={loading} style={styles.refreshButton}>
@@ -798,6 +806,12 @@ export default function AdminClient() {
     <AdminSubscriptionsClient />
   </div>
 )}
+
+      {tab === "organizations" && (
+        <div style={styles.panel}>
+          <AdminOrganizationsClient />
+        </div>
+      )}
     </div>
   );
 }

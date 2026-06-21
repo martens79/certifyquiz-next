@@ -53,6 +53,9 @@ type CopyEntry = {
   popularLabel: string;
   testimonialsTitle: string;
   testimonials: { text: string; name: string; cert: string }[];
+  businessBannerTitle: string;
+  businessBannerBody: string;
+  businessBannerCta: string;
 };
 
 function getLangFromPathname(pathname: string | null): Lang {
@@ -112,6 +115,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { text: "Finalmente una piattaforma seria per prepararsi al Security+. I quiz sono realistici e le spiegazioni mi hanno aiutato a capire i concetti, non solo memorizzare.", name: "Sara T.", cert: "CompTIA Security+" },
       { text: "9,99€ al mese è niente rispetto al costo dell'esame. Ho passato il CISSP e ne è valsa assolutamente la pena.", name: "Luca M.", cert: "CISSP" },
     ],
+    businessBannerTitle: "Stai cercando un piano per il tuo team?",
+    businessBannerBody: "Se gestisci un team IT, dai un'occhiata ai piani aziendali: dashboard di progresso condivisa per tutto il team e fattura unica.",
+    businessBannerCta: "Scopri i piani aziendali",
   },
 
   es: {
@@ -161,6 +167,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { text: "Por fin una plataforma seria para preparar el Security+. Los quizzes son realistas y las explicaciones me ayudaron a entender los conceptos.", name: "Ana P.", cert: "CompTIA Security+" },
       { text: "9,99€ al mes no es nada comparado con el coste del examen. Aprobé el CISSP y mereció totalmente la pena.", name: "David L.", cert: "CISSP" },
     ],
+    businessBannerTitle: "¿Buscas un plan para tu equipo?",
+    businessBannerBody: "Si gestionas un equipo IT, descubre nuestros planes para empresas: panel de progreso compartido para todo el equipo y factura única.",
+    businessBannerCta: "Ver planes para empresas",
   },
 
   en: {
@@ -210,6 +219,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { text: "Finally a serious platform for Security+ prep. The quizzes are realistic and the explanations helped me actually understand concepts.", name: "Sarah T.", cert: "CompTIA Security+" },
       { text: "€9.99 a month is nothing compared to the cost of the exam. Passed the CISSP and it was absolutely worth it.", name: "Luke M.", cert: "CISSP" },
     ],
+    businessBannerTitle: "Looking for a plan for your team?",
+    businessBannerBody: "If you manage an IT team, check out our business plans: a shared progress dashboard for the whole team and a single company invoice.",
+    businessBannerCta: "See business plans",
   },
 
   fr: {
@@ -259,7 +271,17 @@ const COPY: Record<Lang, CopyEntry> = {
       { text: "Enfin une plateforme sérieuse pour préparer le Security+. Les quiz sont réalistes et les explications m'ont vraiment aidé.", name: "Sophie T.", cert: "CompTIA Security+" },
       { text: "9,99€ par mois, c'est rien comparé au coût de l'examen. J'ai réussi le CISSP et ça valait vraiment le coup.", name: "Lucas M.", cert: "CISSP" },
     ],
+    businessBannerTitle: "Vous cherchez une offre pour votre équipe ?",
+    businessBannerBody: "Si vous gérez une équipe IT, découvrez nos offres entreprises : tableau de bord de progression partagé pour toute l'équipe et facture unique.",
+    businessBannerCta: "Découvrir les offres entreprises",
   },
+};
+
+const BUSINESS_HREF: Record<Lang, string> = {
+  en: "/business",
+  it: "/it/aziende",
+  fr: "/fr/entreprises",
+  es: "/es/empresas",
 };
 
 // ── Componenti interni ──────────────────────────────────────────
@@ -433,6 +455,23 @@ function Guarantee({ t }: { t: CopyEntry }) {
   );
 }
 
+function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
+  return (
+    <div className="mt-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0B1220] p-6 sm:flex sm:items-center sm:justify-between sm:gap-6">
+      <div>
+        <div className="text-base font-semibold text-white">{t.businessBannerTitle}</div>
+        <p className="mt-1 text-sm text-slate-300">{t.businessBannerBody}</p>
+      </div>
+      <a
+        href={href}
+        className="mt-4 inline-flex shrink-0 items-center justify-center rounded-full bg-amber-400 px-5 py-2.5 text-sm font-semibold text-[#0B1220] transition hover:bg-amber-300 sm:mt-0"
+      >
+        {t.businessBannerCta} →
+      </a>
+    </div>
+  );
+}
+
 // ── Componente principale ───────────────────────────────────────
 
 export default function PremiumComingSoonView({ forceLang }: Props) {
@@ -528,6 +567,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
           <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
           <Guarantee t={t} />
+          <BusinessBanner t={t} href={BUSINESS_HREF[lang]} />
 
           {/* CTA finale */}
           <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
