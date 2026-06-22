@@ -71,7 +71,7 @@ const COPY: Record<Lang, CopyEntry> = {
     badge: "PREMIUM",
     title: "Sblocca CertifyQuiz Premium",
     subtitle:
-      "Continua i quiz senza limiti e preparati davvero ai tuoi esami con spiegazioni complete, modalità esame e ripasso errori.",
+      "Preparati davvero ai tuoi esami con spiegazioni illimitate su ogni errore, modalità esame reale e ripasso mirato sui punti deboli.",
     plans: [
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
       { id: "premium_quarterly", label: "Trimestrale", price: "19,99€", perMonth: "6,66€/mese", badge: "Risparmia 33%" },
@@ -100,8 +100,8 @@ const COPY: Record<Lang, CopyEntry> = {
     tableFree: "Gratis",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quiz al giorno", free: "20", premium: "Illimitati" },
-      { label: "Spiegazioni risposte", free: "❌", premium: "✅ Tutte" },
+      { label: "Quiz illimitati", free: "✅", premium: "✅" },
+      { label: "Spiegazioni errori", free: "20 gratuite", premium: "✅ Illimitate" },
       { label: "Modalità esame reale", free: "❌", premium: "✅" },
       { label: "Ripasso errori", free: "❌", premium: "✅" },
       { label: "Tutte le certificazioni", free: "✅", premium: "✅" },
@@ -123,7 +123,7 @@ const COPY: Record<Lang, CopyEntry> = {
   es: {
     badge: "PREMIUM",
     title: "Desbloquea CertifyQuiz Premium",
-    subtitle: "Continúa los quizzes sin límites y prepárate de verdad para tus exámenes con explicaciones completas, modo examen y repaso de errores.",
+    subtitle: "Prepárate de verdad para tus exámenes con explicaciones ilimitadas sobre cada error, modo examen real y repaso dirigido a tus puntos débiles.",
     plans: [
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
       { id: "premium_quarterly", label: "Trimestral", price: "19,99€", perMonth: "6,66€/mes", badge: "Ahorra 33%" },
@@ -152,8 +152,8 @@ const COPY: Record<Lang, CopyEntry> = {
     tableFree: "Gratis",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quizzes por día", free: "20", premium: "Ilimitados" },
-      { label: "Explicaciones de respuestas", free: "❌", premium: "✅ Todas" },
+      { label: "Quizzes ilimitados", free: "✅", premium: "✅" },
+      { label: "Explicaciones de errores", free: "20 gratuitas", premium: "✅ Ilimitadas" },
       { label: "Modo examen real", free: "❌", premium: "✅" },
       { label: "Repaso de errores", free: "❌", premium: "✅" },
       { label: "Todas las certificaciones", free: "✅", premium: "✅" },
@@ -175,7 +175,7 @@ const COPY: Record<Lang, CopyEntry> = {
   en: {
     badge: "PREMIUM",
     title: "Unlock CertifyQuiz Premium",
-    subtitle: "Keep practicing without limits and prepare seriously for your exams with full explanations, exam mode, and error review.",
+    subtitle: "Prepare seriously for your exams with unlimited explanations on every mistake, real exam mode, and targeted review of your weak spots.",
     plans: [
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
       { id: "premium_quarterly", label: "Quarterly", price: "€19.99", perMonth: "€6.66/month", badge: "Save 33%" },
@@ -204,8 +204,8 @@ const COPY: Record<Lang, CopyEntry> = {
     tableFree: "Free",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quizzes per day", free: "20", premium: "Unlimited" },
-      { label: "Answer explanations", free: "❌", premium: "✅ All" },
+      { label: "Unlimited quizzes", free: "✅", premium: "✅" },
+      { label: "Wrong answer explanations", free: "20 free", premium: "✅ Unlimited" },
       { label: "Real exam mode", free: "❌", premium: "✅" },
       { label: "Error review", free: "❌", premium: "✅" },
       { label: "All certifications", free: "✅", premium: "✅" },
@@ -227,7 +227,7 @@ const COPY: Record<Lang, CopyEntry> = {
   fr: {
     badge: "PREMIUM",
     title: "Débloquez CertifyQuiz Premium",
-    subtitle: "Continuez les quiz sans limite et préparez-vous sérieusement à vos examens avec des explications complètes, le mode examen et la révision des erreurs.",
+    subtitle: "Préparez-vous sérieusement à vos examens avec des explications illimitées sur chaque erreur, le mode examen réel et la révision ciblée de vos points faibles.",
     plans: [
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
       { id: "premium_quarterly", label: "Trimestriel", price: "19,99€", perMonth: "6,66€/mois", badge: "Économisez 33%" },
@@ -256,8 +256,8 @@ const COPY: Record<Lang, CopyEntry> = {
     tableFree: "Gratuit",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quiz par jour", free: "20", premium: "Illimités" },
-      { label: "Explications des réponses", free: "❌", premium: "✅ Toutes" },
+      { label: "Quiz illimités", free: "✅", premium: "✅" },
+      { label: "Explications des erreurs", free: "20 gratuites", premium: "✅ Illimitées" },
       { label: "Mode examen réel", free: "❌", premium: "✅" },
       { label: "Révision des erreurs", free: "❌", premium: "✅" },
       { label: "Toutes les certifications", free: "✅", premium: "✅" },

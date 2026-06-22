@@ -38,6 +38,8 @@ export type QuizContext = {
   backHref?: string;
   isAuthenticated?: boolean;
   isAdmin?: boolean;
+  freeWrongExpLeft?: number | null;  // null = illimitato (premium/admin)
+
   
   // Premium infra (ready-to-flip, non invasivo)
   isPremiumUser?: boolean;

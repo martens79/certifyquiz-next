@@ -13,7 +13,7 @@ import { pricingPath } from "@/lib/paths";
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
 import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
-import PremiumQuestionLimitGate from '@/components/premium/PremiumQuestionLimitGate';
+
 
 import RegistrationGate from '@/components/quiz/RegistrationGate';
 import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
@@ -152,18 +152,58 @@ export default function QuizEngine({
      - QuizEngine NON legge flags direttamente.
      - Riceve dal caller la decisione finale: context.premiumLocked
   ───────────────────────────────────────────────────────────── */
-  const isPremiumUser = !!context?.isPremiumUser;
-  //const isPremiumUser = false;
+   const isPremiumUser = !!context?.isPremiumUser;
   const premiumLocked = !!context?.premiumLocked;
-  const FREE_LIMIT = 20;
+  
 
-// Soglia domande per mostrare il gate di registrazione agli utenti non loggati.
-// Deve essere < FREE_LIMIT per intercettare l'utente prima del paywall Premium.
-const isLoggedIn = !!context?.isAuthenticated || !!context?.isPremiumUser;
+  const isLoggedIn = !!context?.isAuthenticated || !!context?.isPremiumUser;
+  const isAdmin = context?.isAdmin ?? false;
 
-// Traccia le domande risposte dagli utenti guest in localStorage.
-// Se l'utente è loggato, l'hook è inattivo (non incrementa, non scatta mai).
-const { registerLimitReached, increment } = useGuestQuizCount(isLoggedIn);
+  const { registerLimitReached, increment } = useGuestQuizCount(isLoggedIn);
+
+  // ── NUOVO: contatore spiegazioni errori free ──────────────
+  // null = illimitato (premium/admin o non ancora caricato)
+  // numero = quante spiegazioni-errore free restano
+  const [wrongExpLeft, setWrongExpLeft] = useState<number | null>(
+    context?.freeWrongExpLeft ?? null
+  );
+
+  // Carica lo stato dal backend al mount (solo utenti loggati non premium)
+  useEffect(() => {
+    if (!isLoggedIn || isPremiumUser) return;
+    fetch("/api/backend/quiz/me/explanation-status", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.unlimited) setWrongExpLeft(null);
+        else setWrongExpLeft(data.remaining ?? 0);
+      })
+      .catch(() => {}); // fail silenzioso, non blocca il quiz
+  }, [isLoggedIn, isPremiumUser]);
+
+  // Chiamato quando l'utente free vede la spiegazione di un errore
+  const consumeWrongExplanation = async (): Promise<boolean> => {
+    // premium/admin/non loggato: sempre ok
+    if (isPremiumUser || !isLoggedIn) return true;
+    // già a 0: blocca subito senza chiamata
+    if (wrongExpLeft !== null && wrongExpLeft <= 0) return false;
+
+    try {
+      const res = await fetch("/api/backend/quiz/me/explanation-seen", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.locked) {
+        setWrongExpLeft(0);
+        return false;
+      }
+      setWrongExpLeft(data.remaining ?? 0);
+      return true;
+    } catch {
+      return true; // fail silenzioso: meglio mostrare che bloccare per errore di rete
+    }
+  };
+
 
   // ---------------- Sticky timer (UI-only) ----------------
   const examDurationSec = durationsByMode?.exam ?? durationSec ?? null;
@@ -1267,24 +1307,7 @@ const isExam = effectiveMode === 'exam';
 const isAssessment = effectiveMode === 'assessment';
 const isTestLike = isExam || isAssessment;
 
-const isAdmin = !!context?.isAdmin;
 
-const freeLimitReached =
-  !isAssessment &&
-  !isPremiumUser &&
-  !isAdmin &&
-  idx >= FREE_LIMIT;
-
-console.log("QUIZ DEBUG", {
-  idx,
-  FREE_LIMIT,
-  isPremiumUser,
-  premiumLocked,
-  freeLimitReached,
-  answeredCount,
-  effectiveMode,
-  context,
-});
 
 const submitFeedback = async () => {
   if (!onFeedback) return;
@@ -1395,78 +1418,6 @@ if (!isLoggedIn && registerLimitReached && !isAssessment) {
     </div>
   );
 }
-
-// ------------------------------------------------------------------
-// GATE 2 — Premium (free loggato, non assessment)
-// ------------------------------------------------------------------
-// ✅ NEW — gate anticipato per score alto
-const currentAnsweredCount = Object.values(marked).filter((v) => v != null).length;
-const currentCorrectCount = (() => {
-  let ok = 0;
-  for (const question of questions) {
-    const chosen = marked[question.id];
-    const right = question.answers.find((a) => !!a.isCorrect)?.id;
-    if (chosen != null && right != null && Number(chosen) === Number(right)) ok++;
-  }
-  return ok;
-})();
-const currentScorePct = currentAnsweredCount > 0
-  ? Math.round((currentCorrectCount / currentAnsweredCount) * 100)
-  : 0;
-
-const triggeredByGoodScore =
-  !isAssessment &&
-  !isPremiumUser &&
-  !isAdmin &&
-  !freeLimitReached &&
-  currentAnsweredCount >= 8 &&
-  currentScorePct >= 75;
-
-if (freeLimitReached || triggeredByGoodScore) {
-  const gateQuestions = freeLimitReached
-    ? questions.slice(0, FREE_LIMIT)
-    : questions.slice(0, currentAnsweredCount);
-
-  let freeCorrectCount = 0;
-
-  for (const question of gateQuestions) {
-    const chosen = marked[question.id];
-    const right = question.answers.find((answer) => !!answer.isCorrect)?.id;
-
-    if (
-      chosen != null &&
-      right != null &&
-      Number(chosen) === Number(right)
-    ) {
-      freeCorrectCount++;
-    }
-  }
-
- const freeTotalAnswered = gateQuestions.length;
-const freeWrongCount = Math.max(freeTotalAnswered - freeCorrectCount, 0);
-
-  return (
-  <div className={`min-h-[100dvh] ${gradient}`}>
-    <div className="mobile-safe-top max-w-5xl mx-auto px-4 pt-20 pb-28">
-     <PremiumQuestionLimitGate
-  lang={lang}
-  currentCount={freeLimitReached ? FREE_LIMIT : currentAnsweredCount}
-  freeLimit={FREE_LIMIT}
-  mode={effectiveMode}
-  certificationSlug={context?.certificationSlug}
-  topicSlug={context?.topicSlug}
-  certificationName={context?.certificationName}
-  correctCount={freeCorrectCount}
-  wrongCount={freeWrongCount}
-  totalAnswered={freeTotalAnswered}
-  triggeredByGoodScore={triggeredByGoodScore}
-  onBack={() => setIdx(freeLimitReached ? FREE_LIMIT - 1 : Math.max(0, currentAnsweredCount - 1))}
-/>
-    </div>
-  </div>
-);
-}
-
 return (
   <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
     {/* ===================== TOP (non scrolla) ===================== */}
@@ -1494,46 +1445,47 @@ return (
             </span>
           )}
 
-            {reviewMode && reviewTotal > 0 && (
-              <>
-                {' '}
-                ·{' '}
-                <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                  ★ Review {reviewIndex}/{reviewTotal}
-                </span>
-              </>
-            )}
+          {reviewMode && reviewTotal > 0 && (
+            <>
+              {' '}
+              ·{' '}
+              <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                ★ Review {reviewIndex}/{reviewTotal}
+              </span>
+            </>
+          )}
 
-            {isExam && (
-              <>
-                {' '}
-                · {label('score', lang)} {scorePct}%
-              </>
-            )}
-          </div>
-
-          {!hideModeSwitch && (
-            <div className="flex items-center gap-2">
-              <button
-                className={`px-3 py-1.5 rounded-full text-sm ${
-                  !isExam ? 'bg-emerald-500' : 'bg-white/10'
-                }`}
-                onClick={() => setModeSafe('training')}
-              >
-                {label('training', lang)}
-              </button>
-
-              <button
-                className={`px-3 py-1.5 rounded-full text-sm ${
-                  isExam ? 'bg-emerald-500' : 'bg-white/10'
-                }`}
-                onClick={() => setModeSafe('exam')}
-              >
-                {label('exam', lang)}
-              </button>
-            </div>
+          {isExam && (
+            <>
+              {' '}
+              · {label('score', lang)} {scorePct}%
+            </>
           )}
         </div>
+
+        {!hideModeSwitch && (
+          <div className="flex items-center gap-2">
+            <button
+              className={`px-3 py-1.5 rounded-full text-sm ${
+                !isExam ? 'bg-emerald-500' : 'bg-white/10'
+              }`}
+              onClick={() => setModeSafe('training')}
+            >
+              {label('training', lang)}
+            </button>
+
+            <button
+              className={`px-3 py-1.5 rounded-full text-sm ${
+                isExam ? 'bg-emerald-500' : 'bg-white/10'
+              }`}
+              onClick={() => setModeSafe('exam')}
+            >
+              {label('exam', lang)}
+            </button>
+          </div>
+        )}
+      </div>
+
 
         {/* ✅ Sticky timer — exam mode (top area, stabile) */}
         {effectiveMode === 'exam' &&
@@ -1763,51 +1715,92 @@ return (
           })}
         </div>
 
-   {/* spiegazione (training) — premium-ready */}
-{!isTestLike && chosen != null && q.explanation && (
-  <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-    <b>{label('explain', lang)}</b>{' '}
-    {premiumLocked ? explainPreview : explainText}
+ {/* spiegazione (training) — gate errori free */}
+  {!isTestLike && chosen != null && q.explanation && (() => {
+    const isWrong = chosen !== q.answers.find((a) => !!a.isCorrect)?.id;
 
-    {premiumLocked && !isPremiumUser && (
-      <div className="mt-2 text-xs text-white/80">
-        🔒{' '}
-        {lang === 'it'
-          ? 'Spiegazione completa con Premium.'
-          : lang === 'fr'
-          ? 'Explication complète avec Premium.'
-          : lang === 'es'
-          ? 'Explicación completa con Premium.'
-          : 'Full explanation with Premium.'}
+    // Spiegazione su risposta CORRETTA: sempre visibile a tutti
+    if (!isWrong) {
+      return (
+        <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+          <b>{label('explain', lang)}</b>{' '}
+          {explainText}
+        </div>
+      );
+    }
 
-        <Link
-  href={pricingPath(lang)}
-  onClick={() => {
-    trackQuizEvent('premium_cta_clicked', {
-      lang,
-      mode: effectiveMode,
-      source: 'locked_explanation',
-      storage_scope: storageScope,
-      certification: context?.certificationName ?? null,
-      topic: context?.topicTitle ?? null,
-      question_id: Number(q.id),
-    });
-  }}
-  className="ml-2 underline underline-offset-2 opacity-90 hover:opacity-100"
->
-          {lang === 'it'
-            ? 'Scopri Premium'
-            : lang === 'fr'
-            ? 'Découvrir Premium'
-            : lang === 'es'
-            ? 'Descubrir Premium'
-            : 'See Premium'}
-        </Link>
+    // Risposta SBAGLIATA — controlla se restano spiegazioni free
+    const isLocked = !isPremiumUser && isLoggedIn && wrongExpLeft !== null && wrongExpLeft <= 0;
+
+    if (isLocked) {
+      // Gate mini — mostra solo su risposte sbagliate quando finito il credito
+      return (
+        <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+          <b>{label('explain', lang)}</b>{' '}
+          <span className="opacity-60">{explainPreview}…</span>
+          <div className="mt-3 rounded-xl border border-white/20 bg-black/20 p-3">
+            <p className="font-semibold text-white text-xs">
+              🔒{' '}
+              {lang === 'it'
+                ? 'Hai usato tutte le spiegazioni gratuite.'
+                : lang === 'fr'
+                ? 'Vous avez utilisé toutes vos explications gratuites.'
+                : lang === 'es'
+                ? 'Has usado todas tus explicaciones gratuitas.'
+               : "You've used all your free explanations."}
+            </p>
+            <p className="mt-1 text-xs text-white/70">
+              {lang === 'it'
+                ? 'Con Premium capisci ogni errore e colmi le lacune prima dell\'esame.'
+                : lang === 'fr'
+                ? 'Avec Premium, comprenez chaque erreur et comblez vos lacunes avant l\'examen.'
+                : lang === 'es'
+                ? 'Con Premium entiende cada error y cubre tus lagunas antes del examen.'
+                : 'With Premium you understand every mistake and fix your gaps before the exam.'}
+            </p>
+            <Link
+              href={pricingPath(lang)}
+              onClick={() =>
+                trackQuizEvent('premium_cta_clicked', {
+                  lang,
+                  mode: effectiveMode,
+                  source: 'locked_wrong_explanation',
+                  question_id: Number(q.id),
+                })
+              }
+              className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
+            >
+              {lang === 'it'
+                ? 'Inizia 7 giorni gratis'
+                : lang === 'fr'
+                ? 'Commencer 7 jours gratuits'
+                : lang === 'es'
+                ? 'Empezar 7 días gratis'
+                : 'Start 7-day free trial'}
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    // Risposta sbagliata + credito disponibile: mostra e consuma
+    // useEffect per consumare il credito (evita chiamate doppie su re-render)
+    // NB: questo blocco viene renderizzato una volta sola per domanda grazie a chosen != null
+    // ma per sicurezza usiamo un ref per non chiamare due volte.
+    // → Vedi nota sotto sul WrongExplanation wrapper component.
+    return (
+      <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+        <b>{label('explain', lang)}</b>{' '}
+        {explainText}
+        <WrongExplanationTracker
+          questionId={q.id}
+          isLoggedIn={isLoggedIn}
+          isPremiumUser={isPremiumUser}
+          onConsume={consumeWrongExplanation}
+        />
       </div>
-    )}
-  </div>
-)}
-      
+    );
+  })()}
       </div>
 {/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
@@ -1944,6 +1937,34 @@ return (
     </div>
   );
 } 
+
+ /**
+ * Componente invisibile che chiama consumeWrongExplanation una sola volta
+ * per ogni domanda sbagliata. Usa useEffect + ref per evitare doppie chiamate.
+ */
+function WrongExplanationTracker({
+  questionId,
+  isLoggedIn,
+  isPremiumUser,
+  onConsume,
+}: {
+  questionId: number | string;
+  isLoggedIn: boolean;
+  isPremiumUser: boolean;
+  onConsume: () => Promise<boolean>;
+}) {
+  const calledRef = useRef(false);
+
+  useEffect(() => {
+    if (calledRef.current) return;
+    if (!isLoggedIn || isPremiumUser) return;
+    calledRef.current = true;
+    onConsume();
+  }, [questionId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return null;
+}
+
 /* ===== helpers ===== */
 
 function arraysEqual(a: Array<any>, b: Array<any>) {
@@ -1994,44 +2015,3 @@ function trackQuizEvent(
   });
 }
 
-/*function label(key: keyof typeof L, lang: Locale) {
-  return L[key][lang] ?? L[key].it;
-}
-
-const L = {
-  training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
-  exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
-  question: { it: 'Domanda', en: 'Question', fr: 'Question', es: 'Pregunta' },
-  answered: { it: 'Risposte date', en: 'Answered', fr: 'Répondues', es: 'Respondidas' },
-  back: { it: 'Indietro', en: 'Back', fr: 'Retour', es: 'Atrás' },
-  next: { it: 'Avanti', en: 'Next', fr: 'Suiv.', es: 'Siguiente' },
-  restart: { it: 'Ricomincia', en: 'Restart', fr: 'Recommencer', es: 'Reiniciar' },
-  finish: { it: 'Termina esame', en: 'Finish exam', fr: 'Terminer', es: 'Terminar' },
-  explain: { it: 'Spiegazione:', en: 'Explanation:', fr: 'Explication :', es: 'Explicación:' },
-  review: { it: 'Rivedi dopo', en: 'Review later', fr: 'Revoir plus tard', es: 'Revisar después' },
-  gotoUn: {
-    it: 'Vai alla prima non risolta',
-    en: 'Go to first unanswered',
-    fr: 'Aller à la première non répondue',
-    es: 'Ir a la primera sin responder',
-  },
-  score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
-
-  summaryTitle: {
-    it: 'Risultato esame',
-    en: 'Exam summary',
-    fr: 'Résumé de l’examen',
-    es: 'Resumen del examen',
-  },
-  questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
-  correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
-  wrongLabel: { it: 'Errate', en: 'Wrong', fr: 'Fausses', es: 'Incorrectas' },
-  durationLabel: { it: 'Durata', en: 'Duration', fr: 'Durée', es: 'Duración' },
-  backToQuizHome: { it: 'Torna ai quiz', en: 'Back to quizzes', fr: 'Retour aux quiz', es: 'Volver a los cuestionarios' },
-  seeProfile: { it: 'Vai al profilo', en: 'Go to profile', fr: 'Aller au profil', es: 'Ir al perfil' },
-  seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
-  wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
-  yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
-  correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
-};
-*/
