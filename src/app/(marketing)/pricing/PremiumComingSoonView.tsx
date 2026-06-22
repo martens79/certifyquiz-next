@@ -477,7 +477,7 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
 export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_annual");
+  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
 
   const lang = useMemo<Lang>(() => {
     if (forceLang === "it" || forceLang === "es" || forceLang === "en" || forceLang === "fr") {

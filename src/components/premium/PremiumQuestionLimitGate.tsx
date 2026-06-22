@@ -237,7 +237,7 @@ export default function PremiumQuestionLimitGate({
   const L = safeLang(lang);
   const [isLoading, setIsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_annual");
+  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
 
   const plans = PLANS[L];
 
