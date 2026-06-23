@@ -90,8 +90,13 @@ export async function getCertificationsListRSC(revalidateSeconds = 300) {
  * NB: usa l'endpoint già usato nel client: /certifications/by-slug/:slug
  */
 export async function getCertificationDetailRSC(slug: string, revalidateSeconds = 86400) {
-  return serverJson<CertDetail>(`/certifications/by-slug/${encodeURIComponent(slug)}`, {
-    revalidate: revalidateSeconds,
-    tags: [CERTS_LIST_TAG, certTag(slug)],
-  });
+  try {
+    return await serverJson<CertDetail>(`/certifications/by-slug/${encodeURIComponent(slug)}`, {
+      revalidate: revalidateSeconds,
+      tags: [CERTS_LIST_TAG, certTag(slug)],
+    });
+  } catch (e: any) {
+    if (e.message?.includes("404")) return null;
+    throw e;
+  }
 }
