@@ -13,6 +13,11 @@ declare global {
   }
 }
 
+const PROMPT_SHOWN_KEY = "pwa_prompt_last_shown";
+const PROMPT_DISMISSED_KEY = "pwa_install_dismissed";
+const DAYS_COOLDOWN_SHOWN = 14;    // rivisto dopo 14 giorni se ignorato
+const DAYS_COOLDOWN_DISMISSED = 30; // rivisto dopo 30 giorni se dismissato
+
 function getLangFromPath() {
   if (typeof window === "undefined") return "en";
 
@@ -44,6 +49,26 @@ async function trackPwaEvent(event: string) {
   }
 }
 
+function shouldShowPrompt(): boolean {
+  // Controlla cooldown post-dismiss
+  const dismissedAt = localStorage.getItem(PROMPT_DISMISSED_KEY);
+  if (dismissedAt) {
+    const daysSince = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
+    if (daysSince < DAYS_COOLDOWN_DISMISSED) return false;
+    // cooldown scaduto: pulisci il flag
+    localStorage.removeItem(PROMPT_DISMISSED_KEY);
+  }
+
+  // Controlla cooldown post-show (utente ha visto il banner ma non ha interagito)
+  const lastShown = localStorage.getItem(PROMPT_SHOWN_KEY);
+  if (lastShown) {
+    const daysSince = (Date.now() - parseInt(lastShown)) / (1000 * 60 * 60 * 24);
+    if (daysSince < DAYS_COOLDOWN_SHOWN) return false;
+  }
+
+  return true;
+}
+
 export default function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -60,8 +85,7 @@ export default function PwaInstallPrompt() {
       return;
     }
 
-    const alreadyDismissed = localStorage.getItem("pwa_install_dismissed");
-    if (alreadyDismissed === "true") return;
+    if (!shouldShowPrompt()) return;
 
     const handler = (event: Event) => {
       event.preventDefault();
@@ -70,6 +94,8 @@ export default function PwaInstallPrompt() {
 
       setTimeout(() => {
         setVisible(true);
+        // Salva il timestamp del primo show
+        localStorage.setItem(PROMPT_SHOWN_KEY, Date.now().toString());
         window.gtag?.("event", "pwa_install_prompt_shown");
         trackPwaEvent("pwa_install_prompt_shown");
       }, 5000);
@@ -102,8 +128,14 @@ export default function PwaInstallPrompt() {
     if (choice.outcome === "accepted") {
       window.gtag?.("event", "pwa_install_accepted");
       trackPwaEvent("pwa_install_accepted");
+      // Pulizia: non serve più mostrarlo
+      localStorage.removeItem(PROMPT_SHOWN_KEY);
+      localStorage.removeItem(PROMPT_DISMISSED_KEY);
     } else {
       window.gtag?.("event", "pwa_install_dismissed");
+      // Trattato come dismiss esplicito
+      localStorage.setItem(PROMPT_DISMISSED_KEY, Date.now().toString());
+      localStorage.removeItem(PROMPT_SHOWN_KEY);
     }
 
     setVisible(false);
@@ -112,7 +144,9 @@ export default function PwaInstallPrompt() {
 
   const dismiss = () => {
     window.gtag?.("event", "pwa_install_banner_dismissed");
-    localStorage.setItem("pwa_install_dismissed", "true");
+    // Salva timestamp dismiss: riprova dopo DAYS_COOLDOWN_DISMISSED
+    localStorage.setItem(PROMPT_DISMISSED_KEY, Date.now().toString());
+    localStorage.removeItem(PROMPT_SHOWN_KEY);
     setVisible(false);
   };
 
