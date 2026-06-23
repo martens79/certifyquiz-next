@@ -25,6 +25,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "microsoft-azure-fundamentals": 16,
   "oracle-database-sql": 17,
   "csharp": 18,
+  "microsoft-csharp": 18, // alias
   "python-developer": 19,
   "java-se": 20,
   "javascript-developer": 21,
@@ -201,6 +202,10 @@ export const CERT_SLUGS: ReadonlyArray<string> = CERTS.map((c) => c.slug);
 
 export const CERTS_BY_SLUG: Record<string, CertificationData> =
   Object.fromEntries(CERTS.map((c) => [c.slug, c]));
+
+// Alias slug DB → slug registry
+CERTS_BY_SLUG["microsoft-csharp"] = CERTS_BY_SLUG["csharp"];
+
 
 /** Mini check anti-duplicati + id mancanti (solo in dev) */
 if (process.env.NODE_ENV !== "production") {
