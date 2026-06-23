@@ -9,6 +9,7 @@ const normalizeCertSlug = (slug: string) => {
   if (slug === "network-plus") return "comptia-network-plus";
   if (slug === "tensorflow") return "google-tensorflow";
   if (slug === "tensorflow-developer") return "google-tensorflow";
+  if (slug === "csharp") return "microsoft-csharp";
   return slug;
 };
 
@@ -58,6 +59,10 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     description:
       "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
   },
+  "microsoft-csharp": {
+  title: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
+  description: "...",
+},
   "microsoft-ai": {
     title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
     description:
