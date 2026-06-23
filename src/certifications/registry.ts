@@ -34,6 +34,10 @@ export const CERTS_BY_SLUG: Record<CertSlug, CertificationData> = (() => {
   return map;
 })();
 
+// Alias
+(CERTS_BY_SLUG as Record<string, CertificationData>)["microsoft-csharp"] = 
+  (CERTS_BY_SLUG as Record<string, CertificationData>)["csharp"];
+  
 /** Set di lookup O(1) per verificare l’esistenza di uno slug */
 export const HAS_CERT_SLUG = new Set<string>(CERT_SLUGS);
 
