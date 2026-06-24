@@ -13,9 +13,12 @@ declare global {
   }
 }
 
+// Flag a livello modulo: persiste per tutta la sessione (navigazione SPA inclusa)
+let promptHandledThisSession = false;
+
 const PROMPT_SHOWN_KEY = "pwa_prompt_last_shown";
 const PROMPT_DISMISSED_KEY = "pwa_install_dismissed";
-const DAYS_COOLDOWN_SHOWN = 14;    // rivisto dopo 14 giorni se ignorato
+const DAYS_COOLDOWN_SHOWN = 14;     // rivisto dopo 14 giorni se ignorato
 const DAYS_COOLDOWN_DISMISSED = 30; // rivisto dopo 30 giorni se dismissato
 
 function getLangFromPath() {
@@ -85,10 +88,16 @@ export default function PwaInstallPrompt() {
       return;
     }
 
+    // Già gestito in questa sessione (navigazione SPA tra pagine)
+    if (promptHandledThisSession) return;
+
     if (!shouldShowPrompt()) return;
 
     const handler = (event: Event) => {
       event.preventDefault();
+
+      // Blocca qualsiasi re-trigger per il resto della sessione
+      promptHandledThisSession = true;
 
       setDeferredPrompt(event as BeforeInstallPromptEvent);
 
