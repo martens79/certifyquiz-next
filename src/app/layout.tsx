@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import RootShellClient from "@/components/layout/RootShellClient";
 import { AuthProvider } from "@/components/auth/AuthProvider"; // ✅ aggiungi
+import ChatbotWidget from "@/components/ChatbotWidget";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default async function RootLayout({
         {/* ✅ Provider client globale: abilita isAdmin/isPremiumUser/premiumLocked ovunque */}
         <AuthProvider>
           <RootShellClient>{children}</RootShellClient>
+          <ChatbotWidget />
         </AuthProvider>
       </body>
     </html>
