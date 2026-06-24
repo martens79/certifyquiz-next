@@ -584,7 +584,141 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
     return null;
   }
 }
+// ============================================================
+// AGGIUNGI QUESTO BLOCCO in src/lib/data.ts
+// Prima della riga: export const certPath = ...
+// ============================================================
 
+/* ----------------------------- SCENARIOS ----------------------------- */
+
+export type ScenarioListItem = {
+  id: number;
+  title: string;
+  intro_text: string;
+  difficulty: "base" | "advanced" | "exam";
+  is_premium: boolean;
+  question_count: number;
+  locked: boolean;
+};
+
+export type ScenarioAnswer = {
+  id: number;
+  text: string;
+  is_correct: boolean;
+};
+
+export type ScenarioQuestion = {
+  id: number;
+  index: number;
+  question: string;
+  explanation: string;
+  correct_answer: string;
+  answers: ScenarioAnswer[];
+};
+
+export type ScenarioDetail = {
+  id: number;
+  certification_id: number;
+  cert_slug: string;
+  cert_name: string;
+  title: string;
+  intro_text: string;
+  difficulty: "base" | "advanced" | "exam";
+  is_premium: boolean;
+  question_count: number;
+  questions: ScenarioQuestion[];
+};
+
+/** Lista scenari per certificazione */
+export async function getScenariosByCertSlug(
+  certSlug: string,
+  locale: Locale = "it"
+): Promise<ScenarioListItem[]> {
+  if (IS_BUILD) return [];
+
+  try {
+    const r = await fetchWithTimeout(
+      `${API}/scenarios?cert_slug=${encodeURIComponent(certSlug)}&lang=${locale}`,
+      {
+        next: {
+          tags: [`scenarios:${certSlug}`, `scenarios:${certSlug}:${locale}`],
+          revalidate: 3600,
+        },
+      } as NextFetchInit
+    );
+
+    if (!r.ok) return [];
+
+    const json = await r.json();
+    const items = Array.isArray(json?.items) ? json.items : [];
+
+    return items.map((item: Record<string, unknown>) => ({
+      id: Number(item.id),
+      title: String(item.title ?? ""),
+      intro_text: String(item.intro_text ?? ""),
+      difficulty: (item.difficulty as "base" | "advanced" | "exam") ?? "exam",
+      is_premium: Boolean(item.is_premium),
+      question_count: Number(item.question_count ?? 0),
+      locked: Boolean(item.locked),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Scenario singolo con domande */
+export async function getScenarioById(
+  id: number,
+  locale: Locale = "it"
+): Promise<ScenarioDetail | null> {
+  if (IS_BUILD) return null;
+
+  try {
+    const r = await fetchWithTimeout(
+      `${API}/scenarios/${id}?lang=${locale}`,
+      {
+        cache: "no-store",
+      } as NextFetchInit
+    );
+
+    if (r.status === 404 || r.status === 403) return null;
+    if (!r.ok) return null;
+
+    const json = await r.json();
+    const s = json?.scenario;
+    if (!s) return null;
+
+    return {
+      id: Number(s.id),
+      certification_id: Number(s.certification_id),
+      cert_slug: String(s.cert_slug ?? ""),
+      cert_name: String(s.cert_name ?? ""),
+      title: String(s.title ?? ""),
+      intro_text: String(s.intro_text ?? ""),
+      difficulty: (s.difficulty as "base" | "advanced" | "exam") ?? "exam",
+      is_premium: Boolean(s.is_premium),
+      question_count: Number(s.question_count ?? 0),
+      questions: Array.isArray(s.questions)
+        ? s.questions.map((q: Record<string, unknown>, idx: number) => ({
+            id: Number(q.id),
+            index: idx + 1,
+            question: String(q.question ?? ""),
+            explanation: String(q.explanation ?? ""),
+            correct_answer: String(q.correct_answer ?? ""),
+            answers: Array.isArray(q.answers)
+              ? (q.answers as Record<string, unknown>[]).map((a) => ({
+                  id: Number(a.id),
+                  text: String(a.text ?? ""),
+                  is_correct: Boolean(a.is_correct),
+                }))
+              : [],
+          }))
+        : [],
+    };
+  } catch {
+    return null;
+  }
+}
 /* ------------------------------- URL helper ------------------------------- */
 /** ATTENZIONE: EN ufficiale è ROOT (/certifications/...) */
 export const certPath = (lang: "it" | "en" | "fr" | "es", slug: string): string => {
