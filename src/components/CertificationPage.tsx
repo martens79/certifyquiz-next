@@ -392,7 +392,58 @@ const pageTopics =
     </button>
   </div>
 )}
+{/* Scenari d'esame */}
+{(() => {
+  const CERTS_WITH_SCENARIOS = ["microsoft-sql-server"];
+  const hasScenarios = CERTS_WITH_SCENARIOS.includes(data.slug);
 
+  const scenariHref = (() => {
+    switch (lang) {
+      case "it": return `/it/certificazioni/${data.slug}/scenari`;
+      case "en": return `/certifications/${data.slug}/scenarios`;
+      case "fr": return `/fr/certifications/${data.slug}/scenarios`;
+      case "es": return `/es/certificaciones/${data.slug}/escenarios`;
+    }
+  })();
+
+  return (
+    <div className="bg-blue-100 p-4 rounded-xl shadow">
+      <div className="flex items-center gap-2 mb-2">
+        <h2 className="text-lg font-semibold text-blue-800">
+          {({ it: "Scenari d'esame", en: "Exam Scenarios", fr: "Scénarios d'examen", es: "Escenarios de examen" } as const)[lang]}
+        </h2>
+        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+          ⭐ Premium
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-800 mb-4">
+        {({ 
+          it: "Esercitati con scenari pratici che simulano le domande reali dell'esame.",
+          en: "Practice with real exam-style scenario questions.",
+          fr: "Entraînez-vous avec des scénarios pratiques qui simulent l'examen réel.",
+          es: "Practica con escenarios que simulan las preguntas reales del examen.",
+        } as const)[lang]}
+      </p>
+
+      {hasScenarios ? (
+        <Link
+          href={scenariHref}
+          className="inline-flex items-center justify-center rounded-lg bg-yellow-400 hover:bg-yellow-500 px-4 py-2 text-sm font-semibold text-black transition"
+        >
+          🎯 {({ it: "Vai agli scenari", en: "Go to scenarios", fr: "Voir les scénarios", es: "Ver escenarios" } as const)[lang]}
+        </Link>
+      ) : (
+        <button
+          disabled
+          className="inline-flex items-center justify-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white cursor-not-allowed"
+        >
+          🚧 Coming Soon
+        </button>
+      )}
+    </div>
+  );
+})()}
     
           {/* Why choose */}
           {whyChoose.length > 0 && (
