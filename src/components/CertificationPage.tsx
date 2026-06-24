@@ -444,6 +444,41 @@ const pageTopics =
     </div>
   );
 })()}
+{/* Ripassi rapidi */}
+{(() => {
+  const reviewsHref = (() => {
+    switch (lang) {
+      case "it": return `/it/ripassi`;
+      case "en": return `/reviews`;
+      case "fr": return `/fr/revisions`;
+      case "es": return `/es/repasos`;
+    }
+  })();
+
+  return (
+    <div className="bg-blue-100 p-4 rounded-xl shadow">
+      <h2 className="text-lg font-semibold text-blue-800 mb-2">
+        {({ it: "Ripassi rapidi", en: "Quick Reviews", fr: "Révisions rapides", es: "Repasos rápidos" } as const)[lang]}
+      </h2>
+
+      <p className="text-sm text-gray-800 mb-4">
+        {({
+          it: "Rivedi i concetti chiave prima di affrontare il quiz o l'esame.",
+          en: "Review key concepts before taking the quiz or exam.",
+          fr: "Révisez les concepts clés avant de passer le quiz ou l'examen.",
+          es: "Repasa los conceptos clave antes de hacer el quiz o el examen.",
+        } as const)[lang]}
+      </p>
+
+      <Link
+        href={reviewsHref}
+        className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition"
+      >
+        📖 {({ it: "Vai ai ripassi", en: "Go to reviews", fr: "Voir les révisions", es: "Ver repasos" } as const)[lang]}
+      </Link>
+    </div>
+  );
+})()}
     
           {/* Why choose */}
           {whyChoose.length > 0 && (
