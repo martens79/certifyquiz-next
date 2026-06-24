@@ -591,6 +591,13 @@ export async function getQuizIntroBySlug(slug: string, locale: Locale = "it"): P
 
 /* ----------------------------- SCENARIOS ----------------------------- */
 
+// ============================================================
+// AGGIUNGI QUESTO BLOCCO in src/lib/data.ts
+// Prima della riga: export const certPath = ...
+// ============================================================
+
+/* ----------------------------- SCENARIOS ----------------------------- */
+
 export type ScenarioListItem = {
   id: number;
   title: string;
@@ -632,7 +639,8 @@ export type ScenarioDetail = {
 /** Lista scenari per certificazione */
 export async function getScenariosByCertSlug(
   certSlug: string,
-  locale: Locale = "it"
+  locale: Locale = "it",
+  token?: string
 ): Promise<ScenarioListItem[]> {
   if (IS_BUILD) return [];
 
@@ -640,6 +648,7 @@ export async function getScenariosByCertSlug(
     const r = await fetchWithTimeout(
       `${API}/scenarios?cert_slug=${encodeURIComponent(certSlug)}&lang=${locale}`,
       {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         next: {
           tags: [`scenarios:${certSlug}`, `scenarios:${certSlug}:${locale}`],
           revalidate: 3600,
@@ -669,7 +678,8 @@ export async function getScenariosByCertSlug(
 /** Scenario singolo con domande */
 export async function getScenarioById(
   id: number,
-  locale: Locale = "it"
+  locale: Locale = "it",
+  token?: string
 ): Promise<ScenarioDetail | null> {
   if (IS_BUILD) return null;
 
@@ -677,6 +687,7 @@ export async function getScenarioById(
     const r = await fetchWithTimeout(
       `${API}/scenarios/${id}?lang=${locale}`,
       {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         cache: "no-store",
       } as NextFetchInit
     );
