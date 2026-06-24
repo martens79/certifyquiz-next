@@ -1,11 +1,10 @@
 // src/components/ScenarioQuizPage.tsx
-// Vista singolo scenario con domande una alla volta
-// L'intro rimane visibile (collassabile su mobile)
-
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+
+type Lang = "it" | "en" | "fr" | "es";
 
 type Answer = {
   id: number;
@@ -33,8 +32,6 @@ type Scenario = {
   questions: Question[];
 };
 
-type Lang = "it" | "en" | "fr" | "es";
-
 const labels: Record<Lang, {
   question: string;
   of: string;
@@ -46,79 +43,43 @@ const labels: Record<Lang, {
   score: string;
   retry: string;
   backToList: string;
-  showIntro: string;
-  hideIntro: string;
   scenario: string;
-  selectAnswer: string;
   explanation: string;
+  loading: string;
+  error: string;
+  premiumRequired: string;
 }> = {
   it: {
-    question: "Domanda",
-    of: "di",
-    correct: "Corretto! ✅",
-    wrong: "Sbagliato ❌",
-    next: "Prossima domanda",
-    finish: "Vedi risultato",
-    result: "Risultato finale",
-    score: "Punteggio",
-    retry: "Ricomincia",
-    backToList: "← Tutti gli scenari",
-    showIntro: "Mostra scenario",
-    hideIntro: "Nascondi scenario",
-    scenario: "Scenario",
-    selectAnswer: "Seleziona una risposta",
-    explanation: "Spiegazione",
+    question: "Domanda", of: "di", correct: "Corretto! ✅", wrong: "Sbagliato ❌",
+    next: "Prossima domanda", finish: "Vedi risultato", result: "Risultato finale",
+    score: "Punteggio", retry: "Ricomincia", backToList: "← Tutti gli scenari",
+    scenario: "Scenario", explanation: "Spiegazione",
+    loading: "Caricamento scenario...", error: "Errore nel caricamento.",
+    premiumRequired: "Questo scenario è riservato agli utenti Premium.",
   },
   en: {
-    question: "Question",
-    of: "of",
-    correct: "Correct! ✅",
-    wrong: "Wrong ❌",
-    next: "Next question",
-    finish: "See result",
-    result: "Final result",
-    score: "Score",
-    retry: "Retry",
-    backToList: "← All scenarios",
-    showIntro: "Show scenario",
-    hideIntro: "Hide scenario",
-    scenario: "Scenario",
-    selectAnswer: "Select an answer",
-    explanation: "Explanation",
+    question: "Question", of: "of", correct: "Correct! ✅", wrong: "Wrong ❌",
+    next: "Next question", finish: "See result", result: "Final result",
+    score: "Score", retry: "Retry", backToList: "← All scenarios",
+    scenario: "Scenario", explanation: "Explanation",
+    loading: "Loading scenario...", error: "Loading error.",
+    premiumRequired: "This scenario is reserved for Premium users.",
   },
   fr: {
-    question: "Question",
-    of: "sur",
-    correct: "Correct ! ✅",
-    wrong: "Incorrect ❌",
-    next: "Question suivante",
-    finish: "Voir le résultat",
-    result: "Résultat final",
-    score: "Score",
-    retry: "Recommencer",
-    backToList: "← Tous les scénarios",
-    showIntro: "Afficher le scénario",
-    hideIntro: "Masquer le scénario",
-    scenario: "Scénario",
-    selectAnswer: "Sélectionnez une réponse",
-    explanation: "Explication",
+    question: "Question", of: "sur", correct: "Correct ! ✅", wrong: "Incorrect ❌",
+    next: "Question suivante", finish: "Voir le résultat", result: "Résultat final",
+    score: "Score", retry: "Recommencer", backToList: "← Tous les scénarios",
+    scenario: "Scénario", explanation: "Explication",
+    loading: "Chargement du scénario...", error: "Erreur de chargement.",
+    premiumRequired: "Ce scénario est réservé aux utilisateurs Premium.",
   },
   es: {
-    question: "Pregunta",
-    of: "de",
-    correct: "¡Correcto! ✅",
-    wrong: "Incorrecto ❌",
-    next: "Siguiente pregunta",
-    finish: "Ver resultado",
-    result: "Resultado final",
-    score: "Puntuación",
-    retry: "Reintentar",
-    backToList: "← Todos los escenarios",
-    showIntro: "Mostrar escenario",
-    hideIntro: "Ocultar escenario",
-    scenario: "Escenario",
-    selectAnswer: "Selecciona una respuesta",
-    explanation: "Explicación",
+    question: "Pregunta", of: "de", correct: "¡Correcto! ✅", wrong: "Incorrecto ❌",
+    next: "Siguiente pregunta", finish: "Ver resultado", result: "Resultado final",
+    score: "Puntuación", retry: "Reintentar", backToList: "← Todos los escenarios",
+    scenario: "Escenario", explanation: "Explicación",
+    loading: "Cargando escenario...", error: "Error de carga.",
+    premiumRequired: "Este escenario está reservado para usuarios Premium.",
   },
 };
 
@@ -135,11 +96,16 @@ const LETTERS = ["A", "B", "C", "D"];
 
 type Props = {
   lang: Lang;
-  scenario: Scenario;
+  certSlug: string;
+  scenarioId: number;
 };
 
-export default function ScenarioQuizPage({ lang, scenario }: Props) {
+export default function ScenarioQuizPage({ lang, certSlug, scenarioId }: Props) {
   const t = labels[lang];
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<"error" | "premium" | null>(null);
+
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answered, setAnswered] = useState(false);
@@ -147,8 +113,22 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
   const [finished, setFinished] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
 
-  const q = scenario.questions[current];
-  const isLast = current === scenario.questions.length - 1;
+  useEffect(() => {
+    const token = localStorage.getItem("cq:access") ?? undefined;
+
+    fetch(`/api/backend/scenarios/${scenarioId}?lang=${lang}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(async (r) => {
+        if (r.status === 403) { setError("premium"); return; }
+        if (!r.ok) { setError("error"); return; }
+        const json = await r.json();
+        if (json?.scenario) setScenario(json.scenario);
+        else setError("error");
+      })
+      .catch(() => setError("error"))
+      .finally(() => setLoading(false));
+  }, [scenarioId, lang]);
 
   function handleSelect(answerId: number, isCorrect: boolean) {
     if (answered) return;
@@ -158,7 +138,8 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
   }
 
   function handleNext() {
-    if (isLast) {
+    if (!scenario) return;
+    if (current === scenario.questions.length - 1) {
       setFinished(true);
     } else {
       setCurrent((c) => c + 1);
@@ -175,9 +156,43 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
     setFinished(false);
   }
 
+  // --- LOADING ---
+  if (loading) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-10 text-center text-slate-500">
+        {t.loading}
+      </main>
+    );
+  }
+
+  // --- ERRORE ---
+  if (error === "premium") {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-10">
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-8 text-center">
+          <p className="text-4xl mb-4">⭐</p>
+          <p className="font-bold text-yellow-800 mb-4">{t.premiumRequired}</p>
+          <Link href={listHref(lang, certSlug)} className="text-sm text-blue-700 hover:underline">
+            {t.backToList}
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !scenario) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-10 text-center text-red-500">
+        {t.error}
+      </main>
+    );
+  }
+
+  const q = scenario.questions[current];
+  const isLast = current === scenario.questions.length - 1;
   const pct = Math.round((score / scenario.questions.length) * 100);
 
-  // ---- RESULT SCREEN ----
+  // --- RESULT ---
   if (finished) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-10">
@@ -185,15 +200,12 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
           <p className="text-5xl mb-4">{pct >= 70 ? "🎉" : "📚"}</p>
           <h1 className="text-2xl font-extrabold text-slate-900 mb-2">{t.result}</h1>
           <p className="text-slate-600 mb-6">{scenario.title}</p>
-
           <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-blue-50 border-4 border-blue-200 mb-6">
             <span className="text-3xl font-extrabold text-blue-700">{pct}%</span>
           </div>
-
           <p className="text-slate-700 mb-8">
             {t.score}: <strong>{score}</strong> / {scenario.questions.length}
           </p>
-
           <div className="flex gap-3 justify-center flex-wrap">
             <button
               onClick={handleRetry}
@@ -202,7 +214,7 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
               {t.retry}
             </button>
             <Link
-              href={listHref(lang, scenario.cert_slug)}
+              href={listHref(lang, certSlug)}
               className="px-5 py-2.5 rounded-full border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold transition"
             >
               {t.backToList}
@@ -213,14 +225,10 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
     );
   }
 
-  // ---- QUIZ SCREEN ----
+  // --- QUIZ ---
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
-      {/* Back link */}
-      <Link
-        href={listHref(lang, scenario.cert_slug)}
-        className="text-sm text-blue-700 hover:underline mb-4 inline-block"
-      >
+      <Link href={listHref(lang, certSlug)} className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         {t.backToList}
       </Link>
 
@@ -257,27 +265,19 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
         <p className="text-base font-semibold text-slate-900 mb-5 leading-snug">
           {q.question}
         </p>
-
         <div className="space-y-3">
           {q.answers.map((a, idx) => {
             const isSelected = selected === a.id;
-            const isCorrectAnswer = a.is_correct;
             let style = "border-slate-200 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 cursor-pointer";
-
             if (answered) {
-              if (isCorrectAnswer) {
-                style = "border-green-400 bg-green-50 cursor-default";
-              } else if (isSelected && !isCorrectAnswer) {
-                style = "border-red-400 bg-red-50 cursor-default";
-              } else {
-                style = "border-slate-200 bg-slate-50 cursor-default opacity-60";
-              }
+              if (a.is_correct) style = "border-green-400 bg-green-50 cursor-default";
+              else if (isSelected) style = "border-red-400 bg-red-50 cursor-default";
+              else style = "border-slate-200 bg-slate-50 cursor-default opacity-60";
             }
-
             return (
               <button
                 key={a.id}
-                onClick={() => handleSelect(a.id, isCorrectAnswer)}
+                onClick={() => handleSelect(a.id, a.is_correct)}
                 disabled={answered}
                 className={`w-full text-left flex items-start gap-3 px-4 py-3 rounded-xl border-2 transition ${style}`}
               >
@@ -290,7 +290,6 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
           })}
         </div>
 
-        {/* Feedback + spiegazione */}
         {answered && (
           <div className={`mt-5 rounded-xl p-4 text-sm ${q.answers.find((a) => a.id === selected)?.is_correct ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
             <p className="font-bold mb-1">
@@ -298,9 +297,7 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
             </p>
             {q.explanation && (
               <>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-2 mb-1">
-                  {t.explanation}
-                </p>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-2 mb-1">{t.explanation}</p>
                 <p className="text-slate-700 leading-relaxed">{q.explanation}</p>
               </>
             )}
@@ -308,7 +305,6 @@ export default function ScenarioQuizPage({ lang, scenario }: Props) {
         )}
       </div>
 
-      {/* Next button */}
       {answered && (
         <div className="text-right">
           <button
