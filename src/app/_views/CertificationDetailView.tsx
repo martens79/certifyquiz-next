@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
 import CertificationPage from "@/components/CertificationPage";
 import { getCertBySlug, getTopicsByCertSlug, getScenariosByCertSlug, type Cert } from "@/lib/data";
+export const dynamic = "force-dynamic";
 
 type Lang = Locale;
 
