@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
 import CertificationPage from "@/components/CertificationPage";
-import { getCertBySlug, getTopicsByCertSlug, type Cert } from "@/lib/data";
+import { getCertBySlug, getTopicsByCertSlug, getScenariosByCertSlug, type Cert } from "@/lib/data";
 
 type Lang = Locale;
 
@@ -106,11 +106,13 @@ export async function CertificationDetailView({
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[slug] ??
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
-  const [dbTopics, cert] = await Promise.all([
-    
+  const [dbTopics, cert, scenarios] = await Promise.all([
     getTopicsByCertSlug(dbSlug, lang),
     getCertBySlug(dbSlug, lang),
+    getScenariosByCertSlug(dbSlug, lang),
   ]);
+
+  const hasScenarios = scenarios.length > 0;
 
   if (reg) {
     const data: DynamicCertData = {
@@ -119,12 +121,12 @@ export async function CertificationDetailView({
       questionCountByLang: cert?.questionCountByLang,
     };
 
-    return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} />;
+    return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} hasScenarios={hasScenarios} />;
   }
 
   if (!cert) return notFound();
 
   const data = adaptCertToRegistryShape(cert);
 
-  return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} />;
+  return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} hasScenarios={hasScenarios} />;
 }

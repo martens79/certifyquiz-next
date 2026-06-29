@@ -106,10 +106,12 @@ export default function CertificationPage({
   lang,
   data,
   dbTopics = [],
+  hasScenarios = false,
 }: {
   lang: Lang;
   data: CertificationData;
   dbTopics?: DbTopicLink[];
+  hasScenarios?: boolean;
 }) {
   const {
     title,
@@ -189,7 +191,6 @@ const pageTopics =
 
   const basePath = lang === "en" ? "" : `/${lang}`;
 
-
   //solo le cert foundations hanno il riquadro con le guide 
   const isFoundationCert =
   data.slug.includes("foundations") || data.slug.includes("foundation");
@@ -203,6 +204,15 @@ const pageTopics =
       console.warn(`[CertificationPage] quizRoute looks odd for "${data.slug}" → "${anyQ}"`);
     }
   }
+
+  const scenariHref = (() => {
+    switch (lang) {
+      case "it": return `/it/certificazioni/${data.slug}/scenari`;
+      case "en": return `/certifications/${data.slug}/scenarios`;
+      case "fr": return `/fr/certifications/${data.slug}/scenarios`;
+      case "es": return `/es/certificaciones/${data.slug}/escenarios`;
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
@@ -237,8 +247,6 @@ const pageTopics =
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
-      
-
         {questionCount > 0 && (
   <div className="mb-6 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-800">
     ✅ {questionCount}+ {questionLabel}
@@ -250,10 +258,10 @@ const pageTopics =
           <section className="mt-4 mb-4 bg-blue-100 p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-blue-800 mb-2">
               {({
-                it: "Qual è la certificazione SQL “attuale”?",
-                en: "What is the current SQL certification?",
-                fr: "Quelle est la certification SQL “actuelle” ?",
-                es: "¿Cuál es la certificación SQL “actual”?",
+                it: 'Qual è la certificazione SQL "attuale"?',
+en: "What is the current SQL certification?",
+fr: 'Quelle est la certification SQL "actuelle" ?',
+es: '¿Cuál es la certificación SQL "actual"?',
               } as const)[lang] ?? "Current certification"}
             </h2>
 
@@ -265,8 +273,7 @@ const pageTopics =
           </section>
         )}
 
-
-         {/* 👇 LEAD MAGNET */}
+        {/* 👇 LEAD MAGNET */}
 <ContextualLeadMagnetBox
   lang={lang}
   variant="cert"
@@ -289,7 +296,6 @@ const pageTopics =
     } as const)[lang] ?? "Go to quiz"}
   </Link>
 </div>
-
 
         {/* Practice box */}
         <CertificationPracticeBox
@@ -363,8 +369,7 @@ const pageTopics =
             </div>
           )}
 
-
-            {isFoundationCert && (
+          {isFoundationCert && (
   <div className="bg-blue-100 p-4 rounded-xl shadow">
     <h2 className="text-lg font-semibold text-blue-800 mb-2">
       {({
@@ -392,94 +397,80 @@ const pageTopics =
     </button>
   </div>
 )}
-{/* Scenari d'esame */}
-{(() => {
-  const CERTS_WITH_SCENARIOS = ["microsoft-sql-server"];
-  const hasScenarios = CERTS_WITH_SCENARIOS.includes(data.slug);
 
-  const scenariHref = (() => {
-    switch (lang) {
-      case "it": return `/it/certificazioni/${data.slug}/scenari`;
-      case "en": return `/certifications/${data.slug}/scenarios`;
-      case "fr": return `/fr/certifications/${data.slug}/scenarios`;
-      case "es": return `/es/certificaciones/${data.slug}/escenarios`;
-    }
-  })();
+          {/* Scenari d'esame — dinamico, niente più array hardcoded */}
+          <div className="bg-blue-100 p-4 rounded-xl shadow">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-lg font-semibold text-blue-800">
+                {({ it: "Scenari d'esame", en: "Exam Scenarios", fr: "Scénarios d'examen", es: "Escenarios de examen" } as const)[lang]}
+              </h2>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
+                ⭐ Premium
+              </span>
+            </div>
 
-  return (
-    <div className="bg-blue-100 p-4 rounded-xl shadow">
-      <div className="flex items-center gap-2 mb-2">
-        <h2 className="text-lg font-semibold text-blue-800">
-          {({ it: "Scenari d'esame", en: "Exam Scenarios", fr: "Scénarios d'examen", es: "Escenarios de examen" } as const)[lang]}
-        </h2>
-        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
-          ⭐ Premium
-        </span>
-      </div>
+            <p className="text-sm text-gray-800 mb-4">
+              {({
+                it: "Esercitati con scenari pratici che simulano le domande reali dell'esame.",
+                en: "Practice with real exam-style scenario questions.",
+                fr: "Entraînez-vous avec des scénarios pratiques qui simulent l'examen réel.",
+                es: "Practica con escenarios que simulan las preguntas reales del examen.",
+              } as const)[lang]}
+            </p>
 
-      <p className="text-sm text-gray-800 mb-4">
-        {({ 
-          it: "Esercitati con scenari pratici che simulano le domande reali dell'esame.",
-          en: "Practice with real exam-style scenario questions.",
-          fr: "Entraînez-vous avec des scénarios pratiques qui simulent l'examen réel.",
-          es: "Practica con escenarios que simulan las preguntas reales del examen.",
-        } as const)[lang]}
-      </p>
+            {hasScenarios ? (
+              <Link
+                href={scenariHref}
+                className="inline-flex items-center justify-center rounded-lg bg-yellow-400 hover:bg-yellow-500 px-4 py-2 text-sm font-semibold text-black transition"
+              >
+                🎯 {({ it: "Vai agli scenari", en: "Go to scenarios", fr: "Voir les scénarios", es: "Ver escenarios" } as const)[lang]}
+              </Link>
+            ) : (
+              <button
+                disabled
+                className="inline-flex items-center justify-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white cursor-not-allowed"
+              >
+                🚧 Coming Soon
+              </button>
+            )}
+          </div>
 
-      {hasScenarios ? (
-        <Link
-          href={scenariHref}
-          className="inline-flex items-center justify-center rounded-lg bg-yellow-400 hover:bg-yellow-500 px-4 py-2 text-sm font-semibold text-black transition"
-        >
-          🎯 {({ it: "Vai agli scenari", en: "Go to scenarios", fr: "Voir les scénarios", es: "Ver escenarios" } as const)[lang]}
-        </Link>
-      ) : (
-        <button
-          disabled
-          className="inline-flex items-center justify-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white cursor-not-allowed"
-        >
-          🚧 Coming Soon
-        </button>
-      )}
-    </div>
-  );
-})()}
-{/* Ripassi rapidi */}
-{(() => {
-  const reviewsHref = (() => {
-    switch (lang) {
-      case "it": return `/it/ripassi`;
-      case "en": return `/reviews`;
-      case "fr": return `/fr/revisions`;
-      case "es": return `/es/repasos`;
-    }
-  })();
+          {/* Ripassi rapidi */}
+          {(() => {
+            const reviewsHref = (() => {
+              switch (lang) {
+                case "it": return `/it/ripassi`;
+                case "en": return `/reviews`;
+                case "fr": return `/fr/revisions`;
+                case "es": return `/es/repasos`;
+              }
+            })();
 
-  return (
-    <div className="bg-blue-100 p-4 rounded-xl shadow">
-      <h2 className="text-lg font-semibold text-blue-800 mb-2">
-        {({ it: "Ripassi rapidi", en: "Quick Reviews", fr: "Révisions rapides", es: "Repasos rápidos" } as const)[lang]}
-      </h2>
+            return (
+              <div className="bg-blue-100 p-4 rounded-xl shadow">
+                <h2 className="text-lg font-semibold text-blue-800 mb-2">
+                  {({ it: "Ripassi rapidi", en: "Quick Reviews", fr: "Révisions rapides", es: "Repasos rápidos" } as const)[lang]}
+                </h2>
 
-      <p className="text-sm text-gray-800 mb-4">
-        {({
-          it: "Rivedi i concetti chiave prima di affrontare il quiz o l'esame.",
-          en: "Review key concepts before taking the quiz or exam.",
-          fr: "Révisez les concepts clés avant de passer le quiz ou l'examen.",
-          es: "Repasa los conceptos clave antes de hacer el quiz o el examen.",
-        } as const)[lang]}
-      </p>
+                <p className="text-sm text-gray-800 mb-4">
+                  {({
+                    it: "Rivedi i concetti chiave prima di affrontare il quiz o l'esame.",
+                    en: "Review key concepts before taking the quiz or exam.",
+                    fr: "Révisez les concepts clés avant de passer le quiz ou l'examen.",
+                    es: "Repasa los conceptos clave antes de hacer el quiz o el examen.",
+                  } as const)[lang]}
+                </p>
 
-      <Link
-        href={reviewsHref}
-        className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition"
-      >
-        📖 {({ it: "Vai ai ripassi", en: "Go to reviews", fr: "Voir les révisions", es: "Ver repasos" } as const)[lang]}
-      </Link>
-    </div>
-  );
-})()}
-    
+                <Link
+                  href={reviewsHref}
+                  className="inline-flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition"
+                >
+                  📖 {({ it: "Vai ai ripassi", en: "Go to reviews", fr: "Voir les révisions", es: "Ver repasos" } as const)[lang]}
+                </Link>
+              </div>
+            );
+          })()}
+
           {/* Why choose */}
           {whyChoose.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow col-span-full">
@@ -506,10 +497,10 @@ const pageTopics =
             <h2 className="text-lg font-semibold mb-2">
               {({
                 it: "Cosa impari",
-                en: "What you’ll learn",
+                en: "What you'll learn",
                 fr: "Ce que vous apprendrez",
                 es: "Lo que aprenderás",
-              } as const)[lang] ?? "What you’ll learn"}
+              } as const)[lang] ?? "What you'll learn"}
             </h2>
             <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
               {learn.map((l, i) => (
