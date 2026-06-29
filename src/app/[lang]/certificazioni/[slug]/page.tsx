@@ -9,8 +9,7 @@ import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/registry";
 import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 
-export const revalidate = 86400;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 export const dynamicParams = true;
 
 type Lang = Locale;
@@ -71,7 +70,6 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
   let ogImage: string | undefined;
 
   if (reg) {
-    // ✅ Usa metaTitle/metaDescription se disponibili, altrimenti fallback su title/description
     titleBase = reg.metaTitle?.[L] ?? reg.metaTitle?.it ?? reg.title?.[L] ?? reg.title?.it;
     description = reg.metaDescription?.[L] ?? reg.metaDescription?.it ?? reg.description?.[L] ?? reg.description?.it;
     ogImage = reg.imageUrl;
@@ -87,13 +85,11 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
 
   if (!titleBase) return {};
 
-  // ✅ Se c'è metaTitle custom lo usa direttamente (già include "| CertifyQuiz")
-  // altrimenti costruisce il title con il suffix standard
   const title = reg?.metaTitle?.[L] ?? reg?.metaTitle?.it
     ? titleBase
     : `${titleBase} — ${suffix} | CertifyQuiz`;
 
-  // 🔥 canonical
+  // canonical
   const canonical =
     L === "en"
       ? new URL(enRootDetailPath(slug), SITE_URL).toString()
@@ -108,7 +104,6 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
         : new URL(localizedDetailPath(l, slug), SITE_URL).toString();
   }
 
-  // x-default → EN root
   languages["x-default"] = new URL(enRootDetailPath(slug), SITE_URL).toString();
 
   const ogAbs =
@@ -122,10 +117,7 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical, languages },
-
-    // 🔥 anti-duplicati: /en/* non indicizzabile
-   robots: { index: true, follow: true },
-
+    robots: { index: true, follow: true },
     openGraph: {
       type: "website",
       title,
