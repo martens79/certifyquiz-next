@@ -211,6 +211,27 @@ if (pathname === "/es/certificaciones/mysql-certification") {
   return redirect301(req, "/es/certificaciones/mysql");
 }
 
+if (pathname.startsWith("/certifications/mysql-certification/")) {
+  return redirect301(
+    req,
+    pathname.replace("/certifications/mysql-certification/", "/certifications/mysql/")
+  );
+}
+
+if (pathname.startsWith("/it/certificazioni/mysql-certification/")) {
+  return redirect301(
+    req,
+    pathname.replace("/it/certificazioni/mysql-certification/", "/it/certificazioni/mysql/")
+  );
+}
+
+if (pathname.startsWith("/es/certificaciones/mysql-certification/")) {
+  return redirect301(
+    req,
+    pathname.replace("/es/certificaciones/mysql-certification/", "/es/certificaciones/mysql/")
+  );
+}
+
   if (pathname === "/certifications/csharp-certification") {
     return redirect301(req, "/certifications/csharp");
   }

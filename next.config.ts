@@ -246,6 +246,23 @@ const nextConfig: NextConfig = {
       { source: "/it/certificazioni/mysql-certification", destination: "/it/certificazioni/mysql", permanent: true },
       { source: "/fr/certifications/mysql-certification", destination: "/fr/certifications/mysql", permanent: true },
       { source: "/es/certificaciones/mysql-certification", destination: "/es/certificaciones/mysql", permanent: true },
+      {
+        source: "/it/certificazioni/mysql-certification/:path*",
+         destination: "/it/certificazioni/mysql/:path*",
+          permanent: true,
+       },
+
+      {
+         source: "/certifications/mysql-certification/:path*",
+         destination: "/certifications/mysql/:path*",
+             permanent: true,
+      },
+      {
+         source: "/es/certificaciones/mysql-certification/:path*",
+        destination: "/es/certificaciones/mysql/:path*",
+        permanent: true,
+     }, 
+
 
       // FR altri alias
       { source: "/fr/certifications/comptia-a", destination: "/fr/certifications/comptia-a-plus", permanent: true },
