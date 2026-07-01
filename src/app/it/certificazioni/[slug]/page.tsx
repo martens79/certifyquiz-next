@@ -5,6 +5,8 @@ import CertPage, {
   generateMetadata as generateLocalizedMetadata,
 } from "@/app/[lang]/certificazioni/[slug]/page";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
