@@ -645,16 +645,13 @@ export async function getScenariosByCertSlug(
   if (IS_BUILD) return [];
 
   try {
-    const r = await fetchWithTimeout(
-      `${API}/scenarios?cert_slug=${encodeURIComponent(certSlug)}&lang=${locale}`,
-      {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        next: {
-          tags: [`scenarios:${certSlug}`, `scenarios:${certSlug}:${locale}`],
-          revalidate: 3600,
-        },
-      } as NextFetchInit
-    );
+   const r = await fetchWithTimeout(
+  `${API}/scenarios?cert_slug=${encodeURIComponent(certSlug)}&lang=${locale}`,
+  {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    cache: "no-store",
+  } as NextFetchInit
+);
 
     if (!r.ok) return [];
 
