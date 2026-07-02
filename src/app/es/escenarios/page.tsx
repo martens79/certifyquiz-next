@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getScenariosList } from "@/lib/data";
 import CertificationOverviewGrid from "@/components/CertificationOverviewGrid";
-import ScenarioIntro from "@/components/ScenarioIntro";
 
 export const metadata: Metadata = {
   title: "Escenarios de certificación | CertifyQuiz",
@@ -44,15 +43,11 @@ export const metadata: Metadata = {
 export default async function EscenariosPage() {
   const scenarios = await getScenariosList("es");
 
- return (
-  <>
-    <ScenarioIntro lang="es" />
-
+  return (
     <CertificationOverviewGrid
       lang="es"
       items={scenarios}
       mode="scenarios"
     />
-  </>
-);
+  );
 }
