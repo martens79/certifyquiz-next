@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import CertificationOverviewCard from "@/components/CertificationOverviewCard";
+import ScenarioIntro from "@/components/ScenarioIntro";
 import type { Locale } from "@/lib/data";
 
 type OverviewItem = {
@@ -187,6 +188,8 @@ export default function CertificationOverviewGrid({
   if (items.length === 0) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-8">
+        {mode === "scenarios" && <ScenarioIntro lang={lang} />}
+
         <section className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600">
           {t.empty}
         </section>
@@ -196,6 +199,8 @@ export default function CertificationOverviewGrid({
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 md:py-8">
+      {mode === "scenarios" && <ScenarioIntro lang={lang} />}
+
       <section className="rounded-3xl bg-slate-950 px-5 py-6 text-white shadow-sm md:px-8 md:py-8">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="max-w-3xl">
