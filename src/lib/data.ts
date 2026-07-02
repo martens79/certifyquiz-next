@@ -53,7 +53,33 @@ export async function getTopicReviewsList(lang: Locale) {
 
   return (await res.json()) as TopicReviewListItem[];
 }
+export type ScenarioOverviewItem = {
+  id: number;
+  certificationId: number;
+  certificationTitle: string;
+  certificationSlug: string;
+  title: string;
+  href: string;
+  intro_text: string;
+  difficulty: "base" | "advanced" | "exam";
+  is_premium: boolean;
+  question_count: number;
+  locked: boolean;
+};
 
+export async function getScenariosList(
+  lang: Locale
+): Promise<ScenarioOverviewItem[]> {
+  const res = await fetch(`${API}/scenarios/list?lang=${lang}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return [];
+
+  const json = await res.json();
+
+  return Array.isArray(json.items) ? json.items : [];
+}
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 /** Normalizza slug "alias/vecchi" → slug canonici del frontend */
 const normalizeSlug = (raw: unknown) => {
