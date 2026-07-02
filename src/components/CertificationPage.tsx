@@ -196,6 +196,18 @@ const pageTopics =
   data.slug.includes("foundations") || data.slug.includes("foundation");
 
   const quizHref = data.quizRoute?.[lang] ?? data.quizRoute?.it ?? `${basePath}/quiz/${data.slug}`;
+  const reviewsHref = (() => {
+  switch (lang) {
+    case "it":
+      return "/it/ripassi";
+    case "en":
+      return "/reviews";
+    case "fr":
+      return "/fr/revisions";
+    case "es":
+      return "/es/repasos";
+  }
+})();
 
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
@@ -247,6 +259,46 @@ const pageTopics =
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
+        <div className="mb-6 flex flex-wrap justify-center gap-3">
+
+  <Link
+    href={quizHref}
+    className="rounded-full bg-blue-600 px-5 py-2 text-white font-semibold hover:bg-blue-700 transition"
+  >
+    📝 {({
+      it: "Quiz",
+      en: "Quiz",
+      fr: "Quiz",
+      es: "Quiz",
+    } as const)[lang]}
+  </Link>
+
+  <Link
+    href={reviewsHref}
+    className="rounded-full bg-green-600 px-5 py-2 text-white font-semibold hover:bg-green-700 transition"
+  >
+    📖 {({
+      it: "Ripassi",
+      en: "Reviews",
+      fr: "Révisions",
+      es: "Repasos",
+    } as const)[lang]}
+  </Link>
+
+  <Link
+    href={scenariHref}
+    className="rounded-full bg-yellow-400 px-5 py-2 text-black font-semibold hover:bg-yellow-500 transition"
+  >
+    ⭐ {({
+      it: "Scenari",
+      en: "Scenarios",
+      fr: "Scénarios",
+      es: "Escenarios",
+    } as const)[lang]}
+  </Link>
+
+</div>
+
         {questionCount > 0 && (
   <div className="mb-6 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-800">
     ✅ {questionCount}+ {questionLabel}
@@ -281,21 +333,7 @@ es: '¿Cuál es la certificación SQL "actual"?',
   className="mb-8"
 />
 
-        {/* CTA quiz */}
-<div className="mt-2 mb-6 text-center">
-  <Link
-    href={quizHref}
-    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-linear-to-r from-yellow-500 to-yellow-400 text-black font-semibold shadow-md hover:from-yellow-600 hover:to-yellow-500 transition-transform hover:scale-105"
-  >
-    <span className="text-lg">🚀</span>
-    {({
-      it: "Vai ai quiz",
-      en: "Go to quiz",
-      fr: "Accéder aux quiz",
-      es: "Ir a los cuestionarios",
-    } as const)[lang] ?? "Go to quiz"}
-  </Link>
-</div>
+      
 
         {/* Practice box */}
         <CertificationPracticeBox
