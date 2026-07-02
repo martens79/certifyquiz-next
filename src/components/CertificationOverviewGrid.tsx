@@ -11,65 +11,135 @@ type OverviewItem = {
   href: string;
 };
 
+type Mode = "reviews" | "scenarios";
+
 type Props = {
   lang: Locale;
   items: OverviewItem[];
+  mode?: Mode;
 };
 
 const labels = {
   it: {
-    title: "Ripassi rapidi",
-    subtitle: "Rivedi i concetti principali prima di affrontare un quiz o una simulazione d’esame.",
-    badge: "CertifyQuiz Reviews",
-    available: "ripassi",
-    open: "Apri ripassi",
-    search: "Cerca certificazione o topic...",
-    empty: "Nessun ripasso disponibile al momento.",
-    noResults: "Nessun risultato trovato.",
-    more: "altri ripassi",
-    certifications: "certificazioni",
-    reviews: "ripassi",
+    reviews: {
+      title: "Ripassi rapidi",
+      subtitle:
+        "Rivedi i concetti principali prima di affrontare un quiz o una simulazione d’esame.",
+      badge: "CertifyQuiz Reviews",
+      available: "ripassi",
+      open: "Apri ripassi",
+      search: "Cerca certificazione o topic...",
+      empty: "Nessun ripasso disponibile al momento.",
+      noResults: "Nessun risultato trovato.",
+      more: "altri ripassi",
+      certifications: "certificazioni",
+      count: "ripassi",
+    },
+    scenarios: {
+      title: "Scenari d'esame",
+      subtitle:
+        "Allenati con scenari realistici basati sugli esami ufficiali delle certificazioni.",
+      badge: "CertifyQuiz Scenarios",
+      available: "scenari",
+      open: "Apri scenari",
+      search: "Cerca certificazione o scenario...",
+      empty: "Nessuno scenario disponibile al momento.",
+      noResults: "Nessun risultato trovato.",
+      more: "altri scenari",
+      certifications: "certificazioni",
+      count: "scenari",
+    },
   },
   en: {
-    title: "Quick reviews",
-    subtitle: "Review the key concepts before taking a quiz or a mock exam.",
-    badge: "CertifyQuiz Reviews",
-    available: "reviews",
-    open: "Open reviews",
-    search: "Search certification or topic...",
-    empty: "No reviews available yet.",
-    noResults: "No results found.",
-    more: "more reviews",
-    certifications: "certifications",
-    reviews: "reviews",
+    reviews: {
+      title: "Quick reviews",
+      subtitle: "Review the key concepts before taking a quiz or a mock exam.",
+      badge: "CertifyQuiz Reviews",
+      available: "reviews",
+      open: "Open reviews",
+      search: "Search certification or topic...",
+      empty: "No reviews available yet.",
+      noResults: "No results found.",
+      more: "more reviews",
+      certifications: "certifications",
+      count: "reviews",
+    },
+    scenarios: {
+      title: "Exam scenarios",
+      subtitle:
+        "Practice with realistic scenarios designed to simulate certification exam situations.",
+      badge: "CertifyQuiz Scenarios",
+      available: "scenarios",
+      open: "Open scenarios",
+      search: "Search certification or scenario...",
+      empty: "No scenarios available yet.",
+      noResults: "No results found.",
+      more: "more scenarios",
+      certifications: "certifications",
+      count: "scenarios",
+    },
   },
   fr: {
-    title: "Révisions rapides",
-    subtitle: "Révisez les concepts clés avant de passer un quiz ou un examen blanc.",
-    badge: "CertifyQuiz Reviews",
-    available: "révisions",
-    open: "Ouvrir les révisions",
-    search: "Rechercher une certification ou un sujet...",
-    empty: "Aucune révision disponible pour le moment.",
-    noResults: "Aucun résultat trouvé.",
-    more: "autres révisions",
-    certifications: "certifications",
-    reviews: "révisions",
+    reviews: {
+      title: "Révisions rapides",
+      subtitle:
+        "Révisez les concepts clés avant de passer un quiz ou un examen blanc.",
+      badge: "CertifyQuiz Reviews",
+      available: "révisions",
+      open: "Ouvrir les révisions",
+      search: "Rechercher une certification ou un sujet...",
+      empty: "Aucune révision disponible pour le moment.",
+      noResults: "Aucun résultat trouvé.",
+      more: "autres révisions",
+      certifications: "certifications",
+      count: "révisions",
+    },
+    scenarios: {
+      title: "Scénarios d'examen",
+      subtitle:
+        "Entraînez-vous avec des scénarios réalistes inspirés des situations d’examen.",
+      badge: "CertifyQuiz Scenarios",
+      available: "scénarios",
+      open: "Ouvrir les scénarios",
+      search: "Rechercher une certification ou un scénario...",
+      empty: "Aucun scénario disponible pour le moment.",
+      noResults: "Aucun résultat trouvé.",
+      more: "autres scénarios",
+      certifications: "certifications",
+      count: "scénarios",
+    },
   },
   es: {
-    title: "Repasos rápidos",
-    subtitle: "Repasa los conceptos clave antes de hacer un quiz o una simulación de examen.",
-    badge: "CertifyQuiz Reviews",
-    available: "repasos",
-    open: "Abrir repasos",
-    search: "Buscar certificación o tema...",
-    empty: "No hay repasos disponibles por el momento.",
-    noResults: "No se encontraron resultados.",
-    more: "repasos más",
-    certifications: "certificaciones",
-    reviews: "repasos",
+    reviews: {
+      title: "Repasos rápidos",
+      subtitle:
+        "Repasa los conceptos clave antes de hacer un quiz o una simulación de examen.",
+      badge: "CertifyQuiz Reviews",
+      available: "repasos",
+      open: "Abrir repasos",
+      search: "Buscar certificación o tema...",
+      empty: "No hay repasos disponibles por el momento.",
+      noResults: "No se encontraron resultados.",
+      more: "repasos más",
+      certifications: "certificaciones",
+      count: "repasos",
+    },
+    scenarios: {
+      title: "Escenarios de examen",
+      subtitle:
+        "Practica con escenarios realistas basados en situaciones típicas de certificación.",
+      badge: "CertifyQuiz Scenarios",
+      available: "escenarios",
+      open: "Abrir escenarios",
+      search: "Buscar certificación o escenario...",
+      empty: "No hay escenarios disponibles por el momento.",
+      noResults: "No se encontraron resultados.",
+      more: "escenarios más",
+      certifications: "certificaciones",
+      count: "escenarios",
+    },
   },
-};
+} satisfies Record<Locale, Record<Mode, Record<string, string>>>;
 
 function certAccent(index: number) {
   const styles = [
@@ -84,8 +154,12 @@ function certAccent(index: number) {
   return styles[index % styles.length];
 }
 
-export default function CertificationOverviewGrid({ lang, items }: Props) {
-  const t = labels[lang];
+export default function CertificationOverviewGrid({
+  lang,
+  items,
+  mode = "reviews",
+}: Props) {
+  const t = labels[lang][mode];
   const [query, setQuery] = useState("");
 
   const groups = useMemo(() => {
@@ -140,13 +214,19 @@ export default function CertificationOverviewGrid({ lang, items }: Props) {
 
           <div className="flex gap-3">
             <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
-              <div className="text-2xl font-extrabold">{new Set(items.map((i) => i.certificationTitle)).size}</div>
-              <div className="text-xs font-semibold text-slate-300">{t.certifications}</div>
+              <div className="text-2xl font-extrabold">
+                {new Set(items.map((i) => i.certificationTitle)).size}
+              </div>
+              <div className="text-xs font-semibold text-slate-300">
+                {t.certifications}
+              </div>
             </div>
 
             <div className="rounded-2xl bg-white/10 px-4 py-3 text-center">
               <div className="text-2xl font-extrabold">{items.length}</div>
-              <div className="text-xs font-semibold text-slate-300">{t.reviews}</div>
+              <div className="text-xs font-semibold text-slate-300">
+                {t.count}
+              </div>
             </div>
           </div>
         </div>
