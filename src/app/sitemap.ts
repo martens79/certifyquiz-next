@@ -182,7 +182,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.8,
             lastModified: now,
           },
+          // Lista ripassi
+{
+  url:
+    lang === "en"
+      ? `${SITE}/reviews`
+      : lang === "it"
+      ? `${SITE}/it/ripassi`
+      : lang === "fr"
+      ? `${SITE}/fr/revisions`
+      : `${SITE}/es/repasos`,
+  changeFrequency: "weekly",
+  priority: 0.75,
+  lastModified: now,
+},
 
+// Lista scenari
+{
+  url:
+    lang === "en"
+      ? `${SITE}/scenarios`
+      : lang === "it"
+      ? `${SITE}/it/scenari`
+      : lang === "fr"
+      ? `${SITE}/fr/scenarios`
+      : `${SITE}/es/escenarios`,
+  changeFrequency: "weekly",
+  priority: 0.75,
+  lastModified: now,
+},
           // Statiche lingua
           ...staticPages[lang].map((p) => ({
             url: `${base}/${p}`,
