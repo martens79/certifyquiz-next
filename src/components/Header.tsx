@@ -34,6 +34,7 @@ const UI: Record<
     quiz: string;
     suggested: string;
     reviews: string;
+    scenarios: string;
     profile: string;
     login: string;
     logout: string;
@@ -58,6 +59,7 @@ const UI: Record<
     login: "Accedi",
     logout: "Esci",
     reviews: "Ripassi",
+    scenarios: "Scenari",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -78,6 +80,7 @@ const UI: Record<
     login: "Log in",
     logout: "Log out",
     reviews: "Reviews",
+    scenarios: "Scenarios",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -98,6 +101,7 @@ const UI: Record<
     login: "Connexion",
     logout: "Déconnexion",
     reviews: "Révisions",
+    scenarios: "Scénarios",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -118,6 +122,7 @@ const UI: Record<
     login: "Acceder",
     logout: "Cerrar sesión",
     reviews: "Repasos",
+    scenarios: "Escenarios",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -370,6 +375,15 @@ export default function Header({ lang }: Props) {
     ? "/es/repasos"
     : "/it/ripassi";
 
+    const scenariosHref =
+  lang === "en"
+    ? "/scenarios"
+    : lang === "fr"
+    ? "/fr/scenarios"
+    : lang === "es"
+    ? "/es/escenarios"
+    : "/it/scenari";
+
   const aboutHref =
     lang === "it"
       ? "/it/chi-sono"
@@ -411,7 +425,6 @@ export default function Header({ lang }: Props) {
       icon: <IconSuggested />,
     },
 
-    { href: `${certsHref}?search=1`, label: "Search", icon: <IconSearch /> },
 
     { href: blogHref, label: t.blog ?? ui.blog, icon: <IconBlog /> },
 
@@ -422,6 +435,8 @@ export default function Header({ lang }: Props) {
    { href: quizHomeHref, label: ui.quiz, icon: <IconQuiz /> },
 
 { href: reviewsHref, label: ui.reviews, icon: <IconReviews /> },
+
+{ href: scenariosHref, label: `⭐ ${ui.scenarios}`, icon: <IconReviews /> },
 
 { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
@@ -434,6 +449,8 @@ export default function Header({ lang }: Props) {
   pricingHref,
   quizHomeHref,
   reviewsHref,
+  scenariosHref,
+
   suggestedHref,
   t.blog,
   t.certifications,
@@ -446,6 +463,7 @@ export default function Header({ lang }: Props) {
   ui.pricing,
   ui.quiz,
   ui.suggested,
+  ui.scenarios,
   ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
