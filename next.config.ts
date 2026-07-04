@@ -268,8 +268,8 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/comptia-a", destination: "/fr/certifications/comptia-a-plus", permanent: true },
       { source: "/fr/certifications/comptia-security", destination: "/fr/certifications/security-plus", permanent: true },
       { source: "/fr/certifications/cisco-ccst", destination: "/fr/certifications/cisco-ccst-networking", permanent: true },
-      { source: "/fr/certifications/google-cloud", destination: "/fr/certifications/google-cloud-digital-leader", permanent: true },
-      { source: "/fr/certifications/aws-solutions-architect", destination: "/fr/certifications/aws-cloud-practitioner", permanent: false },
+      
+    
       { source: "/fr/certifications/ibm-cloud-v5", destination: "/fr", permanent: false },
       { source: "/fr/certifications/jncie", destination: "/fr", permanent: false },
 
@@ -497,10 +497,9 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/microsoft-csharp/:path*", destination: "/fr/certifications/csharp/:path*", permanent: true },
       { source: "/fr/certifications/comptia-network", destination: "/fr/certifications/network-plus", permanent: true },
       { source: "/fr/certifications/comptia-network/:path*", destination: "/fr/certifications/network-plus/:path*", permanent: true },
-      { source: "/fr/certifications/aws-solutions-architect", destination: "/fr/certifications/aws-cloud-practitioner", permanent: true },
-      { source: "/fr/certifications/aws-solutions-architect/:path*", destination: "/fr/certifications/aws-cloud-practitioner/:path*", permanent: true },
+      
+     
       { source: "/fr/certifications/google-cloud", destination: "/fr/certifications/google-cloud-digital-leader", permanent: true },
-      { source: "/fr/certifications/google-cloud/:path*", destination: "/fr/certifications/google-cloud-digital-leader/:path*", permanent: true },
       { source: "/fr/certifications/vmware-certified-professional", destination: "/fr/certifications/vmware-vcp", permanent: true },
       { source: "/fr/certifications/vmware-certified-professional/:path*", destination: "/fr/certifications/vmware-vcp/:path*", permanent: true },
 
@@ -600,6 +599,34 @@ const nextConfig: NextConfig = {
 { source: "/es/cookies", destination: "/es/cookie", permanent: true },
 { source: "/es/quiz-home", destination: "/es", permanent: true },
 
+// Topic 199 - Digital transformation
+{ source: "/certifications/google-cloud/digital-transformation-with-google-cloud", destination: "/certifications/google-cloud-digital-leader/digital-transformation-with-google-cloud", permanent: true },
+{ source: "/it/certificazioni/google-cloud/trasformazione-digitale-con-google-cloud", destination: "/it/certificazioni/google-cloud-digital-leader/trasformazione-digitale-con-google-cloud", permanent: true },
+{ source: "/it/certificazioni/google-cloud/trasformazione-digitale-google-cloud", destination: "/it/certificazioni/google-cloud-digital-leader/trasformazione-digitale-con-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/transformation-numerique-avec-google-cloud", destination: "/fr/certifications/google-cloud-digital-leader/transformation-numerique-avec-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/transformation-numerique-google-cloud", destination: "/fr/certifications/google-cloud-digital-leader/transformation-numerique-avec-google-cloud", permanent: true },
+{ source: "/es/certificaciones/google-cloud/transformacion-digital-con-google-cloud", destination: "/es/certificaciones/google-cloud-digital-leader/transformacion-digital-con-google-cloud", permanent: true },
+
+// Topic 200 - Data innovation
+{ source: "/certifications/google-cloud/innovation-with-data-and-google-cloud", destination: "/certifications/google-cloud-digital-leader/innovation-with-data-and-google-cloud", permanent: true },
+{ source: "/it/certificazioni/google-cloud/innovazione-con-i-dati-e-google-cloud", destination: "/it/certificazioni/google-cloud-digital-leader/innovazione-con-i-dati-e-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/donnees-ia-innovation", destination: "/fr/certifications/google-cloud-digital-leader/innovation-avec-les-donnees-et-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/innovation-avec-les-donnees-et-google-cloud", destination: "/fr/certifications/google-cloud-digital-leader/innovation-avec-les-donnees-et-google-cloud", permanent: true },
+{ source: "/es/certificaciones/google-cloud/innovacion-con-datos-y-google-cloud", destination: "/es/certificaciones/google-cloud-digital-leader/innovacion-con-datos-y-google-cloud", permanent: true },
+
+// Topic 202 - Security and operations
+{ source: "/certifications/google-cloud/security-and-operations-with-google-cloud", destination: "/certifications/google-cloud-digital-leader/security-and-operations-with-google-cloud", permanent: true },
+{ source: "/it/certificazioni/google-cloud/sicurezza-e-operazioni-con-google-cloud", destination: "/it/certificazioni/google-cloud-digital-leader/sicurezza-e-operazioni-con-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/securite-et-operations-avec-google-cloud", destination: "/fr/certifications/google-cloud-digital-leader/securite-et-operations-avec-google-cloud", permanent: true },
+{ source: "/es/certificaciones/google-cloud/seguridad-y-operaciones-con-google-cloud", destination: "/es/certificaciones/google-cloud-digital-leader/seguridad-y-operaciones-con-google-cloud", permanent: true },
+
+// Vecchi slug rinominati, stessa certificazione google-cloud (topic 250 e 293)
+{ source: "/certifications/google-cloud/data-ai-innovation", destination: "/certifications/google-cloud/google-cloud-ai-data-services", permanent: true },
+{ source: "/certifications/google-cloud/modernization-of-infrastructure-and-applications", destination: "/certifications/google-cloud/compute-application-modernization", permanent: true },
+{ source: "/fr/certifications/google-cloud/donnees-ia-innovation", destination: "/fr/certifications/google-cloud/ia-services-donnees-google-cloud", permanent: true },
+{ source: "/fr/certifications/google-cloud/modernisation-de-linfrastructure-et-des-applications", destination: "/fr/certifications/google-cloud/compute-modernisation-applications", permanent: true },
+{ source: "/it/certificazioni/google-cloud/modernizzazione-di-infrastrutture-e-applicazioni", destination: "/it/certificazioni/google-cloud/compute-modernizzazione-applicazioni", permanent: true },
+{ source: "/es/certificaciones/google-cloud/modernizacion-de-infraestructura-y-aplicaciones", destination: "/es/certificaciones/google-cloud/compute-modernizacion-aplicaciones", permanent: true },
 //csharp vecchi link 
 
 {
