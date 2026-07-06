@@ -9,6 +9,7 @@ import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/q
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
+import { apiFetch } from "@/lib/auth";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -169,40 +170,54 @@ export default function QuizEngine({
   );
 
   // Carica lo stato dal backend al mount (solo utenti loggati non premium)
-  useEffect(() => {
-    if (!isLoggedIn || isPremiumUser) return;
-    fetch("/api/backend/quiz/me/explanation-status", { credentials: "include" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.unlimited) setWrongExpLeft(null);
-        else setWrongExpLeft(data.remaining ?? 0);
-      })
-      .catch(() => {}); // fail silenzioso, non blocca il quiz
-  }, [isLoggedIn, isPremiumUser]);
+useEffect(() => {
+  if (!isLoggedIn || isPremiumUser) return;
+
+  apiFetch("/me/explanation-status")
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then((data) => {
+      if (data.unlimited) setWrongExpLeft(null);
+      else setWrongExpLeft(data.remaining ?? 0);
+    })
+    .catch((err) => {
+      console.error("Errore explanation-status:", err);
+    });
+}, [isLoggedIn, isPremiumUser]);
 
   // Chiamato quando l'utente free vede la spiegazione di un errore
-  const consumeWrongExplanation = async (): Promise<boolean> => {
-    // premium/admin/non loggato: sempre ok
-    if (isPremiumUser || !isLoggedIn) return true;
-    // già a 0: blocca subito senza chiamata
-    if (wrongExpLeft !== null && wrongExpLeft <= 0) return false;
+const consumeWrongExplanation = async (): Promise<boolean> => {
+  // premium/admin/non loggato: sempre ok
+  if (isPremiumUser || !isLoggedIn) return true;
 
-    try {
-      const res = await fetch("/api/backend/quiz/me/explanation-seen", {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (data.locked) {
-        setWrongExpLeft(0);
-        return false;
-      }
-      setWrongExpLeft(data.remaining ?? 0);
-      return true;
-    } catch {
-      return true; // fail silenzioso: meglio mostrare che bloccare per errore di rete
+  // già a 0: blocca subito senza chiamata
+  if (wrongExpLeft !== null && wrongExpLeft <= 0) return false;
+
+  try {
+   const res = await apiFetch("/me/explanation-seen", {
+  method: "POST",
+});
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
     }
-  };
+
+    const data = await res.json();
+
+    if (data.locked) {
+      setWrongExpLeft(0);
+      return false;
+    }
+
+    setWrongExpLeft(data.remaining ?? 0);
+    return true;
+  } catch (err) {
+    console.error("Errore explanation-seen:", err);
+    return true; // mantieni il comportamento attuale
+  }
+};
 
 
   // ---------------- Sticky timer (UI-only) ----------------
