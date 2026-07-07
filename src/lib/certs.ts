@@ -226,6 +226,8 @@ openai: "ai",
 "microsoft-ai": "ai", // ✅ canonical
 "microsoft-ai-fundamentals": "ai", // legacy alias
 
+"azure-ai-102-ai-engineer-associate": "ai",
+
 // Nuove certificazioni AI
 "ai-foundations": "ai", // ✅ tua certificazione
 "aws-ai-practitioner": "ai", // ⚠️ qui AI per UX (anche se è cloud lato SEO)
