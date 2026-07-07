@@ -33,6 +33,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "microsoft-virtualization": 23,
   "microsoft-ai-fundamentals": 24, // slug legacy
   "microsoft-ai": 24,
+  "azure-ai-102-ai-engineer-associate": 55,
   "google-tensorflow": 25,
   "mongodb-developer": 26,
   "mysql": 27,
@@ -94,6 +95,7 @@ import MicrosoftAIFundamentals from "./MicrosoftAIFundamentals";
 import MicrosoftAzureFundamentals from "./MicrosoftAzureFundamentals";
 import MicrosoftSQLServer from "./MicrosoftSQLServer";
 import MicrosoftVirtualization from "./MicrosoftVirtualization";
+import AzureAI102 from "./azure-ai-102";
 import MongoDBDeveloper from "./MongoDBDeveloper";
 import MySQLCertification from "./MySQLCertification";
 import NetworkPlus from "./NetworkPlus";
@@ -155,6 +157,7 @@ const RAW_CERTS = [
   MicrosoftAzureFundamentals, // slug: "microsoft-azure-fundamentals"
   MicrosoftSQLServer,         // slug: "microsoft-sql-server"
   MicrosoftVirtualization,    // slug: "microsoft-virtualization"
+  AzureAI102,                 // slug: "azure-ai-102-ai-engineer-associate"
   MongoDBDeveloper,           // slug: "mongodb-developer"
   MySQLCertification,         // slug: "mysql"
   NetworkPlus,                // slug: "network-plus"

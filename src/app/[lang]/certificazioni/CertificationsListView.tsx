@@ -61,6 +61,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "microsoft-ai": "intermediate",
   "psm-i": "intermediate",
   "microsoft-ai-fundamentals": "intermediate", // alias legacy
+  "azure-ai-102-ai-engineer-associate": "intermediate",
   "oracle-database-sql": "intermediate",
   mysql: "intermediate",
   "microsoft-sql-server": "intermediate",
@@ -106,6 +107,8 @@ const ICON_BY_SLUG: Record<string, string> = {
   "microsoft-virtualization": "/images/certifications/microsoft-virtualization-logo.png",
   "microsoft-ai": "/images/certifications/ai-fundamentals-icon.png",
   "microsoft-ai-fundamentals": "/images/certifications/ai-fundamentals-icon.png", // alias legacy
+  "azure-ai-102-ai-engineer-associate":
+  "/images/certifications/azure-ai-102.png",
 
   "google-cloud-digital-leader": "/images/certifications/google-cloud-digital-leader.png",
 "aws-ai-practitioner": "/images/certifications/aws-ai-practitioner.png",
