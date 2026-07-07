@@ -5,7 +5,7 @@
 const ProjectManagementFoundations = {
   slug: "project-management-foundations",
 
-  imageUrl: "/images/certifications/project-management-foundations.png",
+  imageUrl: "/images/certifications/project-M.png",
 
   officialUrl:
     "https://www.certifyquiz.com/certifications/project-management-foundations",

@@ -109,6 +109,8 @@ const ICON_BY_SLUG: Record<string, string> = {
   "microsoft-ai-fundamentals": "/images/certifications/ai-fundamentals-icon.png", // alias legacy
   "azure-ai-102-ai-engineer-associate":
   "/images/certifications/azure-ai-102.png",
+  "project-management-foundations":
+  "/images/certifications/project-M.png",
 
   "google-cloud-digital-leader": "/images/certifications/google-cloud-digital-leader.png",
 "aws-ai-practitioner": "/images/certifications/aws-ai-practitioner.png",
@@ -147,7 +149,7 @@ const ICON_BY_SLUG: Record<string, string> = {
 "database-foundations": "/images/certifications/database-foundations.png",
 "programming-foundations": "/images/certifications/programming-foundations.png",
 "virtualization-foundations": "/images/certifications/virtualization-foundations.png",
-"project-management-foundations": "/images/certifications/pmp2.png",
+
 "data-analytics-foundations": "/images/certifications/data-analytics-foundations.png",
 
 "pl-300-power-bi-data-analyst": "/images/certifications/pl-300-power-bi-data-analyst.png",
