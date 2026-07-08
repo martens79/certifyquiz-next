@@ -1747,15 +1747,43 @@ return (
     // Risposta SBAGLIATA — controlla se restano spiegazioni free
     const isLocked = !isPremiumUser && isLoggedIn && wrongExpLeft !== null && wrongExpLeft <= 0;
 
-    if (isLocked) {
-      // Gate mini — mostra solo su risposte sbagliate quando finito il credito
-      return (
-        <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-          <GateShownTracker questionId={q.id} lang={lang} mode={effectiveMode} />
-          
-          <b>{label('explain', lang)}</b>{' '}
-          <span className="opacity-60">{explainPreview}…</span>
-          <div className="mt-3 rounded-xl border border-white/20 bg-black/20 p-3">
+   if (isLocked) {
+  // Gate mini — mostra solo su risposte sbagliate quando finito il credito
+  return (
+    <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+      <GateShownTracker
+        questionId={q.id}
+        lang={lang}
+        mode={effectiveMode}
+      />
+
+      <div className="flex items-start gap-3">
+        <span className="text-xl">🔒</span>
+
+        <div>
+          <p className="font-semibold text-white">
+            {lang === "it"
+              ? "Hai utilizzato tutte le 20 spiegazioni gratuite."
+              : lang === "fr"
+              ? "Vous avez utilisé vos 20 explications gratuites."
+              : lang === "es"
+              ? "Has utilizado tus 20 explicaciones gratuitas."
+              : "You have used all 20 free explanations."}
+          </p>
+
+          <p className="mt-1 text-xs text-white/75">
+            {lang === "it"
+              ? "Puoi continuare ad allenarti con tutte le domande. Le spiegazioni dettagliate degli errori sono disponibili con Premium."
+              : lang === "fr"
+              ? "Vous pouvez continuer à vous entraîner avec toutes les questions. Les explications détaillées des erreurs sont disponibles avec Premium."
+              : lang === "es"
+              ? "Puedes seguir practicando con todas las preguntas. Las explicaciones detalladas de los errores están disponibles con Premium."
+              : "You can continue practicing with all questions. Detailed explanations for incorrect answers are available with Premium."}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-3 rounded-xl border border-white/20 bg-black/20 p-3">
             <p className="font-semibold text-white text-xs">
               🔒{' '}
               {lang === 'it'

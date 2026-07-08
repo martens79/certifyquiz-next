@@ -54,6 +54,24 @@ type HotLead = {
   total_events: number;
   last_event_at: string;
 };
+type PaywallUser = {
+  id: number;
+  username: string;
+  email: string;
+  premium: number | null;
+  premium_status: string | null;
+  free_wrong_explanations_used: number;
+  created_at: string;
+};
+
+type Paywall20 = {
+  totals: {
+    users_at_limit: number;
+    users_at_limit_premium: number;
+    users_at_limit_free: number;
+  };
+  usersAtLimit: PaywallUser[];
+};
 
 type DateFilter = "today" | "7d" | "30d" | "all";
 type ModeFilter = "all" | "assessment" | "lead_magnet";
@@ -79,6 +97,8 @@ export default function AdminClient() {
   const [certFilter, setCertFilter] = useState("all");
   const [modeFilter, setModeFilter] = useState<ModeFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("30d");
+
+  const [paywall20, setPaywall20] = useState<Paywall20 | null>(null);
 
   const availableCerts = useMemo(() => {
     const set = new Set<string>();
@@ -205,6 +225,28 @@ export default function AdminClient() {
     };
   }, [filteredLeads, filteredFunnelEvents, filteredHotLeads]);
 
+  const paywallStats = useMemo(() => {
+  const gateShown = filteredFunnelEvents.filter(
+    (event) => event.event === "wrong_explanation_gate_shown"
+  ).length;
+
+  const ctaClicked = filteredFunnelEvents.filter(
+    (event) => event.event === "premium_cta_clicked"
+  ).length;
+
+  const conversion =
+    gateShown > 0 ? Math.round((ctaClicked / gateShown) * 1000) / 10 : 0;
+
+  return {
+    gateShown,
+    ctaClicked,
+    conversion,
+    usersAtLimit: paywall20?.totals.users_at_limit ?? 0,
+    usersAtLimitFree: paywall20?.totals.users_at_limit_free ?? 0,
+    usersAtLimitPremium: paywall20?.totals.users_at_limit_premium ?? 0,
+  };
+}, [filteredFunnelEvents, paywall20]);
+
   const pwaStats = useMemo(() => {
   const getEventTotal = (name: string) =>
     funnelSummary?.events.find((e) => e.event === name)?.total ?? 0;
@@ -265,6 +307,7 @@ export default function AdminClient() {
         funnelSummaryRes,
         funnelEventsRes,
         hotLeadsRes,
+        paywall20Res,
       ] = await Promise.all([
         fetch("/api/backend/admin/leads-overview", {
           headers: { Authorization: `Bearer ${token}` },
@@ -281,6 +324,9 @@ export default function AdminClient() {
         fetch("/api/backend/admin/hot-leads", {
           headers: { Authorization: `Bearer ${token}` },
         }),
+        fetch("/api/backend/admin/paywall-20", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
       ]);
 
       if (!overviewRes.ok) throw new Error(`Overview HTTP ${overviewRes.status}`);
@@ -292,18 +338,21 @@ export default function AdminClient() {
         throw new Error(`Funnel events HTTP ${funnelEventsRes.status}`);
       }
       if (!hotLeadsRes.ok) throw new Error(`Hot leads HTTP ${hotLeadsRes.status}`);
+      if (!paywall20Res.ok) throw new Error(`Paywall 20 HTTP ${paywall20Res.status}`);
 
       const overviewJson = await overviewRes.json();
       const leadsJson = await leadsRes.json();
       const funnelSummaryJson = await funnelSummaryRes.json();
       const funnelEventsJson = await funnelEventsRes.json();
       const hotLeadsJson = await hotLeadsRes.json();
+      const paywall20Json = await paywall20Res.json();
 
       setOverview(overviewJson);
       setLeads(leadsJson.leads ?? []);
       setFunnelSummary(funnelSummaryJson);
       setFunnelEvents(funnelEventsJson.events ?? []);
       setHotLeads(hotLeadsJson.hotLeads ?? []);
+      setPaywall20(paywall20Json);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Errore caricamento dashboard");
     } finally {
@@ -364,261 +413,284 @@ export default function AdminClient() {
     return <StateBox title="Accesso negato" text="Questa sezione è riservata agli admin." />;
   }
 
-  return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <div>
-          <div style={styles.kicker}>CertifyQuiz control room</div>
-          <h1 style={styles.title}>Admin Dashboard</h1>
-          <p style={styles.subtitle}>
-            Lead, assessment, funnel e feedback in un unico posto.
-          </p>
-        </div>
-
-        <div style={styles.headerActions}>
-          <button
-            onClick={() => setTab("dashboard")}
-            style={tab === "dashboard" ? styles.tabActive : styles.tab}
-          >
-            Dashboard
-          </button>
-
-          <button
-            onClick={() => setTab("feedback")}
-            style={tab === "feedback" ? styles.tabActive : styles.tab}
-          >
-            Feedback
-          </button>
-
-          <button
-          onClick={() => setTab("subscriptions")}
-          style={tab === "subscriptions" ? styles.tabActive : styles.tab}
-           >
-           Abbonamenti
-           </button>
-
-          <button
-            onClick={() => setTab("organizations")}
-            style={tab === "organizations" ? styles.tabActive : styles.tab}
-          >
-            Aziende
-          </button>
-
-          {tab === "dashboard" && (
-            <button onClick={loadDashboard} disabled={loading} style={styles.refreshButton}>
-              {loading ? "Carico..." : "Ricarica"}
-            </button>
-          )}
-        </div>
+return (
+  <div style={styles.page}>
+    <div style={styles.header}>
+      <div>
+        <div style={styles.kicker}>CertifyQuiz control room</div>
+        <h1 style={styles.title}>Admin Dashboard</h1>
+        <p style={styles.subtitle}>
+          Lead, assessment, funnel e feedback in un unico posto.
+        </p>
       </div>
 
-      {tab === "dashboard" && (
-        <section>
-          {error && <div style={styles.errorBox}>{error}</div>}
+      <div style={styles.headerActions}>
+        <button
+          onClick={() => setTab("dashboard")}
+          style={tab === "dashboard" ? styles.tabActive : styles.tab}
+        >
+          Dashboard
+        </button>
 
-          <div style={styles.filterPanel}>
-            <div>
-              <h2 style={styles.filterTitle}>Filtri dashboard</h2>
-              <p style={styles.filterHint}>
-                Usa questi filtri per leggere lead, eventi funnel e interesse Premium.
-              </p>
-            </div>
+        <button
+          onClick={() => setTab("feedback")}
+          style={tab === "feedback" ? styles.tabActive : styles.tab}
+        >
+          Feedback
+        </button>
 
-            <div style={styles.filterGrid}>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cerca email, cert, topic, evento..."
-                style={styles.input}
-              />
+        <button
+          onClick={() => setTab("subscriptions")}
+          style={tab === "subscriptions" ? styles.tabActive : styles.tab}
+        >
+          Abbonamenti
+        </button>
 
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-                style={styles.select}
-              >
-                <option value="today">Oggi</option>
-                <option value="7d">Ultimi 7 giorni</option>
-                <option value="30d">Ultimi 30 giorni</option>
-                <option value="all">Tutto</option>
-              </select>
+        <button
+          onClick={() => setTab("organizations")}
+          style={tab === "organizations" ? styles.tabActive : styles.tab}
+        >
+          Aziende
+        </button>
 
-              <select
-                value={langFilter}
-                onChange={(e) => setLangFilter(e.target.value)}
-                style={styles.select}
-              >
-                <option value="all">Tutte le lingue</option>
-                <option value="it">IT</option>
-                <option value="en">EN</option>
-                <option value="es">ES</option>
-                <option value="fr">FR</option>
-              </select>
+        {tab === "dashboard" && (
+          <button
+            onClick={loadDashboard}
+            disabled={loading}
+            style={styles.refreshButton}
+          >
+            {loading ? "Carico..." : "Ricarica"}
+          </button>
+        )}
+      </div>
+    </div>
 
-              <select
-                value={certFilter}
-                onChange={(e) => setCertFilter(e.target.value)}
-                style={styles.select}
-              >
-                <option value="all">Tutte le certificazioni</option>
-                {availableCerts.map((cert) => (
-                  <option key={cert} value={cert}>
-                    {cert}
-                  </option>
-                ))}
-              </select>
+    {tab === "dashboard" && (
+      <section>
+        {error && <div style={styles.errorBox}>{error}</div>}
 
-              <select
-                value={modeFilter}
-                onChange={(e) => setModeFilter(e.target.value as ModeFilter)}
-                style={styles.select}
-              >
-                <option value="all">Tutti i lead</option>
-                <option value="assessment">Assessment</option>
-                <option value="lead_magnet">Lead magnet</option>
-              </select>
-
-              <select
-                value={eventFilter}
-                onChange={(e) => setEventFilter(e.target.value)}
-                style={styles.select}
-              >
-                <option value="all">Tutti gli eventi</option>
-                {availableEvents.map((event) => (
-                  <option key={event} value={event}>
-                    {event}
-                  </option>
-                ))}
-              </select>
-
-              <button onClick={resetFilters} style={styles.secondaryButton}>
-                Reset filtri
-              </button>
-            </div>
+        <div style={styles.filterPanel}>
+          <div>
+            <h2 style={styles.filterTitle}>Filtri dashboard</h2>
+            <p style={styles.filterHint}>
+              Usa questi filtri per leggere lead, eventi funnel e interesse Premium.
+            </p>
           </div>
 
-          {overview && (
-            <>
-              <div style={styles.kpiGrid}>
-                <KpiCard
-                  label="Lead filtrati"
-                  value={filteredStats.totalLeads}
-                  hint={`Totale reale: ${overview.totals.total_leads}`}
-                />
+          <div style={styles.filterGrid}>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cerca email, cert, topic, evento..."
+              style={styles.input}
+            />
 
-                <KpiCard
-                  label="Assessment completati"
-                  value={filteredStats.assessmentCompleted}
-                  hint={`Totale reale: ${overview.totals.assessment_leads}`}
-                />
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+              style={styles.select}
+            >
+              <option value="today">Oggi</option>
+              <option value="7d">Ultimi 7 giorni</option>
+              <option value="30d">Ultimi 30 giorni</option>
+              <option value="all">Tutto</option>
+            </select>
 
-                <KpiCard
-                  label="Lead magnet"
-                  value={filteredStats.leadMagnets}
-                  hint={`Totale reale: ${overview.totals.lead_magnet_leads}`}
-                />
+            <select
+              value={langFilter}
+              onChange={(e) => setLangFilter(e.target.value)}
+              style={styles.select}
+            >
+              <option value="all">Tutte le lingue</option>
+              <option value="it">IT</option>
+              <option value="en">EN</option>
+              <option value="es">ES</option>
+              <option value="fr">FR</option>
+            </select>
 
-                <KpiCard
-                  label="Premium click"
-                  value={filteredStats.premiumClicks}
-                  hint={`Totale reale: ${
-                    funnelSummary?.events.find((e) => e.event === "premium_clicked")?.total ?? 0
-                  }`}
-                />
+            <select
+              value={certFilter}
+              onChange={(e) => setCertFilter(e.target.value)}
+              style={styles.select}
+            >
+              <option value="all">Tutte le certificazioni</option>
+              {availableCerts.map((cert) => (
+                <option key={cert} value={cert}>
+                  {cert}
+                </option>
+              ))}
+            </select>
 
-                <KpiCard
-                  label="Result viewed"
-                  value={filteredStats.resultViewed}
-                  hint={`Totale reale: ${
-                    funnelSummary?.events.find((e) => e.event === "result_viewed")?.total ?? 0
-                  }`}
-                />
+            <select
+              value={modeFilter}
+              onChange={(e) => setModeFilter(e.target.value as ModeFilter)}
+              style={styles.select}
+            >
+              <option value="all">Tutti i lead</option>
+              <option value="assessment">Assessment</option>
+              <option value="lead_magnet">Lead magnet</option>
+            </select>
 
-                <KpiCard
-                  label="Assessment started"
-                  value={filteredStats.assessmentStarted}
-                  hint={`Totale reale: ${
-                    funnelSummary?.events.find((e) => e.event === "assessment_started")?.total ?? 0
-                  }`}
-                />
+            <select
+              value={eventFilter}
+              onChange={(e) => setEventFilter(e.target.value)}
+              style={styles.select}
+            >
+              <option value="all">Tutti gli eventi</option>
+              {availableEvents.map((event) => (
+                <option key={event} value={event}>
+                  {event}
+                </option>
+              ))}
+            </select>
 
-                <KpiCard
-                  label="Lead caldi"
-                  value={filteredStats.hotLeads}
-                  hint="Score alto, eventi o click Premium"
-                />
+            <button onClick={resetFilters} style={styles.secondaryButton}>
+              Reset filtri
+            </button>
+          </div>
+        </div>
 
-                <KpiCard
-                  label="Premium anonimi"
-                  value={filteredStats.anonymousPremiumClicks}
-                  hint="Click Premium senza email"
-                />
+        {overview && (
+          <>
+            <div style={styles.kpiGrid}>
+              <KpiCard
+                label="Lead filtrati"
+                value={filteredStats.totalLeads}
+                hint={`Totale reale: ${overview.totals.total_leads}`}
+              />
 
-                <KpiCard
-                  label="📱 PWA Prompt"
-                  value={pwaStats.promptShown}
-                  hint="Banner installazione mostrato"
-                />
+              <KpiCard
+                label="Assessment completati"
+                value={filteredStats.assessmentCompleted}
+                hint={`Totale reale: ${overview.totals.assessment_leads}`}
+              />
 
-                <KpiCard
-                  label="📱 PWA Click"
-                  value={pwaStats.clicked}
-                  hint="Click sul bottone Installa"
-                />
+              <KpiCard
+                label="Lead magnet"
+                value={filteredStats.leadMagnets}
+                hint={`Totale reale: ${overview.totals.lead_magnet_leads}`}
+              />
 
-                <KpiCard
-                  label="📱 PWA Install"
-                  value={pwaStats.installed}
-                  hint={`Conversione: ${pwaStats.conversion}%`}
-                />
+              <KpiCard
+                label="Premium click"
+                value={filteredStats.premiumClicks}
+                hint={`Totale reale: ${
+                  funnelSummary?.events.find((e) => e.event === "premium_clicked")
+                    ?.total ?? 0
+                }`}
+              />
 
-                <KpiCard
-                  label="📱 PWA Open"
-                  value={pwaStats.opened}
-                  hint="Aperture da app installata"
-/>
-              </div>
+              <KpiCard
+                label="Result viewed"
+                value={filteredStats.resultViewed}
+                hint={`Totale reale: ${
+                  funnelSummary?.events.find((e) => e.event === "result_viewed")
+                    ?.total ?? 0
+                }`}
+              />
 
-              <div style={styles.insightGrid}>
+              <KpiCard
+                label="Assessment started"
+                value={filteredStats.assessmentStarted}
+                hint={`Totale reale: ${
+                  funnelSummary?.events.find((e) => e.event === "assessment_started")
+                    ?.total ?? 0
+                }`}
+              />
+
+              <KpiCard
+                label="Lead caldi"
+                value={filteredStats.hotLeads}
+                hint="Score alto, eventi o click Premium"
+              />
+
+              <KpiCard
+                label="Premium anonimi"
+                value={filteredStats.anonymousPremiumClicks}
+                hint="Click Premium senza email"
+              />
+
+              <KpiCard
+                label="Gate 20 visto"
+                value={paywallStats.gateShown}
+                hint="wrong_explanation_gate_shown"
+              />
+
+              <KpiCard
+                label="CTA Paywall cliccato"
+                value={paywallStats.ctaClicked}
+                hint={`Conversione gate → click: ${paywallStats.conversion}%`}
+              />
+
+              <KpiCard
+                label="Utenti al limite 20"
+                value={paywallStats.usersAtLimit}
+                hint={`${paywallStats.usersAtLimitFree} free · ${paywallStats.usersAtLimitPremium} premium`}
+              />
+            </div>
+
+            <div style={styles.insightGrid}>
+              {filteredTopCerts.length > 0 && (
                 <RankingCard
                   title="Top certificazioni filtrate"
                   items={filteredTopCerts}
                   keyName="name"
                 />
+              )}
 
+              {filteredTopTopics.length > 0 && (
                 <RankingCard
                   title="Top topic filtrati"
                   items={filteredTopTopics}
                   keyName="name"
                 />
+              )}
 
-                <RankingCard
-                  title="Eventi funnel filtrati"
-                  items={filteredEventCounts}
-                  keyName="name"
-                />
+              <RankingCard
+                title="Eventi funnel filtrati"
+                items={filteredEventCounts}
+                keyName="name"
+              />
 
-                <div style={styles.insightCard}>
-                  <h3 style={styles.cardTitle}>Lettura veloce</h3>
-                  <p style={styles.note}>
-                    Se i click Premium sono alti ma i lead caldi restano bassi, significa che
-                    l’interesse c’è, ma spesso non è ancora collegato a una email. In quel caso
-                    conviene spingere email capture prima o subito dopo il click Premium.
-                  </p>
-                </div>
+              <div style={styles.insightCard}>
+                <h3 style={styles.cardTitle}>Lettura veloce</h3>
+                <p style={styles.note}>
+                  Se i click Premium sono alti ma i lead caldi restano bassi,
+                  significa che l’interesse c’è, ma spesso non è ancora collegato
+                  a una email. In quel caso conviene spingere email capture prima
+                  o subito dopo il click Premium.
+                </p>
               </div>
-            </>
-          )}
+            </div>
 
-          <div style={styles.actionBar}>
-            <button onClick={exportLeadsCsv} style={styles.exportButton}>
-              Esporta lead CSV
-            </button>
+            <div style={styles.compactCard}>
+              <div>
+                <h3 style={styles.cardTitle}>📱 PWA</h3>
+                <p style={styles.sectionHint}>
+                  Statistiche installazione Progressive Web App.
+                </p>
+              </div>
 
-            <button onClick={exportEventsCsv} style={styles.exportButton}>
-              Esporta eventi CSV
-            </button>
-          </div>
+              <div style={styles.compactStatsGrid}>
+                <MiniStat label="Prompt" value={pwaStats.promptShown} />
+                <MiniStat label="Click" value={pwaStats.clicked} />
+                <MiniStat label="Install" value={pwaStats.installed} />
+                <MiniStat label="Open" value={pwaStats.opened} />
+                <MiniStat label="Conv." value={`${pwaStats.conversion}%`} />
+              </div>
+            </div>
+          </>
+        )}
+
+        <div style={styles.actionBar}>
+          <button onClick={exportLeadsCsv} style={styles.exportButton}>
+            Esporta lead CSV
+          </button>
+
+          <button onClick={exportEventsCsv} style={styles.exportButton}>
+            Esporta eventi CSV
+          </button>
+        </div>
 
           <div style={styles.tableCard}>
             <div style={styles.tableHeader}>
@@ -833,7 +905,20 @@ function KpiCard({
     </div>
   );
 }
-
+function MiniStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div style={styles.miniStat}>
+      <div style={styles.miniStatLabel}>{label}</div>
+      <div style={styles.miniStatValue}>{value}</div>
+    </div>
+  );
+} 
 function RankingCard({
   title,
   items,
@@ -1400,4 +1485,40 @@ const styles: Record<string, CSSProperties> = {
     margin: "60px auto",
     padding: 24,
   },
+
+  compactCard: {
+  border: "1px solid #e2e8f0",
+  borderRadius: 18,
+  padding: 18,
+  background: "#fff",
+  boxShadow: "0 10px 25px rgba(15, 23, 42, 0.04)",
+  marginBottom: 24,
+},
+
+compactStatsGrid: {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))",
+  gap: 10,
+  marginTop: 14,
+},
+
+miniStat: {
+  border: "1px solid #e2e8f0",
+  borderRadius: 14,
+  padding: 12,
+  background: "#f8fafc",
+},
+
+miniStatLabel: {
+  fontSize: 12,
+  color: "#64748b",
+  fontWeight: 800,
+},
+
+miniStatValue: {
+  fontSize: 22,
+  fontWeight: 950,
+  marginTop: 4,
+  color: "#0f172a",
+},
 };
