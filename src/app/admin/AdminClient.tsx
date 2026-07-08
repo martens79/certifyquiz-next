@@ -61,7 +61,7 @@ type PaywallUser = {
   premium: number | null;
   premium_status: string | null;
   free_wrong_explanations_used: number;
-  created_at: string;
+  free_wrong_explanations_limit: number;
 };
 
 type Paywall20 = {
