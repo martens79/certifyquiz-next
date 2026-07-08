@@ -1751,6 +1751,8 @@ return (
       // Gate mini — mostra solo su risposte sbagliate quando finito il credito
       return (
         <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
+          <GateShownTracker questionId={q.id} lang={lang} mode={effectiveMode} />
+          
           <b>{label('explain', lang)}</b>{' '}
           <span className="opacity-60">{explainPreview}…</span>
           <div className="mt-3 rounded-xl border border-white/20 bg-black/20 p-3">
@@ -1980,6 +1982,30 @@ function WrongExplanationTracker({
   return null;
 }
 
+function GateShownTracker({
+  questionId,
+  lang,
+  mode,
+}: {
+  questionId: number | string;
+  lang: string;
+  mode: string;
+}) {
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+
+    trackQuizEvent("wrong_explanation_gate_shown", {
+      lang,
+      mode,
+      question_id: Number(questionId),
+    });
+  }, [questionId, lang, mode]);
+
+  return null;
+}
 /* ===== helpers ===== */
 
 function arraysEqual(a: Array<any>, b: Array<any>) {
