@@ -101,7 +101,7 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Quiz illimitati", free: "✅", premium: "✅" },
-      { label: "Spiegazioni errori", free: "20 gratuite", premium: "✅ Illimitate" },
+      { label: "Spiegazioni errori", free: "10 gratuite", premium: "✅ Illimitate" },
       { label: "Modalità esame reale", free: "❌", premium: "✅" },
       { label: "Ripasso errori", free: "❌", premium: "✅" },
       { label: "Tutte le certificazioni", free: "✅", premium: "✅" },
@@ -153,7 +153,7 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Quizzes ilimitados", free: "✅", premium: "✅" },
-      { label: "Explicaciones de errores", free: "20 gratuitas", premium: "✅ Ilimitadas" },
+      { label: "Explicaciones de errores", free: "10 gratuitas", premium: "✅ Ilimitadas" },
       { label: "Modo examen real", free: "❌", premium: "✅" },
       { label: "Repaso de errores", free: "❌", premium: "✅" },
       { label: "Todas las certificaciones", free: "✅", premium: "✅" },
@@ -205,7 +205,7 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Unlimited quizzes", free: "✅", premium: "✅" },
-      { label: "Wrong answer explanations", free: "20 free", premium: "✅ Unlimited" },
+      { label: "Wrong answer explanations", free: "10 free", premium: "✅ Unlimited" },
       { label: "Real exam mode", free: "❌", premium: "✅" },
       { label: "Error review", free: "❌", premium: "✅" },
       { label: "All certifications", free: "✅", premium: "✅" },
@@ -257,7 +257,7 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Quiz illimités", free: "✅", premium: "✅" },
-      { label: "Explications des erreurs", free: "20 gratuites", premium: "✅ Illimitées" },
+      { label: "Explications des erreurs", free: "10 gratuites", premium: "✅ Illimitées" },
       { label: "Mode examen réel", free: "❌", premium: "✅" },
       { label: "Révision des erreurs", free: "❌", premium: "✅" },
       { label: "Toutes les certifications", free: "✅", premium: "✅" },

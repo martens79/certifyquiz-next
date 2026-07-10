@@ -71,8 +71,18 @@ const nextConfig: NextConfig = {
       { source: "/hub/security", destination: "/roadmap-cybersecurity", permanent: true },
       { source: "/hub/oracle", destination: "/certifications/oracle-database-sql", permanent: true },
       { source: "/hub/google-career", destination: "/certifications/google-cloud", permanent: true },
-      { source: "/hub/:path*", destination: "/certifications", permanent: true },
 
+      // IBM hub — slug corretto è "ibm"
+      { source: "/hub/ibm-security", destination: "/hub/ibm", permanent: true },
+      { source: "/it/hub/ibm-security", destination: "/it/hub/ibm", permanent: true },
+      { source: "/fr/hub/ibm-security", destination: "/fr/hub/ibm", permanent: true },
+      { source: "/es/hub/ibm-security", destination: "/es/hub/ibm", permanent: true },
+
+      // Hub legacy — catch-all generico (deve stare DOPO le regole specifiche sopra)
+      { source: "/hub/:path*", destination: "/certifications", permanent: true },
+      { source: "/it/hub/:path*", destination: "/it/certificazioni", permanent: true },
+      { source: "/fr/hub/:path*", destination: "/fr/certifications", permanent: true },
+      { source: "/es/hub/:path*", destination: "/es/certificaciones", permanent: true },
       // Legal pages
       { source: "/it/terms-conditions", destination: "/it/termini", permanent: true },
       { source: "/en/terms-conditions", destination: "/terms-conditions", permanent: true },
@@ -196,6 +206,54 @@ const nextConfig: NextConfig = {
 
 { source: "/es/certificaciones/cisco-ccst-security", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
 { source: "/es/certificaciones/cisco-ccst-security/:path*", destination: "/es/certificaciones/cisco-ccst-cybersecurity/:path*", permanent: true },
+
+// ══════════════════════════════════════════════════════════════════
+// Vecchi topic CCST Cybersecurity (pre-riscrittura, stile CEH) → pagina certificazione
+// ══════════════════════════════════════════════════════════════════
+
+// IT
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/raccolta-informazioni-e-footprinting", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/tecniche-di-scansione-di-rete-e-porte", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/enumerazione-di-servizi-e-utenti", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/identificazione-delle-vulnerabilita", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/accesso-e-mantenimento-sui-sistemi", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/tipi-e-comportamenti-dei-malware", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/intercettazione-e-dirottamento-sessioni", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/tecniche-di-ingegneria-sociale", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/it/certificazioni/cisco-ccst-cybersecurity/attacchi-alle-applicazioni-web", destination: "/it/certificazioni/cisco-ccst-cybersecurity", permanent: true },
+
+// EN
+{ source: "/certifications/cisco-ccst-cybersecurity/information-gathering-and-footprinting", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/network-and-port-scanning-techniques", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/service-and-user-enumeration", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/vulnerability-identification", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/access-and-maintenance-on-systems", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/types-and-behaviors-of-malware", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/session-interception-and-hijacking", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/social-engineering-techniques", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/certifications/cisco-ccst-cybersecurity/web-application-attacks", destination: "/certifications/cisco-ccst-cybersecurity", permanent: true },
+
+// FR
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/collecte-dinformations-et-footprinting", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/techniques-de-scan-de-reseau-et-de-port", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/enumeration-de-services-et-dutilisateurs", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/identification-des-vulnerabilites", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/acces-et-maintenance-sur-les-systemes", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/types-et-comportements-des-malwares", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/interception-et-detournement-de-sessions", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/techniques-dingenierie-sociale", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/fr/certifications/cisco-ccst-cybersecurity/attaques-sur-les-applications-web", destination: "/fr/certifications/cisco-ccst-cybersecurity", permanent: true },
+
+// ES
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/recopilacion-de-informacion-y-footprinting", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/tecnicas-de-escaneo-de-red-y-puertos", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/enumeracion-de-servicios-y-usuarios", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/identificacion-de-vulnerabilidades", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/acceso-y-mantenimiento-en-sistemas", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/tipos-y-comportamientos-de-malware", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/intercepcion-y-secuestro-de-sesiones", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/tecnicas-de-ingenieria-social", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
+{ source: "/es/certificaciones/cisco-ccst-cybersecurity/ataques-a-aplicaciones-web", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
 
       // CompTIA Network+
       { source: "/certifications/comptia-network-plus", destination: "/certifications/network-plus", permanent: true },
@@ -499,7 +557,7 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/comptia-network/:path*", destination: "/fr/certifications/network-plus/:path*", permanent: true },
       
      
-      { source: "/fr/certifications/google-cloud", destination: "/fr/certifications/google-cloud-digital-leader", permanent: true },
+      { source: "/fr/certifications/google-cloud/:path*", destination: "/fr/certifications/google-cloud-digital-leader/:path*", permanent: true },
       { source: "/fr/certifications/vmware-certified-professional", destination: "/fr/certifications/vmware-vcp", permanent: true },
       { source: "/fr/certifications/vmware-certified-professional/:path*", destination: "/fr/certifications/vmware-vcp/:path*", permanent: true },
 
@@ -629,11 +687,25 @@ const nextConfig: NextConfig = {
 { source: "/es/certificaciones/google-cloud/modernizacion-de-infraestructura-y-aplicaciones", destination: "/es/certificaciones/google-cloud/compute-modernizacion-aplicaciones", permanent: true },
 //csharp vecchi link 
 
+// Python legacy slug → python-developer
+{ source: "/certifications/python/:path*", destination: "/certifications/python-developer/:path*", permanent: true },
+{ source: "/it/certificazioni/python/:path*", destination: "/it/certificazioni/python-developer/:path*", permanent: true },
+{ source: "/fr/certifications/python/:path*", destination: "/fr/certifications/python-developer/:path*", permanent: true },
+{ source: "/es/certificaciones/python/:path*", destination: "/es/certificaciones/python-developer/:path*", permanent: true },
+
+// Microsoft C# legacy slug → csharp
+{ source: "/certifications/microsoft-csharp/:path*", destination: "/certifications/csharp/:path*", permanent: true },
+{ source: "/it/certificazioni/microsoft-csharp/:path*", destination: "/it/certificazioni/csharp/:path*", permanent: true },
+{ source: "/fr/certifications/microsoft-csharp/:path*", destination: "/fr/certifications/csharp/:path*", permanent: true },
+{ source: "/es/certificaciones/microsoft-csharp/:path*", destination: "/es/certificaciones/csharp/:path*", permanent: true },
+
 {
   source: "/it/certificazioni/microsoft-csharp",
   destination: "/it/certificazioni/csharp",
   permanent: true,
 },
+
+{ source: "/fr/certifications/ai-foundations/fondamentaux-intelligence-artificielle", destination: "/fr/certifications/ai-foundations/fondamentaux-ia", permanent: true },
 {
   source: "/fr/certifications/microsoft-csharp",
   destination: "/fr/certifications/csharp",

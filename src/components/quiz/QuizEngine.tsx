@@ -1763,12 +1763,12 @@ return (
         <div>
           <p className="font-semibold text-white">
             {lang === "it"
-              ? "Hai utilizzato tutte le 20 spiegazioni gratuite."
+              ? "Hai utilizzato tutte le 10 spiegazioni gratuite."
               : lang === "fr"
-              ? "Vous avez utilisé vos 20 explications gratuites."
+              ? "Vous avez utilisé vos 10 explications gratuites."
               : lang === "es"
-              ? "Has utilizado tus 20 explicaciones gratuitas."
-              : "You have used all 20 free explanations."}
+              ? "Has utilizado tus 10 explicaciones gratuitas."
+              : "You have used all 10 free explanations."}
           </p>
 
           <p className="mt-1 text-xs text-white/75">
@@ -2083,4 +2083,3 @@ function trackQuizEvent(
     ...params,
   });
 }
-
