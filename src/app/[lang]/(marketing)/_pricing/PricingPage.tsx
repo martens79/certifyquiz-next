@@ -57,6 +57,7 @@ const labels = {
     it: [
       { title: "Quiz illimitati", desc: "Nessun limite. Studia quanto vuoi, quando vuoi." },
       { title: "Spiegazioni errori illimitate", desc: "Capisce ogni errore con spiegazioni dettagliate senza limiti. Nel piano gratuito sono incluse le prime 20." },
+      { title: "Tutor AI avanzato", desc: "durante i quiz, spiegazioni personalizzate sulla tua domanda e sul tuo errore specifico" },
       { title: "Modalità esame reale", desc: "Simulazioni con timer e punteggio finale, come l'esame ufficiale." },
       { title: "Ripasso errori", desc: "Concentrati sui punti deboli invece di ricominciare ogni volta da zero." },
       { title: "Tutte le certificazioni", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft e molto altro." },
@@ -65,6 +66,7 @@ const labels = {
     en: [
       { title: "Unlimited quizzes", desc: "No limits. Study as much as you want, whenever you want." },
       { title: "Unlimited wrong answer explanations", desc: "Understand every mistake with detailed explanations, no limits. The free plan includes the first 20." },
+      { title: "Advanced AI tutor", desc: "during quizzes, personalized explanations on your specific question and mistake" },
       { title: "Real exam mode", desc: "Timed simulations with a final score, just like the official exam." },
       { title: "Error review", desc: "Focus on weak spots instead of starting over every time." },
       { title: "All certifications", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft and much more." },
@@ -73,6 +75,7 @@ const labels = {
     fr: [
       { title: "Quiz illimités", desc: "Aucune limite. Étudiez autant que vous voulez, quand vous voulez." },
       { title: "Explications des erreurs illimitées", desc: "Comprenez chaque erreur avec des explications détaillées, sans limite. Le plan gratuit inclut les 20 premières." },
+      { title: "Tuteur IA avancé", desc: "pendant les quiz, des explications personnalisées sur votre question et votre erreur spécifiques" },
       { title: "Mode examen réel", desc: "Simulations chronométrées avec score final, comme l'examen officiel." },
       { title: "Révision des erreurs", desc: "Concentrez-vous sur vos points faibles plutôt que de recommencer à zéro." },
       { title: "Toutes les certifications", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft et bien plus." },
@@ -81,6 +84,7 @@ const labels = {
     es: [
       { title: "Quizzes ilimitados", desc: "Sin límites. Estudia cuanto quieras, cuando quieras." },
       { title: "Explicaciones de errores ilimitadas", desc: "Entiende cada error con explicaciones detalladas, sin límites. El plan gratuito incluye las primeras 20." },
+      { title: "Tutor IA avanzado", desc: "durante los quiz, explicaciones personalizadas sobre tu pregunta y tu error específicos" },
       { title: "Modo examen real", desc: "Simulaciones con temporizador y puntuación final, como el examen oficial." },
       { title: "Repaso de errores", desc: "Céntrate en tus puntos débiles en lugar de empezar desde cero cada vez." },
       { title: "Todas las certificaciones", desc: "AWS, Cisco, CompTIA, ISC2, Microsoft y mucho más." },

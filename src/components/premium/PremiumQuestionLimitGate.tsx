@@ -200,10 +200,10 @@ const COPY = {
     es: "Qué incluye Premium",
   },
   features: {
-    it: ["Spiegazioni illimitate su ogni errore", "Modalità esame reale con timer", "Ripasso errori mirati", "Quiz illimitati su tutte le certificazioni"],
-    en: ["Unlimited explanations on every mistake", "Real exam mode with timer", "Targeted error review", "Unlimited quizzes on all certifications"],
-    fr: ["Explications illimitées sur chaque erreur", "Mode examen réel avec minuterie", "Révision ciblée des erreurs", "Quiz illimités sur toutes les certifications"],
-    es: ["Explicaciones ilimitadas sobre cada error", "Modo examen real con temporizador", "Repaso específico de errores", "Quizzes ilimitados en todas las certificaciones"],
+    it: ["Il tutor AI che ti segue domanda per domanda, con spiegazioni personalizzate sui tuoi errori", "Spiegazioni illimitate su ogni errore", "Modalità esame reale con timer", "Ripasso errori mirati", "Quiz illimitati su tutte le certificazioni"],
+    en: ["The AI tutor that follows you question by question, with personalized explanations on your mistakes", "Unlimited explanations on every mistake", "Real exam mode with timer", "Targeted error review", "Unlimited quizzes on all certifications"],
+    fr: ["Le tuteur IA qui vous suit question par question, avec des explications personnalisées sur vos erreurs", "Explications illimitées sur chaque erreur", "Mode examen réel avec minuterie", "Révision ciblée des erreurs", "Quiz illimités sur toutes les certifications"],
+    es: ["El tutor IA que te acompaña pregunta por pregunta, con explicaciones personalizadas sobre tus errores", "Explicaciones ilimitadas sobre cada error", "Modo examen real con temporizador", "Repaso específico de errores", "Quizzes ilimitados en todas las certificaciones"],
   },
   checkoutError: {
     it: "Errore durante l'apertura del checkout. Riprova.",
