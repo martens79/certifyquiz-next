@@ -295,21 +295,6 @@ if (pathname.startsWith("/es/certificaciones/microsoft-ai-fundamentals/")) {
   return redirect301(req, "/es/certificaciones/microsoft-ai");
 }
 
-// CCST Cybersecurity vecchi topic IT non più validi
-if (pathname.startsWith("/it/certificazioni/cisco-ccst-cybersecurity/")) {
-  return redirect301(req, "/it/certificazioni/cisco-ccst-cybersecurity");
-}
-
-if (
-  pathname.startsWith(
-    "/it/certificazioni/cisco-ccst-cybersecurity/"
-  )
-) {
-  return redirect301(
-    req,
-    "/it/certificazioni/cisco-ccst-cybersecurity"
-  );
-}
 // Networking roadmap legacy
 
 if (pathname === "/roadmaps/networking") {
