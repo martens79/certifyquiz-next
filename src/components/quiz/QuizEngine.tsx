@@ -18,6 +18,7 @@ import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 
 import RegistrationGate from '@/components/quiz/RegistrationGate';
 import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
+import { useQuizTutor } from '@/components/quiz/QuizTutorContext';
 
 
 // ------------------------------------------------------------------
@@ -448,6 +449,35 @@ const openFeedback = () => {
     context?.topicTitle,
     context?.kind,
   ]);
+
+  /* -------------------- QUIZ TUTOR CONTEXT SYNC -------------------- */
+  const { setQuizTutorData } = useQuizTutor();
+
+  useEffect(() => {
+    const current = questions[idx];
+    if (!current) return;
+
+    const chosenId = marked[current.id];
+    const chosenAnswer =
+      chosenId != null
+        ? current.answers.find((a) => String(a.id) === String(chosenId))
+        : undefined;
+    const correct = current.answers.find((a) => !!a.isCorrect);
+
+    setQuizTutorData({
+      question: current.question ?? null,
+      userAnswer: chosenAnswer?.text ?? null,
+      correctAnswer: correct?.text ?? null,
+      topicTitle: context?.topicTitle ?? null,
+      certificationName: context?.certificationName ?? null,
+    });
+  }, [idx, marked, questions, context?.topicTitle, context?.certificationName, setQuizTutorData]);
+
+  // Reset del context tutor quando il quiz viene smontato
+  useEffect(() => {
+    return () => setQuizTutorData(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* -------------------- MODE SWITCH (controlled-friendly) -------------------- */
   const setModeSafe = (m: Mode) => {

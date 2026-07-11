@@ -4,6 +4,14 @@ type Lang = "it" | "en" | "fr" | "es";
 
 const SITE_ORIGIN = "https://www.certifyquiz.com";
 
+function stripTrailingApi(u: string) {
+  return u.replace(/\/api\/?$/, "");
+}
+
+const API_BASE = stripTrailingApi(
+  process.env.API_BASE_URL || "https://api.certifyquiz.com/api"
+);
+
 const LANGUAGE_LABELS: Record<Lang, string> = {
   it: "italiano",
   en: "English",
@@ -182,6 +190,64 @@ function fallbackReply(lang: Lang): string {
   return replies[lang];
 }
 
+// Non fidarsi mai di un flag "isPremium" mandato dal client: verifica sempre
+// lo stato reale chiamando il backend con lo stesso token del client.
+async function checkPremium(authHeader: string | null): Promise<boolean> {
+  if (!authHeader) return false;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { authorization: authHeader },
+      cache: "no-store",
+    });
+
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    return !!data?.user?.premium;
+  } catch (err) {
+    console.error("Chatbot premium check failed:", err);
+    return false;
+  }
+}
+
+type QuizContextInput = {
+  question?: unknown;
+  userAnswer?: unknown;
+  correctAnswer?: unknown;
+  topicTitle?: unknown;
+  certificationName?: unknown;
+};
+
+function sanitizeQuizField(value: unknown, maxLen = 800): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, maxLen) : null;
+}
+
+function buildQuizContextBlock(raw: QuizContextInput): string | null {
+  const question = sanitizeQuizField(raw.question);
+  if (!question) return null;
+
+  const userAnswer = sanitizeQuizField(raw.userAnswer);
+  const correctAnswer = sanitizeQuizField(raw.correctAnswer);
+  const topicTitle = sanitizeQuizField(raw.topicTitle, 200);
+  const certificationName = sanitizeQuizField(raw.certificationName, 200);
+
+  return `
+Current quiz question context (Premium tutor mode):
+- Certification: ${certificationName || "unknown"}
+- Topic: ${topicTitle || "unknown"}
+- Question: ${question}
+- User's answer: ${userAnswer || "(not answered yet)"}
+- Correct answer: ${correctAnswer || "unknown"}
+
+Use this context to explain specifically why the user's answer is right or
+wrong, referencing the actual question above. Do not just repeat the question;
+focus on a clear, targeted explanation of the concept it tests.
+`;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -223,6 +289,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const isPremium = await checkPremium(req.headers.get("authorization"));
+    const quizBlock = isPremium ? buildQuizContextBlock(body?.quizContext ?? {}) : null;
+
+    const systemPromptText = quizBlock
+      ? `${buildSystemPrompt(lang, pagePath)}\n\n${quizBlock}`
+      : buildSystemPrompt(lang, pagePath);
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
       {
@@ -230,7 +303,7 @@ export async function POST(req: NextRequest) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           system_instruction: {
-            parts: [{ text: buildSystemPrompt(lang, pagePath) }],
+            parts: [{ text: systemPromptText }],
           },
           contents: safeMessages,
           generationConfig: {

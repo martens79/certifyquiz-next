@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { getAccessToken } from "@/lib/apiClient";
+import { useQuizTutor } from "@/components/quiz/QuizTutorContext";
 
 interface Message {
   role: "user" | "assistant";
@@ -155,6 +157,7 @@ export default function ChatbotWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [lang, setLang] = useState<Lang>("en");
+  const { quizTutorData } = useQuizTutor();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -204,14 +207,20 @@ export default function ChatbotWidget() {
     setIsLoading(true);
 
     try {
+      const token = getAccessToken();
+
       const res = await fetch("/api/chatbot", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           messages: updatedMessages,
           lang,
           pagePath: typeof window !== "undefined" ? window.location.pathname : "",
           pageUrl: typeof window !== "undefined" ? window.location.href : "",
+          ...(quizTutorData ? { quizContext: quizTutorData } : {}),
         }),
       });
 
