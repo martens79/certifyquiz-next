@@ -22,6 +22,7 @@ const TRANSLATIONS: Record<
     quickActionsTitle: string;
     suggestions: string[];
     error: string;
+    dailyLimitReached: string;
     poweredBy: string;
     openLabel: string;
     closeLabel: string;
@@ -42,6 +43,7 @@ const TRANSLATIONS: Record<
       "CertifyQuiz è gratis?",
     ],
     error: "Mi dispiace, si è verificato un errore. Riprova tra qualche istante.",
+    dailyLimitReached: "Hai raggiunto il limite giornaliero di messaggi. Riprova domani.",
     poweredBy: "Powered by Gemini Flash",
     openLabel: "Apri assistente CertifyQuiz",
     closeLabel: "Chiudi assistente CertifyQuiz",
@@ -61,6 +63,7 @@ const TRANSLATIONS: Record<
       "Is CertifyQuiz free?",
     ],
     error: "Sorry, an error occurred. Please try again in a moment.",
+    dailyLimitReached: "You've reached today's message limit. Please try again tomorrow.",
     poweredBy: "Powered by Gemini Flash",
     openLabel: "Open CertifyQuiz assistant",
     closeLabel: "Close CertifyQuiz assistant",
@@ -80,6 +83,7 @@ const TRANSLATIONS: Record<
       "CertifyQuiz est-il gratuit ?",
     ],
     error: "Désolé, une erreur s'est produite. Veuillez réessayer dans un moment.",
+    dailyLimitReached: "Vous avez atteint la limite quotidienne de messages. Réessayez demain.",
     poweredBy: "Propulsé par Gemini Flash",
     openLabel: "Ouvrir l'assistant CertifyQuiz",
     closeLabel: "Fermer l'assistant CertifyQuiz",
@@ -99,6 +103,7 @@ const TRANSLATIONS: Record<
       "¿CertifyQuiz es gratis?",
     ],
     error: "Lo siento, ocurrió un error. Por favor inténtalo de nuevo en un momento.",
+    dailyLimitReached: "Has alcanzado el límite diario de mensajes. Vuelve a intentarlo mañana.",
     poweredBy: "Desarrollado por Gemini Flash",
     openLabel: "Abrir asistente CertifyQuiz",
     closeLabel: "Cerrar asistente CertifyQuiz",
@@ -224,7 +229,20 @@ export default function ChatbotWidget() {
         }),
       });
 
-      if (!res.ok) throw new Error("Chatbot response error");
+      if (!res.ok) {
+        let errorCode: string | null = null;
+        try {
+          const errData = await res.json();
+          errorCode = typeof errData?.error === "string" ? errData.error : null;
+        } catch {}
+
+        if (errorCode === "daily_limit_reached") {
+          setMessages((prev) => [...prev, { role: "assistant", content: t.dailyLimitReached }]);
+          return;
+        }
+
+        throw new Error("Chatbot response error");
+      }
 
       const data = await res.json();
 

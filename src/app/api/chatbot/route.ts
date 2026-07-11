@@ -248,6 +248,32 @@ focus on a clear, targeted explanation of the concept it tests.
 `;
 }
 
+// Ritorna { limited: true } se il backend segnala il limite giornaliero raggiunto.
+// Fail-open: se l'endpoint di usage non risponde o dà errore, NON blocchiamo la chat
+// (un'anti-abuse momentaneamente non disponibile non deve rompere il tutor).
+async function checkAndIncrementUsage(
+  authHeader: string | null,
+  clientIp: string | null
+): Promise<{ limited: boolean }> {
+  try {
+    const headers: Record<string, string> = {};
+    if (authHeader) headers.authorization = authHeader;
+    if (clientIp) headers["x-forwarded-for"] = clientIp;
+
+    const res = await fetch(`${API_BASE}/api/chatbot-usage/increment`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    });
+
+    if (res.status === 429) return { limited: true };
+    return { limited: false };
+  } catch (err) {
+    console.error("Chatbot usage check failed:", err);
+    return { limited: false };
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -289,7 +315,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const isPremium = await checkPremium(req.headers.get("authorization"));
+    const authHeader = req.headers.get("authorization");
+    const clientIp = req.headers.get("x-forwarded-for");
+
+    const usage = await checkAndIncrementUsage(authHeader, clientIp);
+    if (usage.limited) {
+      return NextResponse.json({ error: "daily_limit_reached" }, { status: 429 });
+    }
+
+    const isPremium = await checkPremium(authHeader);
     const quizBlock = isPremium ? buildQuizContextBlock(body?.quizContext ?? {}) : null;
 
     const systemPromptText = quizBlock
