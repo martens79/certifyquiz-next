@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -243,8 +243,10 @@ export async function POST(req: NextRequest) {
     );
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("Gemini API error:", error);
+      const errorBody = await response.text();
+      console.error(
+        `Gemini API error: status=${response.status} ${response.statusText} body=${errorBody}`
+      );
 
       return NextResponse.json(
         { error: "AI service unavailable" },
