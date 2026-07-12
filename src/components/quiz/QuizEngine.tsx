@@ -292,6 +292,8 @@ const openFeedback = () => {
   const startedAtRef = useRef<number | null>(null);
   const assessmentStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
+  const premiumClickedRef = useRef(false);
+  const [premiumClicked, setPremiumClicked] = useState(false);
 
   /**
    * Storage separato per modalità:
@@ -1201,8 +1203,13 @@ const assessmentCopy =
    {!isPremiumUser && (
   <button
     type="button"
-    className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer"
+    disabled={premiumClicked}
+    className="mt-4 rounded-xl bg-emerald-500 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-600 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
     onClick={() => {
+  if (premiumClickedRef.current) return;
+  premiumClickedRef.current = true;
+  setPremiumClicked(true);
+
   // ✅ GA / analytics frontend
   trackQuizEvent('premium_cta_clicked', {
     lang,
