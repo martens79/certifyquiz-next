@@ -1800,22 +1800,22 @@ return (
         <div>
           <p className="font-semibold text-white">
             {lang === "it"
-              ? "Hai utilizzato tutte le 10 spiegazioni gratuite."
+              ? "Hai esaurito le 10 spiegazioni gratuite."
               : lang === "fr"
-              ? "Vous avez utilisé vos 10 explications gratuites."
+              ? "Vous avez épuisé vos 10 explications gratuites."
               : lang === "es"
-              ? "Has utilizado tus 10 explicaciones gratuitas."
-              : "You have used all 10 free explanations."}
+              ? "Has agotado tus 10 explicaciones gratuitas."
+              : "You've used all 10 free explanations."}
           </p>
 
           <p className="mt-1 text-xs text-white/75">
             {lang === "it"
-              ? "Puoi continuare ad allenarti con tutte le domande. Le spiegazioni dettagliate degli errori sono disponibili con Premium."
+              ? "Da qui in poi puoi continuare a sbagliare le stesse domande senza sapere perché. Le spiegazioni dettagliate e il Tutor AI sono disponibili solo con Premium."
               : lang === "fr"
-              ? "Vous pouvez continuer à vous entraîner avec toutes les questions. Les explications détaillées des erreurs sont disponibles avec Premium."
+              ? "À partir de maintenant, vous risquez de refaire les mêmes erreurs sans savoir pourquoi. Les explications détaillées et le Tutor IA sont réservés à Premium."
               : lang === "es"
-              ? "Puedes seguir practicando con todas las preguntas. Las explicaciones detalladas de los errores están disponibles con Premium."
-              : "You can continue practicing with all questions. Detailed explanations for incorrect answers are available with Premium."}
+              ? "A partir de ahora puedes seguir fallando las mismas preguntas sin saber por qué. Las explicaciones detalladas y el Tutor IA solo están disponibles con Premium."
+              : "From here on, you can keep missing the same questions without knowing why. Detailed explanations and the AI Tutor are only available with Premium."}
           </p>
         </div>
       </div>
@@ -1824,21 +1824,21 @@ return (
             <p className="font-semibold text-white text-xs">
               🔒{' '}
               {lang === 'it'
-                ? 'Hai usato tutte le spiegazioni gratuite.'
+                ? "Il Tutor AI ti spiega ogni errore all'istante"
                 : lang === 'fr'
-                ? 'Vous avez utilisé toutes vos explications gratuites.'
+                ? 'Le Tutor IA explique chaque erreur instantanément'
                 : lang === 'es'
-                ? 'Has usado todas tus explicaciones gratuitas.'
-               : "You've used all your free explanations."}
+                ? 'El Tutor IA explica cada error al instante'
+               : "The AI Tutor explains every mistake instantly"}
             </p>
             <p className="mt-1 text-xs text-white/70">
               {lang === 'it'
-                ? 'Con Premium capisci ogni errore e colmi le lacune prima dell\'esame.'
+                ? 'Chiedi "perché ho sbagliato?" e ricevi una spiegazione su misura, non un testo generico. Illimitato con Premium.'
                 : lang === 'fr'
-                ? 'Avec Premium, comprenez chaque erreur et comblez vos lacunes avant l\'examen.'
+                ? 'Demandez "pourquoi je me suis trompé ?" et recevez une explication sur mesure. Illimité avec Premium.'
                 : lang === 'es'
-                ? 'Con Premium entiende cada error y cubre tus lagunas antes del examen.'
-                : 'With Premium you understand every mistake and fix your gaps before the exam.'}
+                ? 'Pregunta "¿por qué me equivoqué?" y recibe una explicación a medida. Ilimitado con Premium.'
+                : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
             <Link
               href={pricingPath(lang)}
@@ -1853,12 +1853,12 @@ return (
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
             >
               {lang === 'it'
-                ? 'Inizia 7 giorni gratis'
+                ? 'Inizia 7 giorni gratis — poi €9.99/mese'
                 : lang === 'fr'
-                ? 'Commencer 7 jours gratuits'
+                ? 'Commencer 7 jours gratuits — puis 9,99 €/mois'
                 : lang === 'es'
-                ? 'Empezar 7 días gratis'
-                : 'Start 7-day free trial'}
+                ? 'Empezar 7 días gratis — luego 9,99 €/mes'
+                : 'Start 7-day free trial — then €9.99/month'}
             </Link>
           </div>
         </div>
