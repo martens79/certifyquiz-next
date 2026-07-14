@@ -113,6 +113,12 @@ const LBL = {
     fr: "Classement",
     es: "Clasificación",
   },
+  friends: {
+    it: "Amici",
+    en: "Friends",
+    fr: "Amis",
+    es: "Amigos",
+  },
   history: {
     it: "Storico simulazioni",
     en: "Exam history",
@@ -1250,13 +1256,19 @@ const avatarBorderClass =
         </div>
       )}
 
-      {/* 🏆 Leaderboard */}
+      {/* 🏆 Leaderboard / 👥 Amici */}
       <div className="flex gap-2">
         <Link
           href={`/${lang}/leaderboard`}
           className="inline-flex items-center gap-2 rounded-xl bg-amber-500/90 hover:bg-amber-500 px-3.5 py-2 text-white text-sm font-semibold shadow"
         >
           🏆 {getLabel(LBL.leaderboard, lang)}
+        </Link>
+        <Link
+          href={`/${lang}/friends`}
+          className="inline-flex items-center gap-2 rounded-xl bg-slate-700/90 hover:bg-slate-700 px-3.5 py-2 text-white text-sm font-semibold shadow"
+        >
+          👥 {getLabel(LBL.friends, lang)}
         </Link>
       </div>
     </div>
@@ -1330,8 +1342,13 @@ const avatarBorderClass =
 
       {/* Streak status */}
 {(() => {
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  // Lo streak backend è calcolato sul calendario civile Europe/Rome (v. quizRoutes.js),
+  // quindi il confronto qui deve usare lo stesso fuso, non l'UTC del browser.
+  const STREAK_TZ = "Europe/Rome";
+  const romeDateStr = (d: Date) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone: STREAK_TZ }).format(d);
+  const today = romeDateStr(new Date());
+  const yesterday = romeDateStr(new Date(Date.now() - 86400000));
   const last = streak.lastActivityDate?.slice(0, 10) ?? null;
   const atRisk = streak.current > 0 && last === yesterday;
   const safe = last === today;

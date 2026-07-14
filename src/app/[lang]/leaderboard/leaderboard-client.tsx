@@ -63,6 +63,63 @@ const LBL = {
     fr: "Retour au profil",
     es: "Volver al perfil",
   },
+  scopeGlobal: {
+    it: "Globale",
+    en: "Global",
+    fr: "Mondial",
+    es: "Global",
+  },
+  scopeTeam: {
+    it: "Team",
+    en: "Team",
+    fr: "Équipe",
+    es: "Equipo",
+  },
+  scopeFriends: {
+    it: "Amici",
+    en: "Friends",
+    fr: "Amis",
+    es: "Amigos",
+  },
+  allCerts: {
+    it: "Tutte le certificazioni",
+    en: "All certifications",
+    fr: "Toutes les certifications",
+    es: "Todas las certificaciones",
+  },
+  noOrg: {
+    it: "La classifica Team è riservata ai piani aziendali.",
+    en: "The Team leaderboard is available on Team plans.",
+    fr: "Le classement Équipe est réservé aux offres entreprise.",
+    es: "La clasificación de Equipo está reservada a los planes de empresa.",
+  },
+  discoverTeam: {
+    it: "Scopri il piano Team",
+    en: "Discover the Team plan",
+    fr: "Découvrir l'offre Équipe",
+    es: "Descubre el plan Equipo",
+  },
+  noFriendsYet: {
+    it: "Non hai ancora amici in classifica.",
+    en: "You don't have any friends on the leaderboard yet.",
+    fr: "Vous n'avez pas encore d'amis dans le classement.",
+    es: "Aún no tienes amigos en la clasificación.",
+  },
+  manageFriends: {
+    it: "Gestisci amici →",
+    en: "Manage friends →",
+    fr: "Gérer les amis →",
+    es: "Gestionar amigos →",
+  },
+};
+
+type Scope = "global" | "team" | "friends";
+
+const BUSINESS_PATH: Record<Locale, string> = {
+  it: "/it/aziende",
+  en: "/business",
+  fr: "/fr/entreprises",
+  es: "/es/empresas",
 };
 
 // ─────────────────── tipi locali ───────────────────
@@ -94,6 +151,8 @@ type NormalizedRow = {
   streakBest: number;
 };
 
+type CertOption = { id: number; slug: string; name: string };
+
 // helper numerico
 const toNum = (v: unknown, dflt = 0): number => {
   if (typeof v === "string") {
@@ -117,15 +176,6 @@ async function tryJson<T>(path: string): Promise<T | null> {
   } catch {
     return null;
   }
-}
-
-// prova più endpoint
-async function tryJsonMulti<T>(paths: string[]): Promise<T | null> {
-  for (const p of paths) {
-    const v = await tryJson<T>(p);
-    if (v) return v;
-  }
-  return null;
 }
 
 // normalizza risposta arbitraria → array di LeaderboardRow
@@ -182,6 +232,10 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<number | null>(null);
   const [hasToken, setHasToken] = useState(false);
+  const [scope, setScope] = useState<Scope>("global");
+  const [certOptions, setCertOptions] = useState<CertOption[]>([]);
+  const [certFilter, setCertFilter] = useState<string>("");
+  const [noOrg, setNoOrg] = useState(false);
 
   // inizializza hasToken in modo safe
   useEffect(() => {
@@ -210,18 +264,51 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
     };
   }, [hasToken]);
 
-  // carica leaderboard
+  // carica elenco certificazioni per il filtro
   useEffect(() => {
     let alive = true;
     (async () => {
+      const list = await tryJson<any[]>("/certifications");
+      if (!alive || !Array.isArray(list)) return;
+      const nameKey = lang === "it" ? "name" : `name_${lang}`;
+      setCertOptions(
+        list.map((c) => ({
+          id: c.id,
+          slug: c.slug,
+          name: c[nameKey] || c.name || c.slug,
+        }))
+      );
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [lang]);
+
+  // carica leaderboard (scope + filtro certificazione)
+  useEffect(() => {
+    if (scope !== "global" && !hasToken) {
+      setScope("global");
+      return;
+    }
+
+    let alive = true;
+    (async () => {
       setLoading(true);
-      const raw = await tryJsonMulti<any>([
-        "/leaderboard",
-        "/user/leaderboard",
-        "/stats/leaderboard",
-        "/api/leaderboard",
-      ]);
+      setNoOrg(false);
+
+      const qs = new URLSearchParams();
+      qs.set("scope", scope);
+      if (certFilter) qs.set("certification_id", certFilter);
+
+      const raw = await tryJson<any>(`/leaderboard?${qs.toString()}`);
       if (!alive) return;
+
+      if (scope === "team" && raw?.error === "NO_ORG") {
+        setNoOrg(true);
+        setRows([]);
+        setLoading(false);
+        return;
+      }
 
       const normalized = normalizeRaw(raw)
         .map(normalizeRow)
@@ -243,7 +330,7 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [scope, certFilter, hasToken]);
 
   const tTitle = getLabel(LBL.title, lang);
   const tSubtitle = getLabel(LBL.subtitle, lang);
@@ -254,6 +341,21 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
   const tStreak = getLabel(LBL.streak, lang);
   const tNoData = getLabel(LBL.noData, lang);
   const tBackProfile = getLabel(LBL.backProfile, lang);
+  const tScopeGlobal = getLabel(LBL.scopeGlobal, lang);
+  const tScopeTeam = getLabel(LBL.scopeTeam, lang);
+  const tScopeFriends = getLabel(LBL.scopeFriends, lang);
+  const tAllCerts = getLabel(LBL.allCerts, lang);
+  const tNoOrg = getLabel(LBL.noOrg, lang);
+  const tDiscoverTeam = getLabel(LBL.discoverTeam, lang);
+  const tNoFriendsYet = getLabel(LBL.noFriendsYet, lang);
+  const tManageFriends = getLabel(LBL.manageFriends, lang);
+
+  const tabBtnClass = (active: boolean) =>
+    `rounded-full px-3 py-1.5 text-xs md:text-sm font-medium transition ${
+      active
+        ? "bg-slate-900 text-white"
+        : "border border-slate-300 text-slate-700 hover:bg-slate-50"
+    }`;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-8">
@@ -272,6 +374,59 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
         </Link>
       </div>
 
+      <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className={tabBtnClass(scope === "global")}
+            onClick={() => setScope("global")}
+          >
+            {tScopeGlobal}
+          </button>
+          {hasToken && (
+            <button
+              type="button"
+              className={tabBtnClass(scope === "team")}
+              onClick={() => setScope("team")}
+            >
+              {tScopeTeam}
+            </button>
+          )}
+          {hasToken && (
+            <button
+              type="button"
+              className={tabBtnClass(scope === "friends")}
+              onClick={() => setScope("friends")}
+            >
+              {tScopeFriends}
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {scope === "friends" && (
+            <Link
+              href={`/${lang}/friends`}
+              className="text-xs md:text-sm text-slate-600 hover:text-slate-900 underline"
+            >
+              {tManageFriends}
+            </Link>
+          )}
+          <select
+            value={certFilter}
+            onChange={(e) => setCertFilter(e.target.value)}
+            className="rounded-full border border-slate-300 px-3 py-1.5 text-xs md:text-sm text-slate-700"
+          >
+            <option value="">{tAllCerts}</option>
+            {certOptions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {loading ? (
         <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
           <div className="animate-pulse space-y-3">
@@ -283,9 +438,31 @@ const LeaderboardClient: FC<{ lang: Locale }> = ({ lang }) => {
             </div>
           </div>
         </div>
+      ) : scope === "team" && noOrg ? (
+        <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-6 text-sm text-slate-600">
+          <p>{tNoOrg}</p>
+          <Link
+            href={BUSINESS_PATH[lang]}
+            className="mt-3 inline-block rounded-full bg-slate-900 px-4 py-2 text-xs md:text-sm font-medium text-white hover:bg-slate-800"
+          >
+            {tDiscoverTeam}
+          </Link>
+        </div>
       ) : !rows.length ? (
         <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-6 text-sm text-slate-600">
-          {tNoData}
+          {scope === "friends" ? (
+            <>
+              <p>{tNoFriendsYet}</p>
+              <Link
+                href={`/${lang}/friends`}
+                className="mt-3 inline-block rounded-full bg-slate-900 px-4 py-2 text-xs md:text-sm font-medium text-white hover:bg-slate-800"
+              >
+                {tManageFriends}
+              </Link>
+            </>
+          ) : (
+            tNoData
+          )}
         </div>
       ) : (
         <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-2 sm:p-3">
