@@ -10,6 +10,7 @@ import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
+import { trackMetaPixel } from "@/lib/metaPixel";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -2067,6 +2068,7 @@ function GateShownTracker({
       mode,
       question_id: Number(questionId),
     });
+    trackMetaPixel("Lead");
   }, [questionId, lang, mode]);
 
   return null;

@@ -1,31 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
-
-const KEY = "cq_cookie_consent"; // {accepted:boolean, ts:number}
+import { useConsent } from "@/components/analytics/ConsentProvider";
 
 export default function CookieBanner() {
-  const [show, setShow] = useState(false);
+  const { status, ready, setConsent } = useConsent();
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(KEY);
-      setShow(!saved);
-    } catch {
-      setShow(true);
-    }
-  }, []);
-
-  if (!show) return null;
-
-  function setConsent(accepted: boolean) {
-    try {
-      localStorage.setItem(KEY, JSON.stringify({ accepted, ts: Date.now() }));
-    } catch {}
-    setShow(false);
-  }
+  if (!ready || status !== "unknown") return null;
 
   return (
-    <div className="fixed bottom-4 inset-x-4 rounded-2xl shadow p-4 bg-white border flex items-center justify-between gap-3 z-50">
+    <div className="fixed bottom-4 left-4 right-4 md:right-24 rounded-2xl shadow p-4 bg-white border flex items-center justify-between gap-3 z-[10000]">
       <p className="text-sm">
         Usiamo cookie tecnici e opzionali per migliorare l’esperienza.
       </p>

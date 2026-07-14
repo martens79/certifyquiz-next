@@ -3,6 +3,8 @@ import "./globals.css";
 import { Inter, Manrope } from "next/font/google";
 import { cookies } from "next/headers";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
+import { ConsentProvider } from "@/components/analytics/ConsentProvider";
 import RootShellClient from "@/components/layout/RootShellClient";
 import { AuthProvider } from "@/components/auth/AuthProvider"; // ✅ aggiungi
 import ChatbotWidget from "@/components/ChatbotWidget";
@@ -47,15 +49,18 @@ export default async function RootLayout({
   return (
     <html lang={lang} suppressHydrationWarning>
       <body className={`${inter.variable} ${manrope.variable}`}>
-        <GoogleAnalytics />
+        <ConsentProvider>
+          <GoogleAnalytics />
+          <MetaPixel />
 
-        {/* ✅ Provider client globale: abilita isAdmin/isPremiumUser/premiumLocked ovunque */}
-        <AuthProvider>
-          <QuizTutorProvider>
-            <RootShellClient>{children}</RootShellClient>
-            <ChatbotWidget />
-          </QuizTutorProvider>
-        </AuthProvider>
+          {/* ✅ Provider client globale: abilita isAdmin/isPremiumUser/premiumLocked ovunque */}
+          <AuthProvider>
+            <QuizTutorProvider>
+              <RootShellClient>{children}</RootShellClient>
+              <ChatbotWidget />
+            </QuizTutorProvider>
+          </AuthProvider>
+        </ConsentProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { authFetch } from "@/lib/auth";
+import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 
 type Lang = "it" | "es" | "en" | "fr";
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
@@ -500,6 +501,11 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
         body: JSON.stringify({ event: "premium_clicked", lang, plan: selectedPlan }),
       }).catch(console.error);
 
+      trackMetaPixel("InitiateCheckout", {
+        value: PREMIUM_PLAN_VALUES[selectedPlan],
+        currency: "EUR",
+      });
+
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": lang },
@@ -508,6 +514,14 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
       const data: { url?: string; error?: string } = await res.json();
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
+
+      try {
+        sessionStorage.setItem(
+          "cq_pending_purchase",
+          JSON.stringify({ value: PREMIUM_PLAN_VALUES[selectedPlan], currency: "EUR", plan: selectedPlan })
+        );
+      } catch {}
+
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);
