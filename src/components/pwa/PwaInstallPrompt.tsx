@@ -94,6 +94,9 @@ export default function PwaInstallPrompt() {
     if (!shouldShowPrompt()) return;
 
     const handler = (event: Event) => {
+      // Ignora firing multipli dello stesso listener nella stessa sessione
+      if (promptHandledThisSession) return;
+
       event.preventDefault();
 
       // Blocca qualsiasi re-trigger per il resto della sessione
