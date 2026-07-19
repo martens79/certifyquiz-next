@@ -285,28 +285,28 @@ cloud: [
 "data-analytics": [
   {
     name: "Data Analytics Foundations",
-    link: "/quiz/data-analytics-foundations",
+    link: certPath(lang, "data-analytics-foundations"),
   },
   {
     name: "Microsoft PL-300 Power BI Data Analyst",
-    link: "/quiz/pl-300-power-bi-data-analyst",
+    link: certPath(lang, "pl-300-power-bi-data-analyst"),
   },
   {
     name: "Microsoft DP-900 Azure Data Fundamentals",
-    link: "/quiz/dp-900-azure-data-fundamentals",
+    link: certPath(lang, "dp-900-azure-data-fundamentals"),
   },
-  
+
 ],
 foundations: [
-  { name: "AI Foundations", link: "/quiz/ai-foundations" },
-  { name: "Networking Foundations", link: "/quiz/networking-foundations" },
-  { name: "Cloud Foundations", link: "/quiz/cloud-foundations" },
-  { name: "Cybersecurity Foundations", link: "/quiz/cybersecurity-foundations" },
-  { name: "Database Foundations", link: "/quiz/database-foundations" },
-  { name: "Programming Foundations", link: "/quiz/programming-foundations" },
-  { name: "Virtualization Foundations", link: "/quiz/virtualization-foundations" },
-  { name: "Project Management Foundations", link: "/quiz/project-management-foundations" },
-  { name: "Data Analytics Foundations", link: "/quiz/data-analytics-foundations" },
+  { name: "AI Foundations", link: certPath(lang, "ai-foundations") },
+  { name: "Networking Foundations", link: certPath(lang, "networking-foundations") },
+  { name: "Cloud Foundations", link: certPath(lang, "cloud-foundations") },
+  { name: "Cybersecurity Foundations", link: certPath(lang, "cybersecurity-foundations") },
+  { name: "Database Foundations", link: certPath(lang, "database-foundations") },
+  { name: "Programming Foundations", link: certPath(lang, "programming-foundations") },
+  { name: "Virtualization Foundations", link: certPath(lang, "virtualization-foundations") },
+  { name: "Project Management Foundations", link: certPath(lang, "project-management-foundations") },
+  { name: "Data Analytics Foundations", link: certPath(lang, "data-analytics-foundations") },
 ],
 };
 
