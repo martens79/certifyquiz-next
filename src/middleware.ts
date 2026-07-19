@@ -275,6 +275,18 @@ if (pathname === "/hub/ibm-security") {
   return redirect301(req, "/categories/security");
 }
 
+if (pathname === "/it/hub/ibm-security") {
+  return redirect301(req, "/it/hub/ibm");
+}
+
+if (pathname === "/fr/hub/ibm-security") {
+  return redirect301(req, "/fr/hub/ibm");
+}
+
+if (pathname === "/es/hub/ibm-security") {
+  return redirect301(req, "/es/hub/ibm");
+}
+
 // Legacy hub Security
 if (pathname === "/hub/security") {
   return redirect301(req, "/categories/security");
@@ -339,10 +351,15 @@ if (pathname.startsWith("/es/quiz/aws-cloud-practitioner/")) {
     ""
   );
 
-  return redirect301(
-    req,
-    `/es/certificaciones/aws-cloud-practitioner/${topicSlug}`
-  );
+  // "mixed" e "mock-exam" sono pagine quiz reali (non slug di topic SEO):
+  // non vanno redirette altrimenti finiscono su uno slug inesistente.
+  const QUIZ_MODE_SEGMENTS = new Set(["mixed", "mock-exam"]);
+  if (!QUIZ_MODE_SEGMENTS.has(topicSlug)) {
+    return redirect301(
+      req,
+      `/es/certificaciones/aws-cloud-practitioner/${topicSlug}`
+    );
+  }
 }
 
 // Cookie Policy legacy -> cookie pages
