@@ -120,8 +120,10 @@ export function middleware(req: NextRequest) {
   // /privacy/undefined/virtualizzazione
   // /quiz-suggeriti/undefined/database
   // /&/undefined/cloud
-if (pathname.startsWith("/&/undefined/")) {
-  const category = pathname.split("/").pop();
+// Nota: alcuni crawler richiedono l'URL con "&" percent-encoded ("%26"),
+// quindi va controllato sia il pathname grezzo che quello decodificato.
+if (pathname.startsWith("/&/undefined/") || pathname.startsWith("/%26/undefined/")) {
+  const category = decodeURIComponent(pathname).split("/").pop();
 
   const map: Record<string, string> = {
     sicurezza: "/it/categorie/sicurezza",
