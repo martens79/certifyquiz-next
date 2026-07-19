@@ -256,34 +256,12 @@ const nextConfig: NextConfig = {
 { source: "/es/certificaciones/cisco-ccst-cybersecurity/tecnicas-de-ingenieria-social", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
 { source: "/es/certificaciones/cisco-ccst-cybersecurity/ataques-a-aplicaciones-web", destination: "/es/certificaciones/cisco-ccst-cybersecurity", permanent: true },
 
-      // CompTIA Network+
-      { source: "/certifications/comptia-network-plus", destination: "/certifications/network-plus", permanent: true },
-      { source: "/certifications/comptia-network-plus/:path*", destination: "/certifications/network-plus/:path*", permanent: true },
-      { source: "/it/certificazioni/comptia-network-plus", destination: "/it/certificazioni/network-plus", permanent: true },
-      { source: "/it/certificazioni/comptia-network-plus/:path*", destination: "/it/certificazioni/network-plus/:path*", permanent: true },
-      { source: "/fr/certifications/comptia-network-plus", destination: "/fr/certifications/network-plus", permanent: true },
-      { source: "/fr/certifications/comptia-network", destination: "/fr/certifications/network-plus", permanent: true },
-      { source: "/es/certificaciones/comptia-network-plus", destination: "/es/certificaciones/network-plus", permanent: true },
-{
-  source: "/certifications/network-plus",
-  destination: "/certifications/comptia-network-plus",
-  permanent: true,
-},
-{
-  source: "/it/certificazioni/network-plus",
-  destination: "/it/certificazioni/comptia-network-plus",
-  permanent: true,
-},
-{
-  source: "/fr/certifications/network-plus",
-  destination: "/fr/certifications/comptia-network-plus",
-  permanent: true,
-},
-{
-  source: "/es/certificaciones/network-plus",
-  destination: "/es/certificaciones/comptia-network-plus",
-  permanent: true,
-},
+      // CompTIA Network+ — slug canonico (DB/registry): comptia-network-plus
+      { source: "/certifications/network-plus", destination: "/certifications/comptia-network-plus", permanent: true },
+      { source: "/it/certificazioni/network-plus", destination: "/it/certificazioni/comptia-network-plus", permanent: true },
+      { source: "/fr/certifications/network-plus", destination: "/fr/certifications/comptia-network-plus", permanent: true },
+      { source: "/fr/certifications/comptia-network", destination: "/fr/certifications/comptia-network-plus", permanent: true },
+      { source: "/es/certificaciones/network-plus", destination: "/es/certificaciones/comptia-network-plus", permanent: true },
       // Python
       { source: "/certifications/python", destination: "/certifications/python-developer", permanent: true },
       { source: "/it/certificazioni/python", destination: "/it/certificazioni/python-developer", permanent: true },
@@ -332,39 +310,11 @@ const nextConfig: NextConfig = {
       { source: "/fr/certifications/ibm-cloud-v5", destination: "/fr", permanent: false },
       { source: "/fr/certifications/jncie", destination: "/fr", permanent: false },
 
-      // "foundations" → categoria (permanent: false, aggiorna quando crei le pagine)
-      { source: "/it/certificazioni/cloud-foundations", destination: "/it/categorie/cloud", permanent: false },
-      { source: "/it/certificazioni/networking-foundations", destination: "/it/categorie/reti", permanent: false },
-      { source: "/it/certificazioni/database-foundations", destination: "/it/categorie/database", permanent: false },
-      { source: "/it/certificazioni/programming-foundations", destination: "/it/categorie/programmazione", permanent: false },
-      { source: "/it/certificazioni/data-analytics-foundations", destination: "/it/categorie/analisi-dei-dati", permanent: false },
-      { source: "/it/certificazioni/cybersecurity-foundations", destination: "/it/categorie/sicurezza", permanent: false },
-      { source: "/it/certificazioni/virtualization-foundations", destination: "/it/categorie/virtualizzazione", permanent: false },
-      { source: "/it/certificazioni/project-management-foundations", destination: "/it/categorie/management", permanent: false },
-      { source: "/certifications/cloud-foundations", destination: "/categories/cloud", permanent: false },
-      { source: "/certifications/networking-foundations", destination: "/categories/networking", permanent: false },
-      { source: "/certifications/database-foundations", destination: "/categories/databases", permanent: false },
-      { source: "/certifications/programming-foundations", destination: "/categories/programming", permanent: false },
-      { source: "/certifications/data-analytics-foundations", destination: "/categories/data-analytics", permanent: false },
-      { source: "/certifications/cybersecurity-foundations", destination: "/categories/security", permanent: false },
-      { source: "/certifications/virtualization-foundations", destination: "/categories/virtualization", permanent: false },
-      { source: "/certifications/project-management-foundations", destination: "/categories/management", permanent: false },
-      { source: "/fr/certifications/cloud-foundations", destination: "/fr/categories/cloud", permanent: false },
-      { source: "/fr/certifications/networking-foundations", destination: "/fr/categories/reseaux", permanent: false },
-      { source: "/fr/certifications/database-foundations", destination: "/fr/categories/bases-de-donnees", permanent: false },
-      { source: "/fr/certifications/programming-foundations", destination: "/fr/categories/programmation", permanent: false },
-      { source: "/fr/certifications/data-analytics-foundations", destination: "/fr/categories/analyse-des-donnees", permanent: false },
-      { source: "/fr/certifications/cybersecurity-foundations", destination: "/fr/categories/securite", permanent: false },
-      { source: "/fr/certifications/virtualization-foundations", destination: "/fr/categories/virtualisation", permanent: false },
-      { source: "/fr/certifications/project-management-foundations", destination: "/fr/categories/management", permanent: false },
-      { source: "/es/certificaciones/cloud-foundations", destination: "/es/categorias/cloud", permanent: false },
-      { source: "/es/certificaciones/networking-foundations", destination: "/es/categorias/redes", permanent: false },
-      { source: "/es/certificaciones/database-foundations", destination: "/es/categorias/bases-de-datos", permanent: false },
-      { source: "/es/certificaciones/programming-foundations", destination: "/es/categorias/programacion", permanent: false },
-      { source: "/es/certificaciones/data-analytics-foundations", destination: "/es/categorias/analisis-de-datos", permanent: false },
-      { source: "/es/certificaciones/cybersecurity-foundations", destination: "/es/categorias/seguridad", permanent: false },
-      { source: "/es/certificaciones/virtualization-foundations", destination: "/es/categorias/virtualizacion", permanent: false },
-      { source: "/es/certificaciones/project-management-foundations", destination: "/es/categorias/gestion-management", permanent: false },
+      // NB: le regole "foundations" → categoria sono state rimosse: le pagine
+      // certificazione per cloud/networking/database/programming/data-analytics/
+      // cybersecurity/virtualization/project-management-foundations esistono
+      // davvero ora (src/certifications/data/*-foundations.ts), quindi non
+      // vanno più dirottate sulla categoria generica.
 
       // Legacy quiz paths per categoria
       { source: "/quiz/sicurezza/mixed", destination: "/it/quiz/security-plus/mixed", permanent: true },

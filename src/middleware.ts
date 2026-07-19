@@ -432,21 +432,25 @@ if (
     return redirect301(req, "/es/certificaciones/python-developer");
   }
 
-  // CompTIA Network+ -> Network+
-  if (pathname === "/certifications/comptia-network-plus") {
-    return redirect301(req, "/certifications/network-plus");
+  // CompTIA Network+ — slug canonico (DB/registry): comptia-network-plus
+  if (pathname === "/certifications/network-plus") {
+    return redirect301(req, "/certifications/comptia-network-plus");
   }
 
-  if (pathname === "/it/certificazioni/comptia-network-plus") {
-    return redirect301(req, "/it/certificazioni/network-plus");
+  if (pathname === "/it/certificazioni/network-plus") {
+    return redirect301(req, "/it/certificazioni/comptia-network-plus");
   }
 
-  if (pathname === "/fr/certifications/comptia-network-plus") {
-    return redirect301(req, "/fr/certifications/network-plus");
+  if (pathname === "/fr/certifications/network-plus") {
+    return redirect301(req, "/fr/certifications/comptia-network-plus");
   }
 
-  if (pathname === "/es/certificaciones/comptia-network-plus") {
-    return redirect301(req, "/es/certificaciones/network-plus");
+  if (pathname === "/fr/certifications/comptia-network") {
+    return redirect301(req, "/fr/certifications/comptia-network-plus");
+  }
+
+  if (pathname === "/es/certificaciones/network-plus") {
+    return redirect301(req, "/es/certificaciones/comptia-network-plus");
   }
     // ---------------------------------------------------------------------
   // STATIC LEGACY PAGES
