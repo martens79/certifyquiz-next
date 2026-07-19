@@ -7,9 +7,15 @@ type Props = { params: Promise<{ slug: string }> };
 
 const normalizeCertSlug = (slug: string) => {
   if (slug === "network-plus") return "comptia-network-plus";
+  if (slug === "comptia-network") return "comptia-network-plus";
   if (slug === "tensorflow") return "google-tensorflow";
   if (slug === "tensorflow-developer") return "google-tensorflow";
   if (slug === "csharp") return "microsoft-csharp";
+  if (slug === "microsoft-c") return "microsoft-csharp";
+  if (slug === "comptia-a") return "comptia-a-plus";
+  if (slug === "comptia-cloud") return "comptia-cloud-plus";
+  if (slug === "comptia-security") return "security-plus";
+  if (slug === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
   return slug;
 };
 

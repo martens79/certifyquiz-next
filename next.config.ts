@@ -66,6 +66,7 @@ const nextConfig: NextConfig = {
       { source: "/es/programmazione", destination: "/es/categorias/programmazione", permanent: true },
       { source: "/es/virtualizzazione", destination: "/es/categorias/virtualizzazione", permanent: true },
       { source: "/es/intelligenza-artificiale", destination: "/es/categorias/intelligenza-artificiale", permanent: true },
+      { source: "/es/inizia", destination: "/es", permanent: true },
 
       // Hub legacy
       { source: "/hub/security", destination: "/roadmap-cybersecurity", permanent: true },
