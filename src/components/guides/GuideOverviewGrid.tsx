@@ -26,6 +26,7 @@ const LABELS = {
     statusPurchased: "Acquistata",
     statusLocked: (price: string) => price,
     statusFree: "Anteprima gratuita",
+    italianOnly: "",
   },
   en: {
     badge: "CertifyQuiz Guides",
@@ -41,6 +42,7 @@ const LABELS = {
     statusPurchased: "Purchased",
     statusLocked: (price: string) => price,
     statusFree: "Free preview",
+    italianOnly: "🇮🇹 Currently in Italian only",
   },
   fr: {
     badge: "CertifyQuiz Guides",
@@ -56,6 +58,7 @@ const LABELS = {
     statusPurchased: "Acheté",
     statusLocked: (price: string) => price,
     statusFree: "Aperçu gratuit",
+    italianOnly: "🇮🇹 Disponible uniquement en italien pour l'instant",
   },
   es: {
     badge: "CertifyQuiz Guías",
@@ -71,6 +74,7 @@ const LABELS = {
     statusPurchased: "Comprada",
     statusLocked: (price: string) => price,
     statusFree: "Vista previa gratuita",
+    italianOnly: "🇮🇹 Por ahora solo en italiano",
   },
 } as const;
 
@@ -193,6 +197,12 @@ export default function GuideOverviewGrid({ lang, items }: Props) {
               <h2 className="mb-2 line-clamp-2 text-lg font-extrabold text-slate-950">
                 {item.title}
               </h2>
+
+              {lang !== "it" && !item.lang_available && t.italianOnly ? (
+                <p className="mb-2 inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  {t.italianOnly}
+                </p>
+              ) : null}
 
               {item.page_count ? (
                 <p className="mb-3 text-xs font-semibold text-slate-500">

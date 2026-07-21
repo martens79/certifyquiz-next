@@ -85,6 +85,7 @@ export type GuideOverviewItem = {
   id: number;
   slug: string;
   title: string;
+  lang_available: boolean;
   price: number;
   page_count: number | null;
   certification_slug: string;
@@ -108,6 +109,7 @@ export type GuideDetail = {
   id: number;
   slug: string;
   title: string;
+  lang_available: boolean;
   price: number;
   page_count: number | null;
   certification_slug: string;

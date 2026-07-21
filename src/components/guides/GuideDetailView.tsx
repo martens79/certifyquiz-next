@@ -8,10 +8,33 @@ type Props = {
 };
 
 const LABELS = {
-  it: { badge: "CertifyQuiz Guide", previewTitle: "Anteprima", pages: "pagine" },
-  en: { badge: "CertifyQuiz Guides", previewTitle: "Preview", pages: "pages" },
-  fr: { badge: "CertifyQuiz Guides", previewTitle: "Aperçu", pages: "pages" },
-  es: { badge: "CertifyQuiz Guías", previewTitle: "Vista previa", pages: "páginas" },
+  it: {
+    badge: "CertifyQuiz Guide",
+    previewTitle: "Anteprima",
+    pages: "pagine",
+    italianOnly: "",
+  },
+  en: {
+    badge: "CertifyQuiz Guides",
+    previewTitle: "Preview",
+    pages: "pages",
+    italianOnly:
+      "🇮🇹 This guide is currently available in Italian only. Translations are coming soon.",
+  },
+  fr: {
+    badge: "CertifyQuiz Guides",
+    previewTitle: "Aperçu",
+    pages: "pages",
+    italianOnly:
+      "🇮🇹 Ce guide est pour l'instant disponible uniquement en italien. Les traductions arrivent bientôt.",
+  },
+  es: {
+    badge: "CertifyQuiz Guías",
+    previewTitle: "Vista previa",
+    pages: "páginas",
+    italianOnly:
+      "🇮🇹 Esta guía está disponible por ahora solo en italiano. Las traducciones llegarán pronto.",
+  },
 } as const;
 
 export default function GuideDetailView({ lang, guide }: Props) {
@@ -31,6 +54,12 @@ export default function GuideDetailView({ lang, guide }: Props) {
         {guide.certification_name}
         {guide.page_count ? ` · ${guide.page_count} ${t.pages}` : ""}
       </p>
+
+      {lang !== "it" && !guide.lang_available && t.italianOnly ? (
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+          {t.italianOnly}
+        </div>
+      ) : null}
 
       <div className="mt-8 grid gap-8 md:grid-cols-[2fr_1fr]">
         <section>
