@@ -289,6 +289,26 @@ export const pricingPath = (lang: Locale): string => {
 };
 
 /* ------------------------------------------------------------------ */
+/* GUIDE PDF (SEO)                                                      */
+/* ------------------------------------------------------------------ */
+
+export const GUIDES_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "guide",
+  en: "guide",
+  fr: "guides",
+  es: "guias",
+};
+
+export const guidesPath = (lang: Locale): string => {
+  const base = seoPrefix(lang); // EN -> "" ; altri -> "/it|/fr|/es"
+  const slug = GUIDES_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+
+export const guidePath = (lang: Locale, slug: string): string =>
+  `${guidesPath(lang)}/${slug}`;
+
+/* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
 
