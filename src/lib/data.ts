@@ -80,6 +80,57 @@ export async function getScenariosList(
 
   return Array.isArray(json.items) ? json.items : [];
 }
+
+export type GuideOverviewItem = {
+  id: number;
+  slug: string;
+  title: string;
+  price: number;
+  page_count: number | null;
+  certification_slug: string;
+  certification_name: string;
+  access: "premium" | "purchased" | "locked";
+};
+
+export async function getGuidesList(lang: Locale): Promise<GuideOverviewItem[]> {
+  const res = await fetch(`${API}/guides?lang=${lang}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return [];
+
+  const json = await res.json();
+
+  return Array.isArray(json.items) ? json.items : [];
+}
+
+export type GuideDetail = {
+  id: number;
+  slug: string;
+  title: string;
+  price: number;
+  page_count: number | null;
+  certification_slug: string;
+  certification_name: string;
+  hasAccess: boolean;
+  accessReason: string;
+};
+
+export async function getGuideBySlug(
+  slug: string,
+  lang: Locale
+): Promise<GuideDetail | null> {
+  const res = await fetch(
+    `${API}/guides/${encodeURIComponent(slug)}?lang=${lang}`,
+    { next: { revalidate: 3600 } }
+  );
+
+  if (!res.ok) return null;
+
+  const json = await res.json();
+
+  return json.guide ?? null;
+}
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 /** Normalizza slug "alias/vecchi" → slug canonici del frontend */
 const normalizeSlug = (raw: unknown) => {

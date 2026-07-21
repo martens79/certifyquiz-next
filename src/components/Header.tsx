@@ -16,7 +16,7 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
 import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
-import { certificationsPath, pricingPath, quizHomePath } from "@/lib/paths";
+import { certificationsPath, pricingPath, quizHomePath, guidesPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
@@ -35,6 +35,7 @@ const UI: Record<
     suggested: string;
     reviews: string;
     scenarios: string;
+    guides: string;
     profile: string;
     login: string;
     logout: string;
@@ -60,6 +61,7 @@ const UI: Record<
     logout: "Esci",
     reviews: "Ripassi",
     scenarios: "Scenari",
+    guides: "Guide",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -81,6 +83,7 @@ const UI: Record<
     logout: "Log out",
     reviews: "Reviews",
     scenarios: "Scenarios",
+    guides: "Guides",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -102,6 +105,7 @@ const UI: Record<
     logout: "Déconnexion",
     reviews: "Révisions",
     scenarios: "Scénarios",
+    guides: "Guides",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -123,6 +127,7 @@ const UI: Record<
     logout: "Cerrar sesión",
     reviews: "Repasos",
     scenarios: "Escenarios",
+    guides: "Guías",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -273,6 +278,25 @@ function IconSuggested() {
     </svg>
   );
 }
+function IconGuides() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.75 4.5h7.5l3 3v11.25a1.5 1.5 0 0 1-1.5 1.5h-9a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5z"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 4.5v3h3M9 13h6M9 16.5h6" />
+    </svg>
+  );
+}
 function IconSearch() {
   return (
     <svg
@@ -384,6 +408,8 @@ export default function Header({ lang }: Props) {
     ? "/es/escenarios"
     : "/it/scenari";
 
+    const guidesHref = guidesPath(lang);
+
   const aboutHref =
     lang === "it"
       ? "/it/chi-sono"
@@ -438,6 +464,8 @@ export default function Header({ lang }: Props) {
 
 { href: scenariosHref, label: `⭐ ${ui.scenarios}`, icon: <IconReviews /> },
 
+{ href: guidesHref, label: ui.guides, icon: <IconGuides /> },
+
 { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
 }, [
@@ -450,6 +478,7 @@ export default function Header({ lang }: Props) {
   quizHomeHref,
   reviewsHref,
   scenariosHref,
+  guidesHref,
 
   suggestedHref,
   t.blog,
@@ -464,6 +493,7 @@ export default function Header({ lang }: Props) {
   ui.quiz,
   ui.suggested,
   ui.scenarios,
+  ui.guides,
   ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
