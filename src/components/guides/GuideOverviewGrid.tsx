@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import { guidePath } from "@/lib/paths";
 import type { GuideOverviewItem } from "@/lib/data";
+import { apiFetch } from "@/lib/auth";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type Props = {
   lang: Locale;
@@ -123,6 +125,39 @@ function StatusBadge({
 export default function GuideOverviewGrid({ lang, items }: Props) {
   const t = LABELS[lang];
   const [query, setQuery] = useState("");
+  const { loading: authLoading, user } = useAuth();
+  const [liveAccess, setLiveAccess] = useState<Record<
+    number,
+    GuideOverviewItem["access"]
+  > | null>(null);
+
+  // items sopra sono da un fetch server-side non autenticato (cache 1h) —
+  // qui rifacciamo la stessa chiamata lato client con il token, per mostrare
+  // lo stato reale (Premium/Acquistata) invece del prezzo generico a tutti.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshAccess() {
+      if (!user) return;
+      try {
+        const res = await apiFetch(`/guides?lang=${lang}`);
+        const json = await res.json().catch(() => null);
+        if (!cancelled && Array.isArray(json?.items)) {
+          const map: Record<number, GuideOverviewItem["access"]> = {};
+          for (const it of json.items) map[it.id] = it.access;
+          setLiveAccess(map);
+        }
+      } catch {
+        // silenzioso: si resta sul fallback SSR (prezzo)
+      }
+    }
+
+    if (!authLoading) refreshAccess();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, user, lang]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -191,7 +226,11 @@ export default function GuideOverviewGrid({ lang, items }: Props) {
                 <p className="text-xs font-semibold text-slate-500">
                   {item.certification_name}
                 </p>
-                <StatusBadge lang={lang} access={item.access} price={item.price} />
+                <StatusBadge
+                  lang={lang}
+                  access={liveAccess?.[item.id] ?? item.access}
+                  price={item.price}
+                />
               </div>
 
               <h2 className="mb-2 line-clamp-2 text-lg font-extrabold text-slate-950">
