@@ -39,9 +39,25 @@ const COPY = {
   },
 } as const;
 
+const ACCESS_BADGE_COPY = {
+  premium: {
+    it: "✅ Incluso nel tuo Premium",
+    en: "✅ Included in your Premium",
+    fr: "✅ Inclus dans votre Premium",
+    es: "✅ Incluido en tu Premium",
+  },
+  purchased: {
+    it: "✅ Guida acquistata",
+    en: "✅ Guide purchased",
+    fr: "✅ Guide acheté",
+    es: "✅ Guía comprada",
+  },
+} as const;
+
 export default function GuideDownloadPanel({ lang, slug, price }: Props) {
   const { loading: authLoading, user } = useAuth();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
+  const [accessReason, setAccessReason] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +73,10 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
       try {
         const res = await apiFetch(`/guides/${encodeURIComponent(slug)}?lang=${lang}`);
         const json = await res.json().catch(() => null);
-        if (!cancelled) setHasAccess(!!json?.guide?.hasAccess);
+        if (!cancelled) {
+          setHasAccess(!!json?.guide?.hasAccess);
+          setAccessReason(json?.guide?.accessReason ?? null);
+        }
       } catch {
         if (!cancelled) setHasAccess(false);
       }
@@ -104,8 +123,19 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
     return <GuideAccessGate lang={lang} slug={slug} price={price} />;
   }
 
+  const badgeCopy =
+    accessReason === "premium" || accessReason === "purchased"
+      ? ACCESS_BADGE_COPY[accessReason][lang]
+      : null;
+
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+      {badgeCopy && (
+        <p className="mb-3 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+          {badgeCopy}
+        </p>
+      )}
+
       {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
 
       <button
