@@ -2,6 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
@@ -13,6 +14,7 @@ type FormDataState = {
   email: string;
   password: string;
   confirmPassword: string;
+  website: string;
 };
 
 type RegisterSuccess = {
@@ -58,10 +60,20 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    website: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+
+  function resetTurnstile() {
+    setTurnstileToken('');
+    setTurnstileKey((current) => current + 1);
+  }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setError('');
@@ -81,8 +93,62 @@ export default function RegisterPage() {
       setError(String(getLabel({ it: 'Le password non corrispondono', en: 'Passwords do not match' }, lang)));
       return;
     }
-    if (formData.password.length < 6) {
-      setError(String(getLabel({ it: 'Password troppo corta (min 6)', en: 'Password too short (min 6)' }, lang)));
+    if (formData.password.length < 8 || !/[A-Za-z]/.test(formData.password) || !/\d/.test(formData.password)) {
+      setError(
+        String(
+          getLabel(
+            {
+              it: 'La password deve contenere almeno 8 caratteri, una lettera e un numero.',
+              en: 'The password must contain at least 8 characters, one letter, and one number.',
+            },
+            lang
+          )
+        )
+      );
+      return;
+    }
+
+    // Honeypot anti-bot: gli utenti reali non vedono né compilano questo campo.
+    if (formData.website.trim()) {
+      setError(
+        String(
+          getLabel(
+            {
+              it: 'Verifica anti-bot non riuscita.',
+              en: 'Anti-bot verification failed.',
+            },
+            lang
+          )
+        )
+      );
+      resetTurnstile();
+      return;
+    }
+
+    if (!turnstileSiteKey) {
+      setError(
+        String(
+          getLabel(
+            {
+              it: 'Protezione anti-bot non configurata. Riprova più tardi.',
+              en: 'Anti-bot protection is not configured. Please try again later.',
+            },
+            lang
+          )
+        )
+      );
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError(
+        String(
+          getLabel(
+            { it: 'Completa la verifica anti-bot.', en: 'Complete the anti-bot verification.' },
+            lang
+          )
+        )
+      );
       return;
     }
 
@@ -98,6 +164,8 @@ export default function RegisterPage() {
           username: formData.username.trim(),
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
+          website: formData.website,
+          turnstileToken,
         }),
       });
 
@@ -158,6 +226,7 @@ export default function RegisterPage() {
       );
       setTimeout(() => router.replace(`/${lang}/login`), 1200);
     } catch (err: unknown) {
+      resetTurnstile();
       setError(
         getErrorMessage(
           err,
@@ -177,6 +246,23 @@ export default function RegisterPage() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          {/* Honeypot anti-bot: non rimuovere. */}
+          <div
+            aria-hidden="true"
+            className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
+          >
+            <label htmlFor="website">Website</label>
+            <input
+              id="website"
+              type="text"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              autoComplete="off"
+              tabIndex={-1}
+            />
+          </div>
+
           <div>
             <label htmlFor="username" className="block font-medium text-gray-700 mb-1">
               📛 {String(getLabel({ it: 'Nome utente', en: 'Username' }, lang))}
@@ -239,14 +325,44 @@ export default function RegisterPage() {
             />
           </div>
 
+          <div className="flex min-h-[65px] items-center justify-center">
+            {turnstileSiteKey ? (
+              <Turnstile
+                key={turnstileKey}
+                siteKey={turnstileSiteKey}
+                options={{ theme: 'light', size: 'flexible' }}
+                onSuccess={(token) => {
+                  setTurnstileToken(token);
+                  setError('');
+                }}
+                onExpire={resetTurnstile}
+                onError={resetTurnstile}
+              />
+            ) : (
+              <p className="text-red-500 text-sm text-center">
+                {String(
+                  getLabel(
+                    {
+                      it: 'Turnstile non configurato: manca NEXT_PUBLIC_TURNSTILE_SITE_KEY.',
+                      en: 'Turnstile is not configured: NEXT_PUBLIC_TURNSTILE_SITE_KEY is missing.',
+                    },
+                    lang
+                  )
+                )}
+              </p>
+            )}
+          </div>
+
           {error && <p className="text-red-500 text-sm">{error}</p>}
           {message && <p className="text-green-600 text-sm">{message}</p>}
 
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !turnstileToken || !turnstileSiteKey}
             className={`w-full text-white font-semibold py-2 rounded-md transition ${
-              submitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              submitting || !turnstileToken || !turnstileSiteKey
+                ? 'bg-blue-400 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700'
             }`}
           >
             {submitting ? '…' : '🚀'} {String(getLabel({ it: 'Registrati', en: 'Register' }, lang))}
