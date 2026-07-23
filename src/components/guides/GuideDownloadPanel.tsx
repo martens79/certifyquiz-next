@@ -90,26 +90,50 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
   }, [authLoading, user, slug, lang]);
 
   async function handleDownload() {
-    setError(null);
-    setDownloading(true);
+  setError(null);
+  setDownloading(true);
 
-    try {
-      const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/download?lang=${lang}`);
-      if (!res.ok) throw new Error("download_failed");
+  try {
+    const res = await apiFetch(
+      `/guides/${encodeURIComponent(slug)}/download?lang=${lang}`
+    );
 
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${slug}.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      setError(COPY.error[lang]);
-    } finally {
-      setDownloading(false);
+    if (!res.ok) {
+      throw new Error("download_failed");
     }
+
+    const blob = await res.blob();
+
+    if (!blob.size) {
+      throw new Error("empty_pdf");
+    }
+
+    const pdfBlob =
+      blob.type === "application/pdf"
+        ? blob
+        : new Blob([blob], { type: "application/pdf" });
+
+    const url = URL.createObjectURL(pdfBlob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${slug}.pdf`;
+    link.style.display = "none";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 60_000);
+  } catch (err) {
+    console.error("PDF download failed:", err);
+    setError(COPY.error[lang]);
+  } finally {
+    setDownloading(false);
   }
+}
 
   if (authLoading || hasAccess === null) {
     return (
