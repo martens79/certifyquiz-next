@@ -133,6 +133,33 @@ export async function getGuideBySlug(
 
   return json.guide ?? null;
 }
+
+export type MapOverviewItem = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string | null;
+  lang_available: boolean;
+  price: number;
+  page_count: number | null;
+  map_count: number | null;
+  certification_slug: string;
+  certification_name: string;
+  access: "premium" | "locked";
+};
+
+export async function getMapsList(lang: Locale): Promise<MapOverviewItem[]> {
+  const res = await fetch(`${API}/maps?lang=${lang}`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) return [];
+
+  const json = await res.json();
+
+  return Array.isArray(json.items) ? json.items : [];
+}
+
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 /** Normalizza slug "alias/vecchi" → slug canonici del frontend */
 const normalizeSlug = (raw: unknown) => {

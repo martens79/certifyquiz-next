@@ -309,6 +309,24 @@ export const guidePath = (lang: Locale, slug: string): string =>
   `${guidesPath(lang)}/${slug}`;
 
 /* ------------------------------------------------------------------ */
+/* MAPPE CONCETTUALI PDF (SEO)                                         */
+/* ------------------------------------------------------------------ */
+
+export const MAPS_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "mappe",
+  en: "maps",
+  fr: "cartes",
+  es: "mapas",
+};
+
+export const mapsPath = (lang: Locale): string => {
+  const base = seoPrefix(lang); // EN -> "" ; altri -> "/it|/fr|/es"
+  const slug = MAPS_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+// NB: nessun mapPath(slug) finché non esiste la route di dettaglio /{mappe}/[slug].
+
+/* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
 
