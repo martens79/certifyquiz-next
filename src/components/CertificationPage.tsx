@@ -7,7 +7,10 @@ import type {
   CertificationTopic,
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
-import { certPath } from "@/lib/paths";
+import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
+import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
+import type { CertificationResources } from "@/lib/data";
+import { certPath, guidePath, mapsPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 type Lang = "it" | "en" | "fr" | "es";
 
@@ -107,11 +110,13 @@ export default function CertificationPage({
   data,
   dbTopics = [],
   hasScenarios = false,
+  resources = null,
 }: {
   lang: Lang;
   data: CertificationData;
   dbTopics?: DbTopicLink[];
   hasScenarios?: boolean;
+  resources?: CertificationResources | null;
 }) {
   const {
     title,
@@ -259,47 +264,31 @@ const pageTopics =
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
 
-        <div className="mb-6 flex flex-wrap justify-center gap-3">
+        <StudyMaterialGrid
+          lang={lang}
+          resources={resources}
+          quizHref={quizHref}
+          reviewsHref={reviewsHref}
+          scenariosHref={scenariHref}
+          guideHref={
+            resources?.guide.available && resources.guide.slug
+              ? guidePath(lang, resources.guide.slug)
+              : null
+          }
+          mapsHref={mapsPath(lang)}
+        />
 
-  <Link
-    href={quizHref}
-    className="rounded-full bg-blue-600 px-5 py-2 text-white font-semibold hover:bg-blue-700 transition"
-  >
-    📝 {({
-      it: "Quiz",
-      en: "Quiz",
-      fr: "Quiz",
-      es: "Quiz",
-    } as const)[lang]}
-  </Link>
+        <PremiumResourcesCta
+          lang={lang}
+          certificationName={resources?.certificationName || pageTitle}
+          hasGuide={!!resources?.guide.available}
+          hasMaps={!!resources?.maps.available}
+          hasScenarios={hasScenarios}
+        />
 
-  <Link
-    href={reviewsHref}
-    className="rounded-full bg-green-600 px-5 py-2 text-white font-semibold hover:bg-green-700 transition"
-  >
-    📖 {({
-      it: "Ripassi",
-      en: "Reviews",
-      fr: "Révisions",
-      es: "Repasos",
-    } as const)[lang]}
-  </Link>
-
-  <Link
-    href={scenariHref}
-    className="rounded-full bg-yellow-400 px-5 py-2 text-black font-semibold hover:bg-yellow-500 transition"
-  >
-    ⭐ {({
-      it: "Scenari",
-      en: "Scenarios",
-      fr: "Scénarios",
-      es: "Escenarios",
-    } as const)[lang]}
-  </Link>
-
-</div>
-
-        {questionCount > 0 && (
+        {/* fallback: se l'endpoint aggregato non risponde, il conteggio dal
+            registry evita di lasciare la pagina senza alcun numero */}
+        {!resources && questionCount > 0 && (
   <div className="mb-6 inline-flex items-center rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-800">
     ✅ {questionCount}+ {questionLabel}
   </div>

@@ -160,6 +160,50 @@ export async function getMapsList(lang: Locale): Promise<MapOverviewItem[]> {
   return Array.isArray(json.items) ? json.items : [];
 }
 
+/**
+ * Conteggi aggregati delle risorse di una certificazione.
+ * Una sola chiamata al posto di una per risorsa: alimenta la griglia
+ * "Materiale di studio" della pagina certificazione.
+ */
+export type CertificationResources = {
+  /** nome breve della certificazione dal DB, tradotto: il titolo del registry
+   *  è ottimizzato per la SEO ed è troppo lungo per una frase di CTA */
+  certificationName: string | null;
+  quiz: { questionCount: number; topicCount: number };
+  reviews: { count: number };
+  scenarios: { count: number };
+  guide: { available: boolean; slug: string | null; pageCount: number | null };
+  maps: {
+    available: boolean;
+    slug: string | null;
+    mapCount: number | null;
+    pageCount: number | null;
+  };
+};
+
+export async function getCertificationResources(
+  certSlug: string,
+  lang: Locale
+): Promise<CertificationResources | null> {
+  const canonSlug = normalizeSlug(certSlug);
+
+  const res = await fetch(
+    `${API}/certifications/${encodeURIComponent(canonSlug)}/resources?lang=${lang}`,
+    { next: { revalidate: 3600 } }
+  );
+
+  if (!res.ok) return null;
+
+  const json = await res.json();
+
+  if (!json?.resources) return null;
+
+  return {
+    certificationName: json.certification?.name ?? null,
+    ...json.resources,
+  };
+}
+
 /* ------------------------- SLUG NORMALIZATION ------------------------- */
 /** Normalizza slug "alias/vecchi" → slug canonici del frontend */
 const normalizeSlug = (raw: unknown) => {

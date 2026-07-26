@@ -4,7 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
 import CertificationPage from "@/components/CertificationPage";
-import { getCertBySlug, getTopicsByCertSlug, getScenariosByCertSlug, type Cert } from "@/lib/data";
+import {
+  getCertBySlug,
+  getTopicsByCertSlug,
+  getCertificationResources,
+  type Cert,
+} from "@/lib/data";
 export const dynamic = "force-dynamic";
 
 type Lang = Locale;
@@ -107,13 +112,18 @@ export async function CertificationDetailView({
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[slug] ??
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
-  const [dbTopics, cert, scenarios] = await Promise.all([
+  // `resources` sostituisce la vecchia fetch degli scenari e copre in una
+  // sola chiamata TUTTI i conteggi della griglia "Materiale di studio"
+  // (quiz, ripassi, guida, mappe, scenari): senza di essa servirebbero
+  // cinque fetch. Le altre due restano perché portano contenuto — l'elenco
+  // dei topic e i dati della certificazione — non conteggi.
+  const [dbTopics, cert, resources] = await Promise.all([
     getTopicsByCertSlug(dbSlug, lang),
     getCertBySlug(dbSlug, lang),
-    getScenariosByCertSlug(dbSlug, lang),
+    getCertificationResources(dbSlug, lang),
   ]);
 
-  const hasScenarios = scenarios.length > 0;
+  const hasScenarios = (resources?.scenarios.count ?? 0) > 0;
 
   if (reg) {
     const data: DynamicCertData = {
@@ -122,12 +132,28 @@ export async function CertificationDetailView({
       questionCountByLang: cert?.questionCountByLang,
     };
 
-    return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} hasScenarios={hasScenarios} />;
+    return (
+      <CertificationPage
+        lang={lang}
+        data={data}
+        dbTopics={dbTopics}
+        hasScenarios={hasScenarios}
+        resources={resources}
+      />
+    );
   }
 
   if (!cert) return notFound();
 
   const data = adaptCertToRegistryShape(cert);
 
-  return <CertificationPage lang={lang} data={data} dbTopics={dbTopics} hasScenarios={hasScenarios} />;
+  return (
+    <CertificationPage
+      lang={lang}
+      data={data}
+      dbTopics={dbTopics}
+      hasScenarios={hasScenarios}
+      resources={resources}
+    />
+  );
 }
