@@ -16,7 +16,7 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
 import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
-import { certificationsPath, pricingPath, quizHomePath, guidesPath } from "@/lib/paths";
+import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
@@ -36,6 +36,7 @@ const UI: Record<
     reviews: string;
     scenarios: string;
     guides: string;
+    maps: string;
     profile: string;
     login: string;
     logout: string;
@@ -62,6 +63,7 @@ const UI: Record<
     reviews: "Ripassi",
     scenarios: "Scenari",
     guides: "Guide",
+    maps: "Mappe",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -84,6 +86,7 @@ const UI: Record<
     reviews: "Reviews",
     scenarios: "Scenarios",
     guides: "Guides",
+    maps: "Maps",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -106,6 +109,7 @@ const UI: Record<
     reviews: "Révisions",
     scenarios: "Scénarios",
     guides: "Guides",
+    maps: "Cartes",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -128,6 +132,7 @@ const UI: Record<
     reviews: "Repasos",
     scenarios: "Escenarios",
     guides: "Guías",
+    maps: "Mapas",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -297,6 +302,29 @@ function IconGuides() {
     </svg>
   );
 }
+function IconMaps() {
+  return (
+    <svg
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      {/* mappa concettuale: nodo centrale con tre diramazioni */}
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.75 12h4.5M12 9.75V6.75M12 14.25v3"
+      />
+      <circle cx="12" cy="4.5" r="2.25" />
+      <circle cx="12" cy="19.5" r="2.25" />
+      <circle cx="6" cy="12" r="2.25" />
+      <circle cx="18" cy="12" r="2.25" />
+    </svg>
+  );
+}
 function IconSearch() {
   return (
     <svg
@@ -409,6 +437,7 @@ export default function Header({ lang }: Props) {
     : "/it/scenari";
 
     const guidesHref = guidesPath(lang);
+    const mapsHref = mapsPath(lang);
 
   const aboutHref =
     lang === "it"
@@ -466,6 +495,8 @@ export default function Header({ lang }: Props) {
 
 { href: guidesHref, label: ui.guides, icon: <IconGuides /> },
 
+{ href: mapsHref, label: ui.maps, icon: <IconMaps /> },
+
 { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
 }, [
@@ -479,6 +510,7 @@ export default function Header({ lang }: Props) {
   reviewsHref,
   scenariosHref,
   guidesHref,
+  mapsHref,
 
   suggestedHref,
   t.blog,
@@ -494,6 +526,7 @@ export default function Header({ lang }: Props) {
   ui.suggested,
   ui.scenarios,
   ui.guides,
+  ui.maps,
   ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
@@ -618,7 +651,9 @@ useEffect(() => {
 
         {/* Quick actions desktop */}
         <div className="hidden items-center justify-between py-1.5 text-sm text-gray-800 md:flex">
-          <nav className="flex items-center gap-4" aria-label={ui.quick}>
+          {/* flex-wrap: 12 voci non stanno su una riga sotto i ~1050px e la
+              pagina finiva per scrollare in orizzontale (succedeva gia' con 11) */}
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label={ui.quick}>
             {quick.map((q) => {
               const active = isActive(q.href);
               return (
