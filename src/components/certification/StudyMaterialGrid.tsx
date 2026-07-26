@@ -1,10 +1,13 @@
-import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import type { CertificationResources } from "@/lib/data";
+import TrackedResourceLink from "@/components/certification/TrackedResourceLink";
+
+type ResourceType = "quiz" | "reviews" | "guide" | "map" | "scenarios";
 
 type Props = {
   lang: Locale;
   resources: CertificationResources | null;
+  certificationSlug: string;
   quizHref: string;
   reviewsHref: string;
   scenariosHref: string;
@@ -108,6 +111,10 @@ function Card({
   tone,
   className = "",
   soonLabel,
+  lang,
+  certificationId,
+  certificationSlug,
+  resourceType,
 }: {
   href: string | null;
   icon: string;
@@ -118,6 +125,10 @@ function Card({
   tone: "primary" | "neutral" | "premium";
   className?: string;
   soonLabel?: string;
+  lang: Locale;
+  certificationId: number | null;
+  certificationSlug: string;
+  resourceType: ResourceType;
 }) {
   const toneClass =
     tone === "primary"
@@ -182,9 +193,16 @@ function Card({
   }
 
   return (
-    <Link href={href} className={`${CARD_BASE} ${toneClass} ${className} shadow-sm hover:shadow`}>
+    <TrackedResourceLink
+      href={href}
+      className={`${CARD_BASE} ${toneClass} ${className} shadow-sm hover:shadow`}
+      lang={lang}
+      certificationId={certificationId}
+      certificationSlug={certificationSlug}
+      resourceType={resourceType}
+    >
       {body}
-    </Link>
+    </TrackedResourceLink>
   );
 }
 
@@ -199,6 +217,7 @@ function Card({
 export default function StudyMaterialGrid({
   lang,
   resources,
+  certificationSlug,
   quizHref,
   reviewsHref,
   scenariosHref,
@@ -206,6 +225,7 @@ export default function StudyMaterialGrid({
   mapsHref,
 }: Props) {
   const t = LABELS[lang];
+  const certificationId = resources?.certificationId ?? null;
 
   const questionCount = resources?.quiz.questionCount ?? 0;
   const topicCount = resources?.quiz.topicCount ?? 0;
@@ -234,6 +254,10 @@ export default function StudyMaterialGrid({
           desc={t.quizDesc}
           meta={quizMeta || null}
           tone="primary"
+          lang={lang}
+          certificationId={certificationId}
+          certificationSlug={certificationSlug}
+          resourceType="quiz"
         />
 
         <Card
@@ -243,6 +267,10 @@ export default function StudyMaterialGrid({
           desc={t.reviewsDesc}
           meta={reviewCount > 0 ? t.topics(reviewCount) : null}
           tone="neutral"
+          lang={lang}
+          certificationId={certificationId}
+          certificationSlug={certificationSlug}
+          resourceType="reviews"
         />
 
         {showGuide ? (
@@ -256,6 +284,10 @@ export default function StudyMaterialGrid({
             }
             premium
             tone="premium"
+            lang={lang}
+            certificationId={certificationId}
+            certificationSlug={certificationSlug}
+            resourceType="guide"
           />
         ) : null}
 
@@ -270,6 +302,10 @@ export default function StudyMaterialGrid({
             }
             premium
             tone="premium"
+            lang={lang}
+            certificationId={certificationId}
+            certificationSlug={certificationSlug}
+            resourceType="map"
           />
         ) : null}
 
@@ -283,6 +319,10 @@ export default function StudyMaterialGrid({
           tone="premium"
           soonLabel={t.soon}
           className="col-span-2"
+          lang={lang}
+          certificationId={certificationId}
+          certificationSlug={certificationSlug}
+          resourceType="scenarios"
         />
       </div>
     </section>

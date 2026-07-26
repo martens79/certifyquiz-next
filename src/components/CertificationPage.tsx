@@ -267,6 +267,7 @@ const pageTopics =
         <StudyMaterialGrid
           lang={lang}
           resources={resources}
+          certificationSlug={data.slug}
           quizHref={quizHref}
           reviewsHref={reviewsHref}
           scenariosHref={scenariHref}
@@ -281,6 +282,8 @@ const pageTopics =
         <PremiumResourcesCta
           lang={lang}
           certificationName={resources?.certificationName || pageTitle}
+          certificationId={resources?.certificationId ?? null}
+          certificationSlug={data.slug}
           hasGuide={!!resources?.guide.available}
           hasMaps={!!resources?.maps.available}
           hasScenarios={hasScenarios}

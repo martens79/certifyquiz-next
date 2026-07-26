@@ -4,10 +4,13 @@ import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { trackEvent, userStatusFrom } from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
   certificationName: string;
+  certificationId: number | null;
+  certificationSlug: string;
   /** risorse effettivamente disponibili: l'elenco non promette ciò che non c'è */
   hasGuide: boolean;
   hasMaps: boolean;
@@ -60,6 +63,8 @@ const COPY = {
 export default function PremiumResourcesCta({
   lang,
   certificationName,
+  certificationId,
+  certificationSlug,
   hasGuide,
   hasMaps,
   hasScenarios,
@@ -97,6 +102,16 @@ export default function PremiumResourcesCta({
 
         <Link
           href={pricingPath(lang)}
+          onClick={() =>
+            trackEvent("certification_premium_card_clicked", {
+              certification_id: certificationId,
+              certification_slug: certificationSlug,
+              language: lang,
+              user_status: userStatusFrom(user),
+              source: "certification_page",
+              resource_type: "premium_card",
+            })
+          }
           className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600"
         >
           {t.cta}

@@ -169,6 +169,8 @@ export type CertificationResources = {
   /** nome breve della certificazione dal DB, tradotto: il titolo del registry
    *  è ottimizzato per la SEO ed è troppo lungo per una frase di CTA */
   certificationName: string | null;
+  /** id numerico dal DB, per l'analytics (certification_id) */
+  certificationId: number | null;
   quiz: { questionCount: number; topicCount: number };
   reviews: { count: number };
   scenarios: { count: number };
@@ -200,6 +202,8 @@ export async function getCertificationResources(
 
   return {
     certificationName: json.certification?.name ?? null,
+    certificationId:
+      json.certification?.id != null ? Number(json.certification.id) : null,
     ...json.resources,
   };
 }

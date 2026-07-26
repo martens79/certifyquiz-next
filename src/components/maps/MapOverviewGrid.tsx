@@ -8,6 +8,7 @@ import { pricingPath } from "@/lib/paths";
 import type { MapOverviewItem } from "@/lib/data";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { trackEvent, userStatusFrom, type UserStatus } from "@/lib/analytics";
 
 /** Item arricchito lato server col logo preso dal registry certificazioni */
 export type MapCardItem = MapOverviewItem & { imageUrl: string | null };
@@ -112,10 +113,12 @@ function MapCard({
   lang,
   item,
   access,
+  userStatus,
 }: {
   lang: Locale;
   item: MapCardItem;
   access: MapOverviewItem["access"];
+  userStatus: UserStatus;
 }) {
   const t = LABELS[lang];
   const [downloading, setDownloading] = useState(false);
@@ -125,7 +128,26 @@ function MapCard({
     item.slug
   )}/preview?lang=${lang}`;
 
+  const trackMapEvent = (eventName: string) =>
+    trackEvent(eventName, {
+      certification_slug: item.certification_slug,
+      map_slug: item.slug,
+      language: lang,
+      user_status: userStatus,
+      source: "maps_page",
+      resource_type: "map",
+    });
+
+  function handlePreviewClick() {
+    trackMapEvent("study_map_preview_clicked");
+  }
+
+  function handleLockedClick() {
+    trackMapEvent("study_map_locked_clicked");
+  }
+
   async function handleDownload() {
+    trackMapEvent("study_map_download_clicked");
     setError(null);
     setDownloading(true);
 
@@ -227,6 +249,7 @@ function MapCard({
           href={previewHref}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={handlePreviewClick}
           className={`${ACTION_BASE} border-slate-300 bg-white text-slate-800 hover:bg-slate-50`}
         >
           👁️ {t.preview}
@@ -244,6 +267,7 @@ function MapCard({
         ) : (
           <Link
             href={pricingPath(lang)}
+            onClick={handleLockedClick}
             className={`${ACTION_BASE} border-transparent bg-amber-500 text-white hover:bg-amber-600`}
           >
             🔒 {t.unlock}
@@ -290,6 +314,23 @@ export default function MapOverviewGrid({ lang, items }: Props) {
       cancelled = true;
     };
   }, [authLoading, user, lang]);
+
+  // Vista lista: una volta sola quando la pagina ha risorse da mostrare.
+  // authLoading in dipendenza cosi' lo status utente e' quello vero, non
+  // sempre "anonymous" per la finestra prima che /me risponda.
+  useEffect(() => {
+    if (authLoading || items.length === 0) return;
+
+    trackEvent("study_map_list_viewed", {
+      language: lang,
+      user_status: userStatusFrom(user),
+      source: "maps_page",
+      resource_type: "map",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, items.length, lang]);
+
+  const userStatus = userStatusFrom(authLoading ? null : user);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -359,6 +400,7 @@ export default function MapOverviewGrid({ lang, items }: Props) {
                   lang={lang}
                   item={item}
                   access={liveAccess?.[item.id] ?? item.access}
+                  userStatus={userStatus}
                 />
               ))}
             </section>
