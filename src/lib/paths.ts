@@ -327,6 +327,39 @@ export const mapsPath = (lang: Locale): string => {
 // NB: nessun mapPath(slug) finché non esiste la route di dettaglio /{mappe}/[slug].
 
 /* ------------------------------------------------------------------ */
+/* RIPASSI E SCENARI (SEO)                                             */
+/* ------------------------------------------------------------------ */
+// Questi due segmenti erano finora ripetuti a mano in Header.tsx e
+// CertificationPage.tsx. Qui sono solo centralizzati: i path prodotti sono
+// identici a quelli già indicizzati, nessuna route cambia.
+
+export const REVIEWS_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "ripassi",
+  en: "reviews",
+  fr: "revisions",
+  es: "repasos",
+};
+
+export const reviewsPath = (lang: Locale): string => {
+  const base = seoPrefix(lang);
+  const slug = REVIEWS_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+
+export const SCENARIOS_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "scenari",
+  en: "scenarios",
+  fr: "scenarios",
+  es: "escenarios",
+};
+
+export const scenariosPath = (lang: Locale): string => {
+  const base = seoPrefix(lang);
+  const slug = SCENARIOS_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+
+/* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
 

@@ -11,6 +11,7 @@ import BlogTeaser from "@/components/BlogTeaser";
 import logo from "@/../public/images/logo-certifyquiz.png";
 import PathBox from "@/components/home/PathBox";
 import HomeFeatureCarousel from "@/components/home/HomeFeatureCarousel";
+import ResourceTypesSection from "@/components/home/ResourceTypesSection";
 import {
   BrainCircuit,
   LockKeyhole,
@@ -483,6 +484,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       </header>
 
      <HomeFeatureCarousel lang={safeLang} />
+
+{/* LE CINQUE RISORSE — sotto il carosello di proposito: sopra c'è l'elemento
+    che determina l'LCP, e inserire qui non sposta nulla di quanto già carica */}
+<ResourceTypesSection lang={safeLang} />
 
 {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
 <PathBox lang={safeLang as any} />
