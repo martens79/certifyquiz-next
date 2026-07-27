@@ -1,15 +1,19 @@
 "use client";
 
 import Script from "next/script";
+import { useConsent } from "@/components/analytics/ConsentProvider";
 
 export default function GoogleAnalytics() {
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+  const { status, ready } = useConsent();
 
   // 🔴 se non vedi questo log, la env NON arriva al client
   if (!GA_ID) {
     console.warn("[GA] NEXT_PUBLIC_GA_ID is missing");
     return null;
   }
+
+  if (!ready || status !== "granted") return null;
 
   return (
     <>
