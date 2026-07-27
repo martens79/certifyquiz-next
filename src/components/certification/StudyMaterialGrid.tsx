@@ -235,6 +235,17 @@ export default function StudyMaterialGrid({
   const showGuide = !!resources?.guide.available && !!guideHref;
   const showMaps = !!resources?.maps.available;
 
+  // Scenari e' l'ultima card e chiude la griglia a 2 colonne. Quiz e Ripassi
+  // sono sempre presenti (2); Guida e Mappe sono condizionali. Con un numero
+  // DISPARI di card prima di Scenari, il grid auto-placement lascerebbe uno
+  // slot vuoto (es. solo Guida presente, non Mappe: Guida da sola in riga 2,
+  // nulla a riempire la colonna accanto). In quel caso Scenari NON fa piu'
+  // span: diventa una card normale e va proprio a occupare quello slot.
+  // Con un numero PARI (0 o 2 condizionali) lo slot non si crea mai, quindi
+  // Scenari resta a piena larghezza come oggi.
+  const cardsBeforeScenari = 2 + (showGuide ? 1 : 0) + (showMaps ? 1 : 0);
+  const scenariSpansFull = cardsBeforeScenari % 2 === 0;
+
   const quizMeta = [
     questionCount > 0 ? t.questions(questionCount) : null,
     topicCount > 0 ? t.topics(topicCount) : null,
@@ -318,7 +329,7 @@ export default function StudyMaterialGrid({
           premium
           tone="premium"
           soonLabel={t.soon}
-          className="col-span-2"
+          className={scenariSpansFull ? "col-span-2" : ""}
           lang={lang}
           certificationId={certificationId}
           certificationSlug={certificationSlug}
