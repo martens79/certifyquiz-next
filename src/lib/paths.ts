@@ -152,7 +152,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "intelligence-artificielle",
     "data-analytics": "analyse-des-donnees",
-    foundations: "fondamentaux",
+    foundations: "foundations",
   },
 
   es: {
@@ -167,7 +167,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "gestion-management",
     ai: "inteligencia-artificial",
     "data-analytics": "analisis-de-datos",
-    foundations: "fundamentos",
+    foundations: "foundations",
   },
 };
 
@@ -201,7 +201,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   },
 
  fr: {
-  bases: "base",
+  fondamentaux: "base",
   securite: "sicurezza",
   reseaux: "reti",
   cloud: "cloud",
@@ -211,11 +211,11 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   management: "management",
   "intelligence-artificielle": "ai",
   "analyse-des-donnees": "data-analytics",
-  fondamentaux: "foundations",
+  foundations: "foundations",
 },
 
 es: {
-  basico: "base",
+  fundamentos: "base",
   seguridad: "sicurezza",
   redes: "reti",
   cloud: "cloud",
@@ -225,7 +225,7 @@ es: {
   "gestion-management": "management",
   "inteligencia-artificial": "ai",
   "analisis-de-datos": "data-analytics",
-  fundamentos: "foundations",
+  foundations: "foundations",
 },
 };
 
