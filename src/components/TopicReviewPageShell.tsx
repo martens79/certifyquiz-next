@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getTopicReviewPage, type Locale } from "@/lib/data";
+import { getTopicReviewPage, getCertTopicReviews, type Locale } from "@/lib/data";
+import { reviewsCertPath } from "@/lib/paths";
 
 type Props = {
   lang: Locale;
@@ -20,6 +21,8 @@ const labels = {
     topic: "Topic",
     startQuiz: "🚀 Vai al quiz",
     backToTopic: "← Torna al topic",
+    nextReview: "Ripasso successivo",
+    backToReviewsIndex: "Torna all'indice ripassi",
     finalTitle: "Ora metti alla prova quello che hai ripassato",
     finalText:
       "Dopo il ripasso, passa al quiz per verificare se hai davvero capito i concetti principali.",
@@ -36,6 +39,8 @@ const labels = {
     topic: "Topic",
     startQuiz: "🚀 Start quiz",
     backToTopic: "← Back to topic",
+    nextReview: "Next review",
+    backToReviewsIndex: "Back to reviews index",
     finalTitle: "Now test what you reviewed",
     finalText:
       "After the review, start the quiz to check whether you really understand the key concepts.",
@@ -52,6 +57,8 @@ const labels = {
     topic: "Sujet",
     startQuiz: "🚀 Commencer le quiz",
     backToTopic: "← Retour au sujet",
+    nextReview: "Révision suivante",
+    backToReviewsIndex: "Retour à l'index des révisions",
     finalTitle: "Testez maintenant ce que vous avez révisé",
     finalText:
       "Après la révision, passez au quiz pour vérifier si vous maîtrisez vraiment les concepts principaux.",
@@ -68,6 +75,8 @@ const labels = {
     topic: "Tema",
     startQuiz: "🚀 Ir al quiz",
     backToTopic: "← Volver al tema",
+    nextReview: "Repaso siguiente",
+    backToReviewsIndex: "Volver al índice de repasos",
     finalTitle: "Ahora pon a prueba lo que has repasado",
     finalText:
       "Después del repaso, pasa al quiz para comprobar si realmente has entendido los conceptos principales.",
@@ -185,6 +194,17 @@ export default async function TopicReviewPageShell({
 
   const quizPath = getQuizPath(lang, review.topicId);
 
+  const { items: certReviews } = await getCertTopicReviews(slug, lang);
+  const currentIndex = certReviews.findIndex(
+    (item) => item.topicId === review.topicId
+  );
+  const nextItem =
+    currentIndex >= 0 && currentIndex < certReviews.length - 1
+      ? certReviews[currentIndex + 1]
+      : null;
+  const nextReviewPath = nextItem ? nextItem.href : reviewsCertPath(lang, slug);
+  const nextReviewLabel = nextItem ? t.nextReview : t.backToReviewsIndex;
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <nav className="mb-6 text-sm text-slate-500">
@@ -263,6 +283,15 @@ export default async function TopicReviewPageShell({
           </Link>
         </div>
       </section>
+
+      <div className="mt-6 text-center">
+        <Link
+          href={nextReviewPath}
+          className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+        >
+          {nextReviewLabel} →
+        </Link>
+      </div>
     </main>
   );
 }
