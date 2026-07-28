@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cleanReviewTitle } from "@/lib/text";
 
 type OverviewItem = {
   id: number;
@@ -13,20 +14,8 @@ type Props = {
   openLabel: string;
   moreLabel: string;
   accentClass: string;
+  indexHref?: string;
 };
-
-function cleanTitle(title: string, certTitle: string) {
-  const cleaned = title
-    .replace(/^Ripasso rapido:\s*/i, "")
-    .replace(/^Quick review:\s*/i, "")
-    .replace(/^Révision rapide\s*:\s*/i, "")
-    .replace(/^Repaso rápido:\s*/i, "")
-    .replace(/^(?:Ripasso|Review|Révision|Repaso)\s+[^:]+\s*:\s*/i, "")
-    .replace(new RegExp(`\\s*[–-]\\s*${certTitle}$`, "i"), "")
-    .trim();
-  if (!cleaned) return title;
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
 
 export default function CertificationOverviewCard({
   certificationTitle,
@@ -35,6 +24,7 @@ export default function CertificationOverviewCard({
   openLabel,
   moreLabel,
   accentClass,
+  indexHref,
 }: Props) {
   const visibleItems = items.slice(0, 6);
   const hiddenCount = Math.max(items.length - visibleItems.length, 0);
@@ -67,7 +57,7 @@ export default function CertificationOverviewCard({
             className="group flex items-center justify-between gap-3 rounded-xl border border-white/80 bg-white/80 px-3 py-2 text-sm font-semibold text-slate-800 transition hover:border-blue-300 hover:bg-white"
           >
             <span className="line-clamp-1">
-              {cleanTitle(item.title, certificationTitle)}
+              {cleanReviewTitle(item.title, certificationTitle)}
             </span>
             <span className="text-blue-700 group-hover:translate-x-0.5 transition">
               →
@@ -84,7 +74,7 @@ export default function CertificationOverviewCard({
 
       {visibleItems[0] && (
         <Link
-          href={visibleItems[0].href}
+          href={indexHref ?? visibleItems[0].href}
           className="mt-4 inline-flex justify-end text-sm font-extrabold text-blue-700 hover:text-blue-900"
         >
           {openLabel} →

@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import CertificationOverviewCard from "@/components/CertificationOverviewCard";
 import ScenarioIntro from "@/components/ScenarioIntro";
 import type { Locale } from "@/lib/data";
+import { reviewsCertPath } from "@/lib/paths";
 
 type OverviewItem = {
   id: number;
   certificationTitle: string;
   title: string;
   href: string;
+  certSlug?: string;
 };
 
 type Mode = "reviews" | "scenarios";
@@ -252,17 +254,26 @@ export default function CertificationOverviewGrid({
         </section>
       ) : (
         <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {groups.map(([certTitle, groupItems], index) => (
-            <CertificationOverviewCard
-              key={certTitle}
-              certificationTitle={certTitle}
-              items={groupItems}
-              availableLabel={t.available}
-              openLabel={t.open}
-              moreLabel={t.more}
-              accentClass={certAccent(index)}
-            />
-          ))}
+          {groups.map(([certTitle, groupItems], index) => {
+            const certSlug = groupItems[0]?.certSlug;
+            const indexHref =
+              mode === "reviews" && certSlug
+                ? reviewsCertPath(lang, certSlug)
+                : undefined;
+
+            return (
+              <CertificationOverviewCard
+                key={certTitle}
+                certificationTitle={certTitle}
+                items={groupItems}
+                availableLabel={t.available}
+                openLabel={t.open}
+                moreLabel={t.more}
+                accentClass={certAccent(index)}
+                indexHref={indexHref}
+              />
+            );
+          })}
         </section>
       )}
     </main>

@@ -346,6 +346,9 @@ export const reviewsPath = (lang: Locale): string => {
   return base ? `${base}/${slug}` : `/${slug}`;
 };
 
+export const reviewsCertPath = (lang: Locale, certSlug: string): string =>
+  `${reviewsPath(lang)}/${certSlug}`;
+
 export const SCENARIOS_SLUG_BY_LANG: Record<Locale, string> = {
   it: "scenari",
   en: "scenarios",
