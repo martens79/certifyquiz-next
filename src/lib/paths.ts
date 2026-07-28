@@ -258,6 +258,32 @@ export const categoryKeyFromSlug = (
   const safeLang = toLocale(lang, "en");
   return CAT_SLUG_TO_KEY[safeLang][slug] ?? "default";
 };
+
+/**
+ * ✅ Lenient resolver: slug pubblico → key interna, MA accetta anche la key
+ * interna stessa (es. "sicurezza") quando coincide col valore dello slug.
+ * Unica fonte di verità: usata sia dalla pagina categoria che da LocaleSwitcher,
+ * per evitare che le due implementazioni divergano (causa nota di 404 sul
+ * cambio lingua).
+ * Ritorna null se lo slug non è risolvibile in quella lingua.
+ */
+export const resolveCategoryKey = (
+  lang: unknown,
+  slug: string
+): CategoryKey | null => {
+  const safeLang = toLocale(lang, "en");
+  const s = (slug || "").trim();
+  if (!s) return null;
+
+  const bySlug = CAT_SLUG_TO_KEY[safeLang]?.[s];
+  if (bySlug) return bySlug;
+
+  if (Object.prototype.hasOwnProperty.call(CAT_KEY_TO_SLUG[safeLang], s)) {
+    return s as CategoryKey;
+  }
+
+  return null;
+};
 /* ------------------------------------------------------------------ */
 /* BLOG (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */

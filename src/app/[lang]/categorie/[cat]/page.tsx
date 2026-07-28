@@ -14,7 +14,7 @@ import {
   seoPrefix,
   quizPrefix,
   CAT_KEY_TO_SLUG,
-  CAT_SLUG_TO_KEY,
+  resolveCategoryKey,
   type CategoryKey,
 } from "@/lib/paths";
 
@@ -233,19 +233,7 @@ const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
 
 
 function resolveInternalKey(lang: Locale, slug: string): CategoryKey | null {
-  const s = (slug || "").trim();
-  if (!s) return null;
-
-  // slug pubblico → key interna (es. "seguridad" → "sicurezza")
-  const bySlug = CAT_SLUG_TO_KEY[lang]?.[s];
-  if (bySlug) return bySlug;
-
-  // già key interna (es. "sicurezza")
-  if (Object.prototype.hasOwnProperty.call(CAT_KEY_TO_SLUG[lang], s)) {
-    return s as CategoryKey;
-  }
-
-  return null;
+  return resolveCategoryKey(lang, slug);
 }
 
 
