@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { withLang } from "@/lib/i18n";
-import { apiFetch, isLoggedIn } from "@/lib/auth";
+import { apiFetch } from "@/lib/auth";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type Props = {
   lang: Locale;
@@ -51,6 +52,24 @@ const COPY = {
     fr: "Une erreur s'est produite. Réessayez.",
     es: "Algo salió mal. Inténtalo de nuevo.",
   },
+  premiumTeaserTitle: {
+    it: "Con Premium sblocchi anche questa guida",
+    en: "With Premium you unlock this guide too",
+    fr: "Avec Premium, débloquez aussi ce guide",
+    es: "Con Premium desbloqueas también esta guía",
+  },
+  premiumTeaserNote: {
+    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Prova gratis 7 giorni, poi 9,99€/mese.",
+    en: "All guides included, full explanations and AI Tutor. Try free for 7 days, then €9.99/month.",
+    fr: "Tous les guides inclus, explications complètes et Tutor IA. Essayez gratuitement 7 jours, puis 9,99€/mois.",
+    es: "Todas las guías incluidas, explicaciones completas y Tutor IA. Prueba gratis 7 días, luego 9,99€/mes.",
+  },
+  premiumTeaserCta: {
+    it: "Registrati e sblocca con Premium",
+    en: "Sign up and unlock with Premium",
+    fr: "Inscrivez-vous et débloquez avec Premium",
+    es: "Regístrate y desbloquea con Premium",
+  },
 } as const;
 
 const BUY_CTA = {
@@ -72,11 +91,26 @@ function formatPrice(lang: Locale, price: number) {
 
 export default function GuideAccessGate({ lang, slug, price }: Props) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loggedIn = isLoggedIn();
+  const loggedIn = !!user;
   const priceLabel = formatPrice(lang, price);
+
+  function trackPremiumGateClick() {
+    fetch("/api/backend/funnel-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "premium_clicked_guide_gate",
+        email: user?.email || null,
+        cert_slug: slug,
+        topic_slug: null,
+        lang,
+      }),
+    }).catch(console.error);
+  }
 
   async function handleBuy() {
     setError(null);
@@ -103,6 +137,10 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
   const redirect = encodeURIComponent(pathname ?? `/guide/${slug}`);
   const loginHref = withLang(lang, `/login?redirect=${redirect}`);
+  const registerHref = withLang(
+    lang,
+    `/register?redirect=${encodeURIComponent(pricingPath(lang))}`
+  );
 
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
@@ -116,16 +154,33 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
       {!loggedIn ? (
-        <a
-          href={loginHref}
-          className="flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-        >
-          {COPY.login[lang]}
-        </a>
+        <>
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="mb-1 text-sm font-semibold text-gray-900">
+              {COPY.premiumTeaserTitle[lang]}
+            </p>
+            <p className="mb-3 text-xs text-gray-600">{COPY.premiumTeaserNote[lang]}</p>
+            <a
+              href={registerHref}
+              onClick={trackPremiumGateClick}
+              className="flex w-full items-center justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
+            >
+              {COPY.premiumTeaserCta[lang]}
+            </a>
+          </div>
+
+          <a
+            href={loginHref}
+            className="flex w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+          >
+            {COPY.login[lang]}
+          </a>
+        </>
       ) : (
         <>
           <Link
             href={pricingPath(lang)}
+            onClick={trackPremiumGateClick}
             className="mb-3 flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
             {COPY.premiumCta[lang]}

@@ -114,11 +114,13 @@ function MapCard({
   item,
   access,
   userStatus,
+  userEmail,
 }: {
   lang: Locale;
   item: MapCardItem;
   access: MapOverviewItem["access"];
   userStatus: UserStatus;
+  userEmail: string | null;
 }) {
   const t = LABELS[lang];
   const [downloading, setDownloading] = useState(false);
@@ -144,6 +146,19 @@ function MapCard({
 
   function handleLockedClick() {
     trackMapEvent("study_map_locked_clicked");
+
+    // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
+    fetch("/api/backend/funnel-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event: "premium_clicked_map_locked",
+        email: userEmail,
+        cert_slug: item.certification_slug,
+        topic_slug: null,
+        lang,
+      }),
+    }).catch(console.error);
   }
 
   async function handleDownload() {
@@ -401,6 +416,7 @@ export default function MapOverviewGrid({ lang, items }: Props) {
                   item={item}
                   access={liveAccess?.[item.id] ?? item.access}
                   userStatus={userStatus}
+                  userEmail={user?.email ?? null}
                 />
               ))}
             </section>

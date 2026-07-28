@@ -11,6 +11,7 @@ import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -145,6 +146,7 @@ export default function QuizEngine({
   onFeedback,
 }: Props) {
   const router = useRouter();
+  const { user } = useAuth();
 
   // i18n quiz microcopy
   const tQuiz = getDict(lang).quiz;
@@ -1843,14 +1845,27 @@ return (
             </p>
             <Link
               href={pricingPath(lang)}
-              onClick={() =>
+              onClick={() => {
                 trackQuizEvent('premium_cta_clicked', {
                   lang,
                   mode: effectiveMode,
                   source: 'locked_wrong_explanation',
                   question_id: Number(q.id),
-                })
-              }
+                });
+
+                // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
+                fetch("/api/backend/funnel-event", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    event: "premium_clicked_locked_explanation",
+                    email: user?.email || null,
+                    cert_slug: context?.certificationSlug ?? null,
+                    topic_slug: context?.topicSlug ?? null,
+                    lang,
+                  }),
+                }).catch(console.error);
+              }}
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
             >
               {lang === 'it'
