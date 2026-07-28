@@ -53,6 +53,35 @@ export async function getTopicReviewsList(lang: Locale) {
 
   return (await res.json()) as TopicReviewListItem[];
 }
+
+export type CertReviewItem = {
+  id: number;
+  topicId: number;
+  topicTitle: string;
+  topicSlug: string;
+  title: string;
+  keyConcepts: string[];
+  href: string;
+};
+
+export type CertReviewsResponse = {
+  certification: { id: number; slug: string; name: string } | null;
+  items: CertReviewItem[];
+};
+
+export async function getCertTopicReviews(
+  certSlug: string,
+  lang: Locale
+): Promise<CertReviewsResponse> {
+  const res = await fetch(
+    `${API}/certifications/${certSlug}/topic-reviews?lang=${lang}`,
+    { next: { revalidate: 3600 } }
+  );
+
+  if (!res.ok) return { certification: null, items: [] };
+
+  return (await res.json()) as CertReviewsResponse;
+}
 export type ScenarioOverviewItem = {
   id: number;
   certificationId: number;
