@@ -75,7 +75,12 @@ export async function getCertTopicReviews(
 ): Promise<CertReviewsResponse> {
   const res = await fetch(
     `${API}/certifications/${certSlug}/topic-reviews?lang=${lang}`,
-    { next: { revalidate: 3600 } }
+    {
+      next: {
+        revalidate: 3600,
+        tags: [`cert-reviews:${certSlug}:${lang}`],
+      },
+    }
   );
 
   if (!res.ok) return { certification: null, items: [] };
