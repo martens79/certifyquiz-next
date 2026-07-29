@@ -120,12 +120,30 @@ export default function LoginPageClient({ initialLang }: Props) {
           email: email.trim().toLowerCase(),
           password,
           remember, // se il backend lo usa per refresh cookie
+          lang,
         }),
       });
 
       if (!res.ok) {
         let msg = String(getLabel({ it: "Login fallito", en: "Login failed" }, lang));
-        if (res.status === 401 || res.status === 403) {
+        let data: any = null;
+        try {
+          data = await res.clone().json();
+        } catch {}
+
+        if (data?.error === "GOOGLE_ACCOUNT") {
+          msg = String(
+            getLabel(
+              {
+                it: "Questo account usa l'accesso con Google. Accedi con quel metodo.",
+                en: "This account uses Google sign-in. Please log in with Google.",
+                fr: "Ce compte utilise la connexion Google. Connectez-vous avec Google.",
+                es: "Esta cuenta usa el inicio de sesión con Google. Inicia sesión con Google.",
+              },
+              lang
+            )
+          );
+        } else if (res.status === 401 || res.status === 403) {
           msg = String(
             getLabel(
               { it: "Email o password errate", en: "Wrong email or password" },
