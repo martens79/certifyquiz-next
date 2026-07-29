@@ -8,11 +8,14 @@ const SITE =
     ""
   );
 
+const HOME_TITLE = "CertifyQuiz — IT Certification Practice Tests & Quizzes";
+const HOME_DESCRIPTION =
+  "Prepare for IT certifications with free practice quizzes and detailed explanations. AWS, Azure, Security+, CCNA, PMP and more.";
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
-  title: "CertifyQuiz — Prepare for IT Certifications",
-  description:
-    "Quizzes, explanations and badges to pass IT certifications. Start now with ITF+, A+, AWS, Azure, Security+ and more!",
+  title: HOME_TITLE,
+  description: HOME_DESCRIPTION,
   alternates: {
     canonical: `${SITE}/`,
     languages: {
@@ -25,8 +28,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     url: `${SITE}/`,
-    title: "CertifyQuiz — Prepare for IT Certifications",
-    description: "Quizzes, explanations and badges to pass IT certifications.",
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     siteName: "CertifyQuiz",
     locale: "en_US",
     type: "website",
