@@ -84,20 +84,20 @@ export async function generateMetadata(
 
   const title = getLabel(
     {
-      it: "CertifyQuiz — Allenati per le certificazioni IT",
-      en: "CertifyQuiz — Prepare for IT Certifications",
-      fr: "CertifyQuiz — Préparez vos certifications IT",
-      es: "CertifyQuiz — Prepárate para certificaciones IT",
+      it: "CertifyQuiz — Quiz e Simulazioni per Certificazioni IT",
+      en: "CertifyQuiz — IT Certification Practice Tests & Quizzes",
+      fr: "CertifyQuiz — Quiz et Tests d'Entraînement pour Certifications IT",
+      es: "CertifyQuiz — Quiz y Simulacros para Certificaciones IT",
     },
     lang
   );
 
   const description = getLabel(
     {
-      it: "Quiz, spiegazioni e badge per superare le certificazioni informatiche. Inizia subito con ITF+, A+, AWS, Azure, Security+ e molte altre!",
-      en: "Quizzes, explanations and badges to pass IT certifications. Start now with ITF+, A+, AWS, Azure, Security+ and more!",
-      fr: "Quiz, explications et badges pour réussir vos certifications IT. Commencez avec ITF+, A+, AWS, Azure, Security+ et plus !",
-      es: "Cuestionarios, explicaciones y logros para aprobar certificaciones IT. Empieza con ITF+, A+, AWS, Azure, Security+ y más.",
+      it: "Preparati alle certificazioni IT con quiz gratuiti, spiegazioni dettagliate e simulazioni realistiche. AWS, Azure, Security+, CCNA, PMP e altro.",
+      en: "Prepare for IT certifications with free practice quizzes and detailed explanations. AWS, Azure, Security+, CCNA, PMP and more.",
+      fr: "Préparez vos certifications IT avec des quiz gratuits et des explications détaillées. AWS, Azure, Security+, CCNA, PMP et plus.",
+      es: "Prepárate para certificaciones IT con quiz gratuitos y explicaciones detalladas. AWS, Azure, Security+, CCNA, PMP y más.",
     },
     lang
   );

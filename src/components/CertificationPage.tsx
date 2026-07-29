@@ -12,6 +12,7 @@ import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta"
 import type { CertificationResources } from "@/lib/data";
 import { certPath, guidePath, mapsPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
+import StructuredData from "@/components/StructuredData";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -194,6 +195,41 @@ const pageTopics =
   const faq = faqRaw.map((f) => ({ q: f?.q ?? "", a: f?.a ?? "" })).filter((x) => x.q || x.a);
   const examRefs = examRefsRaw.map((r) => ({ text: r?.text ?? "", url: r?.url }));
 
+  // JSON-LD: Course (solo se abbiamo una description reale, non il placeholder "Certification")
+  const courseLd = pageDescription
+    ? ({
+        "@context": "https://schema.org",
+        "@type": "Course",
+        name: pageTitle,
+        description: pageDescription,
+        provider: {
+          "@type": "Organization",
+          name: "CertifyQuiz",
+          sameAs: "https://certifyquiz.com",
+        },
+        inLanguage: lang,
+      } as const)
+    : null;
+
+  // JSON-LD: FAQPage — solo le FAQ con sia domanda che risposta, e solo se la
+  // sezione FAQ è effettivamente visibile in pagina (stessa condizione sotto)
+  const faqForLd = faq.filter((f) => f.q && f.a);
+  const faqLd =
+    faqForLd.length > 0
+      ? ({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqForLd.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: f.a,
+            },
+          })),
+        } as const)
+      : null;
+
   const basePath = lang === "en" ? "" : `/${lang}`;
 
   //solo le cert foundations hanno il riquadro con le guide 
@@ -232,7 +268,10 @@ const pageTopics =
   })();
 
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
+    <>
+      {courseLd && <StructuredData id={`ld-cert-course-${data.slug}`} data={courseLd} />}
+      {faqLd && <StructuredData id={`ld-cert-faq-${data.slug}`} data={faqLd} />}
+      <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden p-6">
         {/* Header titolo + logo */}
         <header
@@ -482,6 +521,7 @@ es: '¿Cuál es la certificación SQL "actual"?',
           </section>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
