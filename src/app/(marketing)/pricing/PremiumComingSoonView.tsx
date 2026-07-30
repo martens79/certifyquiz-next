@@ -624,10 +624,6 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               {t.badge}
             </div>
-            {/* TODO-SOCIAL-PROOF: rimuovere/aggiornare il badge sotto quando avremo un numero reale */}
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-500">
-              👥 {t.socialProofLine}
-            </div>
           </div>
 
           <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
@@ -684,19 +680,6 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           </section>
 
           <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
-
-          {/* Prova sociale — TODO-SOCIAL-PROOF: testimonial reali da inserire qui */}
-          <section className="mt-6 rounded-2xl border border-gray-200 p-6">
-            <div className="mb-3 text-lg font-semibold text-gray-900">{t.testimonialsTitle}</div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {t.testimonials.map((tm, i) => (
-                <div key={i} className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
-                  <p className="italic">&ldquo;{tm.text}&rdquo;</p>
-                  <p className="mt-2 text-xs font-semibold text-gray-400">{tm.name} — {tm.cert}</p>
-                </div>
-              ))}
-            </div>
-          </section>
 
           <BusinessBanner t={t} href={BUSINESS_HREF[lang]} />
 
