@@ -1,4 +1,3 @@
-// src/app/[lang]/blog/page.tsx
 import { sanityClient } from "@/lib/sanity.client";
 import { articlesListByLang } from "@/lib/sanity.queries";
 import Link from "next/link";
@@ -13,12 +12,12 @@ export default async function BlogPage({
 
   const articles = await sanityClient.fetch(articlesListByLang, { lang });
 
-  // ✅ EN root = /blog
+  // EN root = /blog
   // altre lingue = /es/blog, /fr/blog, /it/blog
   const base = lang === "en" ? "" : `/${lang}`;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="mb-6 text-3xl font-bold">Blog</h1>
 
       {articles.length === 0 ? (
@@ -28,25 +27,43 @@ export default async function BlogPage({
       ) : (
         <ul className="space-y-6">
           {articles.map((a: any) => (
-            <li key={a.id} className="rounded-xl border p-4">
-              <h2 className="text-xl font-semibold">
-                <Link
-                  href={`${base}/blog/${a.slug}`}
-                  className="hover:underline"
-                >
-                  {a.title}
-                </Link>
-              </h2>
+            <li
+              key={a.id}
+              className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+            >
+              <Link
+                href={`${base}/blog/${a.slug}`}
+                className="group block md:flex"
+              >
+                {a.coverUrl && (
+                  <div className="h-52 w-full shrink-0 overflow-hidden bg-gray-100 md:h-auto md:w-72">
+                    <img
+                      src={a.coverUrl}
+                      alt={a.title || "Immagine articolo"}
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
 
-              {a.excerpt && (
-                <p className="mt-2 text-gray-700">{a.excerpt}</p>
-              )}
+                <div className="flex-1 p-5">
+                  <h2 className="text-xl font-semibold text-gray-900 transition group-hover:text-blue-600">
+                    {a.title}
+                  </h2>
 
-              {a.publishedAt && (
-                <p className="mt-1 text-sm text-gray-500">
-                  {new Date(a.publishedAt).toLocaleDateString(lang)}
-                </p>
-              )}
+                  {a.excerpt && (
+                    <p className="mt-2 leading-relaxed text-gray-700">
+                      {a.excerpt}
+                    </p>
+                  )}
+
+                  {a.publishedAt && (
+                    <p className="mt-3 text-sm text-gray-500">
+                      {new Date(a.publishedAt).toLocaleDateString(lang)}
+                    </p>
+                  )}
+                </div>
+              </Link>
             </li>
           ))}
         </ul>
