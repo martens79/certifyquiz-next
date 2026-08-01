@@ -10,6 +10,7 @@ import {
   REVIEWS_SLUG_BY_LANG,
   SCENARIOS_SLUG_BY_LANG,
   PRICING_SLUG_BY_LANG,
+  GAMES_SLUG_BY_LANG,
 } from "@/lib/paths";
 
 /* ------------------------------------------------------------------ */
@@ -61,6 +62,8 @@ const REVIEWS_DETAIL_RE = sectionDetailRe(REVIEWS_SLUG_BY_LANG);
 
 /** ✅ Scenari — solo lista in root; il dettaglio vive sotto /certifications/{slug}/scenari */
 const SCENARIOS_LIST_RE = sectionListRe(SCENARIOS_SLUG_BY_LANG);
+const GAMES_LIST_RE = sectionListRe(GAMES_SLUG_BY_LANG);
+const GAMES_DETAIL_RE = sectionDetailRe(GAMES_SLUG_BY_LANG);
 
 /** ✅ Parola "review" della pagina di ripasso topic (.../{topicSlug}/review) */
 const TOPIC_REVIEW_WORD: Record<Locale, string> = {
@@ -385,6 +388,16 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     // ed è già coperto dal branch CERTIFICATION SUB-PATHS sopra.
     if (SCENARIOS_LIST_RE.test(pathname)) {
       router.push(qs(sectionRoot(next, SCENARIOS_SLUG_BY_LANG), query));
+      return;
+    }
+
+    if (GAMES_LIST_RE.test(pathname)) {
+      router.push(qs(sectionRoot(next, GAMES_SLUG_BY_LANG), query));
+      return;
+    }
+    const gameMatch = pathname.match(GAMES_DETAIL_RE);
+    if (gameMatch) {
+      router.push(qs(`${sectionRoot(next, GAMES_SLUG_BY_LANG)}/${gameMatch[4]}`, query));
       return;
     }
 

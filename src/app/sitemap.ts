@@ -36,6 +36,10 @@ const BLOG_SEGMENT_BY_LANG: Record<Lang, string> = {
   fr: "blog",
 };
 
+const GAMES_SEGMENT_BY_LANG: Record<Lang, string> = {
+  it: "giochi", en: "games", fr: "jeux", es: "juegos",
+};
+
 type RemoteCert = {
   id: number;
   slug: string;
@@ -212,6 +216,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   lastModified: now,
 },
           // Statiche lingua
+          {
+            url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}`,
+            changeFrequency: "weekly" as const,
+            priority: 0.75,
+            lastModified: now,
+          },
+          {
+            url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/binary-rush`,
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+            lastModified: now,
+          },
           ...staticPages[lang].map((p) => ({
             url: `${base}/${p}`,
             changeFrequency: "monthly" as const,

@@ -388,6 +388,22 @@ export const scenariosPath = (lang: Locale): string => {
   return base ? `${base}/${slug}` : `/${slug}`;
 };
 
+export const GAMES_SLUG_BY_LANG: Record<Locale, string> = {
+  it: "giochi",
+  en: "games",
+  fr: "jeux",
+  es: "juegos",
+};
+
+export const gamesPath = (lang: Locale): string => {
+  const base = seoPrefix(lang);
+  const slug = GAMES_SLUG_BY_LANG[lang];
+  return base ? `${base}/${slug}` : `/${slug}`;
+};
+
+export const binaryRushPath = (lang: Locale): string =>
+  `${gamesPath(lang)}/binary-rush`;
+
 /* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
@@ -469,4 +485,3 @@ export function switchLangPathname(
     ? pathWithoutLang
     : `/${nextLang}${pathWithoutLang}`;
 }
-

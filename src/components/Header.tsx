@@ -16,7 +16,7 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
 import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
-import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath } from "@/lib/paths";
+import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath, gamesPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
@@ -37,6 +37,7 @@ const UI: Record<
     scenarios: string;
     guides: string;
     maps: string;
+    games: string;
     profile: string;
     login: string;
     logout: string;
@@ -64,6 +65,7 @@ const UI: Record<
     scenarios: "Scenari",
     guides: "Guide",
     maps: "Mappe",
+    games: "Giochi",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -87,6 +89,7 @@ const UI: Record<
     scenarios: "Scenarios",
     guides: "Guides",
     maps: "Maps",
+    games: "Games",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -110,6 +113,7 @@ const UI: Record<
     scenarios: "Scénarios",
     guides: "Guides",
     maps: "Cartes",
+    games: "Jeux",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -133,6 +137,7 @@ const UI: Record<
     scenarios: "Escenarios",
     guides: "Guías",
     maps: "Mapas",
+    games: "Juegos",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -438,6 +443,7 @@ export default function Header({ lang }: Props) {
 
     const guidesHref = guidesPath(lang);
     const mapsHref = mapsPath(lang);
+    const gamesHref = gamesPath(lang);
 
   const aboutHref =
     lang === "it"
@@ -497,6 +503,8 @@ export default function Header({ lang }: Props) {
 
 { href: mapsHref, label: ui.maps, icon: <IconMaps /> },
 
+{ href: gamesHref, label: ui.games, icon: <IconQuiz /> },
+
 { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
 }, [
@@ -511,6 +519,7 @@ export default function Header({ lang }: Props) {
   scenariosHref,
   guidesHref,
   mapsHref,
+  gamesHref,
 
   suggestedHref,
   t.blog,
@@ -527,6 +536,7 @@ export default function Header({ lang }: Props) {
   ui.scenarios,
   ui.guides,
   ui.maps,
+  ui.games,
   ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
