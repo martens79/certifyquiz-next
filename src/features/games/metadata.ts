@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { binaryRushPath, gamesPath } from "@/lib/paths";
+import { portHunterPath } from "@/lib/paths";
 
 const SITE = "https://www.certifyquiz.com";
 const seo = {
@@ -17,4 +18,11 @@ export function gamesMetadata(lang: Locale, detail=false): Metadata {
  languages["x-default"] = `${SITE}${path("en")}`;
  const url=`${SITE}${path(lang)}`;
  return {title:item[0],description:item[1],alternates:{canonical:url,languages},openGraph:{title:item[0],description:item[1],url,siteName:"CertifyQuiz",locale:lang==="en"?"en_US":`${lang}_${lang.toUpperCase()}`,type:"website"},twitter:{card:"summary_large_image",title:item[0],description:item[1]}};
+}
+
+export function portHunterMetadata(lang: Locale): Metadata {
+ const copy={it:["Port Hunter: gioco sulle porte di rete | CertifyQuiz","Ripassa porte TCP e UDP, servizi e protocolli con un quiz di rete gratuito da 60 secondi."],en:["Port Hunter: network ports game | CertifyQuiz","Practice TCP and UDP ports, services and protocols with a free 60-second network port quiz."],fr:["Port Hunter : jeu sur les ports réseau | CertifyQuiz","Révisez les ports TCP et UDP, services et protocoles avec un jeu réseau gratuit de 60 secondes."],es:["Port Hunter: juego de puertos de red | CertifyQuiz","Repasa puertos TCP y UDP, servicios y protocolos con un juego de redes gratuito de 60 segundos."]} as const;
+ const [title,description]=copy[lang],url=`${SITE}${portHunterPath(lang)}`,codes:Record<Locale,string>={it:"it-IT",en:"en-US",fr:"fr-FR",es:"es-ES"};
+ const languages=Object.fromEntries((["it","en","fr","es"] as Locale[]).map(l=>[codes[l],`${SITE}${portHunterPath(l)}`]));languages["x-default"]=`${SITE}${portHunterPath("en")}`;
+ return{title,description,alternates:{canonical:url,languages},openGraph:{title,description,url,siteName:"CertifyQuiz",locale:lang==="en"?"en_US":`${lang}_${lang.toUpperCase()}`,type:"website"},twitter:{card:"summary_large_image",title,description}};
 }

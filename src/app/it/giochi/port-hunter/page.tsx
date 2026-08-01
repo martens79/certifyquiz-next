@@ -1,0 +1,1 @@
+import PortHunterGame from "@/features/games/port-hunter/PortHunterGame";import{portHunterMetadata}from"@/features/games/metadata";export const metadata=portHunterMetadata("it");export default function Page(){return <PortHunterGame lang="it"/>;}

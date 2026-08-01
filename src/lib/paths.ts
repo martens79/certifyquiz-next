@@ -404,6 +404,9 @@ export const gamesPath = (lang: Locale): string => {
 export const binaryRushPath = (lang: Locale): string =>
   `${gamesPath(lang)}/binary-rush`;
 
+export const portHunterPath = (lang: Locale): string =>
+  `${gamesPath(lang)}/port-hunter`;
+
 /* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
