@@ -23,6 +23,7 @@ export function usePushNotifications(language: "it" | "en" | "fr" | "es", certif
     setPermission(Notification.permission);
     const registration = await navigator.serviceWorker.ready;
     setSubscribed(!!(await registration.pushManager.getSubscription()));
+    setError(null);
   }, []);
 
   useEffect(() => { refreshStatus().catch(() => setError("STATUS_FAILED")); }, [refreshStatus]);
@@ -45,13 +46,19 @@ export function usePushNotifications(language: "it" | "en" | "fr" | "es", certif
       const response = await authFetch(backendUrl("/push/subscribe"), { method: "POST", body: JSON.stringify({ subscription: subscription.toJSON(), language, certificationId: certificationId ?? null }) });
       if (!response.ok) throw new Error("SYNC_FAILED");
       setSubscribed(true);
-      await registration.showNotification("CertifyQuiz", {
-        body: language === "it" ? "Notifiche attivate correttamente." : language === "fr" ? "Notifications activées avec succès." : language === "es" ? "Notificaciones activadas correctamente." : "Notifications enabled successfully.",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        tag: "push-enabled",
-        data: { url: `/${language === "en" ? "" : language + "/"}profile` },
-      });
+      // La conferma locale è best-effort: un blocco del sistema operativo non
+      // deve annullare una subscription Web Push creata e sincronizzata.
+      try {
+        await registration.showNotification("CertifyQuiz", {
+          body: language === "it" ? "Notifiche attivate correttamente." : language === "fr" ? "Notifications activées avec succès." : language === "es" ? "Notificaciones activadas correctamente." : "Notifications enabled successfully.",
+          icon: "/icons/icon-192.png",
+          badge: "/icons/icon-192.png",
+          tag: "push-enabled",
+          data: { url: `/${language === "en" ? "" : language + "/"}profile` },
+        });
+      } catch {
+        // Subscription valida: la consegna remota continuerà a funzionare.
+      }
     } catch (e) { setError(e instanceof Error ? e.message : "SUBSCRIBE_FAILED"); }
     finally { setLoading(false); }
   }, [certificationId, isSupported, language]);
