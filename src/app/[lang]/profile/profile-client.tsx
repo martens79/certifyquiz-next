@@ -1275,6 +1275,7 @@ const avatarBorderClass =
     </div>
   </div>
 </div>
+<PushNotificationCard lang={lang} />
 {/* Gestione abbonamento */}
 {user?.premium && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
@@ -1577,7 +1578,6 @@ const avatarBorderClass =
         </div>
   </div>
 )}
-<PushNotificationCard lang={lang} />
         {/* Badge */}
 <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
   <div className="flex items-center justify-between gap-3">
