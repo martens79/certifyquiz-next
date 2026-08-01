@@ -577,20 +577,33 @@ useEffect(() => {
     document.addEventListener("mousedown", onClick);
 
     const html = document.documentElement;
-    if (openDrawer) html.classList.add("overflow-y-hidden");
-    else html.classList.remove("overflow-y-hidden");
+    const body = document.body;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+
+    if (openDrawer) {
+      html.style.overflow = "hidden";
+      body.style.overflow = "hidden";
+    }
 
     return () => {
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("mousedown", onClick);
-      html.classList.remove("overflow-y-hidden");
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
     };
   }, [openDrawer]);
 
   const isActive = (href: string) => pathNoQuery === href;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60">
+    <header
+      className={`top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60 ${
+        openDrawer
+          ? "fixed inset-0 h-screen h-[100dvh] overflow-hidden bg-white"
+          : "sticky"
+      }`}
+    >
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-gray-900 focus:px-3 focus:py-2 focus:text-white"
@@ -598,8 +611,12 @@ useEffect(() => {
         {ui.skip}
       </a>
 
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="flex h-14 items-center justify-between">
+      <div
+        className={`mx-auto max-w-6xl px-4 ${
+          openDrawer ? "flex h-full flex-col" : ""
+        }`}
+      >
+        <div className="flex h-14 shrink-0 items-center justify-between">
           <Link
             href={homeHref}
             className="flex items-center gap-2"
@@ -648,7 +665,7 @@ useEffect(() => {
 
             <button
               ref={btnRef}
-              className="inline-flex items-center justify-center rounded-md border px-2.5 py-2"
+              className="inline-flex items-center justify-center rounded-md border px-2.5 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
               onClick={() => setOpenDrawer((v) => !v)}
               aria-label={openDrawer ? ui.closeMenu : ui.openMenu}
               aria-expanded={openDrawer}
@@ -688,11 +705,11 @@ useEffect(() => {
           id="mobile-drawer"
           ref={drawerRef}
           className={`md:hidden overflow-hidden transition-[max-height] duration-200 ease-in-out ${
-            openDrawer ? "max-h-[70vh] border-t" : "max-h-0"
+            openDrawer ? "flex min-h-0 flex-1 flex-col border-t" : "max-h-0"
           }`}
           aria-hidden={!openDrawer}
         >
-          <div className="py-3">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 pb-[calc(10rem+env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
             <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
               {quick.map((q) => (
                 <Link
