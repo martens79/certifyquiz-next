@@ -1,0 +1,61 @@
+
+> certifyquiz-next@0.1.0 dev
+> next dev -p 3137
+
+   ▲ Next.js 15.5.9
+   - Local:        http://localhost:3137
+   - Network:      http://192.168.56.1:3137
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 16.1s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 983ms (114 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 16s (748 modules)
+ GET / 200 in 19515ms
+ ○ Compiling /[lang] ...
+ ✓ Compiled /api/backend/[...path] in 13.1s (1023 modules)
+ GET / 200 in 811ms
+ GET /api/backend/public/home-stats 500 in 17896ms
+ GET /favicon.ico 200 in 20682ms
+ GET /api/blog/latest?lang=en&limit=2 200 in 20931ms
+ ✓ Compiled in 7.4s (751 modules)
+ GET / 200 in 1852ms
+ ✓ Compiled in 2.7s (308 modules)
+ GET / 200 in 540ms
+ ✓ Compiled in 3.1s (308 modules)
+ GET / 200 in 596ms
+ ✓ Compiled in 2.7s (308 modules)
+ GET / 200 in 629ms
+ ✓ Compiled in 3.3s (308 modules)
+ GET / 200 in 689ms
+ ○ Compiling /about ...
+ ✓ Compiled /about in 4.4s (743 modules)
+ GET /about 200 in 6188ms
+ ○ Compiling /[lang] ...
+ ✓ Compiled /[lang] in 766ms (457 modules)
+ GET /favicon.ico 200 in 3113ms
+ ✓ Compiled in 2.6s (309 modules)
+ ✓ Compiled in 2.2s (309 modules)
+ ✓ Compiled in 1674ms (309 modules)
+ ✓ Compiled in 3.5s (309 modules)
+ ✓ Compiled in 3s (309 modules)
+ ✓ Compiled in 3.3s (309 modules)
+ ✓ Compiled in 2.4s (309 modules)
+ ✓ Compiled in 2.7s (871 modules)
+ ✓ Compiled in 1898ms (309 modules)
+ ✓ Compiled in 2s (857 modules)
+ ✓ Compiled in 2.1s (309 modules)
+ ✓ Compiled in 2.3s (871 modules)
+ ✓ Compiled in 2.7s (309 modules)
+ ✓ Compiled in 2.9s (871 modules)
+ ✓ Compiled in 2.1s (309 modules)
+ ✓ Compiled in 1174ms (309 modules)
+ ✓ Compiled in 2.4s (309 modules)
+ ○ Compiling /games/packet-defender ...
+ ✓ Compiled /games/packet-defender in 14.5s (781 modules)
+ ✓ Compiled in 16.1s (773 modules)
+ ✓ Compiled in 4s (325 modules)
+ ✓ Compiled in 10.3s (773 modules)
+ ✓ Compiled in 5.9s (773 modules)

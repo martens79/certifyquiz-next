@@ -1,0 +1,19 @@
+TypeError: fetch failed
+    at async proxy (src\app\api\backend\[...path]\route.ts:97:15)
+   95 |     method === "GET" || method === "HEAD" ? undefined : await req.arrayBuffer();
+   96 |
+>  97 |   const res = await fetch(url, { method, headers, body, redirect: "manual" });
+      |               ^
+   98 |
+   99 |   // Copia headers risposta in modo safe
+  100 |   const outHeaders = new Headers(res.headers); {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:8080
+      at <unknown> (Error: connect ECONNREFUSED 127.0.0.1:8080) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 8080
+  }
+}
+API /api/blog/latest error: fetch failed
