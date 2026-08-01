@@ -407,6 +407,9 @@ export const binaryRushPath = (lang: Locale): string =>
 export const portHunterPath = (lang: Locale): string =>
   `${gamesPath(lang)}/port-hunter`;
 
+export const packetDefenderPath = (lang: Locale): string =>
+  `${gamesPath(lang)}/packet-defender`;
+
 /* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */

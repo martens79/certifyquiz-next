@@ -1,0 +1,1 @@
+import PacketDefenderGame from"@/features/games/packet-defender/PacketDefenderGame";import{packetDefenderMetadata}from"@/features/games/metadata";export const metadata=packetDefenderMetadata("en");export default function Page(){return <PacketDefenderGame lang="en"/>}

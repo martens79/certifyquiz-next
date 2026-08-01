@@ -234,6 +234,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.8,
             lastModified: now,
           },
+          {
+            url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/packet-defender`,
+            changeFrequency: "monthly" as const,
+            priority: 0.85,
+            lastModified: now,
+          },
           ...staticPages[lang].map((p) => ({
             url: `${base}/${p}`,
             changeFrequency: "monthly" as const,
