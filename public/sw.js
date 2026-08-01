@@ -69,7 +69,12 @@ self.addEventListener("push", (event) => {
     vibrate: [180, 80, 180],
     data: { url: safeNotificationUrl(data.url), notificationId: Number(data.notificationId) || null },
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title, options),
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) =>
+      Promise.all(clients.map((client) => client.postMessage({ type: "CQ_PUSH_RECEIVED", notificationId: options.data.notificationId })))
+    ),
+  ]));
 });
 
 self.addEventListener("notificationclick", (event) => {

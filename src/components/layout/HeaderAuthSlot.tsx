@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { withLang } from "@/lib/i18n";
+import NotificationBell from "@/components/push/NotificationBell";
 
 import { authMe } from "@/lib/apiClient";
 import {
@@ -276,6 +277,7 @@ export default function HeaderAuthSlot({
   // Desktop: loggato
   return (
     <div ref={ref} className="relative flex items-center">
+      <NotificationBell lang={lang} />
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
