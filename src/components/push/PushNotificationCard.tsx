@@ -17,7 +17,11 @@ export default function PushNotificationCard({ lang }: { lang: "it" | "en" | "fr
     <p className="mt-2 text-sm text-slate-600">{t[1]}</p>
     {!push.isSupported && <p className="mt-2 text-sm text-amber-700">{ios ? "Su iPhone/iPad aggiungi prima CertifyQuiz alla schermata Home." : "Le notifiche push non sono supportate in questo browser."}</p>}
     {push.permission === "denied" && <p className="mt-2 text-sm text-amber-700">{t[6]}</p>}
-    {push.error && push.permission !== "denied" && <p className="mt-2 text-sm text-red-700">{t[5]}</p>}
+    {push.error && push.permission !== "denied" && (
+      <p className="mt-2 text-sm text-red-700">
+        {t[5]} <span className="font-mono text-xs">({push.error})</span>
+      </p>
+    )}
     <div className="mt-3 flex items-center gap-3">
       <button type="button" disabled={push.isLoading || !push.isSupported || push.permission === "denied"} onClick={push.isSubscribed ? push.unsubscribe : push.subscribe} className="rounded-xl bg-blue-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
         {push.isLoading ? "…" : push.isSubscribed ? t[4] : t[2]}

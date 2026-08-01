@@ -59,7 +59,13 @@ export function usePushNotifications(language: "it" | "en" | "fr" | "es", certif
       } catch {
         // Subscription valida: la consegna remota continuerà a funzionare.
       }
-    } catch (e) { setError(e instanceof Error ? e.message : "SUBSCRIBE_FAILED"); }
+    } catch (e) {
+      const nativeError = e as { name?: string; message?: string };
+      const code = nativeError?.message && /^[A-Z_]+$/.test(nativeError.message)
+        ? nativeError.message
+        : nativeError?.name || "SUBSCRIBE_FAILED";
+      setError(code);
+    }
     finally { setLoading(false); }
   }, [certificationId, isSupported, language]);
 
@@ -74,7 +80,13 @@ export function usePushNotifications(language: "it" | "en" | "fr" | "es", certif
         await subscription.unsubscribe();
       }
       setSubscribed(false);
-    } catch (e) { setError(e instanceof Error ? e.message : "UNSUBSCRIBE_FAILED"); }
+    } catch (e) {
+      const nativeError = e as { name?: string; message?: string };
+      const code = nativeError?.message && /^[A-Z_]+$/.test(nativeError.message)
+        ? nativeError.message
+        : nativeError?.name || "UNSUBSCRIBE_FAILED";
+      setError(code);
+    }
     finally { setLoading(false); }
   }, []);
 
