@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import AdminFeedbackClient from "./feedback/AdminFeedbackClient";
 import AdminSubscriptionsClient from "./subscriptions/AdminSubscriptionsClient";
 import AdminOrganizationsClient from "./organizations/AdminOrganizationsClient";
+import AdminPushClient from "./push/AdminPushClient";
 type Lead = {
   id: number;
   email: string;
@@ -75,7 +76,7 @@ type Paywall20 = {
 
 type DateFilter = "today" | "7d" | "30d" | "all";
 type ModeFilter = "all" | "assessment" | "lead_magnet";
-type Tab = "dashboard" | "feedback" | "subscriptions" | "organizations";
+type Tab = "dashboard" | "feedback" | "subscriptions" | "organizations" | "push";
 
 export default function AdminClient() {
   const { user, isAdmin, token } = useAuth();
@@ -452,6 +453,7 @@ return (
         >
           Aziende
         </button>
+        <button onClick={() => setTab("push")} style={tab === "push" ? styles.tabActive : styles.tab}>Notifiche push</button>
 
         {tab === "dashboard" && (
           <button
@@ -884,6 +886,7 @@ return (
           <AdminOrganizationsClient />
         </div>
       )}
+      {tab === "push" && <div style={styles.panel}><AdminPushClient /></div>}
     </div>
   );
 }

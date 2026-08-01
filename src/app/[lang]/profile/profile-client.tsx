@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, getToken } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
 import ReadinessCard from "@/components/profile/ReadinessCard";
+import PushNotificationCard from "@/components/push/PushNotificationCard";
 import { reviewErrorsPath } from "@/lib/paths";
 
 // 📈 Grafico andamento
@@ -1576,6 +1577,7 @@ const avatarBorderClass =
         </div>
   </div>
 )}
+<PushNotificationCard lang={lang} />
         {/* Badge */}
 <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
   <div className="flex items-center justify-between gap-3">

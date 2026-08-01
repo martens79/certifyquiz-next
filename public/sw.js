@@ -45,3 +45,40 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+function safeNotificationUrl(value) {
+  try {
+    const target = new URL(typeof value === "string" ? value : "/", self.location.origin);
+    return target.origin === self.location.origin ? target.href : self.location.origin;
+  } catch (_) { return self.location.origin; }
+}
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (_) { data = {}; }
+  const title = typeof data.title === "string" ? data.title : "CertifyQuiz";
+  const options = {
+    body: typeof data.body === "string" ? data.body : "Hai un nuovo aggiornamento.",
+    icon: typeof data.icon === "string" ? data.icon : "/icons/icon-192.png",
+    badge: typeof data.badge === "string" ? data.badge : "/icons/icon-192.png",
+    image: typeof data.image === "string" ? data.image : undefined,
+    tag: typeof data.tag === "string" ? data.tag : undefined,
+    data: { url: safeNotificationUrl(data.url), notificationId: Number(data.notificationId) || null },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = safeNotificationUrl(event.notification.data?.url);
+  const notificationId = event.notification.data?.notificationId;
+  event.waitUntil(Promise.all([
+    notificationId ? fetch("/api/backend/push/click", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notificationId }), keepalive: true }).catch(() => undefined) : Promise.resolve(),
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clients) => {
+      for (const client of clients) { if (new URL(client.url).origin === self.location.origin) { await client.navigate(target); return client.focus(); } }
+      return self.clients.openWindow(target);
+    }),
+  ]));
+});
+
+self.addEventListener("notificationclose", (event) => { event.waitUntil(Promise.resolve()); });
