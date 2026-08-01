@@ -1,4 +1,4 @@
-const CACHE_NAME = "certifyquiz-v2";
+const CACHE_NAME = "certifyquiz-v3";
 
 const OFFLINE_URL = "/offline.html";
 
@@ -63,6 +63,10 @@ self.addEventListener("push", (event) => {
     badge: typeof data.badge === "string" ? data.badge : "/icons/icon-192.png",
     image: typeof data.image === "string" ? data.image : undefined,
     tag: typeof data.tag === "string" ? data.tag : undefined,
+    renotify: typeof data.tag === "string" && data.tag.length > 0,
+    requireInteraction: false,
+    timestamp: Date.now(),
+    vibrate: [180, 80, 180],
     data: { url: safeNotificationUrl(data.url), notificationId: Number(data.notificationId) || null },
   };
   event.waitUntil(self.registration.showNotification(title, options));
