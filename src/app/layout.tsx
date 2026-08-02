@@ -12,13 +12,13 @@ import { QuizTutorProvider } from "@/components/quiz/QuizTutorContext";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-inter",
   display: "swap",
 });
 
 const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--font-manrope",
   display: "swap",
 });
 

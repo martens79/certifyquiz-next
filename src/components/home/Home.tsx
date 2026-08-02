@@ -436,11 +436,9 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         </p>
       </header>
 
-     <HomeFeatureCarousel lang={safeLang} />
+      <ResourceTypesSection lang={safeLang} />
 
-{/* LE CINQUE RISORSE — sotto il carosello di proposito: sopra c'è l'elemento
-    che determina l'LCP, e inserire qui non sposta nulla di quanto già carica */}
-<ResourceTypesSection lang={safeLang} />
+      <HomeFeatureCarousel lang={safeLang} />
 
 {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
 <PathBox lang={safeLang} />
