@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -18,6 +18,7 @@ let promptHandledThisSession = false;
 
 const PROMPT_SHOWN_KEY = "pwa_prompt_last_shown";
 const PROMPT_DISMISSED_KEY = "pwa_install_dismissed";
+const LAST_LANG_KEY = "cq_last_lang";
 const DAYS_COOLDOWN_SHOWN = 14;     // rivisto dopo 14 giorni se ignorato
 const DAYS_COOLDOWN_DISMISSED = 30; // rivisto dopo 30 giorni se dismissato
 
@@ -27,8 +28,19 @@ function getLangFromPath() {
   const first = window.location.pathname.split("/").filter(Boolean)[0];
 
   if (first === "it" || first === "fr" || first === "es") {
+    try {
+      localStorage.setItem(LAST_LANG_KEY, first);
+    } catch {}
     return first;
   }
+
+  // Path root (es. start_url "/" al lancio della PWA standalone): niente
+  // prefisso da leggere, quindi usa l'ultima lingua reale nota invece di
+  // ricadere sempre su "en".
+  try {
+    const cached = localStorage.getItem(LAST_LANG_KEY);
+    if (cached === "it" || cached === "fr" || cached === "es") return cached;
+  } catch {}
 
   return "en";
 }
@@ -76,6 +88,7 @@ export default function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const installClickedRef = useRef(false);
 
   useEffect(() => {
     const isStandalone =
@@ -129,6 +142,8 @@ export default function PwaInstallPrompt() {
 
   const installApp = async () => {
     if (!deferredPrompt) return;
+    if (installClickedRef.current) return;
+    installClickedRef.current = true;
 
     window.gtag?.("event", "pwa_install_clicked");
     trackPwaEvent("pwa_install_clicked");
