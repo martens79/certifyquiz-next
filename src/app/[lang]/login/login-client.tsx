@@ -13,9 +13,9 @@ import {
   getToken,
   setToken,
   authHeader,
-  clearToken,
   setUser, // ✅ salva l’utente in cache locale
 } from "@/lib/auth";
+import { authMe } from "@/lib/apiClient";
 
 type Props = {
   initialLang: Locale;
@@ -68,31 +68,15 @@ export default function LoginPageClient({ initialLang }: Props) {
       }
 
       try {
-        const res = await fetch(backendUrl("/auth/me"), {
-          method: "GET",
-          headers: { Accept: "application/json", ...authHeader() },
-          credentials: "include",
-          cache: "no-store",
-        });
+        const me = await authMe();
 
         if (!alive) return;
 
-        if (res.ok) {
-          // Popola cache utente così la topbar cambia subito
-          try {
-            const me = await res.json();
-            setUser(me, true);
-          } catch {}
-          if (!navigatingRef.current) {
-            navigatingRef.current = true;
-            router.replace(redirectParam || withLang(lang, "/profile"));
-          }
-        } else if (res.status === 401) {
-          clearToken();
-          setLoading(false);
-        } else {
-          // altri errori → mostra form
-          setLoading(false);
+        // Popola cache utente così la topbar cambia subito.
+        setUser(me.user, true);
+        if (!navigatingRef.current) {
+          navigatingRef.current = true;
+          router.replace(redirectParam || withLang(lang, "/profile"));
         }
       } catch {
         if (!alive) return;

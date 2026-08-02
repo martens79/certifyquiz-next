@@ -168,15 +168,40 @@ export function logoutAndRedirect(url: string = "/it/login") {
  * - Auto-logout su 401 con redirect alla /[lang]/login
  */
 export async function apiFetch(path: string, init: RequestInit = {}) {
-  const res = await authFetch(backendUrl(path), init);
+  const url = backendUrl(path);
+  const hadToken = !!getToken();
+  let res = await authFetch(url, init);
 
   if (res.status === 401) {
-    clearToken();
-    setUser(null); // NEW
-    if (isBrowser()) {
-      const m = location.pathname.match(/^\/(it|en|fr|es)(?:\/|$)/i);
-      const lang = (m?.[1]?.toLowerCase() || "it") as "it" | "en" | "fr" | "es";
-      location.href = `/${lang}/login?redirect=${encodeURIComponent(location.pathname)}`;
+    // Prova prima a rinnovare l'access token tramite il refresh cookie HttpOnly.
+    // Questo wrapper legacy e' ancora usato da diversi componenti globali
+    // (tra cui NotificationBell), quindi non deve distruggere una sessione
+    // recuperabile al primo 401.
+    try {
+      const refreshRes = await authFetch(backendUrl("/auth/refresh"), {
+        method: "POST",
+        auth: false,
+      });
+
+      if (refreshRes.ok) {
+        const data = (await refreshRes.json()) as { token?: string };
+        if (data.token) {
+          setToken(data.token, isTokenRemembered());
+          res = await authFetch(url, init);
+        }
+      } else if (refreshRes.status === 401 || refreshRes.status === 403) {
+        clearToken();
+        setUser(null);
+        // Un visitatore guest puo' legittimamente ricevere 401 dagli endpoint
+        // opzionali: il redirect serve solo quando una sessione esisteva.
+        if (hadToken && isBrowser()) {
+          const m = location.pathname.match(/^\/(it|en|fr|es)(?:\/|$)/i);
+          const lang = (m?.[1]?.toLowerCase() || "it") as "it" | "en" | "fr" | "es";
+          location.href = `/${lang}/login?redirect=${encodeURIComponent(location.pathname)}`;
+        }
+      }
+    } catch {
+      // Errori di rete/5xx non devono cancellare una sessione locale valida.
     }
   }
 
