@@ -78,27 +78,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (refreshInFlight.current) return refreshInFlight.current;
 
     refreshInFlight.current = (async () => {
+      const hadToken = !!getToken();
       try {
         const t = getToken();
 
         // ✅ aggiorna token state solo se cambia
         setTokenState((prev) => (prev === t ? prev : t));
 
-        if (!t) {
-          // logout/guest
-          setUserState(null);
-          setLostSession(false);
-          return;
-        }
-
-        // se ho token, non voglio "lostSession" true
+        // Anche senza access token locale proviamo /me: apiClient puo' recuperare
+        // la sessione dal refresh cookie HttpOnly.
         setLostSession(false);
 
         // se ho già user cache, non devo per forza chiamare /me ogni volta
         // (ma la facciamo comunque in bootstrap e quando token cambia)
         const me = await authMe();
+        const refreshedToken = getToken();
         const normalized = toUser(me.user);
 
+        setTokenState(refreshedToken);
         setUserState(normalized);
 
         // ✅ aggiorna anche cache locale, così header/slot restano coerenti
@@ -116,12 +113,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const status = err?.status ?? err?.response?.status;
 
         if (status === 401 || status === 403) {
-          // token non valido → logout “hard”
+          // Per un visitatore senza token e senza refresh cookie e' normale
+          // ricevere 401: resta guest e non forzare il redirect al login.
           clearToken();
           setCachedUser(null, true);
           setTokenState(null);
           setUserState(null);
-          setLostSession(true);
+          setLostSession(hadToken);
         } else {
           // rete/502: NON distruggere sessione
           // lascia token/user come stanno
