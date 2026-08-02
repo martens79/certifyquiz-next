@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import type { Locale } from "@/lib/quiz-types";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 type Props = {
   lang?: Locale;
@@ -93,20 +94,14 @@ export default function PremiumTeaserBox({
           setClicked(true);
 
           // ✅ Tracking click Premium nel funnel
-          fetch("/api/backend/funnel-event", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
+          trackFunnelEvent({
             event: "premium_clicked",
             email: user?.email || null,
             cert_slug: certificationSlug ?? null,
             topic_slug: topicSlug ?? null,
             lang: L,
             score: score ?? null,
-}),
-          }).catch(console.error);
+          });
         }}
         aria-disabled={clicked}
         className={`inline-flex items-center justify-center rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white hover:opacity-90 ${clicked ? "pointer-events-none opacity-60" : ""}`}

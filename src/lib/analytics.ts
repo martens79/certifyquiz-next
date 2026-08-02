@@ -25,3 +25,42 @@ export function userStatusFrom(user: { premium?: boolean } | null): UserStatus {
   if (!user) return "anonymous";
   return user.premium ? "premium" : "free";
 }
+
+type FunnelEventBody = {
+  event: string;
+  email?: string | null;
+  cert_slug?: string | null;
+  topic_slug?: string | null;
+  lang?: string | null;
+  score?: number | null;
+  plan?: string | null;
+};
+
+/**
+ * Scrive un evento in funnel_events (DB), pensato per i click seguiti
+ * subito da una navigazione (redirect/router.push). Una fetch normale
+ * fire-and-forget viene abortita dal browser se la pagina inizia a
+ * scaricarsi prima che la richiesta risponda: usiamo sendBeacon (pensato
+ * apposta per sopravvivere all'unload) con fallback a fetch keepalive per
+ * i browser che non lo supportano.
+ */
+export function trackFunnelEvent(
+  body: FunnelEventBody,
+  endpoint = "/api/backend/funnel-event"
+) {
+  if (typeof window === "undefined") return;
+
+  const payload = JSON.stringify(body);
+
+  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+    const blob = new Blob([payload], { type: "application/json" });
+    if (navigator.sendBeacon(endpoint, blob)) return;
+  }
+
+  fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: payload,
+  }).catch(() => {});
+}

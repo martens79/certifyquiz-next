@@ -18,6 +18,7 @@ import LocaleSwitcher from "./LocaleSwitcher";
 import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
 import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath, gamesPath, interactiveLabsPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
+import { trackFunnelEvent } from "@/lib/analytics";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
 /* ------------------------------------------------------------------ */
@@ -384,7 +385,7 @@ type Props = {
   lang: Locale;
 };
 
-type QuickItem = { href: string; label: string; icon: ReactNode };
+type QuickItem = { href: string; label: string; icon: ReactNode; onClick?: () => void };
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
@@ -495,7 +496,22 @@ export default function Header({ lang }: Props) {
 
     { href: blogHref, label: t.blog ?? ui.blog, icon: <IconBlog /> },
 
-    { href: pricingHref, label: t.pricing ?? ui.pricing, icon: <IconPricing /> },
+    {
+      href: pricingHref,
+      label: t.pricing ?? ui.pricing,
+      icon: <IconPricing />,
+      // ✅ Tracking click Premium nel funnel (DB). Prima mancava del tutto:
+      // la voce "Pricing" e' sempre visibile in ogni pagina del sito e non
+      // contribuiva mai a funnel_events.
+      onClick: () =>
+        trackFunnelEvent({
+          event: "premium_clicked",
+          email: getUser()?.email || null,
+          cert_slug: null,
+          topic_slug: null,
+          lang,
+        }),
+    },
 
     { href: businessHref, label: ui.business, icon: <IconBusiness /> },
 
@@ -520,6 +536,7 @@ export default function Header({ lang }: Props) {
   businessHref,
   certsHref,
   homeHref,
+  lang,
   pathsHref,   // 👈 IMPORTANTISSIMO
   pricingHref,
   quizHomeHref,
@@ -701,6 +718,7 @@ useEffect(() => {
                     active ? "underline underline-offset-4" : "hover:opacity-80"
                   }`}
                   aria-current={active ? "page" : undefined}
+                  onClick={q.onClick}
                 >
                   {q.icon}
                   <span>{q.label}</span>
@@ -726,7 +744,10 @@ useEffect(() => {
                   key={q.href}
                   href={q.href}
                   className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setOpenDrawer(false)}
+                  onClick={() => {
+                    q.onClick?.();
+                    setOpenDrawer(false);
+                  }}
                 >
                   {q.label}
                 </Link>

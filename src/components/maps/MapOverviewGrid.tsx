@@ -8,7 +8,7 @@ import { pricingPath } from "@/lib/paths";
 import type { MapOverviewItem } from "@/lib/data";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { trackEvent, userStatusFrom, type UserStatus } from "@/lib/analytics";
+import { trackEvent, trackFunnelEvent, userStatusFrom, type UserStatus } from "@/lib/analytics";
 
 /** Item arricchito lato server col logo preso dal registry certificazioni */
 export type MapCardItem = MapOverviewItem & { imageUrl: string | null };
@@ -148,17 +148,13 @@ function MapCard({
     trackMapEvent("study_map_locked_clicked");
 
     // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
-    fetch("/api/backend/funnel-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event: "premium_clicked_map_locked",
-        email: userEmail,
-        cert_slug: item.certification_slug,
-        topic_slug: null,
-        lang,
-      }),
-    }).catch(console.error);
+    trackFunnelEvent({
+      event: "premium_clicked_map_locked",
+      email: userEmail,
+      cert_slug: item.certification_slug,
+      topic_slug: null,
+      lang,
+    });
   }
 
   async function handleDownload() {

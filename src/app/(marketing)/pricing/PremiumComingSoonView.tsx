@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 type Lang = "it" | "es" | "en" | "fr";
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
@@ -578,11 +579,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     if (isLoading) return;
     try {
       setIsLoading(true);
-      fetch("/api/backend/funnel-event", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event: "premium_clicked", lang, plan: selectedPlan }),
-      }).catch(console.error);
+      trackFunnelEvent({ event: "premium_clicked", lang, plan: selectedPlan });
 
       trackMetaPixel("InitiateCheckout", {
         value: PREMIUM_PLAN_VALUES[selectedPlan],
