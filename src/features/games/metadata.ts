@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
-import { binaryRushPath, gamesPath, packetDefenderPath } from "@/lib/paths";
+import { binaryRushPath, gamesPath, hexBlitzPath, packetDefenderPath } from "@/lib/paths";
 import { portHunterPath } from "@/lib/paths";
 
 const SITE = "https://www.certifyquiz.com";
@@ -28,3 +28,5 @@ export function portHunterMetadata(lang: Locale): Metadata {
  const languages=Object.fromEntries((["it","en","fr","es"] as Locale[]).map(l=>[codes[l],`${SITE}${portHunterPath(l)}`]));languages["x-default"]=`${SITE}${portHunterPath("en")}`;
  return{title,description,alternates:{canonical:url,languages},openGraph:{title,description,url,siteName:"CertifyQuiz",locale:lang==="en"?"en_US":`${lang}_${lang.toUpperCase()}`,type:"website"},twitter:{card:"summary_large_image",title,description}};
 }
+
+export function hexBlitzMetadata(lang:Locale):Metadata{const copy={it:["Hex Blitz: gioco sui numeri esadecimali | CertifyQuiz","Allenati nelle conversioni tra esadecimale e decimale con un gioco gratuito da 60 secondi."],en:["Hex Blitz: hexadecimal conversion game | CertifyQuiz","Practice hexadecimal and decimal conversions in a free 60-second IT game."],fr:["Hex Blitz : jeu de conversion hexadécimale | CertifyQuiz","Entraînez-vous aux conversions hexadécimales et décimales dans un jeu gratuit de 60 secondes."],es:["Hex Blitz: juego de conversión hexadecimal | CertifyQuiz","Practica conversiones hexadecimales y decimales en un juego gratuito de 60 segundos."]}as const;const[title,description]=copy[lang],url=`${SITE}${hexBlitzPath(lang)}`,codes:Record<Locale,string>={it:"it-IT",en:"en-US",fr:"fr-FR",es:"es-ES"};const languages=Object.fromEntries((Object.keys(codes)as Locale[]).map(l=>[codes[l],`${SITE}${hexBlitzPath(l)}`]));languages["x-default"]=`${SITE}${hexBlitzPath("en")}`;return{title,description,alternates:{canonical:url,languages},openGraph:{title,description,url,siteName:"CertifyQuiz",type:"website"},twitter:{card:"summary_large_image",title,description}}}

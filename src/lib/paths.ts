@@ -410,6 +410,9 @@ export const portHunterPath = (lang: Locale): string =>
 export const packetDefenderPath = (lang: Locale): string =>
   `${gamesPath(lang)}/packet-defender`;
 
+export const hexBlitzPath = (lang: Locale): string =>
+  `${gamesPath(lang)}/hex-blitz`;
+
 /* ------------------------------------------------------------------ */
 /* QUIZ (sempre con lingua)                                            */
 /* ------------------------------------------------------------------ */
