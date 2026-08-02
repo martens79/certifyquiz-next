@@ -8,6 +8,7 @@ import { pricingPath } from "@/lib/paths";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { trackFunnelEvent } from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
@@ -99,17 +100,13 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
   const priceLabel = formatPrice(lang, price);
 
   function trackPremiumGateClick() {
-    fetch("/api/backend/funnel-event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event: "premium_clicked_guide_gate",
-        email: user?.email || null,
-        cert_slug: slug,
-        topic_slug: null,
-        lang,
-      }),
-    }).catch(console.error);
+    trackFunnelEvent({
+      event: "premium_clicked_guide_gate",
+      email: user?.email || null,
+      cert_slug: slug,
+      topic_slug: null,
+      lang,
+    });
   }
 
   async function handleBuy() {

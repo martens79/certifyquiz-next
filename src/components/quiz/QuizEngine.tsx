@@ -11,6 +11,7 @@ import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
+import { trackFunnelEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
@@ -1227,20 +1228,13 @@ const assessmentCopy =
   });
 
   // ✅ Funnel tracking backend → DB/admin
-  fetch("/api/backend/funnel-event", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      event: "premium_clicked",
-      cert_slug: context?.certificationSlug ?? null,
-      topic_slug: context?.topicSlug ?? null,
-      lang,
-      score: scorePct,
-    }),
-  }).catch(console.error);
+  trackFunnelEvent({
+    event: "premium_clicked",
+    cert_slug: context?.certificationSlug ?? null,
+    topic_slug: context?.topicSlug ?? null,
+    lang,
+    score: scorePct,
+  });
 
   router.push(pricingPath(lang));
 }}
@@ -1855,17 +1849,13 @@ return (
                 });
 
                 // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
-                fetch("/api/backend/funnel-event", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    event: "premium_clicked_locked_explanation",
-                    email: user?.email || null,
-                    cert_slug: context?.certificationSlug ?? null,
-                    topic_slug: context?.topicSlug ?? null,
-                    lang,
-                  }),
-                }).catch(console.error);
+                trackFunnelEvent({
+                  event: "premium_clicked_locked_explanation",
+                  email: user?.email || null,
+                  cert_slug: context?.certificationSlug ?? null,
+                  topic_slug: context?.topicSlug ?? null,
+                  lang,
+                });
               }}
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
             >

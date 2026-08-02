@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { trackEvent, userStatusFrom } from "@/lib/analytics";
+import { trackEvent, trackFunnelEvent, userStatusFrom } from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
@@ -102,7 +102,7 @@ export default function PremiumResourcesCta({
 
         <Link
           href={pricingPath(lang)}
-          onClick={() =>
+          onClick={() => {
             trackEvent("certification_premium_card_clicked", {
               certification_id: certificationId,
               certification_slug: certificationSlug,
@@ -110,8 +110,19 @@ export default function PremiumResourcesCta({
               user_status: userStatusFrom(user),
               source: "certification_page",
               resource_type: "premium_card",
-            })
-          }
+            });
+
+            // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra.
+            // Prima mancava del tutto: questa CTA compare su ogni pagina
+            // certificazione e non contribuiva mai a funnel_events.
+            trackFunnelEvent({
+              event: "premium_clicked",
+              email: user?.email || null,
+              cert_slug: certificationSlug,
+              topic_slug: null,
+              lang,
+            });
+          }}
           className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600"
         >
           {t.cta}
