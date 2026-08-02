@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState, type FC } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { apiFetch, getToken } from "@/lib/auth";
+import { apiFetch } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
 import ReadinessCard from "@/components/profile/ReadinessCard";
 import PushNotificationCard from "@/components/push/PushNotificationCard";
@@ -408,15 +408,6 @@ const computePercent = (ex: {
 };
 
 // ---------- normalizzatori per liste
-function normalizeCerts(data: any): CertRow[] {
-  if (Array.isArray(data)) return data as CertRow[];
-  if (Array.isArray(data?.items)) return data.items as CertRow[];
-  if (Array.isArray(data?.rows)) return data.rows as CertRow[];
-  if (Array.isArray(data?.certifications)) return data.certifications as CertRow[];
-  if (Array.isArray(data?.certs)) return data.certs as CertRow[];
-  return [];
-}
-
 // 🔧 compat con /user-history /quiz-results
 function normalizeHistory(data: any): QuizHistoryRow[] {
   const raw: any[] = Array.isArray(data)
@@ -486,7 +477,7 @@ function normalizeCertStats(
     Array.isArray(historyRows) && historyRows.length > 0;
 
   // 1) provo a leggere i campi dal backend
-  let total_exams = toNumFlexible(
+  const total_exams = toNumFlexible(
     raw?.total_exams ??
       raw?.totalAttempts ??
       raw?.exams_count ??
@@ -910,15 +901,10 @@ useEffect(() => {
 }, []);
 
   // —— Date formatter deterministico (evita mismatch SSR/CSR)
-  const localeMap: Record<Locale, string> = {
-    it: "it-IT",
-    en: "en-US",
-    fr: "fr-FR",
-    es: "es-ES",
-  };
+  const locale = lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
   const dtf = useMemo(
     () =>
-      new Intl.DateTimeFormat(localeMap[lang], {
+      new Intl.DateTimeFormat(locale, {
         timeZone: "UTC",
         day: "2-digit",
         month: "2-digit",
@@ -926,7 +912,7 @@ useEffect(() => {
         hour: "2-digit",
         minute: "2-digit",
       }),
-    [lang]
+    [locale]
   );
 
   // —— Media generale (sempre su TUTTO lo storico, non filtrata)
@@ -963,13 +949,13 @@ const firstQuizDate = useMemo(() => {
   );
   const raw = sorted[0]?.created_at ?? sorted[0]?.date ?? null;
   if (!raw) return null;
-  return new Intl.DateTimeFormat(localeMap[lang], {
+  return new Intl.DateTimeFormat(locale, {
     timeZone: "UTC",
     day: "2-digit",
     month: "long",
     year: "numeric",
   }).format(new Date(raw));
-}, [validHistory, lang]);
+}, [validHistory, locale]);
 
 // —— Exam goals
 // —— Exam goals
@@ -1045,12 +1031,6 @@ async function deleteExamGoal(certificationId: number) {
       b?.mine === true
   );
 // ✅ Set degli ID dei badge ottenuti (per match rapido)
-const earnedIds = useMemo(() => {
-  return new Set(
-    earnedBadges.map((b) => String(b?.badge_id ?? b?.id ?? ""))
-  );
-}, [earnedBadges]);
-
 // ✅ Catalogo completo già pronto dal backend
 const allBadges = badges;
 

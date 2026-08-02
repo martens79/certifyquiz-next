@@ -47,6 +47,7 @@ export type CategoryKey =
   | "ai"
   | "management"
   | "data-analytics"
+  | "business-applications"
   | "foundations"
   | "default";
 
@@ -99,6 +100,10 @@ export const CATEGORY_STYLES: Record<CategoryKey, CatStyle> = {
     "bg-teal-50 border border-teal-200 hover:ring-2 hover:ring-teal-200/70",
   header: "bg-teal-50 border border-teal-200",
 },
+  "business-applications": {
+    wrapper: "bg-emerald-50 border border-emerald-200 hover:ring-2 hover:ring-emerald-200/70",
+    header: "bg-emerald-50 border border-emerald-200",
+  },
 foundations: {
   wrapper:
     "bg-indigo-50 border border-indigo-200 hover:ring-2 hover:ring-indigo-200/70",
@@ -119,19 +124,15 @@ export const getCategoryStyle = (key?: string | null): CatStyle => {
  * Fallback slug → categoria.
  * Supporta sia gli slug "vecchi" del frontend sia quelli reali del DB.
  */
-const FOUNDATION_CERT_SLUGS = [
-  "ai-foundations",
-  "networking-foundations",
-  "cloud-foundations",
-  "cybersecurity-foundations",
-  "database-foundations",
-  "programming-foundations",
-  "virtualization-foundations",
-  "project-management-foundations",
-  "data-analytics-foundations",
-];
-
 export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
+  "sap-s4hana-financial-accounting": "business-applications",
+  "sap-s4hana-sourcing-procurement": "business-applications",
+  "sap-s4hana-sales": "business-applications",
+  "sap-s4hana-production-planning": "business-applications",
+  "sap-abap-cloud-developer": "business-applications",
+  "sap-business-technology-platform": "business-applications",
+  "sap-successfactors": "business-applications",
+  "sap-analytics-cloud": "business-applications",
   // Base
   itfplus: "base",
   "comptia-itf-plus": "base",

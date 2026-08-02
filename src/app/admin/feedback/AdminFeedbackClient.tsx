@@ -157,7 +157,6 @@ export default function AdminFeedbackClient() {
   // resetta la pagina quando cambiano i filtri (non quando cambia solo `page`)
   useEffect(() => {
     setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [archived, resolved, q]);
 
   if (!user) return <div style={S.stateBox}>Devi essere loggato.</div>;

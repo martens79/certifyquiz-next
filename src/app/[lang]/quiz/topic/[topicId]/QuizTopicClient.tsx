@@ -168,12 +168,12 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
     };
   }, [numericId, L]);
 
-  if (blocked || Number.isNaN(numericId)) return null;
-
   /* ─────────────────────────────────────────────────────────────
      EXAM SPEC UFFICIALE
   ───────────────────────────────────────────────────────────── */
   const examSpec = useMemo(() => getExamSpecForCert(certificationId, 90), [certificationId]);
+
+  if (blocked || Number.isNaN(numericId)) return null;
 
   /* ─────────────────────────────────────────────────────────────
      UI SOFT LOGIN (solo se /questions torna 401)

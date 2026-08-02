@@ -8,7 +8,6 @@ import Link from "next/link";
 import { getCertBySlug, CERT_SLUGS } from "@/certifications/registry";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
-import type { CertificationData } from "@/certifications/types";
 import { categoryPath, type CategoryKey } from "@/lib/paths";
 
 export const runtime = "nodejs";
@@ -74,7 +73,7 @@ async function fetchTopics(certId: number): Promise<TopicRow[]> {
 }
 
 // Segmento per /quiz (se un giorno cambi per EN, tocchi solo qui)
-function quizSeg(_lang: Locale) {
+function quizSeg() {
   return "quiz";
 }
 
@@ -90,12 +89,12 @@ function langPrefix(lang: Locale) {
 
 // ✅ builder URL pagina quiz topics per cert
 function quizCertPath(lang: Locale, slug: string) {
-  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}`;
+  return `${langPrefix(lang)}/${quizSeg()}/${slug}`;
 }
 
 // ✅ builder URL quiz mixed
 function quizMixedPath(lang: Locale, slug: string) {
-  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mixed`;
+  return `${langPrefix(lang)}/${quizSeg()}/${slug}/mixed`;
 }
 
 function certPath(lang: Locale, slug: string) {
@@ -130,7 +129,7 @@ function topicPagePath(lang: Locale, certSlug: string, topic: TopicRow) {
 
 // ✅ builder URL quiz mock exam
 function quizMockExamPath(lang: Locale, slug: string) {
-  return `${langPrefix(lang)}/${quizSeg(lang)}/${slug}/mock-exam`;
+  return `${langPrefix(lang)}/${quizSeg()}/${slug}/mock-exam`;
 }
 
 // ✅ localizzazione topic: preferisci lingua corrente, fallback su base/it
@@ -147,22 +146,6 @@ function pickTopicField(t: TopicRow, lang: Locale, field: "title" | "description
   }
 }
 
-function pickCertTitle(
-  cert: CertificationData | undefined,
-  lang: Locale,
-  fallbackSlug: string
-) {
-  const t = cert?.title;
-  if (t) {
-    return t[lang] ?? t.it ?? t.en ?? t.fr ?? t.es ?? "";
-  }
-
-  return fallbackSlug
-    .replace(/-/g, " ")
-    .split(" ")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}
 function shortCertName(slug: string) {
   const map: Record<string, string> = {
     "isc2-cc": "ISC2 CC",
@@ -229,6 +212,13 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
       en: "Category",
       fr: "Catégorie",
       es: "Categoría",
+    },
+
+    "business-applications": {
+      it: "Business Applications",
+      en: "Business Applications",
+      fr: "Business Applications",
+      es: "Business Applications",
     },
 
     base: {

@@ -2,13 +2,12 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from "@/components/auth/AuthProvider";
 
 import QuizEngine from '@/components/quiz/QuizEngine';
 import type { Locale, Question as UiQuestion } from '@/lib/quiz-types';
 import { withLang } from '@/lib/i18n';
-import { getPremiumState } from "@/lib/premium";
 
 // slug → certification_id
 import { CERT_ID_BY_SLUG } from '@/lib/certs';
@@ -154,7 +153,6 @@ const COPY: Record<Locale, Copy> = {
 };
 
 export default function MixedQuizPage() {
-  const router = useRouter();
 const searchParams = useSearchParams();
 const isAssessmentMode = searchParams.get("mode") === "assessment";
 
@@ -176,34 +174,9 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
-// slug non mappato
-if (!certId) {
-  return (
-    <div className="mx-auto max-w-3xl p-6 text-center">
-      <h1 className="text-lg font-semibold text-red-700">
-        {currentLang === 'it'
-          ? 'Quiz misto non disponibile'
-          : currentLang === 'fr'
-          ? 'Quiz mixte indisponible'
-          : currentLang === 'es'
-          ? 'Quiz mixto no disponible'
-          : 'Mixed quiz not available'}
-      </h1>
-      <p className="mt-2 text-sm text-slate-700">
-        {currentLang === 'it'
-          ? 'Questa certificazione non è mappata .'
-          : currentLang === 'fr'
-          ? "Cette certification n'est pas mappée."
-          : currentLang === 'es'
-          ? 'Esta certificación no está mapeada .'
-          : 'This certification is not mapped '}
-      </p>
-    </div>
-  );
-}
-
   /* --------------------- poolTotal (light call) --------------------- */
   useEffect(() => {
+    if (!certId) return;
     let cancelled = false;
 
     (async () => {
@@ -240,11 +213,12 @@ if (!certId) {
   const isComingSoon = poolTotal === 0 && currentLang !== 'it';
 
   const examSpec = useMemo(() => {
-    return getExamSpecForCert(certId, poolSize);
+    return getExamSpecForCert(certId ?? 0, poolSize);
   }, [certId, poolSize]);
 
   /* ------------------------- fetch pool for engine ------------------------- */
   const fetchPool = useCallback(async (): Promise<UiQuestion[]> => {
+   if (!certId) return [];
    const effectiveLimit =
   isAssessmentMode
     ? 10
@@ -264,6 +238,19 @@ if (!certId) {
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, trainingCap, mode, examSpec.questions, isAssessmentMode]);
+
+  if (!certId) {
+    return (
+      <div className="mx-auto max-w-3xl p-6 text-center">
+        <h1 className="text-lg font-semibold text-red-700">
+          {currentLang === 'it' ? 'Quiz misto non disponibile' : currentLang === 'fr' ? 'Quiz mixte indisponible' : currentLang === 'es' ? 'Quiz mixto no disponible' : 'Mixed quiz not available'}
+        </h1>
+        <p className="mt-2 text-sm text-slate-700">
+          {currentLang === 'it' ? 'Questa certificazione non è mappata.' : currentLang === 'fr' ? "Cette certification n'est pas mappée." : currentLang === 'es' ? 'Esta certificación no está mapeada.' : 'This certification is not mapped.'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

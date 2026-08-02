@@ -223,6 +223,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: now,
           },
           {
+            url: lang === "en" ? `${SITE}/interactive-labs` : `${SITE}/${lang}/interactive-labs`,
+            changeFrequency: "monthly" as const,
+            priority: 0.75,
+            lastModified: now,
+          },
+          {
+            url:
+              lang === "en"
+                ? `${SITE}/categories/business-applications/sap`
+                : lang === "it"
+                ? `${SITE}/it/categorie/business-applications/sap`
+                : lang === "es"
+                ? `${SITE}/es/categorias/business-applications/sap`
+                : `${SITE}/fr/categories/business-applications/sap`,
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+            lastModified: now,
+          },
+          {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/binary-rush`,
             changeFrequency: "monthly" as const,
             priority: 0.8,

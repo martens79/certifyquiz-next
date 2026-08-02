@@ -23,7 +23,7 @@ import {
   Cpu,
   BriefcaseBusiness,
   BarChart3,
-  Rocket,
+  Boxes,
 } from "lucide-react";
 
 /* Helpers */
@@ -82,10 +82,15 @@ const CATEGORY_UI: Record<
     ring: "hover:ring-2 hover:ring-slate-300/60",
 
     },
-    "data-analytics": {
+  "data-analytics": {
     bg: "bg-teal-50",
     border: "border-teal-200",
     ring: "hover:ring-2 hover:ring-teal-200/60",
+  },
+  "business-applications": {
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    ring: "hover:ring-2 hover:ring-emerald-200/60",
   },
   foundations: {
     bg: "bg-indigo-50",
@@ -283,6 +288,20 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       ),
     },
     {
+      key: "business-applications",
+      icon: <Boxes size={20} aria-hidden="true" />,
+      title: "Business Applications",
+      desc: L(
+        {
+          it: "ERP, CRM, finanza, HR, analytics e processi aziendali.",
+          en: "ERP, CRM, finance, HR, analytics and business processes.",
+          fr: "ERP, CRM, finance, RH, analytique et processus métier.",
+          es: "ERP, CRM, finanzas, RR. HH., analítica y procesos empresariales.",
+        },
+        safeLang
+      ),
+    },
+    {
   key: "data-analytics",
   icon: <BarChart3 size={20} aria-hidden="true" />,
   title: L(
@@ -305,72 +324,6 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   ),
 },
   ];
-
-  const TRENDING_CERTS: Array<{
-    key: string;
-    title: string;
-    desc: { it: string; en: string; fr: string; es: string };
-    path: string;
-  }> = [
-    {
-      key: "cissp",
-      title: "CISSP",
-      desc: {
-        it: "Avanzato: architettura, risk, IAM, operations e compliance.",
-        en: "Advanced: architecture, risk, IAM, operations and compliance.",
-        fr: "Avancé : architecture, risque, IAM, opérations et conformité.",
-        es: "Avanzado: arquitectura, riesgo, IAM, operaciones y cumplimiento.",
-      },
-      path: "/quiz/cissp",
-    },
-    {
-      key: "ccst-cyber",
-      title: "Cisco CCST Cyber",
-      desc: {
-        it: "Fondamenti cyber: minacce, controlli, awareness e risposta base.",
-        en: "Cyber basics: threats, controls, awareness and basic response.",
-        fr: "Bases cyber : menaces, contrôles, sensibilisation et réponse.",
-        es: "Bases cyber: amenazas, controles, concienciación y respuesta.",
-      },
-      path: "/quiz/cisco-ccst-cybersecurity",
-    },
-    {
-      key: "ceh",
-      title: "CEH",
-      desc: {
-        it: "Pensa come un hacker. Allenati con domande realistiche.",
-        en: "Think like a hacker. Train with real exam questions.",
-        fr: "Pensez comme un hacker. Entraînez-vous avec de vraies questions.",
-        es: "Piensa como un hacker. Practica con preguntas reales.",
-      },
-      path: "/quiz/ceh",
-    },
-    {
-      key: "securityplus",
-      title: "Security+",
-      desc: {
-        it: "Costruisci solide basi di sicurezza informatica.",
-        en: "Build strong cybersecurity foundations.",
-        fr: "Construisez des bases solides en cybersécurité.",
-        es: "Construye bases sólidas en ciberseguridad.",
-      },
-      path: "/quiz/security-plus",
-    },
-    {
-      key: "isc2cc",
-      title: "ISC2 CC",
-      desc: {
-        it: "Il primo passo nel mondo della cybersecurity.",
-        en: "Your first step into cybersecurity.",
-        fr: "Votre premier pas en cybersécurité.",
-        es: "Tu primer paso en ciberseguridad.",
-      },
-      path: "/quiz/isc2-cc",
-    },
-  ];
-
-  const hubHref = (slug: string) =>
-    safeLang === "en" ? `/hub/${slug}` : `/${safeLang}/hub/${slug}`;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 overflow-x-hidden min-h-[100dvh]">
@@ -432,7 +385,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
           {!isLoggedIn && (
             <Link
-              href={withLang(safeLang as any, "/login")}
+              href={withLang(safeLang, "/login")}
               className="inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
               {L(
@@ -490,7 +443,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 <ResourceTypesSection lang={safeLang} />
 
 {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
-<PathBox lang={safeLang as any} />
+<PathBox lang={safeLang} />
 
 
       {/* BLOG SECTION — spostata più in alto e resa più visibile */}
@@ -537,7 +490,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             </div>
 
             <Link
-              href={withLang(safeLang as any, "/blog")}
+              href={withLang(safeLang, "/blog")}
               className="text-sm font-semibold text-blue-700 hover:underline whitespace-nowrap"
             >
               {L(
@@ -553,7 +506,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           </div>
 
           <BlogTeaser
-  lang={safeLang as any}
+  lang={safeLang}
   variant="home"
   limit={2}
 />
@@ -567,6 +520,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       .filter(
   (cat) =>
     cat.key !== "management" &&
+    cat.key !== "business-applications" &&
     cat.key !== "data-analytics"
 )
       .map((cat) => {
@@ -591,11 +545,12 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       })}
   </div>
 
-  <div className="grid md:grid-cols-2 gap-3 mt-3">
+  <div className="grid md:grid-cols-3 gap-3 mt-3">
   {allCategories
     .filter(
       (cat) =>
         cat.key === "management" ||
+        cat.key === "business-applications" ||
         cat.key === "data-analytics"
     )
     .map((cat) => {
@@ -632,6 +587,16 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             },
             safeLang
           )
+        : cat.key === "business-applications"
+        ? L(
+            {
+              it: "ERP, CRM, HR e analytics →",
+              en: "ERP, CRM, HR and analytics →",
+              fr: "ERP, CRM, RH et analytique →",
+              es: "ERP, CRM, RR. HH. y analítica →",
+            },
+            safeLang
+          )
         : L(
             {
               it: "Power BI, SQL, KPI, dashboard →",
@@ -648,7 +613,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
     </div>
 {/* FOUNDATIONS */}
 <Link
-  href={categoryPath(safeLang, "foundations" as any)}
+  href={categoryPath(safeLang, "foundations")}
   className="mt-4 block w-full rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-5 shadow-sm hover:ring-2 hover:ring-indigo-200/60 transition"
 >
   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -673,7 +638,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 </Link>
   <div className="text-center mt-5">
     <Link
-      href={withLang(safeLang as any, "/quiz-suggeriti")}
+      href={withLang(safeLang, "/quiz-suggeriti")}
       className="text-blue-600 font-semibold hover:underline text-sm"
     >
       ⭐{" "}

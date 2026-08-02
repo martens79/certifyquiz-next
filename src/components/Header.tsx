@@ -16,7 +16,7 @@ import { dict, type Locale, withLang } from "@/lib/i18n";
 import LocaleSwitcher from "./LocaleSwitcher";
 
 import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
-import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath, gamesPath } from "@/lib/paths";
+import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath, gamesPath, interactiveLabsPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
@@ -38,6 +38,7 @@ const UI: Record<
     guides: string;
     maps: string;
     games: string;
+    interactiveLabs: string;
     profile: string;
     login: string;
     logout: string;
@@ -66,6 +67,7 @@ const UI: Record<
     guides: "Guide",
     maps: "Mappe",
     games: "Giochi",
+    interactiveLabs: "Laboratori interattivi",
     start: "Inizia",
     quick: "Azioni rapide",
     skip: "Salta al contenuto",
@@ -90,6 +92,7 @@ const UI: Record<
     guides: "Guides",
     maps: "Maps",
     games: "Games",
+    interactiveLabs: "Interactive Labs",
     start: "Start",
     quick: "Quick actions",
     skip: "Skip to content",
@@ -114,6 +117,7 @@ const UI: Record<
     guides: "Guides",
     maps: "Cartes",
     games: "Jeux",
+    interactiveLabs: "Laboratoires interactifs",
     start: "Commencer",
     quick: "Actions rapides",
     skip: "Aller au contenu",
@@ -138,6 +142,7 @@ const UI: Record<
     guides: "Guías",
     maps: "Mapas",
     games: "Juegos",
+    interactiveLabs: "Laboratorios interactivos",
     start: "Empezar",
     quick: "Acciones rápidas",
     skip: "Saltar al contenido",
@@ -444,6 +449,7 @@ export default function Header({ lang }: Props) {
     const guidesHref = guidesPath(lang);
     const mapsHref = mapsPath(lang);
     const gamesHref = gamesPath(lang);
+    const labsHref = interactiveLabsPath(lang);
 
   const aboutHref =
     lang === "it"
@@ -505,6 +511,8 @@ export default function Header({ lang }: Props) {
 
 { href: gamesHref, label: ui.games, icon: <IconQuiz /> },
 
+{ href: labsHref, label: ui.interactiveLabs, icon: <IconSuggested /> },
+
 { href: suggestedHref, label: ui.suggested, icon: <IconSuggested /> },
   ];
 }, [
@@ -520,6 +528,7 @@ export default function Header({ lang }: Props) {
   guidesHref,
   mapsHref,
   gamesHref,
+  labsHref,
 
   suggestedHref,
   t.blog,
@@ -537,6 +546,7 @@ export default function Header({ lang }: Props) {
   ui.guides,
   ui.maps,
   ui.games,
+  ui.interactiveLabs,
   ui.reviews,
 ]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);

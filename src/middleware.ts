@@ -34,58 +34,6 @@ function redirect301(req: NextRequest, pathname: string) {
 
   return withLangCookie(res, lang);
 }
-function canonicalCertSlug(slug: string) {
-  const map: Record<string, string> = {
-    "vmware-certified-professional": "vmware-vcp",
-    "tensorflow-developer": "tensorflow",
-    "google-tensorflow": "tensorflow",
-
-    "csharp-certification": "csharp",
-    "comptia-security-plus": "security-plus",
-    "comptia-network-plus": "network-plus",
-    "python": "python-developer",
-    "microsoft-ai-fundamentals": "microsoft-ai",
-    "cisco-ccst-security": "cisco-ccst-cybersecurity",
-    "ccst": "cisco-ccst-networking",
-  };
-
-  return map[slug] ?? slug;
-}
-
-function redirectLegacyCertificationTopic(req: NextRequest, pathname: string) {
-  const patterns: Array<{
-    re: RegExp;
-    build: (certSlug: string) => string;
-  }> = [
-    {
-      re: /^\/certifications\/([^/]+)\/([^/]+)(?:\/.*)?$/,
-      build: (certSlug) => `/certifications/${canonicalCertSlug(certSlug)}`,
-    },
-    {
-      re: /^\/it\/certificazioni\/([^/]+)\/([^/]+)(?:\/.*)?$/,
-      build: (certSlug) => `/it/certificazioni/${canonicalCertSlug(certSlug)}`,
-    },
-    {
-      re: /^\/fr\/certifications\/([^/]+)\/([^/]+)(?:\/.*)?$/,
-      build: (certSlug) => `/fr/certifications/${canonicalCertSlug(certSlug)}`,
-    },
-    {
-      re: /^\/es\/certificaciones\/([^/]+)\/([^/]+)(?:\/.*)?$/,
-      build: (certSlug) => `/es/certificaciones/${canonicalCertSlug(certSlug)}`,
-    },
-  ];
-
-  for (const pattern of patterns) {
-    const match = pathname.match(pattern.re);
-
-    if (match) {
-      const certSlug = match[1];
-      return redirect301(req, pattern.build(certSlug));
-    }
-  }
-
-  return null;
-}
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;

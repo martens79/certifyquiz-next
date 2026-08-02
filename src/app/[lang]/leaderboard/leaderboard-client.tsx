@@ -204,8 +204,8 @@ function normalizeRow(x: LeaderboardRow): NormalizedRow {
 
   const totalExams = toNum(x.total_exams ?? x.exams ?? x.attempts ?? 0, 0);
 
-  let avg = x.avg_percentage ?? x.average_score ?? null;
-  let best = x.best_percentage ?? x.max_score ?? null;
+  const avg = x.avg_percentage ?? x.average_score ?? null;
+  const best = x.best_percentage ?? x.max_score ?? null;
 
   let avgNum = avg != null ? toNum(avg, NaN) : NaN;
   let bestNum = best != null ? toNum(best, NaN) : NaN;

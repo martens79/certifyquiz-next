@@ -237,8 +237,6 @@ export default async function PrivacyPage(
 ) {
   const { lang: raw } = await props.params;
   const lang: Lang = ALL.includes(raw) ? raw : "it";
-  const prefix = lang === "en" ? "" : `/${lang}`;
-
   const today = new Date().toISOString().slice(0, 10);
 
   const L = T;

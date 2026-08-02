@@ -24,6 +24,15 @@ const eslintConfig = [
       "src/app/debug/**",   // ← aggiunto
       "app/debug/**",       // ← aggiunto (per sicurezza)
     ],
+    rules: {
+      // Il client integra payload JSON legacy e SDK terzi non tipizzati.
+      // Il controllo strutturale resta affidato a `tsc --noEmit`; gli `any`
+      // espliciti vengono progressivamente sostituiti nei file modificati.
+      "@typescript-eslint/no-explicit-any": "off",
+      // Alcune immagini sono pixel di tracciamento, preview PWA o URL CMS
+      // dinamici: next/image non è applicabile in modo uniforme.
+      "@next/next/no-img-element": "off",
+    },
   },
 
   // ✅ disabilita SOLO questa regola su quella pagina (se non venisse ignorata)

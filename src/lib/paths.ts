@@ -107,6 +107,7 @@ export type CategoryKey =
   | "management"
   | "ai"
   | "data-analytics"
+  | "business-applications"
   | "foundations";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
@@ -122,6 +123,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "intelligenza-artificiale",
     "data-analytics": "analisi-dei-dati",
+    "business-applications": "business-applications",
     foundations: "fondamenti",
   },
 
@@ -137,6 +139,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     management: "management",
     ai: "artificial-intelligence",
     "data-analytics": "data-analytics",
+    "business-applications": "business-applications",
     foundations: "foundations",
   },
 
@@ -151,7 +154,8 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualisation",
     management: "management",
     ai: "intelligence-artificielle",
-    "data-analytics": "analyse-des-donnees",
+  "data-analytics": "analyse-des-donnees",
+  "business-applications": "business-applications",
     foundations: "foundations",
   },
 
@@ -166,7 +170,8 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     virtualizzazione: "virtualizacion",
     management: "gestion-management",
     ai: "inteligencia-artificial",
-    "data-analytics": "analisis-de-datos",
+  "data-analytics": "analisis-de-datos",
+  "business-applications": "business-applications",
     foundations: "foundations",
   },
 };
@@ -183,6 +188,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     management: "management",
     "intelligenza-artificiale": "ai",
     "analisi-dei-dati": "data-analytics",
+    "business-applications": "business-applications",
     fondamenti: "foundations",
   },
 
@@ -197,6 +203,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     management: "management",
     "artificial-intelligence": "ai",
     "data-analytics": "data-analytics",
+    "business-applications": "business-applications",
     foundations: "foundations",
   },
 
@@ -211,6 +218,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   management: "management",
   "intelligence-artificielle": "ai",
   "analyse-des-donnees": "data-analytics",
+  "business-applications": "business-applications",
   foundations: "foundations",
 },
 
@@ -225,6 +233,7 @@ es: {
   "gestion-management": "management",
   "inteligencia-artificial": "ai",
   "analisis-de-datos": "data-analytics",
+  "business-applications": "business-applications",
   foundations: "foundations",
 },
 };
@@ -400,6 +409,10 @@ export const gamesPath = (lang: Locale): string => {
   const slug = GAMES_SLUG_BY_LANG[lang];
   return base ? `${base}/${slug}` : `/${slug}`;
 };
+
+/** Interactive Labs intentionally keeps the same segment in every locale. */
+export const interactiveLabsPath = (lang: Locale): string =>
+  lang === "en" ? "/interactive-labs" : `/${lang}/interactive-labs`;
 
 export const binaryRushPath = (lang: Locale): string =>
   `${gamesPath(lang)}/binary-rush`;

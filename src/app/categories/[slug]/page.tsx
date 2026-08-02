@@ -14,6 +14,7 @@ const EN_TO_KEY: Record<string, string> = {
   ai: "ai",
   management: "management",
   "data-analytics": "data-analytics",
+  "business-applications": "business-applications",
 };
 
 export default async function Page({

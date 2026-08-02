@@ -74,6 +74,10 @@ const categoriesOrder: ReadonlyArray<{ key: string; label: Localized<string> }> 
       es: "Virtualización",
     },
   },
+  {
+    key: "business-applications",
+    label: { it: "Business Applications", en: "Business Applications", fr: "Business Applications", es: "Business Applications" },
+  },
 ];
 
 /* ─────────────── SEO metadata ─────────────── */

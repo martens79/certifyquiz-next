@@ -139,7 +139,6 @@ export default function HeaderAuthSlot({
     if (t && !cached) {
       refreshMe();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ✅ reattivo a login/logout: cq:token
@@ -164,7 +163,6 @@ export default function HeaderAuthSlot({
       offTok();
       offUser();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // click fuori (solo desktop)

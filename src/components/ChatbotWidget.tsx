@@ -184,9 +184,11 @@ export default function ChatbotWidget() {
   }, [isOpen, messages.length, t.greeting]);
 
   useEffect(() => {
-    if (messages.length === 1 && messages[0].role === "assistant") {
-      setMessages([{ role: "assistant", content: t.greeting }]);
-    }
+    setMessages((current) =>
+      current.length === 1 && current[0].role === "assistant"
+        ? [{ role: "assistant", content: t.greeting }]
+        : current
+    );
   }, [lang, t.greeting]);
 
   useEffect(() => {

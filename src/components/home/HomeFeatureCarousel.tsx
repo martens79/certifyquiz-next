@@ -30,16 +30,6 @@ function T(o: { it: string; en: string; fr: string; es: string }, lang: Lang) {
 const getSlides = (lang: Lang): FeatureCard[][] => {
   const p = localizedPrefix(lang);
 
-  const certSegment = T(
-    {
-      it: "certificazioni",
-      en: "certifications",
-      fr: "certifications",
-      es: "certificaciones",
-    },
-    lang
-  );
-
   const categorySegment = T(
     {
       it: "categorie",

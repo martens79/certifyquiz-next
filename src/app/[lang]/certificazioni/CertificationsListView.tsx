@@ -235,7 +235,7 @@ export default async function CertificationsListView({ lang }: ViewProps) {
 
   const raw = await getCertificationsListRSC();
 
-  let certs: CertListItem[] = (raw as any[]).map((c: any) => {
+  const certs: CertListItem[] = (raw as any[]).map((c: any) => {
     const slug = normalizeSlug(c.slug);
 
     const title =

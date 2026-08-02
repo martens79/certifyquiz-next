@@ -8,11 +8,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CERT_SLUGS } from "@/certifications/data";
-import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "@/lib/primary-cert-by-category";
 
 import {
   seoPrefix,
-  quizPrefix,
   CAT_KEY_TO_SLUG,
   resolveCategoryKey,
   type CategoryKey,
@@ -27,6 +25,7 @@ import {
   getCertCardDesc,
   type CertDescLocale,
 } from "@/lib/cert-descriptions";
+import BusinessEcosystems from "@/features/business-applications/BusinessEcosystems";
 
 /* -------------------------------- Config -------------------------------- */
 
@@ -180,7 +179,7 @@ const CATEGORY_META: Record<
       es: "Gestión de proyectos, liderazgo, Agile, gobernanza y organización empresarial.",
     },
   },
-    "data-analytics": {
+  "data-analytics": {
     key: "data-analytics",
     emoji: "📊",
     title: {
@@ -194,6 +193,22 @@ const CATEGORY_META: Record<
       en: "Power BI, SQL, dashboards, KPI, data analysis and business intelligence.",
       fr: "Power BI, SQL, tableaux de bord, KPI et analyse de données.",
       es: "Power BI, SQL, dashboards, KPI y análisis de datos.",
+    },
+  },
+  "business-applications": {
+    key: "business-applications",
+    emoji: "🏢",
+    title: {
+      it: "Business Applications",
+      en: "Business Applications",
+      fr: "Business Applications",
+      es: "Business Applications",
+    },
+    subtitle: {
+      it: "Certificazioni ERP, CRM, finanza, procurement, HR, analytics e piattaforme enterprise.",
+      en: "Certifications across ERP, CRM, finance, procurement, HR, analytics and enterprise platforms.",
+      fr: "Certifications en ERP, CRM, finance, achats, RH, analytique et plateformes d’entreprise.",
+      es: "Certificaciones de ERP, CRM, finanzas, compras, RR. HH., analítica y plataformas empresariales.",
     },
   },
   foundations: {
@@ -270,11 +285,6 @@ function localizedCertListPath(lang: Locale) {
 
 function localizedCertPath(lang: Locale, certSlug: string) {
   return seoPath(lang, `/${segForCertifications(lang)}/${certSlug}`);
-}
-
-function mixedQuizPath(lang: Locale, key: CategoryKey) {
-  const certSlug = PRIMARY_CERT_SLUG_BY_CATEGORY[key] ?? PRIMARY_CERT_SLUG_BY_CATEGORY.default;
-  return `${quizPrefix(lang)}/quiz/${certSlug}/mixed`;
 }
 
 /* ------------------------------------------------------------------------ */
@@ -458,24 +468,28 @@ const certSlugs =
   </h1>
 
   <p className="mt-3 text-base opacity-90 max-w-4xl">
-    {lang === "it"
-      ? "Le Foundations by CertifyQuiz sono certificazioni gratuite progettate per aiutare studenti, principianti e professionisti in transizione a costruire solide basi IT prima di affrontare certificazioni come CCNA, Security+, AWS, Azure, Google Cloud, CISSP o PMP."
-      : lang === "fr"
-      ? "Les Foundations by CertifyQuiz sont des certifications gratuites conçues pour construire des bases solides avant les certifications professionnelles."
-      : lang === "es"
-      ? "Las Foundations by CertifyQuiz son certificaciones gratuitas diseñadas para construir bases sólidas antes de afrontar certificaciones profesionales."
-      : "Foundations by CertifyQuiz are free beginner certifications designed to build strong IT fundamentals before moving to professional certifications."}
+    {key === "foundations"
+      ? lang === "it"
+        ? "Certificazioni gratuite per costruire solide basi IT prima di affrontare percorsi professionali."
+        : lang === "fr"
+        ? "Des certifications gratuites pour construire de solides bases IT avant les parcours professionnels."
+        : lang === "es"
+        ? "Certificaciones gratuitas para construir bases sólidas de TI antes de seguir rutas profesionales."
+        : "Free certifications for building strong IT fundamentals before professional certification paths."
+      : meta.subtitle[lang]}
   </p>
 
-  <p className="mt-3 opacity-80 max-w-4xl">
-    {lang === "it"
-      ? "Scegli un percorso tra Networking, Cloud, Cybersecurity, AI, Programmazione, Database, Virtualizzazione, Project Management e Data Analytics."
-      : lang === "fr"
-      ? "Choisissez un parcours parmi les réseaux, le cloud, la cybersécurité, l’IA, la programmation, les bases de données, la virtualisation, la gestion de projet et l’analyse de données."
-      : lang === "es"
-      ? "Elige una ruta entre redes, cloud, ciberseguridad, IA, programación, bases de datos, virtualización, gestión de proyectos y analítica de datos."
-      : "Choose a learning path covering Networking, Cloud, Cybersecurity, AI, Programming, Databases, Virtualization, Project Management and Data Analytics."}
-  </p>
+  {key === "business-applications" && (
+    <p className="mt-3 opacity-80 max-w-4xl">
+      {lang === "it"
+        ? "SAP è il primo ecosistema disponibile. La categoria è predisposta per accogliere anche certificazioni di altri vendor e piattaforme business."
+        : lang === "fr"
+        ? "SAP est le premier écosystème disponible. La catégorie accueillera également des certifications d’autres fournisseurs et plateformes métier."
+        : lang === "es"
+        ? "SAP es el primer ecosistema disponible. La categoría también incorporará certificaciones de otros proveedores y plataformas empresariales."
+        : "SAP is the first available ecosystem. The category is also designed for certifications from other vendors and business platforms."}
+    </p>
+  )}
 
   {roadmapHref && (
     <Link
@@ -488,7 +502,9 @@ const certSlugs =
   )}
 </header>
 
-      {certSlugs.length === 0 ? (
+      {key === "business-applications" ? (
+        <BusinessEcosystems lang={lang} />
+      ) : certSlugs.length === 0 ? (
         <p className="text-gray-700">
           {lang === "it"
             ? "Nessuna certificazione in questa categoria."
@@ -506,7 +522,7 @@ const certSlugs =
               href={localizedCertPath(lang, slug)}
               className={`rounded-2xl p-5 shadow-sm transition ${css.wrapper}`}
             >
-              <div className="text-lg font-semibold leading-snug">
+<div className="text-lg font-semibold leading-snug">
   {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
 </div>
 

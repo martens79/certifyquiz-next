@@ -310,10 +310,10 @@ export default function TeamLandingPageEN() {
             style={{ fontFamily: "var(--font-display)" }}
             className="text-2xl font-semibold tracking-tight text-white sm:text-3xl"
           >
-            Let's talk for 15 minutes
+            Let’s talk for 15 minutes
           </h2>
           <p className="mt-4 text-[15px] text-slate-300">
-            Tell us how many people are on your team and which certifications you want to focus on. We'll reply
+            Tell us how many people are on your team and which certifications you want to focus on. We’ll reply
             within one business day.
           </p>
           <a

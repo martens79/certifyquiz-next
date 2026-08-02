@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 // Ricava la lingua dal path: /it/..., /en/..., /fr/..., /es/...
 const getLangFromPath = (pathname: string) => {
@@ -27,10 +27,10 @@ export default function LegalTopBar({ sticky = true }: Props) {
     es: { back: 'Atrás', home: 'Inicio', close: 'Cerrar' },
   }[lang];
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (typeof window !== 'undefined' && window.history.length > 1) router.back();
     else router.push(`/${lang}`);
-  };
+  }, [lang, router]);
 
   // ESC per chiudere
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function LegalTopBar({ sticky = true }: Props) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [goBack]);
 
   return (
     <div

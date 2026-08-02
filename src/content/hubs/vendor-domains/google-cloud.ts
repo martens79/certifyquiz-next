@@ -35,10 +35,6 @@ export type HubData =
       certs: HubCertItem[];
     };
 
-// ✅ QUIZ mai root: /{lang}/quiz/...
-const hubHref = (slug: string) => (lang: Locale) =>
-  lang === "en" ? `/hub/${slug}` : `/${lang}/hub/${slug}`;
-
 /**
  * ✅ Google Cloud Domain Hub
  * Goal: be the authoritative “index” for Google Cloud certifications on the site.

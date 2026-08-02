@@ -286,11 +286,11 @@ export default function TeamLandingPageFR() {
           </div>
           <div className="flex items-start gap-3">
             <BarChart3 className="h-5 w-5 shrink-0 text-amber-500" />
-            <p className="text-[14px] text-slate-700">Tableau de bord en temps réel pour chaque membre de l'équipe</p>
+            <p className="text-[14px] text-slate-700">Tableau de bord en temps réel pour chaque membre de l’équipe</p>
           </div>
           <div className="flex items-start gap-3">
             <FileSpreadsheet className="h-5 w-5 shrink-0 text-amber-500" />
-            <p className="text-[14px] text-slate-700">Facture unique pour l'entreprise, aucune carte multiple à gérer</p>
+            <p className="text-[14px] text-slate-700">Facture unique pour l’entreprise, aucune carte multiple à gérer</p>
           </div>
         </div>
       </section>

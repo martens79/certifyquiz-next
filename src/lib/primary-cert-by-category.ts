@@ -23,5 +23,7 @@ export const PRIMARY_CERT_SLUG_BY_CATEGORY: Record<CategoryKey, string> = {
 
   "data-analytics": "data-analytics-foundations",
 
+  "business-applications": "sap-s4hana-financial-accounting",
+
   foundations: "foundations",
 };

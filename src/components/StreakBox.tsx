@@ -15,8 +15,7 @@ type Props = {
   onSummary?: (s: StreakSummary) => void;
 };
 
-const SUPPORTED = ["it", "en", "fr", "es"] as const;
-type Lang = (typeof SUPPORTED)[number];
+type Lang = "it" | "en" | "fr" | "es";
 
 function langFromPathname(pathname?: string): Lang {
   if (!pathname) return "it";

@@ -162,7 +162,6 @@ export default function QuizEngine({
   
 
   const isLoggedIn = !!context?.isAuthenticated || !!context?.isPremiumUser;
-  const isAdmin = context?.isAdmin ?? false;
 
   const { registerLimitReached, increment } = useGuestQuizCount(isLoggedIn);
 
@@ -244,8 +243,7 @@ const consumeWrongExplanation = async (): Promise<boolean> => {
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
-
-  const [actionsOpen, setActionsOpen] = useState(false);
+  const [, setActionsOpen] = useState(false);
 
 const [fbOpen, setFbOpen] = useState(false);
 const [fbType, setFbType] = useState<"typo" | "wrong_answer" | "outdated" | "other">("typo");
@@ -566,6 +564,9 @@ clearProgress(`${storageScope}:assessment`);
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
     };
+  // doFinish reads the latest quiz state; including it would restart the RAF
+  // loop on every render and disturb timer scheduling.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectiveMode, finished, effectiveDuration, questions.length, remaining]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
@@ -688,7 +689,8 @@ const goToFirstUnanswered = () => {
   }
 };
 
- async function doFinish(_timeExpired = false) {
+ async function doFinish(timeExpired = false) {
+  void timeExpired;
   setFinished(true);
 
   const total = questions.length;
@@ -1445,7 +1447,6 @@ const canGoNext =
 // ------------------------------------------------------------------
 
 const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
-const explainPreview = explainText ? makePreview(explainText, 260) : '';
 
 // ------------------------------------------------------------------
 // GATE 1 — Registrazione (guest, non assessment)
@@ -2111,15 +2112,6 @@ function stripExplainPrefix(text: string) {
     .trim();
 }
 
-function makePreview(text: string, maxLen: number) {
-  const t = (text ?? '').trim();
-  if (t.length <= maxLen) return t;
-
-  const slice = t.slice(0, maxLen);
-  const cut = slice.lastIndexOf(' ');
-  const out = cut > 140 ? slice.slice(0, cut) : slice;
-  return out.trim() + '…';
-}
 function trackQuizEvent(
   eventName: string,
   params: Record<string, string | number | boolean | null | undefined> = {}

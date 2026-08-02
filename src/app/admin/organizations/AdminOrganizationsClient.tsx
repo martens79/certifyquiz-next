@@ -429,7 +429,7 @@ export default function AdminOrganizationsClient() {
             {!loading && filteredOrgs.length === 0 && (
               <tr>
                 <td style={S.empty} colSpan={6}>
-                  Nessuna azienda ancora. Creane una con "+ Nuova azienda".
+                  Nessuna azienda ancora. Creane una con “+ Nuova azienda”.
                 </td>
               </tr>
             )}
@@ -606,7 +606,7 @@ export default function AdminOrganizationsClient() {
                 {memberError && <div style={S.errorBox}>{memberError}</div>}
                 <p style={S.hint}>
                   La persona deve essersi già registrata normalmente sul sito con questa email — qui la colleghi
-                  all'azienda e (facoltativo) le attivi Premium.
+                  all’azienda e (facoltativo) le attivi Premium.
                 </p>
               </div>
             </>

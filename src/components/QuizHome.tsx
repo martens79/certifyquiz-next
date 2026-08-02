@@ -36,10 +36,6 @@ type BackendAvailabilityItem = {
   topics_with_translations?: number;
   topics_total?: number;
 };
-type BackendAvailabilityPayload =
-  | { items?: BackendAvailabilityItem[] }
-  | BackendAvailabilityItem[];
-
 function isArrayPayload(x: unknown): x is BackendAvailabilityItem[] {
   return Array.isArray(x);
 }
@@ -200,6 +196,17 @@ const certificationNames: CertificationNames = {
   default: baseCerts,
 
   base: baseCerts,
+
+  "business-applications": [
+    { name: "SAP S/4HANA Financial Accounting", link: certPath(lang, "sap-s4hana-financial-accounting"), comingSoon: true },
+    { name: "SAP S/4HANA Sourcing and Procurement", link: certPath(lang, "sap-s4hana-sourcing-procurement"), comingSoon: true },
+    { name: "SAP S/4HANA Sales", link: certPath(lang, "sap-s4hana-sales"), comingSoon: true },
+    { name: "SAP S/4HANA Production Planning and Manufacturing", link: certPath(lang, "sap-s4hana-production-planning"), comingSoon: true },
+    { name: "SAP ABAP Cloud Developer", link: certPath(lang, "sap-abap-cloud-developer"), comingSoon: true },
+    { name: "SAP Business Technology Platform", link: certPath(lang, "sap-business-technology-platform"), comingSoon: true },
+    { name: "SAP SuccessFactors", link: certPath(lang, "sap-successfactors"), comingSoon: true },
+    { name: "SAP Analytics Cloud", link: certPath(lang, "sap-analytics-cloud"), comingSoon: true },
+  ],
 
     management: [
     { name: "PMP", link: certPath(lang, "pmp") },

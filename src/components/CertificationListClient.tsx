@@ -129,14 +129,7 @@ export function CertificationListClient({
     });
   }, [items, query, levelFilter, categoryFilter]);
 
-  if (!items.length) {
-    return (
-      <div className="rounded-xl border border-dashed p-6 text-sm text-gray-500 dark:text-neutral-400">
-        {t.empty}
-      </div>
-    );
-  }
-useEffect(() => {
+  useEffect(() => {
   if (process.env.NODE_ENV === "production") return;
 
   const probe = items.filter((x) => {
@@ -156,6 +149,14 @@ useEffect(() => {
     }))
   );
 }, [items]);
+
+  if (!items.length) {
+    return (
+      <div className="rounded-xl border border-dashed p-6 text-sm text-gray-500 dark:text-neutral-400">
+        {t.empty}
+      </div>
+    );
+  }
 
 
   const levelOptions = [

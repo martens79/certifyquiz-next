@@ -93,18 +93,8 @@ export default function MockExamPage() {
 
   const t = mockCopy[currentLang] ?? mockCopy.en;
 
-  if (!certId) {
-    return (
-      <div className="mx-auto max-w-3xl p-6 text-center">
-        <h1 className="text-lg font-semibold text-red-700">
-          {t.unavailable}
-        </h1>
-        <p className="mt-2 text-sm text-slate-700">{t.notMapped}</p>
-      </div>
-    );
-  }
-
   useEffect(() => {
+    if (!certId) return;
     let cancelled = false;
 
     (async () => {
@@ -133,10 +123,11 @@ export default function MockExamPage() {
   }, [poolTotal]);
 
   const examSpec = useMemo(() => {
-    return getExamSpecForCert(certId, poolSize);
+    return getExamSpecForCert(certId ?? 0, poolSize);
   }, [certId, poolSize]);
 
   const fetchExamQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    if (!certId) return [];
     const res = await getMixedQuestions(certId, currentLang, {
       limit: Math.max(1, examSpec.questions),
       shuffle: true,
@@ -149,6 +140,15 @@ export default function MockExamPage() {
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, examSpec.questions]);
+
+  if (!certId) {
+    return (
+      <div className="mx-auto max-w-3xl p-6 text-center">
+        <h1 className="text-lg font-semibold text-red-700">{t.unavailable}</h1>
+        <p className="mt-2 text-sm text-slate-700">{t.notMapped}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">

@@ -144,7 +144,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await refreshMe();
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ✅ ascolta cambi token (login/logout) dal tuo lib/auth.ts
@@ -163,7 +162,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return off;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ✅ ascolta cambi user cache (es. login che setta cq_user)

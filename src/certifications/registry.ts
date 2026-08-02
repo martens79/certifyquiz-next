@@ -25,7 +25,6 @@ export const CERTS_BY_SLUG: Record<CertSlug, CertificationData> = (() => {
     if (process.env.NODE_ENV !== "production" && seen.has(c.slug)) {
       // segnale utile in console se ci sono slug duplicati
       // (non interrompe la build, ma ti avvisa)
-      // eslint-disable-next-line no-console
       console.warn(`[certifications] Duplicate slug detected: "${c.slug}"`);
     }
     seen.add(c.slug);

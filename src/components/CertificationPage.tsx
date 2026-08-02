@@ -253,7 +253,6 @@ const pageTopics =
   if (process.env.NODE_ENV !== "production" && data.quizRoute) {
     const anyQ = data.quizRoute[lang] || data.quizRoute.it || "";
     if (anyQ && !anyQ.includes(`/quiz/`)) {
-      // eslint-disable-next-line no-console
       console.warn(`[CertificationPage] quizRoute looks odd for "${data.slug}" → "${anyQ}"`);
     }
   }

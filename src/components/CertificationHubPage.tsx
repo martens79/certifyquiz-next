@@ -188,7 +188,6 @@ export default function CertificationHubPage({
                   {/* Logo */}
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-neutral-100 bg-neutral-50">
                     {c.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={c.logoUrl}
                         alt={c.name}
