@@ -592,6 +592,11 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
         body: JSON.stringify({ lang, plan: selectedPlan }),
       });
 
+      if (res.status === 401) {
+        window.location.href = `/login?redirect=${encodeURIComponent(pathname || "/pricing")}`;
+        return;
+      }
+
       const data: { url?: string; error?: string } = await res.json();
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
