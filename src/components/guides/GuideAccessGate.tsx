@@ -8,7 +8,7 @@ import { pricingPath } from "@/lib/paths";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { trackFunnelEvent } from "@/lib/analytics";
+import { analyticsUserStateFrom, trackEvent, trackFunnelEvent } from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
@@ -36,10 +36,10 @@ const COPY = {
     es: "Premium incluye esta guía, todas las demás guías y las herramientas de preparación completas.",
   },
   premiumCta: {
-    it: "Sblocca con Premium",
-    en: "Unlock with Premium",
-    fr: "Débloquer avec Premium",
-    es: "Desbloquear con Premium",
+    it: "Sblocca guida e mappe",
+    en: "Unlock guide and maps",
+    fr: "Débloquer le guide et les cartes",
+    es: "Desbloquear guía y mapas",
   },
   login: {
     it: "Accedi per continuare",
@@ -109,9 +109,15 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
     : COPY.sub[lang];
 
   function trackPremiumGateClick() {
+    trackEvent("premium_cta_clicked", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      source_page: "guide_preview",
+      content_type: "guide",
+      guide_slug: slug,
+    });
     trackFunnelEvent({
       event: "premium_clicked_guide_gate",
-      email: user?.email || null,
       cert_slug: slug,
       topic_slug: null,
       lang,
@@ -123,6 +129,21 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
     setLoading(true);
 
     try {
+      trackEvent("single_guide_cta_clicked", {
+        language: lang,
+        user_state: analyticsUserStateFrom(user),
+        source_page: "guide_preview",
+        content_type: "guide",
+        guide_slug: slug,
+        purchase_type: "single_guide",
+      });
+      trackEvent("checkout_started", {
+        language: lang,
+        user_state: analyticsUserStateFrom(user),
+        source_page: "guide_preview",
+        guide_slug: slug,
+        purchase_type: "single_guide",
+      });
       const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/checkout`, {
         method: "POST",
         body: JSON.stringify({ lang }),
@@ -143,7 +164,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
   const redirect = encodeURIComponent(pathname ?? `/guide/${slug}`);
   const loginHref = withLang(lang, `/login?redirect=${redirect}`);
-  const premiumHref = pricingPath(lang);
+  const premiumHref = `${pricingPath(lang)}?source=guide_preview&guide_slug=${encodeURIComponent(slug)}`;
 
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">

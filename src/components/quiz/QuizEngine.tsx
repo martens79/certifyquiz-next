@@ -11,8 +11,9 @@ import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
-import { trackFunnelEvent } from "@/lib/analytics";
+import { trackEvent as trackAnalyticsEvent, trackFunnelEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { shouldRenderRewardedPlaceholder } from "@/lib/rewarded-ads";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -294,6 +295,9 @@ const openFeedback = () => {
   const startedAtRef = useRef<number | null>(null);
   const assessmentStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
+  const milestoneTrackedRef = useRef(new Set<number>());
+  const abandonedTrackedRef = useRef(false);
+  const latestProgressRef = useRef({ idx: 0, finished: false, answered: 0 });
   const premiumClickedRef = useRef(false);
   const [premiumClicked, setPremiumClicked] = useState(false);
 
@@ -303,6 +307,13 @@ const openFeedback = () => {
    * - mixed:security-plus:en:exam
    */
   const scopedKey = `${storageScope}:${effectiveMode}`;
+
+  useEffect(() => {
+    assessmentStartedTrackedRef.current = false;
+    completedTrackedRef.current = false;
+    milestoneTrackedRef.current.clear();
+    abandonedTrackedRef.current = false;
+  }, [scopedKey]);
 
   /* -------------------- helpers: limit + duration -------------------- */
 
@@ -434,8 +445,10 @@ const openFeedback = () => {
 
     assessmentStartedTrackedRef.current = true;
 
-    trackQuizEvent('assessment_started', {
+    trackQuizEvent('diagnostic_quiz_started', {
       lang,
+      quiz_mode: effectiveMode,
+      certification_slug: context?.certificationSlug ?? null,
       storage_scope: storageScope,
       certification: context?.certificationName ?? null,
       topic: context?.topicTitle ?? null,
@@ -450,9 +463,50 @@ const openFeedback = () => {
     lang,
     storageScope,
     context?.certificationName,
+    context?.certificationSlug,
     context?.topicTitle,
     context?.kind,
   ]);
+
+  useEffect(() => {
+    const reached = idx + 1;
+    if (![1, 5, 10, 20, 40].includes(reached)) return;
+    if (milestoneTrackedRef.current.has(reached)) return;
+    milestoneTrackedRef.current.add(reached);
+    trackQuizEvent("quiz_question_reached", {
+      language: lang,
+      quiz_mode: effectiveMode,
+      question_milestone: reached,
+      certification_slug: context?.certificationSlug ?? null,
+      source_page: "quiz",
+    });
+  }, [idx, lang, effectiveMode, context?.certificationSlug]);
+
+  useEffect(() => {
+    latestProgressRef.current = {
+      idx,
+      finished,
+      answered: Object.values(marked).filter((value) => value != null).length,
+    };
+  }, [idx, finished, marked]);
+
+  useEffect(() => {
+    const onPageHide = () => {
+      const progress = latestProgressRef.current;
+      if (abandonedTrackedRef.current || progress.finished || progress.answered === 0) return;
+      abandonedTrackedRef.current = true;
+      trackQuizEvent("quiz_abandoned", {
+        language: lang,
+        quiz_mode: effectiveMode,
+        last_question_reached: progress.idx + 1,
+        answered_questions: progress.answered,
+        certification_slug: context?.certificationSlug ?? null,
+        source_page: "quiz",
+      });
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [lang, effectiveMode, context?.certificationSlug]);
 
   /* -------------------- QUIZ TUTOR CONTEXT SYNC -------------------- */
   const { setQuizTutorData } = useQuizTutor();
@@ -755,7 +809,7 @@ if (effectiveMode === "assessment") {
     },
     credentials: "include",
   body: JSON.stringify({
-  event: "result_viewed",
+  event: "quiz_result_viewed",
   cert_slug: context?.certificationSlug ?? null,
   topic_slug: context?.topicSlug ?? null,
   lang,
@@ -786,6 +840,13 @@ if (!completedTrackedRef.current) {
       duration_sec: elapsedSec,
     }
   );
+  trackQuizEvent("quiz_result_viewed", {
+    language: lang,
+    quiz_mode: effectiveMode,
+    certification_slug: context?.certificationSlug ?? null,
+    source_page: "quiz_result",
+    score_pct: scorePct,
+  });
 }
 
   try {
@@ -1236,10 +1297,19 @@ const assessmentCopy =
     score: scorePct,
   });
 
-  router.push(pricingPath(lang));
+  const pricing = new URL(pricingPath(lang), window.location.origin);
+  pricing.searchParams.set("source", "quiz_result");
+  if (context?.certificationSlug) pricing.searchParams.set("certification_slug", context.certificationSlug);
+  router.push(`${pricing.pathname}${pricing.search}`);
 }}
   >
-    {assessmentCopy.cta[lang]}
+    {lang === "it"
+      ? `Sblocca il tuo piano ${context?.certificationName ?? "di preparazione"}`
+      : lang === "fr"
+      ? `Débloquez votre plan ${context?.certificationName ?? "de préparation"}`
+      : lang === "es"
+      ? `Desbloquea tu plan ${context?.certificationName ?? "de preparación"}`
+      : `Unlock your ${context?.certificationName ?? "study"} plan`}
   </button>
 )}
  </div>
@@ -1790,6 +1860,7 @@ return (
         questionId={q.id}
         lang={lang}
         mode={effectiveMode}
+        certificationSlug={context?.certificationSlug ?? null}
       />
 
       <div className="flex items-start gap-3">
@@ -1808,12 +1879,12 @@ return (
 
           <p className="mt-1 text-xs text-white/75">
             {lang === "it"
-              ? "Da qui in poi puoi continuare a sbagliare le stesse domande senza sapere perché. Le spiegazioni dettagliate e il Tutor AI sono disponibili solo con Premium."
+              ? "Sblocca tutte le spiegazioni e continua la preparazione senza limiti."
               : lang === "fr"
               ? "À partir de maintenant, vous risquez de refaire les mêmes erreurs sans savoir pourquoi. Les explications détaillées et le Tutor IA sont réservés à Premium."
               : lang === "es"
               ? "A partir de ahora puedes seguir fallando las mismas preguntas sin saber por qué. Las explicaciones detalladas y el Tutor IA solo están disponibles con Premium."
-              : "From here on, you can keep missing the same questions without knowing why. Detailed explanations and the AI Tutor are only available with Premium."}
+              : "Unlock every explanation and continue preparing without limits."}
           </p>
         </div>
       </div>
@@ -1839,7 +1910,7 @@ return (
                 : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
             <Link
-              href={pricingPath(lang)}
+              href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {
                 trackQuizEvent('premium_cta_clicked', {
                   lang,
@@ -1860,13 +1931,16 @@ return (
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
             >
               {lang === 'it'
-                ? 'Inizia 7 giorni gratis — poi €9.99/mese'
+                ? 'Passa a Premium'
                 : lang === 'fr'
-                ? 'Commencer 7 jours gratuits — puis 9,99 €/mois'
+                ? 'Passer à Premium'
                 : lang === 'es'
-                ? 'Empezar 7 días gratis — luego 9,99 €/mes'
-                : 'Start 7-day free trial — then €9.99/month'}
+                ? 'Pasar a Premium'
+                : 'Go Premium'}
             </Link>
+            {shouldRenderRewardedPlaceholder() ? (
+              <div data-rewarded-placement="locked_wrong_explanation" className="mt-3" />
+            ) : null}
           </div>
         </div>
       );
@@ -2058,10 +2132,12 @@ function GateShownTracker({
   questionId,
   lang,
   mode,
+  certificationSlug,
 }: {
   questionId: number | string;
   lang: string;
   mode: string;
+  certificationSlug: string | null;
 }) {
   const firedRef = useRef(false);
 
@@ -2069,13 +2145,16 @@ function GateShownTracker({
     if (firedRef.current) return;
     firedRef.current = true;
 
-    trackQuizEvent("wrong_explanation_gate_shown", {
-      lang,
-      mode,
+    trackQuizEvent("explanation_paywall_viewed", {
+      language: lang,
+      quiz_mode: mode,
       question_id: Number(questionId),
+      certification_slug: certificationSlug,
+      content_type: "explanation",
+      source_page: "quiz",
     });
     trackMetaPixel("Lead");
-  }, [questionId, lang, mode]);
+  }, [questionId, lang, mode, certificationSlug]);
 
   return null;
 }
@@ -2106,15 +2185,7 @@ function trackQuizEvent(
   eventName: string,
   params: Record<string, string | number | boolean | null | undefined> = {}
 ) {
-  if (typeof window === 'undefined') return;
-
-  const w = window as typeof window & {
-    gtag?: (...args: any[]) => void;
-  };
-
-  if (typeof w.gtag !== 'function') return;
-
-  w.gtag('event', eventName, {
+  trackAnalyticsEvent(eventName, {
     event_category: 'quiz',
     ...params,
   });

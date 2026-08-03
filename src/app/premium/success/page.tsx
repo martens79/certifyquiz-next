@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider"; // <-- se il path è diverso, adattalo
 import { trackMetaPixel } from "@/lib/metaPixel";
 
 export default function PremiumSuccessPage() {
   const { refreshMe } = useAuth();
+  const searchParams = useSearchParams();
+  const isMonthly = searchParams.get("plan") !== "premium_annual";
   const [sync, setSync] = useState<"idle" | "ok" | "fail">("idle");
 
   useEffect(() => {
@@ -35,7 +38,11 @@ export default function PremiumSuccessPage() {
   return (
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">
       <h1 className="text-3xl font-bold mb-6">Premium activated 🎉</h1>
-      <p className="mb-4 text-lg">Your 7-day free trial has started.</p>
+      <p className="mb-4 text-lg">
+        {isMonthly
+          ? "Your 7-day free trial has started."
+          : "Your annual Premium plan is active. €59.90 was charged for 12 months."}
+      </p>
       <p className="mb-6 text-gray-600">
         You now have full access to explanations and Premium features.
       </p>

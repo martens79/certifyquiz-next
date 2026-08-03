@@ -27,6 +27,7 @@ type User = {
   email: string;
   role: string;
   premium: boolean;
+  trial: boolean;
 };
 
 type AuthState = {
@@ -57,6 +58,7 @@ function toUser(u: MinimalUser | User | null): User | null {
     email: String(anyU.email ?? "").trim(),
     role: String(anyU.role ?? "user"),
     premium,
+    trial: anyU.trial === true || anyU.trial === 1 || anyU.trial === "1",
   };
 }
 
@@ -106,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             username: normalized!.username,
             role: normalized!.role,
             premium: normalized!.premium,
+            trial: normalized!.trial,
           },
           true
         );

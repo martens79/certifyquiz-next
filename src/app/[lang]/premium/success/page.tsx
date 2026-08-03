@@ -2,26 +2,29 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider"; // <-- adatta se serve
 import { trackMetaPixel } from "@/lib/metaPixel";
 
 const COPY: Record<string, any> = {
   it: {
     title: "Premium attivato",
-    desc: "Prova attiva. Ora puoi accedere alle funzionalità Premium.",
+    monthlyDesc: "La prova gratuita di 7 giorni è attiva. Ora puoi accedere alle funzionalità Premium.",
+    annualDesc: "Il piano Premium annuale è attivo. Sono stati addebitati 59,90€ per 12 mesi.",
     quiz: "Vai ai quiz",
     home: "Torna alla home",
   },
   fr: {
     title: "Premium activé",
-    desc: "Essai actif. Vous avez maintenant accès aux fonctionnalités Premium.",
+    monthlyDesc: "Votre essai gratuit de 7 jours est actif. Vous avez maintenant accès aux fonctionnalités Premium.",
+    annualDesc: "Votre abonnement Premium annuel est actif. 59,90€ ont été débités pour 12 mois.",
     quiz: "Aller aux quiz",
     home: "Retour à l’accueil",
   },
   es: {
     title: "Premium activado",
-    desc: "Prueba activa. Ahora tienes acceso a las funciones Premium.",
+    monthlyDesc: "Tu prueba gratuita de 7 días está activa. Ahora tienes acceso a las funciones Premium.",
+    annualDesc: "Tu plan Premium anual está activo. Se han cobrado 59,90€ por 12 meses.",
     quiz: "Ir a los quiz",
     home: "Volver al inicio",
   },
@@ -29,6 +32,8 @@ const COPY: Record<string, any> = {
 
 export default function PremiumSuccessLangPage() {
   const { lang } = useParams() as { lang: string };
+  const searchParams = useSearchParams();
+  const isMonthly = searchParams.get("plan") !== "premium_annual";
   const t = COPY[lang] ?? COPY.it;
 
   const { refreshMe } = useAuth();
@@ -55,12 +60,12 @@ export default function PremiumSuccessLangPage() {
         sessionStorage.removeItem("cq_pending_purchase");
       }
     } catch {}
-  }, []);
+  }, [lang]);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="text-3xl font-bold">{t.title}</h1>
-      <p className="mt-4 text-gray-600">{t.desc}</p>
+      <p className="mt-4 text-gray-600">{isMonthly ? t.monthlyDesc : t.annualDesc}</p>
 
       <p className="mt-6 text-sm text-gray-500">
         {sync === "idle" && "Sincronizzazione Premium..."}

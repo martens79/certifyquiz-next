@@ -1,13 +1,14 @@
 // src/app/[lang]/register/register-client.tsx
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
 import { setToken, backendUrl } from '@/lib/auth';
+import { trackEvent, trackEventOnce } from '@/lib/analytics';
 
 type FormDataState = {
   username: string;
@@ -76,6 +77,14 @@ export default function RegisterPageClient() {
   const [turnstileKey, setTurnstileKey] = useState(0);
 
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
+
+  useEffect(() => {
+    trackEventOnce(`registration_started:${pathname}:${redirectParam ?? ""}`, "registration_started", {
+      language: lang,
+      user_state: "anonymous",
+      source_page: redirectParam ? "conversion_redirect" : "registration",
+    });
+  }, [pathname, redirectParam, lang]);
 
   function resetTurnstile() {
     setTurnstileToken('');
@@ -206,6 +215,11 @@ export default function RegisterPageClient() {
 
       // Se il backend restituisce user+token → login diretto
       if (data?.token && data?.user) {
+        trackEvent("registration_completed", {
+          language: lang,
+          user_state: "free",
+          source_page: redirectParam ? "conversion_redirect" : "registration",
+        });
         try {
           setToken?.(data.token, true); // persistente
         } catch {
@@ -231,6 +245,11 @@ export default function RegisterPageClient() {
           )
         )
       );
+      trackEvent("registration_completed", {
+        language: lang,
+        user_state: "free",
+        source_page: redirectParam ? "conversion_redirect" : "registration",
+      });
       const loginHref = redirectParam
         ? `/${lang}/login?redirect=${encodeURIComponent(redirectParam)}`
         : `/${lang}/login`;

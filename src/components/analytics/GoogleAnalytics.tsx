@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { useEffect } from "react";
 import { useConsent } from "@/components/analytics/ConsentProvider";
+import { flushPendingAnalyticsEvents } from "@/lib/analytics";
 
 export default function GoogleAnalytics() {
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
@@ -50,6 +51,7 @@ export default function GoogleAnalytics() {
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         strategy="afterInteractive"
+        onReady={flushPendingAnalyticsEvents}
       />
     </>
   );

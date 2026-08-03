@@ -13,6 +13,7 @@ import type { CertificationResources } from "@/lib/data";
 import { certPath, guidePath, mapsPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import StructuredData from "@/components/StructuredData";
+import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -268,6 +269,8 @@ const pageTopics =
 
   return (
     <>
+      <CertificationAnalytics slug={data.slug} language={lang} />
+    <>
       {courseLd && <StructuredData id={`ld-cert-course-${data.slug}`} data={courseLd} />}
       {faqLd && <StructuredData id={`ld-cert-faq-${data.slug}`} data={faqLd} />}
       <div className="min-h-screen bg-blue-50 flex flex-col items-center pt-6 md:pt-[12vh] md:pb-12 px-4">
@@ -521,6 +524,7 @@ es: '¿Cuál es la certificación SQL "actual"?',
         )}
       </div>
       </div>
+    </>
     </>
   );
 }

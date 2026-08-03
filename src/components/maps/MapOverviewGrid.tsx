@@ -36,7 +36,7 @@ const LABELS = {
     download: "Scarica il PDF",
     downloading: "Download in corso…",
     downloadError: "Download non riuscito. Riprova.",
-    unlock: "Sblocca con Premium",
+    unlock: "Sblocca guida e mappe",
     italianOnly: "",
   },
   en: {
@@ -56,7 +56,7 @@ const LABELS = {
     download: "Download PDF",
     downloading: "Downloading…",
     downloadError: "Download failed. Please try again.",
-    unlock: "Unlock with Premium",
+    unlock: "Unlock guide and maps",
     italianOnly: "🇮🇹 Currently in Italian only",
   },
   fr: {
@@ -76,7 +76,7 @@ const LABELS = {
     download: "Télécharger le PDF",
     downloading: "Téléchargement…",
     downloadError: "Échec du téléchargement. Réessayez.",
-    unlock: "Débloquer avec Premium",
+    unlock: "Débloquer le guide et les cartes",
     italianOnly: "🇮🇹 Disponible uniquement en italien pour l'instant",
   },
   es: {
@@ -96,7 +96,7 @@ const LABELS = {
     download: "Descargar PDF",
     downloading: "Descargando…",
     downloadError: "Error al descargar. Inténtalo de nuevo.",
-    unlock: "Desbloquear con Premium",
+    unlock: "Desbloquear guía y mapas",
     italianOnly: "🇮🇹 Por ahora solo en italiano",
   },
 } as const;
@@ -114,13 +114,11 @@ function MapCard({
   item,
   access,
   userStatus,
-  userEmail,
 }: {
   lang: Locale;
   item: MapCardItem;
   access: MapOverviewItem["access"];
   userStatus: UserStatus;
-  userEmail: string | null;
 }) {
   const t = LABELS[lang];
   const [downloading, setDownloading] = useState(false);
@@ -141,16 +139,15 @@ function MapCard({
     });
 
   function handlePreviewClick() {
-    trackMapEvent("study_map_preview_clicked");
+    trackMapEvent("map_preview_viewed");
   }
 
   function handleLockedClick() {
-    trackMapEvent("study_map_locked_clicked");
+    trackMapEvent("premium_cta_clicked");
 
     // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
     trackFunnelEvent({
       event: "premium_clicked_map_locked",
-      email: userEmail,
       cert_slug: item.certification_slug,
       topic_slug: null,
       lang,
@@ -277,7 +274,7 @@ function MapCard({
           </button>
         ) : (
           <Link
-            href={pricingPath(lang)}
+            href={`${pricingPath(lang)}?source=map_preview&certification_slug=${encodeURIComponent(item.certification_slug)}&map_slug=${encodeURIComponent(item.slug)}`}
             onClick={handleLockedClick}
             className={`${ACTION_BASE} border-transparent bg-amber-500 text-white hover:bg-amber-600`}
           >
@@ -412,7 +409,6 @@ export default function MapOverviewGrid({ lang, items }: Props) {
                   item={item}
                   access={liveAccess?.[item.id] ?? item.access}
                   userStatus={userStatus}
-                  userEmail={user?.email ?? null}
                 />
               ))}
             </section>

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
-import { trackFunnelEvent } from "@/lib/analytics";
+import { analyticsUserStateFrom, trackEvent, trackEventOnce, trackFunnelEvent } from "@/lib/analytics";
 
 type Lang = "it" | "es" | "en" | "fr";
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
@@ -95,11 +95,11 @@ const COPY: Record<Lang, CopyEntry> = {
     socialProofLine: "[TODO: numero utenti reali] persone si stanno preparando con CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
-      { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "4,99€/mese", badge: "Risparmi il 50%", popular: true },
+      { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "Pagamento unico per 12 mesi", badge: "Risparmi il 50%", popular: true },
     ],
-    cta: "Sblocca Premium",
+    cta: "Inizia Premium",
     ctaLoading: "Apertura checkout...",
-    subCta: "59,90€ addebitati oggi per 12 mesi · Equivale a 4,99€/mese",
+    subCta: "59,90€ addebitati oggi in un unico pagamento per 12 mesi",
     subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
     trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
     featuresTitle: "Cosa include Premium",
@@ -164,11 +164,11 @@ const COPY: Record<Lang, CopyEntry> = {
     socialProofLine: "[TODO: número real de usuarios] personas se están preparando con CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
-      { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "4,99€/mes", badge: "Ahorra el 50%", popular: true },
+      { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "Pago único por 12 meses", badge: "Ahorra el 50%", popular: true },
     ],
-    cta: "Desbloquear Premium",
+    cta: "Empezar Premium",
     ctaLoading: "Abriendo checkout...",
-    subCta: "59,90€ cobrados hoy por 12 meses · Equivale a 4,99€/mes",
+    subCta: "59,90€ cobrados hoy en un único pago por 12 meses",
     subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
     trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
     featuresTitle: "Qué incluye Premium",
@@ -233,11 +233,11 @@ const COPY: Record<Lang, CopyEntry> = {
     socialProofLine: "[TODO: real user count] people are preparing with CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
-      { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "€4.99/month", badge: "Save 50%", popular: true },
+      { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "One payment for 12 months", badge: "Save 50%", popular: true },
     ],
-    cta: "Unlock Premium",
+    cta: "Start Premium",
     ctaLoading: "Opening checkout...",
-    subCta: "€59.90 charged today for 12 months · Equivalent to €4.99/month",
+    subCta: "€59.90 charged today as one payment for 12 months",
     subCtaMonthly: "7 days free · No charge today · Cancel anytime",
     trialNote: "Try free for 7 days, then €9.99/month.",
     featuresTitle: "What Premium includes",
@@ -302,11 +302,11 @@ const COPY: Record<Lang, CopyEntry> = {
     socialProofLine: "[TODO : nombre réel d'utilisateurs] personnes se préparent avec CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
-      { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "4,99€/mois", badge: "Économisez 50%", popular: true },
+      { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "Paiement unique pour 12 mois", badge: "Économisez 50%", popular: true },
     ],
-    cta: "Débloquer Premium",
+    cta: "Commencer Premium",
     ctaLoading: "Ouverture du checkout...",
-    subCta: "59,90€ débités aujourd'hui pour 12 mois · Soit 4,99€/mois",
+    subCta: "59,90€ débités aujourd'hui en un paiement unique pour 12 mois",
     subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
     trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
     featuresTitle: "Ce que Premium inclut",
@@ -585,7 +585,7 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
 
 export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
-  const { user, isPremiumUser: authPremium } = useAuth();
+  const { user, loading: authLoading, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
   const [explanationsUsed, setExplanationsUsed] = useState<{ used: number; limit: number } | null>(null);
@@ -600,6 +600,27 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
   const t = COPY[lang];
   const activePlan = t.plans.find((p) => p.id === selectedPlan) ?? t.plans[t.plans.length - 1];
   const isMonthly = selectedPlan === "premium_monthly";
+
+  useEffect(() => {
+    if (authLoading) return;
+    const params = new URLSearchParams(window.location.search);
+    trackEventOnce(`pricing_viewed:${window.location.pathname}:${window.location.search}`, "pricing_viewed", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      source_page: params.get("source") || document.referrer || "direct",
+      certification_slug: params.get("certification_slug"),
+    });
+  }, [authLoading, lang, user]);
+
+  function selectPlan(plan: Plan) {
+    setSelectedPlan(plan);
+    trackEvent("pricing_plan_selected", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      plan_type: plan,
+      source_page: "pricing",
+    });
+  }
 
   // Leva costo-sommerso: mostra quante spiegazioni gratuite l'utente free ha già usato.
   // Solo dato reale (via /me/explanation-status), niente stime o numeri inventati.
@@ -627,6 +648,13 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     if (isLoading) return;
     try {
       setIsLoading(true);
+      trackEvent("checkout_started", {
+        language: lang,
+        user_state: analyticsUserStateFrom(user),
+        plan_type: selectedPlan,
+        purchase_type: "subscription",
+        source_page: "pricing",
+      });
       trackFunnelEvent({ event: "premium_clicked", lang, plan: selectedPlan });
 
       trackMetaPixel("InitiateCheckout", {
@@ -641,7 +669,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       });
 
       if (res.status === 401) {
-        window.location.href = `/login?redirect=${encodeURIComponent(pathname || "/pricing")}`;
+        window.location.href = `/login?redirect=${encodeURIComponent(`${pathname || "/pricing"}${window.location.search}`)}`;
         return;
       }
 
@@ -691,7 +719,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           </ul>
 
           {/* Selettore piani */}
-          <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} popularLabel={t.popularLabel} />
+          <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
 
           {explanationsUsed && (
             <ExplanationsUsedNote t={t} used={explanationsUsed.used} limit={explanationsUsed.limit} />
@@ -738,7 +766,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           {/* CTA finale */}
           <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
             <p className="text-base font-semibold text-gray-900">{t.finalLine}</p>
-            <PlanSelector plans={t.plans} selected={selectedPlan} onChange={setSelectedPlan} popularLabel={t.popularLabel} />
+              <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
             <div className="mt-5 flex flex-col items-center">
               {isMonthly && (
                 <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>

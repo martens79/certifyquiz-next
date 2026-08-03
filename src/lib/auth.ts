@@ -15,6 +15,7 @@ export type MinimalUser = {
   name?: string | null;
   role?: string | null;
   premium?: boolean | null;
+  trial?: boolean | null;
   username?: string | null;
 };
 

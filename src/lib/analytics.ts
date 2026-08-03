@@ -9,13 +9,60 @@
 
 type TrackParams = Record<string, string | number | boolean | null | undefined>;
 
+export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
+
+const SESSION_KEY = "cq_analytics_session";
+const onceKeys = new Set<string>();
+const pendingEvents: Array<{ eventName: string; params: TrackParams }> = [];
+
+function getAnonymousSessionId(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    let value = sessionStorage.getItem(SESSION_KEY);
+    if (!value) {
+      value = crypto.randomUUID();
+      sessionStorage.setItem(SESSION_KEY, value);
+    }
+    return value;
+  } catch {
+    return undefined;
+  }
+}
+
 export function trackEvent(eventName: string, params: TrackParams = {}) {
   if (typeof window === "undefined") return;
 
   const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
+  if (typeof w.gtag !== "function") {
+    pendingEvents.push({ eventName, params });
+    return;
+  }
+
+  w.gtag("event", eventName, {
+    anonymous_session_id: getAnonymousSessionId(),
+    ...params,
+  });
+}
+
+/** Invia gli eventi partiti prima che lo script GA4 fosse pronto. */
+export function flushPendingAnalyticsEvents() {
+  if (typeof window === "undefined") return;
+  const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
   if (typeof w.gtag !== "function") return;
 
-  w.gtag("event", eventName, params);
+  const queued = pendingEvents.splice(0, pendingEvents.length);
+  queued.forEach(({ eventName, params }) => trackEvent(eventName, params));
+}
+
+/** Evita duplicazioni dovute a Strict Mode, rerender e navigazione client-side. */
+export function trackEventOnce(
+  dedupeKey: string,
+  eventName: string,
+  params: TrackParams = {}
+) {
+  if (onceKeys.has(dedupeKey)) return;
+  onceKeys.add(dedupeKey);
+  trackEvent(eventName, params);
 }
 
 /** user_status per gli eventi: mai id/email, solo lo stato d'accesso. */
@@ -23,6 +70,12 @@ export type UserStatus = "anonymous" | "free" | "premium";
 
 export function userStatusFrom(user: { premium?: boolean } | null): UserStatus {
   if (!user) return "anonymous";
+  return user.premium ? "premium" : "free";
+}
+
+export function analyticsUserStateFrom(user: { premium?: boolean; trial?: boolean } | null): AnalyticsUserState {
+  if (!user) return "anonymous";
+  if (user.trial) return "trial";
   return user.premium ? "premium" : "free";
 }
 

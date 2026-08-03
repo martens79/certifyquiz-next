@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import GuideAccessGate from "./GuideAccessGate";
+import { analyticsUserStateFrom, trackEventOnce } from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
@@ -60,6 +61,17 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
   const [accessReason, setAccessReason] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    trackEventOnce(`guide_preview:${slug}:${lang}`, "guide_preview_viewed", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      source_page: "guide_detail",
+      content_type: "guide",
+      guide_slug: slug,
+    });
+  }, [authLoading, user, slug, lang]);
 
   useEffect(() => {
     let cancelled = false;

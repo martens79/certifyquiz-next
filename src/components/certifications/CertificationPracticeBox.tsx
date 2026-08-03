@@ -20,7 +20,7 @@ const COPY = {
     p: (t: string) =>
       `Allenati con domande in stile esame su ${t}. I quiz coprono i principali argomenti e ti aiutano a fissare concetti e procedure con esempi pratici.`,
     coverage: "Copertura argomenti",
-    start: "Inizia pratica",
+    start: "Scopri il tuo livello",
     micro: "Domande in stile esame • Allenamento rapido",
   },
   en: {
@@ -28,7 +28,7 @@ const COPY = {
     p: (t: string) =>
       `Train with exam-style ${t} practice questions. Our quizzes cover the main topics to help you build real, job-ready skills and exam confidence.`,
     coverage: "Topic coverage",
-    start: "Start practice",
+    start: "Discover your level",
     micro: "Exam-style questions • Quick practice",
   },
   fr: {
@@ -36,7 +36,7 @@ const COPY = {
     p: (t: string) =>
       `Entraînez-vous avec des questions de type examen pour ${t}. Les quiz couvrent les thèmes clés afin de renforcer vos compétences et votre préparation.`,
     coverage: "Couverture des thèmes",
-    start: "Commencer",
+    start: "Découvrez votre niveau",
     micro: "Questions type examen • Entraînement rapide",
   },
   es: {
@@ -44,7 +44,7 @@ const COPY = {
     p: (t: string) =>
       `Entrena con preguntas tipo examen de ${t}. Nuestros cuestionarios cubren los temas principales para mejorar tus habilidades y tu preparación.`,
     coverage: "Cobertura de temas",
-    start: "Empezar práctica",
+    start: "Descubre tu nivel",
     micro: "Preguntas tipo examen • Práctica rápida",
   },
 } as const;

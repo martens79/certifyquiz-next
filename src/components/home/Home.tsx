@@ -6,6 +6,7 @@ import React from "react";
 
 import { withLang } from "@/lib/i18n";
 import { categoryPath, pricingPath, type CategoryKey, type Locale } from "@/lib/paths";
+import { trackEvent } from "@/lib/analytics";
 
 import BlogTeaser from "@/components/BlogTeaser";
 import logo from "@/../public/images/logo-certifyquiz.png";
@@ -370,14 +371,20 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
           <Link
             href={`/${safeLang}/quiz-home`}
+            onClick={() => trackEvent("homepage_primary_cta_clicked", {
+              language: safeLang,
+              user_state: isLoggedIn ? "free" : "anonymous",
+              source_page: "homepage",
+              content_type: "diagnostic_quiz",
+            })}
             className="inline-flex justify-center bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-[1.02]"
           >
             {L(
               {
-                it: "Trova la certificazione e prova gratis",
-                en: "Find your certification and try free",
-                fr: "Trouvez votre certification et essayez gratuitement",
-                es: "Encuentra tu certificación y prueba gratis",
+                it: "Prova 10 domande gratis",
+                en: "Try 10 questions free",
+                fr: "Essayez 10 questions gratuitement",
+                es: "Prueba 10 preguntas gratis",
               },
               safeLang
             )}
