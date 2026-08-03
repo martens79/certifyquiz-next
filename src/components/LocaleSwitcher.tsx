@@ -11,6 +11,8 @@ import {
   SCENARIOS_SLUG_BY_LANG,
   PRICING_SLUG_BY_LANG,
   GAMES_SLUG_BY_LANG,
+  RECOMMENDED_RESOURCES_SLUG_BY_LANG,
+  recommendedResourcesPath,
 } from "@/lib/paths";
 
 /* ------------------------------------------------------------------ */
@@ -64,6 +66,7 @@ const REVIEWS_DETAIL_RE = sectionDetailRe(REVIEWS_SLUG_BY_LANG);
 const SCENARIOS_LIST_RE = sectionListRe(SCENARIOS_SLUG_BY_LANG);
 const GAMES_LIST_RE = sectionListRe(GAMES_SLUG_BY_LANG);
 const GAMES_DETAIL_RE = sectionDetailRe(GAMES_SLUG_BY_LANG);
+const RECOMMENDED_RESOURCES_RE = sectionListRe(RECOMMENDED_RESOURCES_SLUG_BY_LANG);
 
 /** ✅ Parola "review" della pagina di ripasso topic (.../{topicSlug}/review) */
 const TOPIC_REVIEW_WORD: Record<Locale, string> = {
@@ -240,6 +243,12 @@ export default function LocaleSwitcher({ current }: { current: Locale }) {
     /* ---------------------- HOME ---------------------- */
     if (pathname === "/" || LOCALE_HOME_RE.test(pathname)) {
       router.push(qs(homeRoot(next), query));
+      return;
+    }
+
+    /* ------------ RECOMMENDED RESOURCES ------------- */
+    if (RECOMMENDED_RESOURCES_RE.test(pathname)) {
+      router.push(qs(recommendedResourcesPath(next), query));
       return;
     }
 

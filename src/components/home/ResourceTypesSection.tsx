@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gamepad2, Terminal } from "lucide-react";
+import { BookOpen, Gamepad2, Terminal } from "lucide-react";
 
 import type { Locale } from "@/lib/paths";
 import {
@@ -8,15 +8,17 @@ import {
   gamesPath,
   interactiveLabsPath,
   mapsPath,
+  recommendedResourcesPath,
   reviewsPath,
   scenariosPath,
 } from "@/lib/paths";
+import { trackEvent } from "@/lib/analytics";
 
 type Props = { lang: Locale };
 
 const COPY = {
   it: {
-    kicker: "Sette modi per prepararti",
+    kicker: "Otto modi per prepararti",
     heading: "Tutto ciò che serve per preparare la tua certificazione",
     quiz: "Quiz",
     quizDesc: "Domande in stile esame con spiegazioni",
@@ -32,10 +34,12 @@ const COPY = {
     labsDesc: "Impara facendo, passo dopo passo",
     games: "Mini giochi",
     gamesDesc: "Allena le tue competenze divertendoti",
+    recommended: "Materiale consigliato",
+    recommendedDesc: "Libri, corsi e strumenti utili per prepararti",
     newBadge: "Nuovo",
   },
   en: {
-    kicker: "Seven ways to prepare",
+    kicker: "Eight ways to prepare",
     heading: "Everything you need to prepare for your certification",
     quiz: "Quizzes",
     quizDesc: "Exam-style questions with explanations",
@@ -51,10 +55,12 @@ const COPY = {
     labsDesc: "Learn by doing, step by step",
     games: "Mini games",
     gamesDesc: "Build your skills while having fun",
+    recommended: "Recommended resources",
+    recommendedDesc: "Useful books, courses and tools to help you prepare",
     newBadge: "New",
   },
   fr: {
-    kicker: "Sept façons de vous préparer",
+    kicker: "Huit façons de vous préparer",
     heading: "Tout ce qu'il faut pour préparer votre certification",
     quiz: "Quiz",
     quizDesc: "Questions type examen avec explications",
@@ -70,10 +76,12 @@ const COPY = {
     labsDesc: "Apprenez par la pratique, étape par étape",
     games: "Mini-jeux",
     gamesDesc: "Développez vos compétences en vous amusant",
+    recommended: "Ressources recommandées",
+    recommendedDesc: "Livres, cours et outils utiles pour vous préparer",
     newBadge: "Nouveau",
   },
   es: {
-    kicker: "Siete formas de prepararte",
+    kicker: "Ocho formas de prepararte",
     heading: "Todo lo que necesitas para preparar tu certificación",
     quiz: "Cuestionarios",
     quizDesc: "Preguntas tipo examen con explicaciones",
@@ -89,6 +97,8 @@ const COPY = {
     labsDesc: "Aprende haciendo, paso a paso",
     games: "Minijuegos",
     gamesDesc: "Entrena tus habilidades mientras te diviertes",
+    recommended: "Material recomendado",
+    recommendedDesc: "Libros, cursos y herramientas útiles para prepararte",
     newBadge: "Nuevo",
   },
 } as const;
@@ -129,6 +139,13 @@ export default function ResourceTypesSection({ lang }: Props) {
       href: gamesPath(lang),
       isNew: true,
     },
+    {
+      icon: <BookOpen size={19} strokeWidth={2.25} />,
+      title: t.recommended,
+      desc: t.recommendedDesc,
+      href: recommendedResourcesPath(lang),
+      trackingEvent: "recommended_materials_card_clicked",
+    },
   ];
 
   return (
@@ -142,11 +159,16 @@ export default function ResourceTypesSection({ lang }: Props) {
           {t.heading}
         </h2>
 
-        <ul className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3 2xl:grid-cols-7">
-          {items.map(({ icon, title, desc, href, isNew }) => (
+        <ul className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+          {items.map(({ icon, title, desc, href, isNew, trackingEvent }) => (
             <li key={href} className="min-w-0">
               <Link
                 href={href}
+                onClick={() => {
+                  if (trackingEvent) {
+                    trackEvent(trackingEvent, { page_language: lang });
+                  }
+                }}
                 className="group flex h-full min-w-0 items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-3 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 sm:gap-3 lg:flex-col lg:gap-2"
               >
                 <span

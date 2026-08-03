@@ -230,6 +230,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           },
           {
             url:
+              lang === "it"
+                ? `${SITE}/it/materiale-consigliato`
+                : lang === "en"
+                ? `${SITE}/en/recommended-resources`
+                : lang === "fr"
+                ? `${SITE}/fr/ressources-recommandees`
+                : `${SITE}/es/material-recomendado`,
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+            lastModified: now,
+          },
+          {
+            url:
               lang === "en"
                 ? `${SITE}/categories/business-applications/sap`
                 : lang === "it"
