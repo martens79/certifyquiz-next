@@ -1,8 +1,8 @@
 import type { Locale } from "@/lib/paths";
 
 export const SAP_CERTIFICATIONS = [
-  { slug: "sap-s4hana-financial-accounting", title: "SAP S/4HANA Financial Accounting" },
-  { slug: "sap-s4hana-sourcing-procurement", title: "SAP S/4HANA Sourcing and Procurement" },
+  { slug: "sap-s4hana-financial-accounting", title: "SAP S/4HANA Financial Accounting", available: true },
+  { slug: "sap-s4hana-sourcing-procurement", title: "SAP S/4HANA Sourcing and Procurement", available: true },
   { slug: "sap-s4hana-sales", title: "SAP S/4HANA Sales" },
   { slug: "sap-s4hana-production-planning", title: "SAP S/4HANA Production Planning and Manufacturing" },
   { slug: "sap-abap-cloud-developer", title: "SAP Back-End Developer – ABAP Cloud" },
@@ -13,6 +13,9 @@ export const SAP_CERTIFICATIONS = [
 
 export const getSapCertification = (slug: string) =>
   SAP_CERTIFICATIONS.find((cert) => cert.slug === slug);
+
+export const getSapPlaceholderCertification = (slug: string) =>
+  SAP_CERTIFICATIONS.find((cert) => cert.slug === slug && !("available" in cert && cert.available));
 
 export const BUSINESS_ECOSYSTEMS = [
   { key: "sap", title: "SAP", badge: "ERP · Finance · HR · Analytics", available: true },

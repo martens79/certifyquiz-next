@@ -5,7 +5,7 @@ import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
-import { getSapCertification } from "@/features/business-applications/data";
+import { getSapPlaceholderCertification } from "@/features/business-applications/data";
 import {
   getCertBySlug,
   getTopicsByCertSlug,
@@ -95,7 +95,7 @@ export async function CertificationDetailView({
   lang: Lang;
   slug: string;
 }) {
-  const sapCertification = getSapCertification(slug);
+  const sapCertification = getSapPlaceholderCertification(slug);
   if (sapCertification) {
     return <SapCertificationPlaceholder lang={lang} cert={sapCertification} />;
   }

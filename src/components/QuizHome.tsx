@@ -198,8 +198,8 @@ const certificationNames: CertificationNames = {
   base: baseCerts,
 
   "business-applications": [
-    { name: "SAP S/4HANA Financial Accounting", link: certPath(lang, "sap-s4hana-financial-accounting"), comingSoon: true },
-    { name: "SAP S/4HANA Sourcing and Procurement", link: certPath(lang, "sap-s4hana-sourcing-procurement"), comingSoon: true },
+    { name: "SAP S/4HANA Financial Accounting", link: certPath(lang, "sap-s4hana-financial-accounting") },
+    { name: "SAP S/4HANA Sourcing and Procurement", link: certPath(lang, "sap-s4hana-sourcing-procurement") },
     { name: "SAP S/4HANA Sales", link: certPath(lang, "sap-s4hana-sales"), comingSoon: true },
     { name: "SAP S/4HANA Production Planning and Manufacturing", link: certPath(lang, "sap-s4hana-production-planning"), comingSoon: true },
     { name: "SAP ABAP Cloud Developer", link: certPath(lang, "sap-abap-cloud-developer"), comingSoon: true },
