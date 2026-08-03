@@ -541,7 +541,7 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     getString(obj, "description") ??
     "",
   faq: normalizeFaq(obj["faq"]),
-  imageUrl: pickImageUrl(obj),
+  imageUrl: pickImageUrl(obj) ?? (canonSlug.startsWith("sap-") ? "/images/certifications/sap.svg" : undefined),
   ogImage: getString(obj, "ogImage") ?? undefined,
   image: getString(obj, "image") ?? undefined,
 

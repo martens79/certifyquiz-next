@@ -79,6 +79,15 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
 
 /* ------------------------- ICONE (canoniche) ------------------------- */
 const ICON_BY_SLUG: Record<string, string> = {
+  "sap-s4hana-financial-accounting": "/images/certifications/sap.svg",
+  "sap-s4hana-sourcing-procurement": "/images/certifications/sap.svg",
+  "sap-s4hana-sales": "/images/certifications/sap.svg",
+  "sap-s4hana-production-planning": "/images/certifications/sap.svg",
+  "sap-abap-cloud-developer": "/images/certifications/sap.svg",
+  "sap-business-technology-platform": "/images/certifications/sap.svg",
+  "sap-successfactors": "/images/certifications/sap.svg",
+  "sap-analytics-cloud": "/images/certifications/sap.svg",
+
   // canonici
   "aws-cloud-practitioner": "/images/certifications/aws-cloud-practitioner.png",
   "aws-solutions-architect": "/images/certifications/aws-solutions-architect.png",
