@@ -3,7 +3,7 @@ import type { Locale } from "@/lib/paths";
 export const SAP_CERTIFICATIONS = [
   { slug: "sap-s4hana-financial-accounting", title: "SAP S/4HANA Financial Accounting", available: true },
   { slug: "sap-s4hana-sourcing-procurement", title: "SAP S/4HANA Sourcing and Procurement", available: true },
-  { slug: "sap-s4hana-sales", title: "SAP S/4HANA Sales" },
+  { slug: "sap-s4hana-sales", title: "SAP S/4HANA Sales", available: true },
   { slug: "sap-s4hana-production-planning", title: "SAP S/4HANA Production Planning and Manufacturing" },
   { slug: "sap-abap-cloud-developer", title: "SAP Back-End Developer – ABAP Cloud" },
   { slug: "sap-business-technology-platform", title: "SAP Business Technology Platform" },
