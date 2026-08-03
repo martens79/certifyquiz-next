@@ -46,9 +46,28 @@ export default function LanguageSuggestionBanner() {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
 
+  // Non interrompere i momenti ad alta intenzione o di concentrazione.
+  // La lingua resta sempre modificabile dall'header.
+  const isHighIntentPage =
+    pathname.includes("/quiz/") ||
+    pathname === "/pricing" ||
+    pathname.endsWith("/prezzi") ||
+    pathname.endsWith("/prix") ||
+    pathname.endsWith("/precios") ||
+    pathname.includes("/guide/") ||
+    pathname === "/maps" ||
+    pathname.endsWith("/mappe") ||
+    pathname.endsWith("/cartes") ||
+    pathname.endsWith("/mapas");
+
   const [suggestedLang, setSuggestedLang] = useState<Lang | null>(null);
 
   useEffect(() => {
+    if (isHighIntentPage) {
+      setSuggestedLang(null);
+      return;
+    }
+
     const preferred = localStorage.getItem("preferred_lang");
     const dismissed = localStorage.getItem("lang_banner_dismissed");
 
@@ -73,7 +92,7 @@ export default function LanguageSuggestionBanner() {
     } else {
       setSuggestedLang(null);
     }
-  }, [pathname]);
+  }, [isHighIntentPage, pathname]);
 
   function switchLang() {
     if (!suggestedLang) return;

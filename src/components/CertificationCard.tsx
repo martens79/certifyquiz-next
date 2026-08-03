@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Locale } from "@/lib/i18n";
 
 
 export function CertificationCard({
@@ -9,6 +10,7 @@ imageUrl,
 level,
 description,
 badgeLabel,
+lang,
 }: {
 href: string;
 title: string;
@@ -16,7 +18,16 @@ imageUrl?: string | null;
 level?: string | null;
 description?: string | null;
 badgeLabel?: string;
+lang: Locale;
 }) {
+const cta =
+lang === "it"
+? "Scopri e prova gratis →"
+: lang === "fr"
+? "Découvrir et essayer gratuitement →"
+: lang === "es"
+? "Descubrir y probar gratis →"
+: "Explore and try free →";
 return (
 <Link
 href={href}
@@ -45,7 +56,7 @@ dark:border-neutral-800 dark:bg-neutral-900"
 ) : null}
 </div>
 </div>
-<div className="mt-3 text-sm font-semibold text-blue-600 group-hover:underline">Vai alla pagina →</div>
+<div className="mt-3 text-sm font-semibold text-blue-600 group-hover:underline">{cta}</div>
 </Link>
 );
 }

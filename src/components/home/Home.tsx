@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 
 import { withLang } from "@/lib/i18n";
-import { categoryPath, type CategoryKey, type Locale } from "@/lib/paths";
+import { categoryPath, pricingPath, type CategoryKey, type Locale } from "@/lib/paths";
 
 import BlogTeaser from "@/components/BlogTeaser";
 import logo from "@/../public/images/logo-certifyquiz.png";
@@ -346,10 +346,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         <p className="text-sm md:text-base text-slate-600 font-semibold mb-2">
           {L(
             {
-              it: "Allenati per le certificazioni IT con quiz realistici e spiegazioni chiare.",
-              en: "Prepare for IT certifications with realistic quizzes and clear explanations.",
-              fr: "Préparez vos certifications IT avec des quiz réalistes et des explications claires.",
-              es: "Prepárate para certificaciones IT con cuestionarios realistas y explicaciones claras.",
+              it: "Scopri cosa devi migliorare e preparati alle certificazioni IT con quiz realistici e spiegazioni chiare.",
+              en: "Find what you need to improve and prepare for IT certifications with realistic quizzes and clear explanations.",
+              fr: "Identifiez vos points faibles et préparez vos certifications IT avec des quiz réalistes et des explications claires.",
+              es: "Descubre qué debes mejorar y prepárate para certificaciones IT con cuestionarios realistas y explicaciones claras.",
             },
             safeLang
           )}
@@ -374,10 +374,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           >
             {L(
               {
-                it: "Esplora i quiz",
-                en: "Explore quizzes",
-                fr: "Explorer les quiz",
-                es: "Explorar cuestionarios",
+                it: "Trova la certificazione e prova gratis",
+                en: "Find your certification and try free",
+                fr: "Trouvez votre certification et essayez gratuitement",
+                es: "Encuentra tu certificación y prueba gratis",
               },
               safeLang
             )}
@@ -385,15 +385,15 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
           {!isLoggedIn && (
             <Link
-              href={withLang(safeLang, "/login")}
+              href={pricingPath(safeLang)}
               className="inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
               {L(
                 {
-                  it: "Accedi",
-                  en: "Login",
-                  fr: "Se connecter",
-                  es: "Iniciar sesión",
+                  it: "Scopri Premium",
+                  en: "See Premium",
+                  fr: "Découvrir Premium",
+                  es: "Descubrir Premium",
                 },
                 safeLang
               )}

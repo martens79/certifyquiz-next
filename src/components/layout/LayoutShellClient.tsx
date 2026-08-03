@@ -17,8 +17,19 @@ type Props = {
 export default function LayoutShellClient({ lang, children }: Props) {
   const pathname = usePathname();
 
-  // ✅ Nascondi solo nelle pagine quiz (focus + più spazio verticale)
-  const hideBottomNav = pathname.includes("/quiz/");
+  // Evita che la navigazione mobile copra CTA, piani e preview nei passaggi
+  // ad alta intenzione. La navigazione principale resta disponibile nell'header.
+  const hideBottomNav =
+    pathname.includes("/quiz/") ||
+    pathname === "/pricing" ||
+    pathname.endsWith("/prezzi") ||
+    pathname.endsWith("/prix") ||
+    pathname.endsWith("/precios") ||
+    pathname.includes("/guide/") ||
+    pathname === "/maps" ||
+    pathname.endsWith("/mappe") ||
+    pathname.endsWith("/cartes") ||
+    pathname.endsWith("/mapas");
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">

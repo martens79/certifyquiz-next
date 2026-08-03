@@ -8,7 +8,7 @@ const SecurityPlus = {
 
   title: {
     it: "CompTIA Security+ – Quiz e Simulazioni d'Esame",
-    en: "Security+ Practice Test 2026 – 834 Exam Questions",
+    en: "Security+ Practice Test 2026 – 1,200+ SY0-701 Exam Questions",
     fr: "CompTIA Security+ – Quiz et Simulation d’Examen",
     es: "CompTIA Security+ – Quiz y Simulación de Examen",
   },
@@ -22,7 +22,7 @@ const SecurityPlus = {
 
   description: {
     it: "Allenati per l’esame CompTIA Security+ (SY0-701) con quiz in stile esame, modalità training e simulazioni con timer. Copertura completa dei domini ufficiali e banca domande in crescita.",
-    en: "Practice with 834 Security+ exam-style questions (English pool). Includes training mode, timed exam simulation, and mixed quizzes covering all SY0-701 domains.",
+    en: "Practice with over 1,200 Security+ exam-style questions. Includes training mode, timed exam simulation, and mixed quizzes covering all SY0-701 domains.",
     fr: "Préparez l’examen CompTIA Security+ (SY0-701) avec des quiz type examen, un mode entraînement et une simulation chronométrée. Banque de questions en croissance.",
     es: "Prepárate para el examen CompTIA Security+ (SY0-701) con quizzes tipo examen, modo entrenamiento y simulación con temporizador. Banco de preguntas en expansión.",
   },

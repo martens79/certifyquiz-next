@@ -57,6 +57,8 @@ type CopyEntry = {
   tableRows: { label: string; free: string; premium: string }[];
   guaranteeTitle: string;
   guaranteeDesc: string;
+  faqTitle: string;
+  faqs: { question: string; answer: string }[];
   popularLabel: string;
   explanationsUsedTemplate: string;
   testimonialsTitle: string;
@@ -80,14 +82,14 @@ function getLangFromPathname(pathname: string | null): Lang {
 const COPY: Record<Lang, CopyEntry> = {
   it: {
     badge: "PREMIUM",
-    title: "Restando Free, rinunci a quasi tutto ciò che ti serve per superare l'esame",
+    title: "Trasforma ogni errore in una preparazione più efficace per il tuo esame",
     subtitle:
-      "Senza Premium continui a sbagliare le stesse domande senza sapere perché, con guide, mappe e scenari d'esame solo in anteprima.",
+      "Premium riunisce spiegazioni complete, ripasso degli errori, guide, mappe e simulazioni per aiutarti a capire cosa migliorare.",
     lossPoints: [
-      "Spiegazioni dettagliate bloccate dopo le prime 10",
-      "Guide PDF disponibili solo in anteprima",
-      "Mappe concettuali complete non accessibili",
-      "Scenari d'esame avanzati riservati",
+      "Spiegazioni dettagliate per capire ogni errore",
+      "Guide PDF e mappe concettuali complete incluse",
+      "Ripasso mirato delle risposte sbagliate",
+      "Simulazioni e Tutor AI senza i limiti del piano Free",
     ],
     // TODO-SOCIAL-PROOF: sostituire con il numero reale di utenti attivi
     socialProofLine: "[TODO: numero utenti reali] persone si stanno preparando con CertifyQuiz",
@@ -95,29 +97,28 @@ const COPY: Record<Lang, CopyEntry> = {
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
       { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "4,99€/mese", badge: "Risparmi il 50%", popular: true },
     ],
-    cta: "Passa a Premium",
+    cta: "Sblocca Premium",
     ctaLoading: "Apertura checkout...",
-    subCta: "Accesso immediato. Nessun vincolo.",
+    subCta: "59,90€ addebitati oggi per 12 mesi · Equivale a 4,99€/mese",
     subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
     trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
-    pizzaLine: "Al prezzo di una pizza, sblocchi una preparazione più seria, continua e completa.",
-    urgencyLine: "Molti si fermano dopo qualche quiz. Quelli che continuano sono quelli che arrivano preparati davvero.",
-    finalLine: "Chi supera l'esame non è sempre il più bravo. Spesso è quello che non si ferma.",
+    pizzaLine: "Scegli il mensile per provare senza addebito per 7 giorni, oppure risparmia il 50% con l'annuale.",
+    urgencyLine: "Tutti gli strumenti Premium lavorano insieme: pratica, comprensione degli errori e ripasso mirato.",
+    finalLine: "Scegli il piano più adatto al tempo che ti separa dall'esame.",
     popularLabel: "Più popolare",
     features: [
       { h: "Spiegazioni complete", p: "Sblocca tutte le spiegazioni per capire davvero gli errori e non limitarti a memorizzare." },
       { h: "Modalità esame reale", p: "Allenati in modo più vicino all'esperienza d'esame, con un approccio più serio e focalizzato." },
       { h: "Ripasso errori", p: "Rivedi le domande sbagliate e concentrati sui punti deboli invece di ripartire ogni volta da zero." },
-      { h: "Quiz illimitati", p: "Continua ad allenarti senza il limite del piano gratuito e completa davvero il tuo percorso." },
+      { h: "Guide e mappe incluse", p: "Usa le risorse complete della tua certificazione per ripassare i concetti tra una sessione e l'altra." },
     ],
     tableTitle: "Free vs Premium",
     tableFeature: "Funzionalità",
     tableFree: "Gratis",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quiz illimitati", free: "✅", premium: "✅" },
       { label: "Spiegazioni errori", free: "10 gratuite", premium: "✅ Illimitate" },
       { label: "Modalità esame reale", free: "❌", premium: "✅" },
       { label: "Ripasso errori", free: "❌", premium: "✅" },
@@ -126,8 +127,15 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "Scenari d'esame", free: "Alcuni scenari", premium: "✅ Tutti inclusi" },
       { label: "AI Tutor", free: "Limitato", premium: "✅ Illimitato" },
     ],
-    guaranteeTitle: "Garanzia 7 giorni",
-    guaranteeDesc: "Se nei primi 7 giorni non sei soddisfatto, ti rimborsiamo senza fare domande. Zero rischi.",
+    guaranteeTitle: "Prezzi chiari, checkout sicuro",
+    guaranteeDesc: "Mensile: 7 giorni gratis e nessun addebito oggi. Annuale: 59,90€ addebitati oggi per 12 mesi. Puoi gestire l'abbonamento online.",
+    faqTitle: "Domande prima di iniziare",
+    faqs: [
+      { question: "Quando viene effettuato l'addebito?", answer: "Con il mensile non paghi nulla oggi: l'addebito di 9,99€ avviene dopo i 7 giorni gratuiti. Con l'annuale paghi 59,90€ oggi per 12 mesi." },
+      { question: "Come posso annullare?", answer: "Puoi gestire o annullare l'abbonamento online dal tuo profilo." },
+      { question: "Cosa succede dopo la prova gratuita?", answer: "Se non annulli, il piano mensile si rinnova a 9,99€ al mese. La prova gratuita è disponibile solo sul mensile." },
+      { question: "Premium vale per tutte le certificazioni?", answer: "Sì. Premium sblocca le risorse Premium disponibili nel catalogo, non una sola certificazione." },
+    ],
     explanationsUsedTemplate: "Hai già usato {used} delle tue {limit} spiegazioni gratuite.",
     testimonialsTitle: "Chi lo usa, lo consiglia",
     testimonials: [
@@ -143,14 +151,14 @@ const COPY: Record<Lang, CopyEntry> = {
 
   es: {
     badge: "PREMIUM",
-    title: "Si te quedas en Free, renuncias a casi todo lo que necesitas para aprobar el examen",
+    title: "Convierte cada error en una preparación más eficaz para tu examen",
     subtitle:
-      "Sin Premium sigues fallando las mismas preguntas sin saber por qué, con guías, mapas y escenarios de examen solo en vista previa.",
+      "Premium reúne explicaciones completas, repaso de errores, guías, mapas y simulaciones para ayudarte a saber qué mejorar.",
     lossPoints: [
-      "Explicaciones detalladas bloqueadas tras las primeras 10",
-      "Guías PDF disponibles solo en vista previa",
-      "Mapas conceptuales completos inaccesibles",
-      "Escenarios de examen avanzados reservados",
+      "Explicaciones detalladas para entender cada error",
+      "Guías PDF y mapas conceptuales completos incluidos",
+      "Repaso específico de las respuestas incorrectas",
+      "Simulaciones y Tutor AI sin los límites del plan Free",
     ],
     // TODO-SOCIAL-PROOF: sustituir por el número real de usuarios activos
     socialProofLine: "[TODO: número real de usuarios] personas se están preparando con CertifyQuiz",
@@ -158,29 +166,28 @@ const COPY: Record<Lang, CopyEntry> = {
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
       { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "4,99€/mes", badge: "Ahorra el 50%", popular: true },
     ],
-    cta: "Pasar a Premium",
+    cta: "Desbloquear Premium",
     ctaLoading: "Abriendo checkout...",
-    subCta: "Acceso inmediato. Sin compromiso.",
+    subCta: "59,90€ cobrados hoy por 12 meses · Equivale a 4,99€/mes",
     subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
     trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
-    pizzaLine: "Por el precio de una pizza, desbloqueas una preparación más seria, constante y completa.",
-    urgencyLine: "Muchos se detienen después de unos pocos quizzes. Los que siguen son los que llegan realmente preparados.",
-    finalLine: "Quien aprueba no siempre es el más brillante. Muchas veces es quien no se detiene.",
+    pizzaLine: "Elige el plan mensual para probar 7 días sin cargo o ahorra un 50% con el anual.",
+    urgencyLine: "Todas las herramientas Premium trabajan juntas: práctica, comprensión de errores y repaso específico.",
+    finalLine: "Elige el plan que mejor se adapta al tiempo que falta para tu examen.",
     popularLabel: "Más popular",
     features: [
       { h: "Explicaciones completas", p: "Desbloquea todas las explicaciones para entender de verdad tus errores y no solo memorizar." },
       { h: "Modo examen real", p: "Entrena de una forma más cercana a la experiencia real del examen, con un enfoque más serio." },
       { h: "Repaso de errores", p: "Revisa tus fallos y céntrate en tus puntos débiles en lugar de empezar siempre desde cero." },
-      { h: "Quizzes ilimitados", p: "Sigue practicando sin el límite del plan gratuito y completa de verdad tu preparación." },
+      { h: "Guías y mapas incluidos", p: "Usa todos los recursos de tu certificación para repasar entre sesiones." },
     ],
     tableTitle: "Gratis vs Premium",
     tableFeature: "Función",
     tableFree: "Gratis",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quizzes ilimitados", free: "✅", premium: "✅" },
       { label: "Explicaciones de errores", free: "10 gratuitas", premium: "✅ Ilimitadas" },
       { label: "Modo examen real", free: "❌", premium: "✅" },
       { label: "Repaso de errores", free: "❌", premium: "✅" },
@@ -189,8 +196,15 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "Escenarios de examen", free: "Algunos escenarios", premium: "✅ Todos incluidos" },
       { label: "AI Tutor", free: "Limitado", premium: "✅ Ilimitado" },
     ],
-    guaranteeTitle: "Garantía de 7 días",
-    guaranteeDesc: "Si en los primeros 7 días no estás satisfecho, te reembolsamos sin preguntas. Sin riesgos.",
+    guaranteeTitle: "Precios claros y checkout seguro",
+    guaranteeDesc: "Mensual: 7 días gratis y ningún cargo hoy. Anual: 59,90€ cobrados hoy por 12 meses. Puedes gestionar la suscripción online.",
+    faqTitle: "Preguntas antes de empezar",
+    faqs: [
+      { question: "¿Cuándo se realiza el cobro?", answer: "Con el mensual no pagas nada hoy: el cobro de 9,99€ se realiza después de los 7 días gratis. Con el anual pagas 59,90€ hoy por 12 meses." },
+      { question: "¿Cómo puedo cancelar?", answer: "Puedes gestionar o cancelar la suscripción online desde tu perfil." },
+      { question: "¿Qué ocurre después de la prueba?", answer: "Si no cancelas, el plan mensual se renueva a 9,99€ al mes. La prueba gratuita solo está disponible con el mensual." },
+      { question: "¿Premium sirve para todas las certificaciones?", answer: "Sí. Premium desbloquea los recursos Premium disponibles en todo el catálogo." },
+    ],
     explanationsUsedTemplate: "Ya has usado {used} de tus {limit} explicaciones gratuitas.",
     testimonialsTitle: "Quienes lo usan, lo recomiendan",
     testimonials: [
@@ -206,14 +220,14 @@ const COPY: Record<Lang, CopyEntry> = {
 
   en: {
     badge: "PREMIUM",
-    title: "Staying Free means giving up almost everything you need to pass the exam",
+    title: "Turn every mistake into more effective exam preparation",
     subtitle:
-      "Without Premium you keep missing the same questions without knowing why, with guides, maps, and exam scenarios locked to a preview.",
+      "Premium brings full explanations, mistake review, guides, maps, and simulations together so you know exactly what to improve.",
     lossPoints: [
-      "Detailed explanations locked after your first 10",
-      "PDF guides available as preview only",
-      "Full concept maps out of reach",
-      "Advanced exam scenarios reserved",
+      "Detailed explanations to understand every mistake",
+      "Complete PDF guides and concept maps included",
+      "Focused review of your incorrect answers",
+      "Simulations and AI Tutor without Free-plan limits",
     ],
     // TODO-SOCIAL-PROOF: replace with the real number of active users
     socialProofLine: "[TODO: real user count] people are preparing with CertifyQuiz",
@@ -221,29 +235,28 @@ const COPY: Record<Lang, CopyEntry> = {
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
       { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "€4.99/month", badge: "Save 50%", popular: true },
     ],
-    cta: "Switch to Premium",
+    cta: "Unlock Premium",
     ctaLoading: "Opening checkout...",
-    subCta: "Instant access. No long-term commitment.",
+    subCta: "€59.90 charged today for 12 months · Equivalent to €4.99/month",
     subCtaMonthly: "7 days free · No charge today · Cancel anytime",
     trialNote: "Try free for 7 days, then €9.99/month.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
-    pizzaLine: "For the price of a pizza, you unlock a more serious, consistent, and complete way to prepare.",
-    urgencyLine: "Many people stop after a few quizzes. The ones who keep going are the ones who show up prepared.",
-    finalLine: "The one who passes is not always the smartest. Often, it's the one who doesn't stop.",
+    pizzaLine: "Choose monthly to try Premium for 7 days with no charge, or save 50% with annual.",
+    urgencyLine: "Every Premium tool works together: practice, mistake understanding, and focused review.",
+    finalLine: "Choose the plan that best fits the time left before your exam.",
     popularLabel: "Most popular",
     features: [
       { h: "Full explanations", p: "Unlock every explanation so you can actually understand mistakes instead of just memorizing answers." },
       { h: "Real exam mode", p: "Practice in a way that feels closer to the real exam experience, with a more focused approach." },
       { h: "Error review", p: "Go back over your incorrect answers and focus on weak areas instead of restarting blindly." },
-      { h: "Unlimited quizzes", p: "Keep training without the Free plan limit and build real consistency in your preparation." },
+      { h: "Guides and maps included", p: "Use the complete resources for your certification to review concepts between practice sessions." },
     ],
     tableTitle: "Free vs Premium",
     tableFeature: "Feature",
     tableFree: "Free",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Unlimited quizzes", free: "✅", premium: "✅" },
       { label: "Wrong answer explanations", free: "10 free", premium: "✅ Unlimited" },
       { label: "Real exam mode", free: "❌", premium: "✅" },
       { label: "Error review", free: "❌", premium: "✅" },
@@ -252,8 +265,15 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "Exam scenarios", free: "Some scenarios", premium: "✅ All included" },
       { label: "AI Tutor", free: "Limited", premium: "✅ Unlimited" },
     ],
-    guaranteeTitle: "7-day money-back guarantee",
-    guaranteeDesc: "If you're not satisfied within the first 7 days, we'll refund you — no questions asked. Zero risk.",
+    guaranteeTitle: "Clear pricing and secure checkout",
+    guaranteeDesc: "Monthly: 7 days free and no charge today. Annual: €59.90 charged today for 12 months. Manage your subscription online.",
+    faqTitle: "Questions before you start",
+    faqs: [
+      { question: "When will I be charged?", answer: "With monthly, you pay nothing today: the €9.99 charge starts after the 7-day free trial. With annual, €59.90 is charged today for 12 months." },
+      { question: "How do I cancel?", answer: "You can manage or cancel your subscription online from your profile." },
+      { question: "What happens after the free trial?", answer: "Unless you cancel, monthly renews at €9.99 per month. The free trial is available on monthly only." },
+      { question: "Does Premium cover every certification?", answer: "Yes. Premium unlocks the Premium resources available across the catalog, not just one certification." },
+    ],
     explanationsUsedTemplate: "You've already used {used} of your {limit} free explanations.",
     testimonialsTitle: "Those who use it, recommend it",
     testimonials: [
@@ -269,14 +289,14 @@ const COPY: Record<Lang, CopyEntry> = {
 
   fr: {
     badge: "PREMIUM",
-    title: "Rester en Free, c'est renoncer à presque tout ce qu'il faut pour réussir l'examen",
+    title: "Transformez chaque erreur en une préparation plus efficace à votre examen",
     subtitle:
-      "Sans Premium, vous continuez à refaire les mêmes erreurs sans savoir pourquoi, avec guides, cartes et scénarios d'examen limités à un aperçu.",
+      "Premium réunit explications complètes, révision des erreurs, guides, cartes et simulations pour vous aider à progresser.",
     lossPoints: [
-      "Explications détaillées bloquées après les 10 premières",
-      "Guides PDF disponibles uniquement en aperçu",
-      "Cartes conceptuelles complètes inaccessibles",
-      "Scénarios d'examen avancés réservés",
+      "Explications détaillées pour comprendre chaque erreur",
+      "Guides PDF et cartes conceptuelles complètes inclus",
+      "Révision ciblée de vos réponses incorrectes",
+      "Simulations et Tutor IA sans les limites du plan gratuit",
     ],
     // TODO-SOCIAL-PROOF: remplacer par le nombre réel d'utilisateurs actifs
     socialProofLine: "[TODO : nombre réel d'utilisateurs] personnes se préparent avec CertifyQuiz",
@@ -284,29 +304,28 @@ const COPY: Record<Lang, CopyEntry> = {
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
       { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "4,99€/mois", badge: "Économisez 50%", popular: true },
     ],
-    cta: "Passer à Premium",
+    cta: "Débloquer Premium",
     ctaLoading: "Ouverture du checkout...",
-    subCta: "Accès immédiat. Sans engagement.",
+    subCta: "59,90€ débités aujourd'hui pour 12 mois · Soit 4,99€/mois",
     subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
     trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
-    pizzaLine: "Pour le prix d'une pizza, vous débloquez une préparation plus sérieuse, régulière et complète.",
-    urgencyLine: "Beaucoup s'arrêtent après quelques quiz. Ceux qui continuent sont ceux qui arrivent vraiment préparés.",
-    finalLine: "Celui qui réussit n'est pas toujours le plus fort. Souvent, c'est celui qui ne s'arrête pas.",
+    pizzaLine: "Choisissez le mensuel pour essayer 7 jours sans débit, ou économisez 50% avec l'annuel.",
+    urgencyLine: "Tous les outils Premium fonctionnent ensemble : pratique, compréhension des erreurs et révision ciblée.",
+    finalLine: "Choisissez l'offre adaptée au temps qu'il vous reste avant l'examen.",
     popularLabel: "Le plus populaire",
     features: [
       { h: "Explications complètes", p: "Débloquez toutes les explications pour vraiment comprendre vos erreurs." },
       { h: "Mode examen réel", p: "Entraînez-vous dans des conditions plus proches de l'examen réel." },
       { h: "Révision des erreurs", p: "Revenez sur vos erreurs et concentrez-vous sur vos points faibles." },
-      { h: "Quiz illimités", p: "Continuez à vous entraîner sans la limite du plan gratuit." },
+      { h: "Guides et cartes inclus", p: "Utilisez toutes les ressources de votre certification pour réviser entre les sessions." },
     ],
     tableTitle: "Gratuit vs Premium",
     tableFeature: "Fonctionnalité",
     tableFree: "Gratuit",
     tablePremium: "Premium",
     tableRows: [
-      { label: "Quiz illimités", free: "✅", premium: "✅" },
       { label: "Explications des erreurs", free: "10 gratuites", premium: "✅ Illimitées" },
       { label: "Mode examen réel", free: "❌", premium: "✅" },
       { label: "Révision des erreurs", free: "❌", premium: "✅" },
@@ -315,8 +334,15 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "Scénarios d'examen", free: "Quelques scénarios", premium: "✅ Tous inclus" },
       { label: "AI Tutor", free: "Limité", premium: "✅ Illimité" },
     ],
-    guaranteeTitle: "Garantie 7 jours",
-    guaranteeDesc: "Si vous n'êtes pas satisfait dans les 7 premiers jours, nous vous remboursons sans poser de questions.",
+    guaranteeTitle: "Tarifs clairs et paiement sécurisé",
+    guaranteeDesc: "Mensuel : 7 jours gratuits sans débit aujourd'hui. Annuel : 59,90€ débités aujourd'hui pour 12 mois. Gérez votre abonnement en ligne.",
+    faqTitle: "Questions avant de commencer",
+    faqs: [
+      { question: "Quand serai-je débité ?", answer: "Avec le mensuel, vous ne payez rien aujourd'hui : le débit de 9,99€ intervient après les 7 jours gratuits. Avec l'annuel, 59,90€ sont débités aujourd'hui pour 12 mois." },
+      { question: "Comment annuler ?", answer: "Vous pouvez gérer ou annuler votre abonnement en ligne depuis votre profil." },
+      { question: "Que se passe-t-il après l'essai ?", answer: "Sans annulation, le mensuel est renouvelé à 9,99€ par mois. L'essai gratuit est réservé au mensuel." },
+      { question: "Premium couvre-t-il toutes les certifications ?", answer: "Oui. Premium débloque les ressources Premium disponibles dans tout le catalogue." },
+    ],
     explanationsUsedTemplate: "Vous avez déjà utilisé {used} de vos {limit} explications gratuites.",
     testimonialsTitle: "Ceux qui l'utilisent le recommandent",
     testimonials: [
@@ -352,7 +378,7 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 mt-5">
+    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
@@ -369,6 +395,7 @@ function PlanSelector({
             <button
               type="button"
               onClick={() => onChange(plan.id)}
+              aria-pressed={isSelected}
               className={`relative w-full rounded-2xl border-2 p-4 text-left transition ${
                 plan.popular && !isSelected
                   ? "border-emerald-400 bg-white text-gray-900 hover:border-emerald-500"
@@ -433,7 +460,7 @@ function CtaBlock({
         type="button"
         onClick={onCta}
         disabled={isLoading}
-        className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
       >
         {isLoading ? t.ctaLoading : t.cta}
       </button>
@@ -492,7 +519,7 @@ function ComparisonTable({ t, onCta, isLoading, activePlan }: { t: CopyEntry; on
           type="button"
           onClick={onCta}
           disabled={isLoading}
-          className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
         >
           {isLoading ? t.ctaLoading : t.cta}
         </button>
@@ -513,6 +540,27 @@ function Guarantee({ t }: { t: CopyEntry }) {
         <p className="mt-1 text-sm text-emerald-800">{t.guaranteeDesc}</p>
       </div>
     </div>
+  );
+}
+
+function PricingFaq({ t }: { t: CopyEntry }) {
+  return (
+    <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6">
+      <h2 className="text-xl font-semibold text-gray-900">{t.faqTitle}</h2>
+      <div className="mt-4 divide-y divide-gray-200">
+        {t.faqs.map((item) => (
+          <details key={item.question} className="group py-4">
+            <summary className="cursor-pointer list-none font-semibold text-gray-900 marker:hidden">
+              <span className="flex items-center justify-between gap-4">
+                {item.question}
+                <span aria-hidden="true" className="text-lg text-gray-500 transition group-open:rotate-45">+</span>
+              </span>
+            </summary>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">{item.answer}</p>
+          </details>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -539,7 +587,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
   const pathname = usePathname();
   const { user, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_annual");
+  const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
   const [explanationsUsed, setExplanationsUsed] = useState<{ used: number; limit: number } | null>(null);
 
   const lang = useMemo<Lang>(() => {
@@ -636,7 +684,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <ul className="mt-4 max-w-2xl space-y-1.5">
             {t.lossPoints.map((point, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 text-red-500">✕</span>
+                <span className="mt-0.5 text-emerald-600">✓</span>
                 <span>{point}</span>
               </li>
             ))}
@@ -683,6 +731,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
           <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
 
+          <PricingFaq t={t} />
+
           <BusinessBanner t={t} href={BUSINESS_HREF[lang]} />
 
           {/* CTA finale */}
@@ -697,7 +747,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
                 type="button"
                 onClick={startPremiumCheckout}
                 disabled={isLoading}
-                className="inline-flex items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
               >
                 {isLoading ? t.ctaLoading : t.cta}
               </button>
