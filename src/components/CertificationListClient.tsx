@@ -254,6 +254,7 @@ export function CertificationListClient({
               imageUrl={c.imageUrl ?? undefined}
               level={c.level ?? undefined}
               description={c.description ?? undefined}
+              lang={lang}
             />
           ))
         ) : (

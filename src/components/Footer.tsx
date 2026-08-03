@@ -306,7 +306,7 @@ export default function Footer({ lang }: { lang: Locale }) {
           <span>
             © {year} CertifyQuiz. {t.rights ?? "All rights reserved."}
           </span>
-          <span>vNext</span>
+          <span>certifyquiz.com</span>
         </div>
       </div>
     </footer>

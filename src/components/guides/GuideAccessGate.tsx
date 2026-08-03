@@ -30,10 +30,10 @@ const COPY = {
     es: "Desbloquea la guía completa",
   },
   sub: {
-    it: "Con Premium hai accesso a questa e a tutte le altre guide, oppure acquista solo questa.",
-    en: "With Premium you get this guide and every other one, or buy just this one.",
-    fr: "Avec Premium, accédez à ce guide et à tous les autres, ou achetez uniquement celui-ci.",
-    es: "Con Premium tienes acceso a esta guía y a todas las demás, o compra solo esta.",
+    it: "Con Premium hai accesso a questa guida, a tutte le altre guide e agli strumenti di preparazione inclusi.",
+    en: "Premium includes this guide, every other guide, and the complete preparation toolkit.",
+    fr: "Premium inclut ce guide, tous les autres guides et les outils de préparation complets.",
+    es: "Premium incluye esta guía, todas las demás guías y las herramientas de preparación completas.",
   },
   premiumCta: {
     it: "Sblocca con Premium",
@@ -66,10 +66,10 @@ const COPY = {
     es: "Todas las guías incluidas, explicaciones completas y Tutor IA. Prueba gratis 7 días, luego 9,99€/mes.",
   },
   premiumTeaserCta: {
-    it: "Registrati e sblocca con Premium",
-    en: "Sign up and unlock with Premium",
-    fr: "Inscrivez-vous et débloquez avec Premium",
-    es: "Regístrate y desbloquea con Premium",
+    it: "Inizia 7 giorni gratis",
+    en: "Start 7 days free",
+    fr: "Commencer 7 jours gratuits",
+    es: "Empieza 7 días gratis",
   },
 } as const;
 
@@ -98,6 +98,15 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
   const loggedIn = !!user;
   const priceLabel = formatPrice(lang, price);
+  const gateDescription = loggedIn
+    ? lang === "it"
+      ? "Sblocca tutte le guide con Premium oppure acquista solo questa guida."
+      : lang === "fr"
+      ? "Débloquez tous les guides avec Premium ou achetez uniquement celui-ci."
+      : lang === "es"
+      ? "Desbloquea todas las guías con Premium o compra solo esta guía."
+      : "Unlock every guide with Premium or buy this guide separately."
+    : COPY.sub[lang];
 
   function trackPremiumGateClick() {
     trackFunnelEvent({
@@ -134,10 +143,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
   const redirect = encodeURIComponent(pathname ?? `/guide/${slug}`);
   const loginHref = withLang(lang, `/login?redirect=${redirect}`);
-  const registerHref = withLang(
-    lang,
-    `/register?redirect=${encodeURIComponent(pricingPath(lang))}`
-  );
+  const premiumHref = pricingPath(lang);
 
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
@@ -146,7 +152,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       </div>
 
       <h2 className="mb-1 text-xl font-semibold text-gray-900">{COPY.title[lang]}</h2>
-      <p className="mb-6 text-sm text-gray-600">{COPY.sub[lang]}</p>
+      <p className="mb-6 text-sm text-gray-600">{gateDescription}</p>
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
@@ -158,7 +164,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
             </p>
             <p className="mb-3 text-xs text-gray-600">{COPY.premiumTeaserNote[lang]}</p>
             <a
-              href={registerHref}
+              href={premiumHref}
               onClick={trackPremiumGateClick}
               className="flex w-full items-center justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-amber-600"
             >

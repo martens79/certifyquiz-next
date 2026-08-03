@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { getAccessToken } from "@/lib/apiClient";
 import { useQuizTutor } from "@/components/quiz/QuizTutorContext";
 
@@ -156,6 +157,7 @@ function getLangFromCookie(): Lang {
 }
 
 export default function ChatbotWidget() {
+  const pathname = usePathname() ?? "/";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -268,6 +270,22 @@ export default function ChatbotWidget() {
       sendMessage(input);
     }
   };
+
+  // Il tutor resta disponibile nelle pagine di scoperta, ma non copre i
+  // controlli del quiz, le preview o i CTA di acquisto su schermi piccoli.
+  const hideOnHighIntentPage =
+    pathname.includes("/quiz/") ||
+    pathname === "/pricing" ||
+    pathname.endsWith("/prezzi") ||
+    pathname.endsWith("/prix") ||
+    pathname.endsWith("/precios") ||
+    pathname.includes("/guide/") ||
+    pathname === "/maps" ||
+    pathname.endsWith("/mappe") ||
+    pathname.endsWith("/cartes") ||
+    pathname.endsWith("/mapas");
+
+  if (hideOnHighIntentPage) return null;
 
   return (
     <>
