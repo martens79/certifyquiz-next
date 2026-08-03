@@ -8,6 +8,7 @@ import "server-only";
  */
 
 export type Cert = {
+  id?: number;
   slug: string;
   locale: "it" | "en" | "fr" | "es";
   title: string;
@@ -528,6 +529,7 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
     const title = pickNameByLocale(obj, locale) || canonSlug;
 
     return {
+  id: getNumber(obj, "id"),
   slug: canonSlug,
   locale,
   title,
