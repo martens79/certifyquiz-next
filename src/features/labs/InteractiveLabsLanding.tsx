@@ -1,9 +1,11 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
-import { CheckCircle2, ChevronRight, Lightbulb, Network, RotateCcw, ShieldCheck, Table2, XCircle } from "lucide-react";
+import { ChevronRight, Network, ShieldCheck, Table2 } from "lucide-react";
 import type { Locale } from "@/lib/paths";
 import NetworkTroubleshootingLab from "./NetworkTroubleshootingLab";
+import SpreadsheetFormulaLab from "./SpreadsheetFormulaLab";
+import PhishingAnalysisLab from "./PhishingAnalysisLab";
 
 type Lab = {
   title: string;
@@ -60,9 +62,6 @@ const icons = [Table2, Network, ShieldCheck];
 export default function InteractiveLabsLanding({ lang }: { lang: Locale }) {
   const t = copy[lang] as typeof copy.it;
   const [active, setActive] = useState<number | null>(null);
-  const [selected, setSelected] = useState<number | null>(null);
-  const [result, setResult] = useState<"correct" | "wrong" | null>(null);
-  const [hint, setHint] = useState(false);
   const [done, setDone] = useState<number[]>([]);
   const [isDesktop, setIsDesktop] = useState(false);
   const networkLabRef = useRef<HTMLDivElement>(null);
@@ -80,20 +79,14 @@ export default function InteractiveLabsLanding({ lang }: { lang: Locale }) {
   }, []);
 
   useEffect(() => {
-    if (active !== 1) return;
+    if (active === null) return;
     const frame = window.requestAnimationFrame(() => {
       networkLabRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [active, isDesktop]);
 
-  const openLab = (index: number) => { setActive(index); setSelected(null); setResult(null); setHint(false); };
-  const check = () => {
-    if (active === null || selected === null) return;
-    const ok = selected === t.labs[active].correct;
-    setResult(ok ? "correct" : "wrong");
-    if (ok) setDone((current) => current.includes(active) ? current : [...current, active]);
-  };
+  const openLab = (index: number) => setActive(index);
 
   return <main className="min-h-[70vh] bg-gradient-to-b from-indigo-50 via-white to-white px-4 py-14 sm:py-16">
     <div className="mx-auto max-w-6xl">
@@ -116,27 +109,17 @@ export default function InteractiveLabsLanding({ lang }: { lang: Locale }) {
               <p className="mt-3 min-h-20 text-sm leading-6 text-slate-600">{lab.scenario}</p>
               <button onClick={() => openLab(index)} aria-expanded={active === index} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{done.includes(index) ? t.reset : t.start}<ChevronRight size={17}/></button>
             </article>
-            {index === 1 && active === 1 && !isDesktop && <div ref={networkLabRef} className="scroll-mt-20">
-              <NetworkTroubleshootingLab lang={lang} onComplete={() => setDone((current) => current.includes(1) ? current : [...current, 1])}/>
+            {index === active && !isDesktop && <div ref={networkLabRef} className="scroll-mt-20">
+              {index===0?<SpreadsheetFormulaLab lang={lang} onComplete={()=>setDone(x=>x.includes(0)?x:[...x,0])}/>:index===1?<NetworkTroubleshootingLab lang={lang} onComplete={()=>setDone(x=>x.includes(1)?x:[...x,1])}/>:<PhishingAnalysisLab lang={lang} onComplete={()=>setDone(x=>x.includes(2)?x:[...x,2])}/>}
             </div>}
           </Fragment>;
         })}
       </section>
 
-      {active === 1 && isDesktop && <section ref={networkLabRef} className="mx-auto mt-10 max-w-5xl scroll-mt-24" aria-label={t.labs[1].title}>
-        <NetworkTroubleshootingLab lang={lang} onComplete={() => setDone((current) => current.includes(1) ? current : [...current, 1])}/>
+      {active !== null && isDesktop && <section ref={networkLabRef} className="mx-auto mt-10 max-w-5xl scroll-mt-24" aria-label={t.labs[active].title}>
+        {active===0?<SpreadsheetFormulaLab lang={lang} onComplete={()=>setDone(x=>x.includes(0)?x:[...x,0])}/>:active===1?<NetworkTroubleshootingLab lang={lang} onComplete={()=>setDone(x=>x.includes(1)?x:[...x,1])}/>:<PhishingAnalysisLab lang={lang} onComplete={()=>setDone(x=>x.includes(2)?x:[...x,2])}/>}
       </section>}
 
-      {active !== null && active !== 1 && <section className="mx-auto mt-10 max-w-3xl rounded-2xl border border-indigo-200 bg-white p-6 shadow-lg sm:p-8" aria-live="polite">
-        <div className="flex items-center justify-between gap-4"><div><p className="text-sm font-bold text-indigo-700">{t.labs[active].category}</p><h2 className="mt-1 text-2xl font-bold text-slate-950">{t.labs[active].title}</h2></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{active + 1}/3</span></div>
-        <div className="mt-6 rounded-xl bg-slate-50 p-4 text-slate-700">{t.labs[active].scenario}</div>
-        <h3 className="mt-6 font-semibold text-slate-950">{t.task}: {t.labs[active].task}</h3>
-        <div className="mt-4 space-y-3">{t.labs[active].options.map((option: string, index: number) => <label key={option} className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${selected === index ? "border-indigo-500 bg-indigo-50" : "border-slate-200 hover:bg-slate-50"}`}><input type="radio" name={`lab-${active}`} checked={selected === index} onChange={() => { setSelected(index); setResult(null); }} className="h-4 w-4 accent-indigo-600"/><span className="font-mono text-sm text-slate-800">{option}</span></label>)}</div>
-        <div className="mt-5 flex flex-wrap gap-3"><button onClick={check} disabled={selected === null} className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">{t.check}</button><button onClick={() => setHint(true)} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"><Lightbulb size={17}/>{t.hint}</button></div>
-        {hint && !result && <p className="mt-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900"><Lightbulb className="mr-2 inline" size={17}/>{t.labs[active].hint}</p>}
-        {result && <div className={`mt-5 rounded-xl p-4 ${result === "correct" ? "bg-emerald-50 text-emerald-900" : "bg-rose-50 text-rose-900"}`}>{result === "correct" ? <CheckCircle2 className="mr-2 inline" size={20}/> : <XCircle className="mr-2 inline" size={20}/>}<strong>{result === "correct" ? t.correct : t.wrong}</strong>{result === "correct" && <p className="mt-2 text-sm leading-6">{t.labs[active].explanation}</p>}</div>}
-        {result === "correct" && <button onClick={() => openLab((active + 1) % 3)} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-700 hover:text-indigo-900">{active === 2 ? t.reset : t.start}<RotateCcw size={16}/></button>}
-      </section>}
     </div>
   </main>;
 }
