@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import InteractiveLabDetail, { labSlugs, type LabSlug } from "@/features/labs/InteractiveLabDetail";
+import InteractiveLabDetail from "@/features/labs/InteractiveLabDetail";
+import { labSlugs, type LabSlug } from "@/features/labs/lab-config";
 import { isLocale } from "@/lib/paths";
 type Props={params:Promise<{lang:string;lab:string}>};
 export function generateStaticParams(){return ["it","fr","es"].flatMap(lang=>labSlugs.map(lab=>({lang,lab})))}
