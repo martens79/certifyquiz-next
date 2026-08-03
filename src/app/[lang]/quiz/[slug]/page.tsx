@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 
-import { getCertBySlug, CERT_SLUGS } from "@/certifications/registry";
+import { getCertBySlug as getRegistryCertBySlug, CERT_SLUGS } from "@/certifications/registry";
+import { getCertBySlug as getDatabaseCertBySlug } from "@/lib/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 import { categoryPath, type CategoryKey } from "@/lib/paths";
@@ -365,7 +366,9 @@ export default async function QuizTopicsPage({
 
   const resolvedSlug = resolveQuizSlug(slug);
 
-  const cert = getCertBySlug(resolvedSlug);
+  const cert =
+    getRegistryCertBySlug(resolvedSlug) ??
+    (await getDatabaseCertBySlug(resolvedSlug, L));
   const certId = cert?.id;
 
   // ✅ QUI IL FIX IMPORTANTE

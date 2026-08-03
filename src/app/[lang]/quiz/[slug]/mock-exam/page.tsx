@@ -11,6 +11,7 @@ import { CERT_ID_BY_SLUG } from "@/lib/certs";
 
 import {
   getMixedQuestions,
+  getCertificationBySlug,
   saveExam,
   type Question as ApiQuestion,
   getAccessToken,
@@ -37,12 +38,37 @@ export default function MockExamPage() {
 
   const currentLang = (lang ?? "it") as Locale;
   const currentSlug = slug ?? "";
-  const certId = CERT_ID_BY_SLUG[currentSlug];
+  const staticCertId = CERT_ID_BY_SLUG[currentSlug];
+  const [certId, setCertId] = useState<number | null>(staticCertId ?? null);
+  const [isResolvingCert, setIsResolvingCert] = useState(!staticCertId);
 
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
 
   const certName = useMemo(() => currentSlug.replace(/-/g, " "), [currentSlug]);
   const isAuthenticated = !!getAccessToken();
+
+  useEffect(() => {
+    if (staticCertId) {
+      setCertId(staticCertId);
+      setIsResolvingCert(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsResolvingCert(true);
+    getCertificationBySlug(currentSlug)
+      .then((cert) => {
+        if (!cancelled) setCertId(Number(cert.id) || null);
+      })
+      .catch(() => {
+        if (!cancelled) setCertId(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsResolvingCert(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentSlug, staticCertId]);
 
   const mockCopy = {
     it: {
@@ -140,6 +166,10 @@ export default function MockExamPage() {
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, examSpec.questions]);
+
+  if (isResolvingCert) {
+    return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
+  }
 
   if (!certId) {
     return (

@@ -16,6 +16,7 @@ import ComingSoonBox from '@/components/ui/ComingSoonBox';
 
 import {
   getMixedQuestions,
+  getCertificationBySlug,
   saveExam,
   type Question as ApiQuestion,
   getAccessToken,
@@ -161,7 +162,9 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   const currentLang = ((params?.lang as Locale) ?? 'it') as Locale;
   const currentSlug = (params?.slug ?? '') as string;
 
-  const certId = CERT_ID_BY_SLUG[currentSlug];
+  const staticCertId = CERT_ID_BY_SLUG[currentSlug];
+  const [certId, setCertId] = useState<number | null>(staticCertId ?? null);
+  const [isResolvingCert, setIsResolvingCert] = useState(!staticCertId);
 
 
   const [mode, setMode] = useState<'training' | 'exam' | 'assessment'>(
@@ -173,6 +176,29 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   const copy = COPY[currentLang] ?? COPY.it;
 const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
+
+  useEffect(() => {
+    if (staticCertId) {
+      setCertId(staticCertId);
+      setIsResolvingCert(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsResolvingCert(true);
+    getCertificationBySlug(currentSlug)
+      .then((cert) => {
+        if (!cancelled) setCertId(Number(cert.id) || null);
+      })
+      .catch(() => {
+        if (!cancelled) setCertId(null);
+      })
+      .finally(() => {
+        if (!cancelled) setIsResolvingCert(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [currentSlug, staticCertId]);
 
   /* --------------------- poolTotal (light call) --------------------- */
   useEffect(() => {
@@ -238,6 +264,10 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, trainingCap, mode, examSpec.questions, isAssessmentMode]);
+
+  if (isResolvingCert) {
+    return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
+  }
 
   if (!certId) {
     return (
