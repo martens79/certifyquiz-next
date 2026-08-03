@@ -375,16 +375,16 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
               language: safeLang,
               user_state: isLoggedIn ? "free" : "anonymous",
               source_page: "homepage",
-              content_type: "diagnostic_quiz",
+              content_type: "quiz_practice",
             })}
             className="inline-flex justify-center bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-[1.02]"
           >
             {L(
               {
-                it: "Prova 10 domande gratis",
-                en: "Try 10 questions free",
-                fr: "Essayez 10 questions gratuitement",
-                es: "Prueba 10 preguntas gratis",
+                it: "Preparati gratis alla tua certificazione",
+                en: "Prepare for your certification for free",
+                fr: "Préparez gratuitement votre certification",
+                es: "Prepárate gratis para tu certificación",
               },
               safeLang
             )}
@@ -407,6 +407,18 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             </Link>
           )}
         </div>
+
+        <p className="mt-3 text-sm text-neutral-600">
+          {L(
+            {
+              it: "Quiz gratuiti. Le prime 10 spiegazioni degli errori sono incluse.",
+              en: "Free quizzes. Your first 10 explanations for incorrect answers are included.",
+              fr: "Quiz gratuits. Les 10 premières explications de vos erreurs sont incluses.",
+              es: "Cuestionarios gratuitos. Se incluyen las primeras 10 explicaciones de tus errores.",
+            },
+            safeLang
+          )}
+        </p>
 
         {stats && (
           <p className="mt-3 text-xs md:text-sm text-slate-600">
