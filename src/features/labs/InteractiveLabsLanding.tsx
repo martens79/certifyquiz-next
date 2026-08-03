@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ChevronRight, Lightbulb, Network, RotateCcw, ShieldCheck, Table2, XCircle } from "lucide-react";
 import type { Locale } from "@/lib/paths";
 import NetworkTroubleshootingLab from "./NetworkTroubleshootingLab";
@@ -64,6 +64,24 @@ export default function InteractiveLabsLanding({ lang }: { lang: Locale }) {
   const [result, setResult] = useState<"correct" | "wrong" | null>(null);
   const [hint, setHint] = useState(false);
   const [done, setDone] = useState<number[]>([]);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const networkLabRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (active !== 1) return;
+    const frame = window.requestAnimationFrame(() => {
+      networkLabRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [active, isDesktop]);
 
   const openLab = (index: number) => { setActive(index); setSelected(null); setResult(null); setHint(false); };
   const check = () => {
@@ -86,17 +104,22 @@ export default function InteractiveLabsLanding({ lang }: { lang: Locale }) {
       <section className="mt-12 grid gap-5 md:grid-cols-3" aria-label="Introductory interactive labs">
         {t.labs.map((lab: Lab, index: number) => {
           const Icon = icons[index];
-          return <article key={lab.title} className={`rounded-2xl border bg-white p-6 shadow-sm transition ${done.includes(index) ? "border-emerald-300" : "border-slate-200 hover:-translate-y-0.5 hover:shadow-md"}`}>
-            <div className="flex items-start justify-between"><span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 text-indigo-700"><Icon aria-hidden="true" size={22}/></span><span className="text-xs font-semibold text-slate-500">{lab.duration}</span></div>
-            <p className="mt-5 text-xs font-bold uppercase tracking-wider text-indigo-700">{lab.category}</p>
-            <h2 className="mt-2 text-xl font-semibold text-slate-950">{lab.title}</h2>
-            <p className="mt-3 min-h-20 text-sm leading-6 text-slate-600">{lab.scenario}</p>
-            <button onClick={() => openLab(index)} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{done.includes(index) ? t.reset : t.start}<ChevronRight size={17}/></button>
-          </article>;
+          return <Fragment key={lab.title}>
+            <article className={`rounded-2xl border bg-white p-6 shadow-sm transition ${done.includes(index) ? "border-emerald-300" : "border-slate-200 hover:-translate-y-0.5 hover:shadow-md"}`}>
+              <div className="flex items-start justify-between"><span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-50 text-indigo-700"><Icon aria-hidden="true" size={22}/></span><span className="text-xs font-semibold text-slate-500">{lab.duration}</span></div>
+              <p className="mt-5 text-xs font-bold uppercase tracking-wider text-indigo-700">{lab.category}</p>
+              <h2 className="mt-2 text-xl font-semibold text-slate-950">{lab.title}</h2>
+              <p className="mt-3 min-h-20 text-sm leading-6 text-slate-600">{lab.scenario}</p>
+              <button onClick={() => openLab(index)} aria-expanded={active === index} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{done.includes(index) ? t.reset : t.start}<ChevronRight size={17}/></button>
+            </article>
+            {index === 1 && active === 1 && !isDesktop && <div ref={networkLabRef} className="scroll-mt-20">
+              <NetworkTroubleshootingLab lang={lang} onComplete={() => setDone((current) => current.includes(1) ? current : [...current, 1])}/>
+            </div>}
+          </Fragment>;
         })}
       </section>
 
-      {active === 1 && <section className="mx-auto mt-10 max-w-5xl" aria-label={t.labs[1].title}>
+      {active === 1 && isDesktop && <section ref={networkLabRef} className="mx-auto mt-10 max-w-5xl scroll-mt-24" aria-label={t.labs[1].title}>
         <NetworkTroubleshootingLab lang={lang} onComplete={() => setDone((current) => current.includes(1) ? current : [...current, 1])}/>
       </section>}
 
