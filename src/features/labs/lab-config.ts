@@ -7,6 +7,10 @@ export const labSlugs = [
   "linux-permissions",
   "sql-select",
   "docker-lifecycle",
+  "cloud-storage-security",
+  "ai-prompt-safety",
+  "python-data-cleanup",
+  "windows-server-users",
   "powershell-pipeline",
   "word-document",
 ] as const;
