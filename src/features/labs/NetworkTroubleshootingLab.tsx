@@ -16,6 +16,22 @@ const content = {
 
 const STORAGE_KEY = "certifyquiz-network-lab-v1";
 
+function saveProgress(value: { step: number; score: number; seconds: number }) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+}
+
+function clearProgress() {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // The lab must remain usable even when browser storage is unavailable.
+  }
+}
+
 export default function NetworkTroubleshootingLab({ lang, onComplete }: { lang: Locale; onComplete: () => void }) {
   const t = content[lang];
   const [step, setStep] = useState(0);
@@ -28,7 +44,7 @@ export default function NetworkTroubleshootingLab({ lang, onComplete }: { lang: 
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") as { step?: number; score?: number; seconds?: number } | null;
+      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "null") as { step?: number; score?: number; seconds?: number } | null;
       if (saved?.step && saved.step > 0 && saved.step < 4) { setStep(saved.step); setScore(saved.score ?? 100); setSeconds(saved.seconds ?? 0); setRestored(true); }
     } catch { /* Ignore invalid local state. */ }
   }, []);
@@ -40,7 +56,7 @@ export default function NetworkTroubleshootingLab({ lang, onComplete }: { lang: 
   }, [step]);
 
   useEffect(() => {
-    if (step > 0 && step < 4) localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, score, seconds }));
+    if (step > 0 && step < 4) saveProgress({ step, score, seconds });
   }, [step, score, seconds]);
 
   useEffect(() => outputRef.current?.scrollTo({ top: outputRef.current.scrollHeight }), [lines]);
@@ -48,7 +64,7 @@ export default function NetworkTroubleshootingLab({ lang, onComplete }: { lang: 
   const advance = (next: number, output: string) => {
     setLines((current) => [...current, { command, output, tone: "good" }]);
     setStep(next);
-    if (next === 4) { localStorage.removeItem(STORAGE_KEY); onComplete(); }
+    if (next === 4) { clearProgress(); onComplete(); }
   };
 
   const run = (event: FormEvent) => {
@@ -74,7 +90,7 @@ export default function NetworkTroubleshootingLab({ lang, onComplete }: { lang: 
   };
 
   const showHint = () => { setScore((x) => Math.max(0, x - 10)); setLines((x) => [...x, { output: `💡 ${t.hints[Math.min(step, 3)]}`, tone: "muted" }]); };
-  const reset = () => { localStorage.removeItem(STORAGE_KEY); setStep(0); setScore(100); setSeconds(0); setLines([{ output: t.commands, tone: "muted" }]); setRestored(false); };
+  const reset = () => { clearProgress(); setStep(0); setScore(100); setSeconds(0); setLines([{ output: t.commands, tone: "muted" }]); setRestored(false); };
 
   return <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 text-slate-100 shadow-2xl">
     <header className="border-b border-slate-700 bg-gradient-to-r from-slate-950 to-blue-950 p-5 sm:p-7">
