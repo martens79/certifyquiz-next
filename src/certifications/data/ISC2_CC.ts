@@ -7,6 +7,27 @@ const ISC2CC = {
   imageUrl: "/images/certifications/isc2-icon.png",
   officialUrl: "https://www.isc2.org/certifications/certified-in-cybersecurity",
 
+  // Verificato il 2026-08-04 sul documento ufficiale ISC2 (Exam Outline, effective
+  // 2025-10-01). Da 2026-09-01 l'esame passa a un nuovo programma con contenuti
+  // aggiornati sulla sicurezza AI: fino ad allora resta in vigore questo.
+  examBlueprint: {
+    provider: "ISC2",
+    officialSourceName: "ISC2 Certified in Cybersecurity (CC) — Exam Outline (effective 2025-10-01)",
+    officialSourceUrl:
+      "https://edge.sitecorecloud.io/internationf173-xmc4e73-prodbc0f-9660/media/Project/ISC2/Main/Media/documents/exam-outlines/MAR-EXAMS-CC-Exam_Outline-English---10012025---FINAL.pdf",
+    officialExamPageUrl:
+      "https://www.isc2.org/certifications/cc/cc-certification-exam-outline",
+    lastVerifiedAt: "2026-08-04",
+    note: "Dal 1° settembre 2026 l'esame CC passerà a un nuovo programma che integra concetti di sicurezza AI in tutti i domini.",
+    domains: [
+      { name: "Security Principles", percentage: 26 },
+      { name: "Business Continuity (BC), Disaster Recovery (DR) & Incident Response Concepts", percentage: 10 },
+      { name: "Access Controls Concepts", percentage: 22 },
+      { name: "Network Security", percentage: 24 },
+      { name: "Security Operations", percentage: 18 },
+    ],
+  },
+
   // ✅ SEO-first: titoli orientati a quiz / practice test / simulazione esame
  title: {
   it: "ISC2 CC Practice Test 2026 – Quiz e Simulazione Esame",

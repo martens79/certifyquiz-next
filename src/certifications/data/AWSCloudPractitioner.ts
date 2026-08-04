@@ -6,6 +6,24 @@ const AWS_CLOUD_PRACTITIONER = {
   imageUrl: "/images/certifications/aws-cloud-practitioner.png", // metti il file in /public/images/certifications/
   officialUrl: "https://aws.amazon.com/certification/certified-cloud-practitioner/",
 
+  // Verificato il 2026-08-04 su docs.aws.amazon.com (Exam Guide ufficiale AWS).
+  examBlueprint: {
+    provider: "AWS",
+    examCode: "CLF-C02",
+    officialSourceName: "AWS Certified Cloud Practitioner — Exam Guide (CLF-C02)",
+    officialSourceUrl:
+      "https://docs.aws.amazon.com/pdfs/aws-certification/latest/cloud-practitioner-02/cloud-practitioner-02.pdf",
+    officialExamPageUrl:
+      "https://aws.amazon.com/certification/certified-cloud-practitioner/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Cloud Concepts", percentage: 24 },
+      { name: "Security and Compliance", percentage: 30 },
+      { name: "Cloud Technology and Services", percentage: 34 },
+      { name: "Billing, Pricing, and Support", percentage: 12 },
+    ],
+  },
+
   title: {
     it: "AWS Cloud Practitioner",
     en: "AWS Cloud Practitioner",

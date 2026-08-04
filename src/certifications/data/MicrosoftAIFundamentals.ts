@@ -7,6 +7,24 @@ const MicrosoftAIFundamentals = {
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
 
+  // Verificato il 2026-08-04. Microsoft ha ritirato AI-900 il 2026-06-30 e lo
+  // ha sostituito con AI-901 (stessa certificazione "Azure AI Fundamentals").
+  examBlueprint: {
+    provider: "Microsoft",
+    examCode: "AI-901",
+    officialSourceName:
+      "Microsoft Learn — Study Guide for Exam AI-901 (skills measured as of April 15, 2026)",
+    officialSourceUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/ai-901",
+    officialExamPageUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Identify AI concepts and capabilities", percentageMin: 40, percentageMax: 45 },
+      { name: "Implement AI solutions by using Microsoft Foundry", percentageMin: 55, percentageMax: 60 },
+    ],
+  },
+
   title: {
     it: "Microsoft AI Fundamentals",
     en: "Microsoft AI Fundamentals",
@@ -29,16 +47,16 @@ const MicrosoftAIFundamentals = {
   },
 
   metaTitle: {
-    en: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
-    it: "Microsoft AI-900 Practice Test 2026 – AI Fundamentals in Italiano | CertifyQuiz",
-    fr: "Microsoft AI-900 Test Pratique 2026 – Azure AI Fondamentaux | CertifyQuiz",
-    es: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentos | CertifyQuiz",
+    en: "Microsoft AI-901 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
+    it: "Microsoft AI-901 Practice Test 2026 – AI Fundamentals in Italiano | CertifyQuiz",
+    fr: "Microsoft AI-901 Test Pratique 2026 – Azure AI Fondamentaux | CertifyQuiz",
+    es: "Microsoft AI-901 Practice Test 2026 – Azure AI Fundamentos | CertifyQuiz",
   },
   metaDescription: {
-    en: "Prepare for the Microsoft AI-900 exam with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
-    it: "Preparati all'esame Microsoft AI-900 con quiz su concetti AI, machine learning, visione artificiale, NLP e AI generativa. Inizia gratis.",
-    fr: "Préparez l'examen Microsoft AI-900 avec des quiz sur les concepts IA, machine learning, vision par ordinateur, NLP et IA générative. Commencez gratuitement.",
-    es: "Prepárate para el examen Microsoft AI-900 con preguntas sobre conceptos de IA, machine learning, visión por computadora, NLP e IA generativa. Empieza gratis.",
+    en: "Prepare for the Microsoft AI-901 exam (formerly AI-900) with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
+    it: "Preparati all'esame Microsoft AI-901 (ex AI-900) con quiz su concetti AI, machine learning, visione artificiale, NLP e AI generativa. Inizia gratis.",
+    fr: "Préparez l'examen Microsoft AI-901 (anciennement AI-900) avec des quiz sur les concepts IA, machine learning, vision par ordinateur, NLP et IA générative. Commencez gratuitement.",
+    es: "Prepárate para el examen Microsoft AI-901 (antes AI-900) con preguntas sobre conceptos de IA, machine learning, visión por computadora, NLP e IA generativa. Empieza gratis.",
   },
 
   topics: [
@@ -150,25 +168,25 @@ const MicrosoftAIFundamentals = {
     examReference: {
       it: [
         {
-          text: "Esame AI-900: Microsoft Azure AI Fundamentals",
+          text: "Esame AI-901: Microsoft Azure AI Fundamentals",
           url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
         },
       ],
       en: [
         {
-          text: "Exam AI-900: Microsoft Azure AI Fundamentals",
+          text: "Exam AI-901: Microsoft Azure AI Fundamentals",
           url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
         },
       ],
       fr: [
         {
-          text: "Examen AI-900 : Microsoft Azure AI Fundamentals",
+          text: "Examen AI-901 : Microsoft Azure AI Fundamentals",
           url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
         },
       ],
       es: [
         {
-          text: "Examen AI-900: Microsoft Azure AI Fundamentals",
+          text: "Examen AI-901: Microsoft Azure AI Fundamentals",
           url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-ai-fundamentals/",
         },
       ],
@@ -208,8 +226,12 @@ const MicrosoftAIFundamentals = {
           a: "No, la certificazione è pensata proprio per chi parte da zero.",
         },
         {
+          q: "Perché ora si chiama AI-901 e non più AI-900?",
+          a: "Microsoft ha ritirato l'esame AI-900 il 30/06/2026 e lo ha sostituito con AI-901 il 15/04/2026, mantenendo la stessa certificazione \"Azure AI Fundamentals\". Chi ha già ottenuto la certificazione con AI-900 non deve rifare nulla.",
+        },
+        {
           q: "La certificazione ha una scadenza?",
-          a: "Al momento non ha una scadenza ufficiale, ma Microsoft può aggiornarla periodicamente.",
+          a: "Le certificazioni Microsoft di livello Fundamentals non scadono, ma Microsoft aggiorna periodicamente l'esame (come nel passaggio da AI-900 ad AI-901).",
         },
       ],
       en: [
@@ -218,8 +240,12 @@ const MicrosoftAIFundamentals = {
           a: "No, this certification is designed for beginners with no prior knowledge.",
         },
         {
+          q: "Why is it AI-901 now instead of AI-900?",
+          a: "Microsoft retired the AI-900 exam on 2026-06-30 and replaced it with AI-901 on 2026-04-15, under the same \"Azure AI Fundamentals\" certification. If you already earned the certification via AI-900, nothing changes for you.",
+        },
+        {
           q: "Does the certification expire?",
-          a: "It currently has no official expiration, but Microsoft may update it over time.",
+          a: "Microsoft Fundamentals-level certifications do not expire, but Microsoft periodically refreshes the exam itself (as with the AI-900 to AI-901 update).",
         },
       ],
       fr: [
@@ -228,8 +254,12 @@ const MicrosoftAIFundamentals = {
           a: "Non, cette certification est faite pour les débutants.",
         },
         {
+          q: "Pourquoi est-ce AI-901 maintenant et non AI-900 ?",
+          a: "Microsoft a retiré l'examen AI-900 le 30/06/2026 et l'a remplacé par AI-901 le 15/04/2026, sous la même certification \"Azure AI Fundamentals\". Si vous avez déjà obtenu la certification via AI-900, rien ne change pour vous.",
+        },
+        {
           q: "La certification a-t-elle une date d’expiration ?",
-          a: "Elle n’a pas de date limite officielle, mais Microsoft peut la mettre à jour.",
+          a: "Les certifications Microsoft de niveau Fundamentals n'expirent pas, mais Microsoft met à jour périodiquement l'examen (comme le passage d'AI-900 à AI-901).",
         },
       ],
       es: [
@@ -238,8 +268,12 @@ const MicrosoftAIFundamentals = {
           a: "No, está pensada para principiantes sin conocimientos previos.",
         },
         {
+          q: "¿Por qué ahora es AI-901 y no AI-900?",
+          a: "Microsoft retiró el examen AI-900 el 30/06/2026 y lo reemplazó por AI-901 el 15/04/2026, bajo la misma certificación \"Azure AI Fundamentals\". Si ya obtuviste la certificación con AI-900, no cambia nada para ti.",
+        },
+        {
           q: "¿La certificación tiene fecha de vencimiento?",
-          a: "Actualmente no tiene una fecha oficial, pero Microsoft puede actualizarla con el tiempo.",
+          a: "Las certificaciones Microsoft de nivel Fundamentals no caducan, pero Microsoft actualiza periódicamente el examen (como en el paso de AI-900 a AI-901).",
         },
       ],
     },

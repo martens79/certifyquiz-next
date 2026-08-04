@@ -9,6 +9,25 @@ const PL300PowerBIDataAnalyst = {
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
 
+  // Verificato il 2026-08-04 su learn.microsoft.com (Study Guide ufficiale Microsoft).
+  examBlueprint: {
+    provider: "Microsoft",
+    examCode: "PL-300",
+    officialSourceName:
+      "Microsoft Learn — Study Guide for Exam PL-300 (skills measured as of April 20, 2026)",
+    officialSourceUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300",
+    officialExamPageUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Prepare the data", percentageMin: 25, percentageMax: 30 },
+      { name: "Model the data", percentageMin: 25, percentageMax: 30 },
+      { name: "Visualize and analyze the data", percentageMin: 25, percentageMax: 30 },
+      { name: "Manage and secure Power BI", percentageMin: 15, percentageMax: 20 },
+    ],
+  },
+
   title: {
     it: "Microsoft PL-300 Power BI Data Analyst – Quiz e Simulazione Esame",
     en: "PL-300 Power BI Data Analyst Practice Test 2026",

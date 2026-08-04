@@ -5,6 +5,32 @@ const CCNP_ENTERPRISE = {
   imageUrl: "/images/certifications/ccnp-enterprise.png",
   officialUrl: "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/enterprise/ccnp-enterprise/index.html",
 
+  // Verificato il 2026-08-04 sul documento ufficiale Cisco (Exam Topics v1.2).
+  // CCNP Enterprise richiede l'esame Core (uguale per tutti, qui documentato)
+  // PIÙ un esame di concentrazione a scelta: non esiste una coppia fissa, quindi
+  // non viene rappresentato come per CompTIA A+.
+  examBlueprint: {
+    examName: "Implementing Cisco Enterprise Network Core Technologies (ENCOR)",
+    examCode: "350-401",
+    examVersion: "v1.2",
+    provider: "Cisco",
+    officialSourceName: "ENCOR 350-401 v1.2 — Exam Topics",
+    officialSourceUrl:
+      "https://learningcontent.cisco.com/documents/marketing/exam-topics/350-401-ENCORE-v1.2.pdf",
+    officialExamPageUrl:
+      "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/enterprise/ccnp-enterprise/index.html",
+    lastVerifiedAt: "2026-08-04",
+    note: "La certificazione CCNP Enterprise richiede anche il superamento di UN esame di concentrazione a scelta tra: ENARSI, ENSDWI, ENSLD, ENWLSD, ENWLSI, ENAUTO, ENCC, ENNA.",
+    domains: [
+      { name: "Architecture", percentage: 15 },
+      { name: "Virtualization", percentage: 10 },
+      { name: "Infrastructure", percentage: 30 },
+      { name: "Network Assurance", percentage: 10 },
+      { name: "Security", percentage: 20 },
+      { name: "Automation and Artificial Intelligence", percentage: 15 },
+    ],
+  },
+
   title: {
     it: "CCNP Enterprise",
     en: "CCNP Enterprise",

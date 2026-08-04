@@ -7,11 +7,17 @@ const CSharpAzureDeveloper = {
   imageUrl: "/images/certifications/csharp-icon.png",
   officialUrl: "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
 
+  // Verificato il 2026-08-04. Microsoft ha ritirato l'esame AZ-204 il
+  // 2026-07-31 senza annunciare un esame sostitutivo. Niente examBlueprint
+  // (non esiste un esame corrente da documentare): la pagina è riposizionata
+  // come ripasso delle competenze C#/.NET su Azure basato sul programma
+  // dell'esame ritirato, non come preparazione a un esame prenotabile.
+
   title: {
-    it: "Sviluppatore Azure con C#/.NET (AZ-204)",
-    en: "Azure Developer with C#/.NET (AZ-204)",
-    fr: "Développeur Azure avec C#/.NET (AZ-204)",
-    es: "Desarrollador de Azure con C#/.NET (AZ-204)",
+    it: "Sviluppatore Azure con C#/.NET (AZ-204 – esame ritirato)",
+    en: "Azure Developer with C#/.NET (AZ-204 – retired exam)",
+    fr: "Développeur Azure avec C#/.NET (AZ-204 – examen retiré)",
+    es: "Desarrollador de Azure con C#/.NET (AZ-204 – examen retirado)",
   },
 
   level: {
@@ -22,23 +28,23 @@ const CSharpAzureDeveloper = {
   },
 
   description: {
-    it: "Percorso Microsoft per sviluppatori C#/.NET che creano API, funzioni e app cloud-native su Azure. Copre compute, storage, sicurezza, integrazione e monitoraggio.",
-    en: "Microsoft path for C#/.NET developers building APIs, functions, and cloud-native apps on Azure. Covers compute, storage, security, integration, and monitoring.",
-    fr: "Parcours Microsoft pour développeurs C#/.NET créant des API, functions et apps cloud-native sur Azure. Couvre calcul, stockage, sécurité, intégration et supervision.",
-    es: "Ruta de Microsoft para desarrolladores C#/.NET que crean API, funciones y apps cloud-native en Azure. Cubre cómputo, almacenamiento, seguridad, integración y monitoreo.",
+    it: "Quiz per sviluppatori C#/.NET su Azure basati sul programma dell'esame Microsoft AZ-204, ritirato il 31/07/2026 senza un sostituto annunciato. Utile per ripassare compute, storage, sicurezza, integrazione e monitoraggio su Azure, anche se l'esame non è più prenotabile.",
+    en: "C#/.NET Azure developer quizzes based on the Microsoft AZ-204 exam objectives, retired on 2026-07-31 with no successor announced. Useful to review Azure compute, storage, security, integration, and monitoring skills, even though the exam can no longer be booked.",
+    fr: "Quiz pour développeurs C#/.NET sur Azure basés sur le programme de l'examen Microsoft AZ-204, retiré le 31/07/2026 sans successeur annoncé. Utile pour réviser le calcul, le stockage, la sécurité, l'intégration et la supervision sur Azure, même si l'examen n'est plus réservable.",
+    es: "Quizzes para desarrolladores C#/.NET en Azure basados en el programa del examen Microsoft AZ-204, retirado el 31/07/2026 sin sucesor anunciado. Útil para repasar cómputo, almacenamiento, seguridad, integración y monitoreo en Azure, aunque el examen ya no se puede reservar.",
   },
 
   metaTitle: {
-    en: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
-    it: "C# / AZ-204 Practice Test 2026 – Quiz Azure Developer | CertifyQuiz",
-    fr: "C# / AZ-204 Test Pratique 2026 – Quiz Azure Developer | CertifyQuiz",
-    es: "C# / AZ-204 Practice Test 2026 – Quiz Azure Developer | CertifyQuiz",
+    en: "C# / AZ-204 Practice Questions – Azure Developer Skills | CertifyQuiz",
+    it: "C# / AZ-204 Quiz – Competenze Azure Developer | CertifyQuiz",
+    fr: "C# / AZ-204 Quiz – Compétences Azure Developer | CertifyQuiz",
+    es: "C# / AZ-204 Quiz – Competencias Azure Developer | CertifyQuiz",
   },
   metaDescription: {
-    en: "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
-    it: "Preparati all'esame AZ-204 Azure Developer con quiz C#/.NET. Copre compute, storage, sicurezza, API e monitoraggio. Inizia gratis.",
-    fr: "Préparez l'examen AZ-204 Azure Developer avec des quiz C#/.NET. Couvre calcul, stockage, sécurité, API et supervision. Commencez gratuitement.",
-    es: "Prepárate para el examen AZ-204 Azure Developer con quiz C#/.NET. Cubre cómputo, almacenamiento, seguridad, API y monitoreo. Empieza gratis.",
+    en: "Practice C#/.NET Azure developer skills based on the retired AZ-204 exam objectives. Covers compute, storage, security, APIs and monitoring. Start free.",
+    it: "Allenati sulle competenze C#/.NET Azure Developer basate sul programma dell'esame AZ-204 (ritirato). Copre compute, storage, sicurezza, API e monitoraggio. Inizia gratis.",
+    fr: "Entraînez-vous sur les compétences C#/.NET Azure Developer basées sur le programme de l'examen AZ-204 (retiré). Couvre calcul, stockage, sécurité, API et supervision. Commencez gratuitement.",
+    es: "Practica competencias C#/.NET Azure Developer basadas en el programa del examen AZ-204 (retirado). Cubre cómputo, almacenamiento, seguridad, API y monitoreo. Empieza gratis.",
   },
   topics: [
   {
@@ -129,8 +135,8 @@ const CSharpAzureDeveloper = {
     examReference: {
       it: [
         {
-          text: "AZ-204: Developing Solutions for Microsoft Azure — Pagina ufficiale d’esame",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-204/",
+          text: "AZ-204: Developing Solutions for Microsoft Azure — (ESAME RITIRATO 31/07/2026)",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
         },
         {
           text: "70-483: Programming in C# — (ESAME RITIRATO) elenco esami ritirati",
@@ -139,8 +145,8 @@ const CSharpAzureDeveloper = {
       ],
       en: [
         {
-          text: "AZ-204: Developing Solutions for Microsoft Azure — Official exam page",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-204/",
+          text: "AZ-204: Developing Solutions for Microsoft Azure — (RETIRED 2026-07-31)",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
         },
         {
           text: "70-483: Programming in C# — (RETIRED) retired exams list",
@@ -149,8 +155,8 @@ const CSharpAzureDeveloper = {
       ],
       fr: [
         {
-          text: "AZ-204 : Developing Solutions for Microsoft Azure — Page officielle de l’examen",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-204/",
+          text: "AZ-204 : Developing Solutions for Microsoft Azure — (RETIRÉ le 31/07/2026)",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
         },
         {
           text: "70-483 : Programming in C# — (RETIRÉ) liste des examens retirés",
@@ -159,8 +165,8 @@ const CSharpAzureDeveloper = {
       ],
       es: [
         {
-          text: "AZ-204: Developing Solutions for Microsoft Azure — Página oficial del examen",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-204/",
+          text: "AZ-204: Developing Solutions for Microsoft Azure — (RETIRADO 31/07/2026)",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/azure-developer/",
         },
         {
           text: "70-483: Programming in C# — (RETIRADO) lista de exámenes retirados",
@@ -171,54 +177,66 @@ const CSharpAzureDeveloper = {
 
     whyChoose: {
       it: [
-        "Percorso ufficiale Microsoft per sviluppatori C#/.NET su Azure.",
-        "Alta richiesta sul mercato per ruoli cloud-native e API/backend.",
-        "Vendor ufficiale, con rinnovo semplice e gratuito online.",
+        "Basato sul percorso Microsoft per sviluppatori C#/.NET su Azure (esame AZ-204, ora ritirato).",
+        "Competenze comunque richieste sul mercato per ruoli cloud-native e API/backend.",
+        "Utile come ripasso tecnico, anche senza un esame Microsoft attivo da sostenere.",
       ],
       en: [
-        "Microsoft’s official path for C#/.NET developers on Azure.",
-        "High market demand for cloud-native and API/backend roles.",
-        "First-party credential with easy, free online renewal.",
+        "Based on Microsoft's path for C#/.NET developers on Azure (AZ-204 exam, now retired).",
+        "Skills still in high market demand for cloud-native and API/backend roles.",
+        "Useful as technical review, even with no active Microsoft exam to take.",
       ],
       fr: [
-        "Parcours officiel Microsoft pour développeurs C#/.NET sur Azure.",
-        "Forte demande marché pour les rôles cloud-native et API/backend.",
-        "Certif Microsoft avec renouvellement en ligne gratuit.",
+        "Basé sur le parcours Microsoft pour développeurs C#/.NET sur Azure (examen AZ-204, désormais retiré).",
+        "Compétences toujours très demandées pour les rôles cloud-native et API/backend.",
+        "Utile comme révision technique, même sans examen Microsoft actif à passer.",
       ],
       es: [
-        "Ruta oficial de Microsoft para desarrolladores C#/.NET en Azure.",
-        "Alta demanda del mercado para roles cloud-native y API/backend.",
-        "Acreditación oficial con renovación online gratuita.",
+        "Basado en la ruta de Microsoft para desarrolladores C#/.NET en Azure (examen AZ-204, ahora retirado).",
+        "Competencias con alta demanda de mercado para roles cloud-native y API/backend.",
+        "Útil como repaso técnico, aunque no haya un examen Microsoft activo que rendir.",
       ],
     },
 
     faq: {
       it: [
-        { q: "Dove posso sostenere l’esame?", a: "Online con proctoring remoto o presso un centro Pearson VUE autorizzato." },
         {
-          q: "Quanto dura la certificazione e come si rinnova?",
-          a: "Le certificazioni Microsoft role-based (come Azure Developer) sono valide 1 anno. Puoi rinnovarle GRATIS con un assessment online su Microsoft Learn entro i 6 mesi prima della scadenza.",
+          q: "Posso ancora sostenere l’esame AZ-204?",
+          a: "No. Microsoft ha ritirato l'esame AZ-204 il 31/07/2026 e al momento non ha annunciato un esame sostitutivo per la certificazione Azure Developer Associate. Questi quiz restano utili per ripassare le competenze C#/.NET su Azure, ma non portano più a una nuova certificazione Microsoft.",
+        },
+        {
+          q: "Se ho già la certificazione Azure Developer Associate, cosa cambia?",
+          a: "Nulla: resta valida secondo i suoi termini originali. Cambia solo che non è più possibile sostenere un nuovo esame o rinnovarla tramite un assessment AZ-204.",
         },
       ],
       en: [
-        { q: "Where can I take the exam?", a: "Online with remote proctoring or at an authorized Pearson VUE test center." },
         {
-          q: "How long is the certification valid and how do I renew?",
-          a: "Microsoft role-based certifications (like Azure Developer) are valid for 1 year. Renew FREE via an online assessment on Microsoft Learn within the 6-month window before expiration.",
+          q: "Can I still take the AZ-204 exam?",
+          a: "No. Microsoft retired the AZ-204 exam on 2026-07-31 and has not announced a replacement exam for the Azure Developer Associate certification. These quizzes remain useful for reviewing C#/.NET skills on Azure, but no longer lead to a new Microsoft certification.",
+        },
+        {
+          q: "If I already hold the Azure Developer Associate certification, what changes?",
+          a: "Nothing: it remains valid under its original terms. The only change is that you can no longer take a new exam or renew it via an AZ-204 assessment.",
         },
       ],
       fr: [
-        { q: "Où passer l’examen ?", a: "En ligne avec surveillance à distance ou dans un centre Pearson VUE agréé." },
         {
-          q: "Quelle est la durée de validité et comment renouveler ?",
-          a: "Les certifications Microsoft basées sur les rôles (comme Azure Developer) sont valides 1 an. Renouvelez-les GRATUITEMENT via une évaluation en ligne sur Microsoft Learn dans les 6 mois précédant l’expiration.",
+          q: "Puis-je encore passer l’examen AZ-204 ?",
+          a: "Non. Microsoft a retiré l'examen AZ-204 le 31/07/2026 et n'a annoncé aucun examen de remplacement pour la certification Azure Developer Associate. Ces quiz restent utiles pour réviser les compétences C#/.NET sur Azure, mais ne mènent plus à une nouvelle certification Microsoft.",
+        },
+        {
+          q: "Si j’ai déjà la certification Azure Developer Associate, qu’est-ce qui change ?",
+          a: "Rien : elle reste valide selon ses conditions d'origine. Seul changement : il n'est plus possible de passer un nouvel examen ni de la renouveler via une évaluation AZ-204.",
         },
       ],
       es: [
-        { q: "¿Dónde puedo hacer el examen?", a: "En línea con supervisión remota o en un centro autorizado de Pearson VUE." },
         {
-          q: "¿Duración y renovación?",
-          a: "Las certificaciones de Microsoft basadas en roles (como Azure Developer) son válidas por 1 año. Renuévalas GRATIS con una evaluación online en Microsoft Learn dentro de los 6 meses previos al vencimiento.",
+          q: "¿Todavía puedo presentar el examen AZ-204?",
+          a: "No. Microsoft retiró el examen AZ-204 el 31/07/2026 y no ha anunciado un examen sustituto para la certificación Azure Developer Associate. Estos quizzes siguen siendo útiles para repasar las competencias C#/.NET en Azure, pero ya no conducen a una nueva certificación Microsoft.",
+        },
+        {
+          q: "Si ya tengo la certificación Azure Developer Associate, ¿qué cambia?",
+          a: "Nada: sigue siendo válida según sus términos originales. Solo cambia que ya no se puede presentar un nuevo examen ni renovarla mediante una evaluación AZ-204.",
         },
       ],
     },

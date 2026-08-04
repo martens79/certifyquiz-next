@@ -15,25 +15,24 @@ published), source URL and verification date are stored in the registry.
 | CompTIA Cloud+ | CV0-004, objectives v2.0 | Official CompTIA objectives PDF |
 | CompTIA Security+ | SY0-701, objectives v5.0 | Official CompTIA objectives PDF |
 | CompTIA Tech+ | FC0-U71, objectives v2.0 | Official CompTIA objectives PDF; registry retains legacy ITF+ slug |
+| CompTIA A+ | Core 1 220-1201 + Core 2 220-1202, V15 (Objectives Doc. 3.0) | Official CompTIA objectives PDFs (two separate exams, `exams[]` blueprint) |
+| AWS Certified Cloud Practitioner | CLF-C02 | Official AWS Exam Guide PDF (docs.aws.amazon.com) |
+| AWS Certified Solutions Architect – Associate | SAA-C03 | Official AWS Exam Guide PDF (docs.aws.amazon.com) |
+| AWS Certified AI Practitioner | AIF-C01 | Official AWS Exam Guide PDF (docs.aws.amazon.com) |
+| Microsoft Azure Fundamentals | AZ-900 | Official Microsoft Learn study guide (percentage ranges) |
+| Microsoft Power BI Data Analyst | PL-300 | Official Microsoft Learn study guide (percentage ranges) |
+| Microsoft Azure Data Fundamentals | DP-900 | Official Microsoft Learn study guide (percentage ranges) |
+| Microsoft Azure AI Fundamentals | AI-901 (was AI-900, retired 2026-06-30) | Official Microsoft Learn study guide; page copy (title/meta/FAQ) rewritten to AI-901, retirement noted in FAQ |
+| Microsoft Azure AI Apps and Agents Developer Associate | AI-103 (was AI-102 "Azure AI Engineer Associate", retired 2026-06-30) | Official Microsoft Learn study guide; page copy rewritten to the renamed certification, slug/quizRoute kept unchanged for SEO stability |
+| Cisco CCST Networking | 100-150 | Official Cisco Objective Domains PDF (learningcontent.cisco.com); no official percentage weights published |
+| Cisco CCST Cybersecurity | 100-160 | Official Cisco Objective Domains PDF (learningcontent.cisco.com); no official percentage weights published |
+| Cisco CCNP Enterprise | Core 350-401 ENCOR v1.2 | Official Cisco Exam Topics PDF; Core exam only (documents the shared requirement), `note` field explains the required concentration exam (candidate's choice of 8) is not fixed |
+| ISC2 Certified in Cybersecurity (CC) | Exam Outline effective 2025-10-01 | Official ISC2 exam outline PDF; `note` field flags the 2026-09-01 outline refresh (AI security content) |
+| ISC2 CISSP | Exam Outline effective 2024-04-15 | Official ISC2 exam outline PDF (8 domains) |
 
 ## Pending official-source verification
 
-- AWS Certified Cloud Practitioner
-- AWS Certified Solutions Architect – Associate
-- AWS Certified AI Practitioner
-- Cisco CCST Networking
-- Cisco CCST Cybersecurity
-- Cisco CCNP Enterprise
 - EC-Council CEH
-- ISC2 CC
-- ISC2 CISSP
-- CompTIA A+
-- Microsoft Azure Fundamentals (AZ-900)
-- Microsoft Azure AI Fundamentals (AI-900)
-- Microsoft Azure AI Engineer Associate (AI-102)
-- Microsoft Power BI Data Analyst (PL-300)
-- Microsoft Azure Data Fundamentals (DP-900)
-- Microsoft Azure Developer Associate (AZ-204 / C# registry entry)
 - Google Cloud Digital Leader
 - IBM Cloud certification registry entry
 - ICDL
@@ -84,6 +83,9 @@ they are later mapped to a specific provider exam.
   vendor-neutral certification authority.
 - MySQL, Python and VMware entries need exact exam/version matching before a
   blueprint can be published.
-- CompTIA A+: Core 2 (220-1202) final objectives were verified, but the public
-  Core 1 result available during this audit was marked draft. Publish A+ only
-  after the final Core 1 document can be verified alongside Core 2.
+- Microsoft Azure Developer Associate (AZ-204, registry slug `csharp`): exam
+  retired 2026-07-31. No successor exam or certification has been announced
+  by Microsoft. No blueprint box (there is no current exam to document); the
+  page was repositioned as a skills-review resource based on the retired
+  exam's objectives, with an explicit retirement notice in the FAQ and
+  exam-reference list. Revisit if Microsoft announces a successor.

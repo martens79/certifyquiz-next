@@ -6,6 +6,25 @@ const AWSAIPractitioner = {
   imageUrl: "/images/certifications/aws-ai-practitioner.png",
   officialUrl: "https://aws.amazon.com/certification/certified-ai-practitioner/",
 
+  // Verificato il 2026-08-04 su docs.aws.amazon.com (Exam Guide ufficiale AWS).
+  examBlueprint: {
+    provider: "AWS",
+    examCode: "AIF-C01",
+    officialSourceName: "AWS Certified AI Practitioner — Exam Guide (AIF-C01)",
+    officialSourceUrl:
+      "https://docs.aws.amazon.com/pdfs/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.pdf",
+    officialExamPageUrl:
+      "https://aws.amazon.com/certification/certified-ai-practitioner/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Fundamentals of AI and ML", percentage: 20 },
+      { name: "Fundamentals of GenAI", percentage: 24 },
+      { name: "Applications of Foundation Models", percentage: 28 },
+      { name: "Guidelines for Responsible AI", percentage: 14 },
+      { name: "Security, Compliance, and Governance for AI Solutions", percentage: 14 },
+    ],
+  },
+
   levelOrder: 2, // foundational, after AI Foundations
 
   title: {

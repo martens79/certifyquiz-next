@@ -6,6 +6,47 @@ const CompTIAAPlus = {
   imageUrl: "/images/certifications/comptia-a-plus.png",
   officialUrl: "https://www.comptia.org/en-us/certifications/a/",
 
+  // Verificato il 2026-08-04 sulle fonti ufficiali CompTIA
+  // (Exam Objectives Document Version 3.0, copyright 2024, V15).
+  examBlueprint: {
+    provider: "CompTIA",
+    officialSourceName: "CompTIA A+ V15 — Exam Objectives (Core 1 & Core 2)",
+    officialSourceUrl:
+      "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf",
+    officialExamPageUrl: "https://www.comptia.org/en-us/certifications/a/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [],
+    exams: [
+      {
+        label: "Core 1 (220-1201)",
+        examCode: "220-1201",
+        examVersion: "V15",
+        sourceUrl:
+          "https://assets.ctfassets.net/82ripq7fjls2/1oSdlyujpaX3GrM0rir6Ge/91afb2be72785281e8fb4c0d9a70c6f4/CompTIA-A-220-1201-Exam-Objectives-3.0.pdf",
+        domains: [
+          { name: "Mobile Devices", percentage: 13 },
+          { name: "Networking", percentage: 23 },
+          { name: "Hardware", percentage: 25 },
+          { name: "Virtualization and Cloud Computing", percentage: 11 },
+          { name: "Hardware and Network Troubleshooting", percentage: 28 },
+        ],
+      },
+      {
+        label: "Core 2 (220-1202)",
+        examCode: "220-1202",
+        examVersion: "V15",
+        sourceUrl:
+          "https://assets.ctfassets.net/82ripq7fjls2/6I8WL66IBa1AUovioDGrnM/f74a7eca336fd4e4c8e723a1f893086d/CompTIA-A-220-1202-Exam-Objectives-3.0.pdf",
+        domains: [
+          { name: "Operating Systems", percentage: 28 },
+          { name: "Security", percentage: 28 },
+          { name: "Software Troubleshooting", percentage: 23 },
+          { name: "Operational Procedures", percentage: 21 },
+        ],
+      },
+    ],
+  },
+
   title: {
     it: "CompTIA A+ – Quiz e Simulazioni d'Esame (Core 1 + Core 2)",
     en: "CompTIA A+ Practice Test 2026 – 270 Exam Questions (Core 1 + Core 2)",

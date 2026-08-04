@@ -35,6 +35,10 @@ export type ExamDomain = Readonly<{
   name: string;
   /** Assente quando l'ente non pubblica un peso preciso. */
   percentage?: number | null;
+  /** Range pubblicato dall'ente invece di un valore fisso (es. Microsoft: "25–30%").
+   *  Se presente, ha priorità su `percentage` per la visualizzazione. */
+  percentageMin?: number | null;
+  percentageMax?: number | null;
 }>;
 
 export type ExamBlueprint = Readonly<{
@@ -48,7 +52,22 @@ export type ExamBlueprint = Readonly<{
   officialExamPageUrl?: string | null;
   /** Data ISO (YYYY-MM-DD) dell'ultima verifica della fonte ufficiale. */
   lastVerifiedAt?: string | null;
+  /** Nota informativa breve (es. requisito di un secondo esame a scelta,
+   *  o un cambio di programma già annunciato dall'ente). */
+  note?: string | null;
   domains: ReadonlyArray<ExamDomain>;
+  /** Sotto-esami quando la certificazione richiede più esami separati
+   *  (es. CompTIA A+ Core 1 + Core 2, Cisco CCNP core + concentrazione).
+   *  Se presente, ha priorità su `domains` per la visualizzazione nel box. */
+  exams?: ReadonlyArray<Readonly<{
+    label: string;
+    examCode?: string | null;
+    examVersion?: string | null;
+    /** Sovrascrive officialSourceUrl/officialSourceName per questo esame, se l'ente pubblica un documento separato. */
+    sourceUrl?: string | null;
+    sourceName?: string | null;
+    domains: ReadonlyArray<ExamDomain>;
+  }>>;
 }>;
 
 export type ExtraContent = {

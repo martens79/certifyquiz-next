@@ -9,6 +9,24 @@ const MicrosoftAzureFundamentals = {
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/",
 
+  // Verificato il 2026-08-04 su learn.microsoft.com (Study Guide ufficiale Microsoft).
+  examBlueprint: {
+    provider: "Microsoft",
+    examCode: "AZ-900",
+    officialSourceName:
+      "Microsoft Learn — Study Guide for Exam AZ-900 (skills measured as of July 20, 2026)",
+    officialSourceUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-900",
+    officialExamPageUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Describe cloud concepts", percentageMin: 25, percentageMax: 30 },
+      { name: "Describe Azure architecture and services", percentageMin: 35, percentageMax: 40 },
+      { name: "Describe Azure management and governance", percentageMin: 30, percentageMax: 35 },
+    ],
+  },
+
   title: {
     it: "Microsoft Azure Fundamentals",
     en: "Microsoft Azure Fundamentals",

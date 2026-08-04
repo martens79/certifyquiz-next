@@ -7,6 +7,26 @@ const CISCO_CCST_CYBERSECURITY = {
   officialUrl:
     "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-cybersecurity.html",
 
+  // Verificato il 2026-08-04 sul documento ufficiale Cisco (Objective Domains).
+  // Cisco non pubblica un peso percentuale per i singoli domini di questo esame.
+  examBlueprint: {
+    examCode: "100-160",
+    provider: "Cisco",
+    officialSourceName: "Cisco Certified Support Technician: Cybersecurity — Objective Domains",
+    officialSourceUrl:
+      "https://learningcontent.cisco.com/documents/CCST+Cybersecurity+Objecitve+Domain_Cisco_Final_wCiscoLogo.pdf",
+    officialExamPageUrl:
+      "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-cybersecurity.html",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Essential Security Principles" },
+      { name: "Basic Network Security Concepts" },
+      { name: "Endpoint Security Concepts" },
+      { name: "Vulnerability Assessment and Risk Management" },
+      { name: "Incident Handling" },
+    ],
+  },
+
   title: {
     it: "Cisco CCST – Cybersecurity",
     en: "Cisco CCST – Cybersecurity",

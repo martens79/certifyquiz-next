@@ -6,6 +6,25 @@ const AWS_SOLUTIONS_ARCHITECT = {
   imageUrl: "/images/certifications/aws-solutions-architect.png", // metti il logo in /public/images/certifications/
   officialUrl: "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
 
+  // Verificato il 2026-08-04 su docs.aws.amazon.com (Exam Guide ufficiale AWS).
+  examBlueprint: {
+    provider: "AWS",
+    examCode: "SAA-C03",
+    officialSourceName:
+      "AWS Certified Solutions Architect – Associate — Exam Guide (SAA-C03)",
+    officialSourceUrl:
+      "https://docs.aws.amazon.com/pdfs/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.pdf",
+    officialExamPageUrl:
+      "https://aws.amazon.com/certification/certified-solutions-architect-associate/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Design Secure Architectures", percentage: 30 },
+      { name: "Design Resilient Architectures", percentage: 26 },
+      { name: "Design High-Performing Architectures", percentage: 24 },
+      { name: "Design Cost-Optimized Architectures", percentage: 20 },
+    ],
+  },
+
   title: {
     it: "AWS Solutions Architect",
     en: "AWS Solutions Architect",

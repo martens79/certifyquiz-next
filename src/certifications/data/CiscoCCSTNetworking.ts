@@ -7,6 +7,27 @@ const CISCO_CCST_NETWORKING = {
   officialUrl:
     "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-networking.html",
 
+  // Verificato il 2026-08-04 sul documento ufficiale Cisco (Objective Domains).
+  // Cisco non pubblica un peso percentuale per i singoli domini di questo esame.
+  examBlueprint: {
+    examCode: "100-150",
+    provider: "Cisco",
+    officialSourceName: "Cisco Certified Support Technician: Networking — Objective Domains",
+    officialSourceUrl:
+      "https://learningcontent.cisco.com/documents/CCST+Networking+Objective+Domain_Cisco_Final_wCiscoLogo.pdf",
+    officialExamPageUrl:
+      "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccst-networking.html",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Standards and Concepts" },
+      { name: "Addressing and Subnet Formats" },
+      { name: "Endpoints and Media Types" },
+      { name: "Infrastructure" },
+      { name: "Diagnosing Problems" },
+      { name: "Security" },
+    ],
+  },
+
   title: {
     it: "Cisco CCST – Networking",
     en: "Cisco CCST – Networking",

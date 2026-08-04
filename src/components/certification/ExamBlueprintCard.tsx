@@ -87,6 +87,62 @@ function formatVerifiedDate(value: string, lang: Lang): string {
   }).format(date);
 }
 
+type ExamDomain = ExamBlueprint["domains"][number];
+
+function DomainList({
+  domains,
+  noWeightsLabel,
+}: {
+  domains: ReadonlyArray<ExamDomain>;
+  noWeightsLabel: string;
+}) {
+  const hasAnyPercentage = domains.some(
+    (domain) => domain.percentage != null || (domain.percentageMin != null && domain.percentageMax != null)
+  );
+
+  return (
+    <>
+      <ul className="mt-2 space-y-2.5">
+        {domains.map((domain) => {
+          const isRange = domain.percentage == null && domain.percentageMin != null && domain.percentageMax != null;
+
+          return (
+            <li key={domain.name}>
+              <div className="flex min-w-0 items-baseline justify-between gap-3 text-sm">
+                <span className="min-w-0 text-slate-800">{domain.name}</span>
+                {domain.percentage != null && (
+                  <span className="shrink-0 font-semibold text-blue-800" aria-label={`${domain.percentage}%`}>
+                    {domain.percentage}%
+                  </span>
+                )}
+                {isRange && (
+                  <span
+                    className="shrink-0 font-semibold text-blue-800"
+                    aria-label={`${domain.percentageMin}–${domain.percentageMax}%`}
+                  >
+                    {domain.percentageMin}–{domain.percentageMax}%
+                  </span>
+                )}
+              </div>
+              {domain.percentage != null && (
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-blue-100" aria-hidden="true">
+                  <div
+                    className="h-full rounded-full bg-blue-500"
+                    style={{ width: `${Math.min(100, Math.max(0, domain.percentage))}%` }}
+                  />
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {!hasAnyPercentage && (
+        <p className="mt-3 text-xs leading-5 text-slate-600">{noWeightsLabel}</p>
+      )}
+    </>
+  );
+}
+
 export default function ExamBlueprintCard({
   blueprint,
   lang,
@@ -94,12 +150,10 @@ export default function ExamBlueprintCard({
   blueprint?: ExamBlueprint | null;
   lang: Lang;
 }) {
-  if (!blueprint || blueprint.domains.length === 0) return null;
+  const hasExams = (blueprint?.exams?.length ?? 0) > 0;
+  if (!blueprint || (blueprint.domains.length === 0 && !hasExams)) return null;
 
   const t = COPY[lang];
-  const hasAnyPercentage = blueprint.domains.some(
-    (domain) => domain.percentage != null
-  );
 
   return (
     <section
@@ -131,31 +185,42 @@ export default function ExamBlueprintCard({
       </div>
 
       <h3 className="mt-4 text-sm font-semibold text-slate-800">{t.topics}</h3>
-      <ul className="mt-2 space-y-2.5">
-        {blueprint.domains.map((domain) => (
-          <li key={domain.name}>
-            <div className="flex min-w-0 items-baseline justify-between gap-3 text-sm">
-              <span className="min-w-0 text-slate-800">{domain.name}</span>
-              {domain.percentage != null && (
-                <span className="shrink-0 font-semibold text-blue-800" aria-label={`${t.weight}: ${domain.percentage}%`}>
-                  {domain.percentage}%
-                </span>
+
+      {hasExams ? (
+        <div className="mt-2 space-y-5">
+          {blueprint.exams!.map((exam) => (
+            <div key={exam.label}>
+              <p className="text-sm font-semibold text-blue-900">
+                {exam.label}
+                {exam.examVersion && (
+                  <span className="ml-1 font-normal text-slate-600">({exam.examVersion})</span>
+                )}
+              </p>
+              <DomainList domains={exam.domains} noWeightsLabel={t.noWeights} />
+              {exam.sourceUrl && (
+                <p className="mt-1 text-xs">
+                  <a
+                    href={exam.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
+                  >
+                    {exam.sourceName ?? t.source} <span aria-hidden="true">↗</span>
+                    <span className="sr-only"> ({t.external})</span>
+                  </a>
+                </p>
               )}
             </div>
-            {domain.percentage != null && (
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-blue-100" aria-hidden="true">
-                <div
-                  className="h-full rounded-full bg-blue-500"
-                  style={{ width: `${Math.min(100, Math.max(0, domain.percentage))}%` }}
-                />
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      ) : (
+        <DomainList domains={blueprint.domains} noWeightsLabel={t.noWeights} />
+      )}
 
-      {!hasAnyPercentage && (
-        <p className="mt-3 text-xs leading-5 text-slate-600">{t.noWeights}</p>
+      {blueprint.note && (
+        <p className="mt-3 rounded-lg bg-blue-100/70 p-2.5 text-xs leading-5 text-blue-900">
+          {blueprint.note}
+        </p>
       )}
 
       <div className="mt-4 border-t border-blue-200 pt-3 text-sm text-slate-700">

@@ -9,6 +9,25 @@ const DP900AzureDataFundamentals = {
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/",
 
+  // Verificato il 2026-08-04 su learn.microsoft.com (Study Guide ufficiale Microsoft).
+  examBlueprint: {
+    provider: "Microsoft",
+    examCode: "DP-900",
+    officialSourceName:
+      "Microsoft Learn — Study Guide for Exam DP-900 (skills measured as of July 21, 2026)",
+    officialSourceUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/dp-900",
+    officialExamPageUrl:
+      "https://learn.microsoft.com/en-us/credentials/certifications/azure-data-fundamentals/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Describe core data concepts", percentageMin: 25, percentageMax: 30 },
+      { name: "Identify considerations for relational data on Azure", percentageMin: 20, percentageMax: 25 },
+      { name: "Describe considerations for working with non-relational data on Azure", percentageMin: 15, percentageMax: 20 },
+      { name: "Describe an analytics workload on Azure", percentageMin: 25, percentageMax: 30 },
+    ],
+  },
+
   title: {
     it: "Microsoft DP-900 Azure Data Fundamentals – Quiz e Simulazione Esame",
     en: "DP-900 Azure Data Fundamentals Practice Test 2026",

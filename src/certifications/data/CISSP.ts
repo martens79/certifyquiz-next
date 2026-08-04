@@ -6,6 +6,28 @@ const CISSP = {
   imageUrl: "/images/certifications/cissp.png", // metti l’icona in /public/images/certifications/cissp.png
   officialUrl: "https://www.isc2.org/certifications/cissp",
 
+  // Verificato il 2026-08-04 sul documento ufficiale ISC2 (Exam Outline, effective 2024-04-15).
+  examBlueprint: {
+    examName: "Certified Information Systems Security Professional (CISSP)",
+    provider: "ISC2",
+    officialSourceName: "ISC2 CISSP — Certification Exam Outline (effective 2024-04-15)",
+    officialSourceUrl:
+      "https://assets.ctfassets.net/82ripq7fjls2/2D57uYE9A4MhPVAV3SBJLk/8389a0d0386c5c2814b52df9ab1603a8/CISSP-Exam-Outline-April-2024-English.pdf",
+    officialExamPageUrl:
+      "https://www.isc2.org/certifications/cissp/cissp-certification-exam-outline",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Security and Risk Management", percentage: 16 },
+      { name: "Asset Security", percentage: 10 },
+      { name: "Security Architecture and Engineering", percentage: 13 },
+      { name: "Communication and Network Security", percentage: 13 },
+      { name: "Identity and Access Management (IAM)", percentage: 13 },
+      { name: "Security Assessment and Testing", percentage: 12 },
+      { name: "Security Operations", percentage: 13 },
+      { name: "Software Development Security", percentage: 10 },
+    ],
+  },
+
   title: {
     it: "CISSP - Certified Information Systems Security Professional",
     en: "CISSP - Certified Information Systems Security Professional",
