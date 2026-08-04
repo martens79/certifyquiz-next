@@ -7,6 +7,30 @@ const CCNA = {
   officialUrl:
     "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
 
+  // Verificato il 2026-08-04 sulle fonti Cisco ufficiali.
+  // CCNA v2.0 è annunciato per il 2027-02-03: fino ad allora la versione
+  // corrente indicata da Cisco resta 200-301 v1.1.
+  examBlueprint: {
+    examName: "Implementing and Administering Cisco Solutions",
+    examCode: "200-301",
+    examVersion: "v1.1",
+    provider: "Cisco",
+    officialSourceName: "CCNA Exam v1.1 (200-301) — Exam Topics",
+    officialSourceUrl:
+      "https://learningcontent.cisco.com/documents/marketing/exam-topics/200-301-CCNA-v1.1.pdf",
+    officialExamPageUrl:
+      "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Network Fundamentals", percentage: 20 },
+      { name: "Network Access", percentage: 20 },
+      { name: "IP Connectivity", percentage: 25 },
+      { name: "IP Services", percentage: 10 },
+      { name: "Security Fundamentals", percentage: 15 },
+      { name: "Automation and Programmability", percentage: 10 },
+    ],
+  },
+
   // ✅ EN: numero reale (600). Altre lingue: no numeri falsi, ma intent “exam practice”.
   title: {
     it: "Cisco CCNA – Quiz e Simulazione Esame 200-301",

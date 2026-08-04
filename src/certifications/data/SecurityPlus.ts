@@ -6,6 +6,25 @@ const SecurityPlus = {
   imageUrl: "/images/certifications/securityplus-icon.png",
   officialUrl: "https://www.comptia.org/certifications/security",
 
+  examBlueprint: {
+    examName: "CompTIA Security+",
+    examCode: "SY0-701",
+    examVersion: "Exam Objectives v5.0",
+    provider: "CompTIA",
+    officialSourceName: "CompTIA Security+ SY0-701 Certification Exam Objectives v5.0",
+    officialSourceUrl:
+      "https://comptiacdn.azureedge.net/webcontent/docs/default-source/exam-objectives/comptia-security-sy0-701-exam-objectives-%285-0%29.pdf",
+    officialExamPageUrl: "https://www.comptia.org/en-us/certifications/security/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "General Security Concepts", percentage: 12 },
+      { name: "Threats, Vulnerabilities, and Mitigations", percentage: 22 },
+      { name: "Security Architecture", percentage: 18 },
+      { name: "Security Operations", percentage: 28 },
+      { name: "Security Program Management and Oversight", percentage: 20 },
+    ],
+  },
+
   title: {
     it: "CompTIA Security+ – Quiz e Simulazioni d'Esame",
     en: "Security+ Practice Test 2026 – 1,200+ SY0-701 Exam Questions",

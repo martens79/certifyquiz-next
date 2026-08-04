@@ -6,6 +6,26 @@ const CompTIACloudPlus = {
   imageUrl: "/images/certifications/cloudplus-icon.png",
   officialUrl: "https://www.comptia.org/en-us/certifications/cloud/",
 
+  examBlueprint: {
+    examName: "CompTIA Cloud+",
+    examCode: "CV0-004",
+    examVersion: "Exam Objectives v2.0",
+    provider: "CompTIA",
+    officialSourceName: "CompTIA Cloud+ CV0-004 Certification Exam Objectives v2.0",
+    officialSourceUrl:
+      "https://comptiacdn.azureedge.net/webcontent/docs/default-source/exam-objectives/comptia-cloud-cv0-004-exam-objectives-%282-0%29.pdf",
+    officialExamPageUrl: "https://www.comptia.org/en-us/certifications/cloud/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Cloud Architecture", percentage: 23 },
+      { name: "Deployment", percentage: 19 },
+      { name: "Operations", percentage: 17 },
+      { name: "Security", percentage: 19 },
+      { name: "DevOps Fundamentals", percentage: 10 },
+      { name: "Troubleshooting", percentage: 12 },
+    ],
+  },
+
   title: {
     it: "CompTIA Cloud+",
     en: "CompTIA Cloud+",

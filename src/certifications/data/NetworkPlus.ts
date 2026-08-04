@@ -8,6 +8,25 @@ const NetworkPlus = {
   // Pagina ufficiale dell'esame
   officialUrl: "https://www.comptia.org/certifications/network",
 
+  examBlueprint: {
+    examName: "CompTIA Network+",
+    examCode: "N10-009",
+    examVersion: "Exam Objectives v4.0",
+    provider: "CompTIA",
+    officialSourceName: "CompTIA Network+ N10-009 Certification Exam Objectives v4.0",
+    officialSourceUrl:
+      "https://comptiacdn.azureedge.net/webcontent/docs/default-source/exam-objectives/comptia-network-n10-009-exam-objectives-%284-0%29-%281%29.pdf?sfvrsn=f31cc6c4_4",
+    officialExamPageUrl: "https://www.comptia.org/en-us/certifications/network/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Networking Concepts", percentage: 23 },
+      { name: "Network Implementation", percentage: 19 },
+      { name: "Network Operations", percentage: 16 },
+      { name: "Network Security", percentage: 19 },
+      { name: "Network Troubleshooting", percentage: 23 },
+    ],
+  },
+
   title: {
     it: "CompTIA Network+",
     en: "CompTIA Network+",

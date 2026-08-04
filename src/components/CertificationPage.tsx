@@ -9,6 +9,7 @@ import type {
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
+import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
 import type { CertificationResources } from "@/lib/data";
 import { certPath, guidePath, mapsPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
@@ -128,6 +129,7 @@ export default function CertificationPage({
     imageUrl,
     extraContent,
     imageSide = "left",
+    examBlueprint,
   } = data;
 
   const pageTitle = pickLabel(title, lang) || "Certification";
@@ -304,6 +306,8 @@ const pageTopics =
         </header>
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
+
+        <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         <StudyMaterialGrid
           lang={lang}

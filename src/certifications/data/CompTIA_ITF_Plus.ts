@@ -6,6 +6,28 @@ const ITFPlus = {
   imageUrl: "/images/certifications/itf-icon.png", // sostituisci quando avrai l’icona Tech+
   officialUrl: "https://www.comptia.org/en-us/certifications/tech/",
 
+  // ITF+ è stato sostituito da CompTIA Tech+; questa voce registry usa lo
+  // slug storico ma mostra il blueprint dell'esame corrente FC0-U71.
+  examBlueprint: {
+    examName: "CompTIA Tech+",
+    examCode: "FC0-U71",
+    examVersion: "Exam Objectives v2.0",
+    provider: "CompTIA",
+    officialSourceName: "CompTIA Tech+ FC0-U71 Certification Exam Objectives v2.0",
+    officialSourceUrl:
+      "https://comptiacdn.azureedge.net/webcontent/docs/default-source/exam-objectives/comptia-tech-fc0-u71-exam-objectives-%282-0%29.pdf",
+    officialExamPageUrl: "https://www.comptia.org/en-us/certifications/tech/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "IT Concepts and Terminology", percentage: 13 },
+      { name: "Infrastructure", percentage: 24 },
+      { name: "Applications and Software", percentage: 18 },
+      { name: "Software Development Concepts", percentage: 13 },
+      { name: "Data and Database Fundamentals", percentage: 13 },
+      { name: "Security", percentage: 19 },
+    ],
+  },
+
   title: {
     it: "CompTIA Tech+ (ex ITF+)",
     en: "CompTIA Tech+ (ex ITF+)",

@@ -30,6 +30,27 @@ export type TopicLinkItem = Readonly<{
 // - formato nuovo: { title, slug }
 export type CertificationTopic = LocalizedText | string | TopicLinkItem;
 
+export type ExamDomain = Readonly<{
+  /** Nome ufficiale pubblicato dall'ente certificatore. */
+  name: string;
+  /** Assente quando l'ente non pubblica un peso preciso. */
+  percentage?: number | null;
+}>;
+
+export type ExamBlueprint = Readonly<{
+  examName?: string | null;
+  examCode?: string | null;
+  examVersion?: string | null;
+  provider?: string | null;
+  officialSourceName: string;
+  officialSourceUrl: string;
+  /** Pagina riepilogativa dell'esame, distinta dal documento dei topic. */
+  officialExamPageUrl?: string | null;
+  /** Data ISO (YYYY-MM-DD) dell'ultima verifica della fonte ufficiale. */
+  lastVerifiedAt?: string | null;
+  domains: ReadonlyArray<ExamDomain>;
+}>;
+
 export type ExtraContent = {
   // liste immutabili per ogni lingua
   learn?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
@@ -66,6 +87,9 @@ export type CertificationData = {
 
   metaTitle?: LocalizedText;
   metaDescription?: LocalizedText;
+
+  /** Programma verificato dell'esame; se assente la relativa card non viene mostrata. */
+  examBlueprint?: ExamBlueprint;
 
   
 
