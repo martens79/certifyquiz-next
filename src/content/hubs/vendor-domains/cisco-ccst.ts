@@ -28,9 +28,9 @@ export const ciscoCcsTHub: HubData = {
     popularity: 70,
   },
   {
-    slug: "cisco-ccst-security",
+    slug: "cisco-ccst-cybersecurity",
     badge: "Entry",
-    examCode: "CCST Security",
+    examCode: "100-160 CCST Cybersecurity",
     popularity: 68,
   },
 ],

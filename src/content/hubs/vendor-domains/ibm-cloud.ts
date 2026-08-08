@@ -14,10 +14,10 @@ export const ibmCloudHub: HubData = {
   },
 
   description: {
-    it: "Allenati per la certificazione IBM Cloud V5 con quiz e pratica.",
-    en: "Train for IBM Cloud V5 certification with quizzes and practice.",
-    fr: "Entraînez-vous pour la certification IBM Cloud V5 avec des quiz.",
-    es: "Practica para la certificación IBM Cloud V5 con quizzes.",
+    it: "Archivio didattico IBM Cloud V5: la certificazione è ritirata, ma i quiz restano disponibili per ripassare i concetti.",
+    en: "IBM Cloud V5 learning archive: the certification is retired, while the quizzes remain available for concept review.",
+    fr: "Archive pédagogique IBM Cloud V5 : la certification est retirée, mais les quiz restent disponibles pour réviser les concepts.",
+    es: "Archivo educativo IBM Cloud V5: la certificación está retirada, pero los cuestionarios siguen disponibles para repasar conceptos.",
   },
 
   certs: [

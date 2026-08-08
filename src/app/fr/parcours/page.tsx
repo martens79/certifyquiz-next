@@ -65,6 +65,15 @@ const roadmapItems = [
     color: "from-indigo-50 via-white to-white",
   },
   {
+    title: "Bases de données",
+    desc: "Des fondamentaux SQL à l’administration et aux alternatives NoSQL.",
+    href: "/fr/roadmap-databases",
+    icon: "🗄️",
+    badge: "DATA",
+    certs: ["Database Foundations", "MySQL", "SQL Server", "MongoDB"],
+    color: "from-teal-50 via-white to-white",
+  },
+  {
     title: "Virtualisation",
     desc: "Comprenez la virtualisation, l’infrastructure et les environnements cloud-native modernes.",
     href: "/fr/roadmap-virtualization",

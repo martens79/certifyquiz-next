@@ -108,7 +108,7 @@ export default function AIRoadmapPage({ lang }: { lang: Locale }) {
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -274,7 +274,7 @@ const CONTENT: Record<
 
  levels: [
   {
-    title: "🟢 Level 1 — AI Foundations",
+    title: "🟢 Level 0 — AI Foundations",
     body: "Start with a solid internal foundation of AI concepts before touching vendor certifications.",
     recommended: ["AI Foundations"],
     goal: "Build a clear understanding of AI basics and terminology.",
@@ -306,12 +306,12 @@ const CONTENT: Record<
     ctaCertSlug: "google-cloud-digital-leader",
   },
   {
-    title: "⚫ Level 5 — TensorFlow (hands-on)",
+    title: "⚫ Optional skills track — TensorFlow (retired exam)",
     body: "Move into real AI practice using frameworks and workflows.",
     recommended: ["TensorFlow"],
     goal: "Start building real AI logic and models.",
-    ctaQuizSlug: "tensorflow",
-    ctaCertSlug: "tensorflow",
+    ctaQuizSlug: "google-tensorflow",
+    ctaCertSlug: "google-tensorflow",
   },
 ],
 
@@ -388,7 +388,7 @@ it: {
 
   levels: [
   {
-    title: "🟢 Livello 1 — AI Foundations",
+    title: "🟢 Livello 0 — AI Foundations",
     body: "Parti con una base solida sui concetti fondamentali dell’AI prima delle certificazioni vendor.",
     recommended: ["AI Foundations"],
     goal: "Capire chiaramente basi e terminologia dell’intelligenza artificiale.",
@@ -420,12 +420,12 @@ it: {
     ctaCertSlug: "google-cloud-digital-leader",
   },
   {
-    title: "⚫ Livello 5 — TensorFlow (pratica reale)",
+    title: "⚫ Track competenze opzionale — TensorFlow (esame ritirato)",
     body: "Passa alla pratica con framework e workflow reali.",
     recommended: ["TensorFlow"],
     goal: "Costruire logiche e modelli AI concreti.",
-    ctaQuizSlug: "tensorflow",
-    ctaCertSlug: "tensorflow",
+    ctaQuizSlug: "google-tensorflow",
+    ctaCertSlug: "google-tensorflow",
   },
 ],
 
@@ -502,7 +502,7 @@ es: {
 
   levels: [
   {
-    title: "🟢 Nivel 1 — AI Foundations",
+    title: "🟢 Nivel 0 — AI Foundations",
     body: "Empieza con una base sólida de conceptos de IA antes de pasar a certificaciones.",
     recommended: ["AI Foundations"],
     goal: "Entender claramente los fundamentos y la terminología.",
@@ -534,12 +534,12 @@ es: {
     ctaCertSlug: "google-cloud-digital-leader",
   },
   {
-    title: "⚫ Nivel 5 — TensorFlow (práctica)",
+    title: "⚫ Ruta opcional de habilidades — TensorFlow (examen retirado)",
     body: "Empieza con frameworks reales y workflows.",
     recommended: ["TensorFlow"],
     goal: "Construir modelos AI reales.",
-    ctaQuizSlug: "tensorflow",
-    ctaCertSlug: "tensorflow",
+    ctaQuizSlug: "google-tensorflow",
+    ctaCertSlug: "google-tensorflow",
   },
 ],
 
@@ -616,7 +616,7 @@ fr: {
 
   levels: [
   {
-    title: "🟢 Niveau 1 — AI Foundations",
+    title: "🟢 Niveau 0 — AI Foundations",
     body: "Commencez avec une base solide des concepts IA avant les certifications.",
     recommended: ["AI Foundations"],
     goal: "Comprendre les bases et la terminologie.",
@@ -648,12 +648,12 @@ fr: {
     ctaCertSlug: "google-cloud-digital-leader",
   },
   {
-    title: "⚫ Niveau 5 — TensorFlow (pratique)",
+    title: "⚫ Parcours de compétences optionnel — TensorFlow (examen retiré)",
     body: "Passez à la pratique avec des frameworks réels.",
     recommended: ["TensorFlow"],
     goal: "Construire des modèles IA concrets.",
-    ctaQuizSlug: "tensorflow",
-    ctaCertSlug: "tensorflow",
+    ctaQuizSlug: "google-tensorflow",
+    ctaCertSlug: "google-tensorflow",
   },
 ],
 

@@ -82,7 +82,7 @@ export default function ManagementRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -310,8 +310,8 @@ const CONTENT: Record<
           "Work better with product and development teams",
           "Prepare for Scrum and Agile certifications",
         ],
-        ctaQuizSlug: "scrum",
-        ctaCertSlug: "scrum",
+        ctaQuizSlug: "psm-i",
+        ctaCertSlug: "psm-i",
         ctaPrimaryText: "Start Scrum quiz",
         ctaSecondaryText: "Explore Scrum certification",
       },
@@ -493,8 +493,8 @@ const CONTENT: Record<
           "Collaborare meglio con team prodotto e sviluppo",
           "Prepararti a certificazioni Scrum e Agile",
         ],
-        ctaQuizSlug: "scrum",
-        ctaCertSlug: "scrum",
+        ctaQuizSlug: "psm-i",
+        ctaCertSlug: "psm-i",
         ctaPrimaryText: "Inizia quiz Scrum",
         ctaSecondaryText: "Scopri Scrum",
       },
@@ -676,8 +676,8 @@ const CONTENT: Record<
           "Colaborar mejor con equipos producto y desarrollo",
           "Prepararte para certificaciones Scrum y Agile",
         ],
-        ctaQuizSlug: "scrum",
-        ctaCertSlug: "scrum",
+        ctaQuizSlug: "psm-i",
+        ctaCertSlug: "psm-i",
         ctaPrimaryText: "Empezar quiz Scrum",
         ctaSecondaryText: "Descubrir Scrum",
       },
@@ -835,8 +835,8 @@ const CONTENT: Record<
           "Mieux collaborer avec les équipes produit et développement",
           "Se préparer aux certifications Scrum et Agile",
         ],
-        ctaQuizSlug: "scrum",
-        ctaCertSlug: "scrum",
+        ctaQuizSlug: "psm-i",
+        ctaCertSlug: "psm-i",
         ctaPrimaryText: "Commencer le quiz Scrum",
         ctaSecondaryText: "Découvrir Scrum",
       },

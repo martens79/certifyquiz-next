@@ -82,7 +82,7 @@ export default function DatabasesRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -250,7 +250,8 @@ const CONTENT: Record<
       title: "🟢 Level 0 — SQL fundamentals",
       body:
         "Start with the universal foundation: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subqueries, constraints, indexes, and basic normalization. Before thinking about advanced tools, you need to understand how data is stored, connected, filtered, and queried.",
-      recommended: ["MySQL", "SQL fundamentals in practice"],
+      recommended: ["Database Foundations by CertifyQuiz", "MySQL", "SQL fundamentals in practice"],
+      ctaCertSlug: "database-foundations",
       goal:
         "Write SQL queries with confidence and understand how tables relate.",
       reality:
@@ -266,10 +267,7 @@ const CONTENT: Record<
         "Understand how tables, keys, and relationships work",
         "Build a strong base for backend, data, and cloud roles",
       ],
-      ctaQuizSlug: "mysql-certification",
-      ctaCertSlug: "mysql-certification",
-      ctaPrimaryText: "Start MySQL quiz",
-      ctaSecondaryText: "Explore MySQL certification",
+      ctaSecondaryText: "Explore Database Foundations",
     },
     {
       title: "🟡 Level 1 — Relational databases",
@@ -433,7 +431,8 @@ const CONTENT: Record<
       title: "🟢 Livello 0 — Fondamenti SQL",
       body:
         "Parti dalla base universale: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subquery, vincoli, indici e normalizzazione base. Prima di pensare a strumenti avanzati, devi capire come i dati vengono salvati, collegati e interrogati.",
-      recommended: ["MySQL", "SQL pratico"],
+      recommended: ["Database Foundations by CertifyQuiz", "MySQL", "SQL pratico"],
+      ctaCertSlug: "database-foundations",
       goal:
         "Scrivere query SQL con sicurezza e capire le relazioni tra tabelle.",
       reality:
@@ -449,10 +448,7 @@ const CONTENT: Record<
         "Comprendere tabelle, chiavi e relazioni",
         "Costruire basi solide per backend, data e cloud",
       ],
-      ctaQuizSlug: "mysql-certification",
-      ctaCertSlug: "mysql-certification",
-      ctaPrimaryText: "Inizia il quiz MySQL",
-      ctaSecondaryText: "Scopri la certificazione MySQL",
+      ctaSecondaryText: "Scopri Database Foundations",
     },
 
     {
@@ -628,7 +624,8 @@ const CONTENT: Record<
       title: "🟢 Nivel 0 — Fundamentos SQL",
       body:
         "Empieza por la base universal: SELECT, WHERE, ORDER BY, JOIN, GROUP BY, subconsultas, constraints, índices y normalización básica. Antes de pensar en herramientas avanzadas, debes entender cómo se almacenan, conectan y consultan los datos.",
-      recommended: ["MySQL", "SQL práctico"],
+      recommended: ["Database Foundations by CertifyQuiz", "MySQL", "SQL práctico"],
+      ctaCertSlug: "database-foundations",
       goal:
         "Escribir consultas SQL con confianza y entender las relaciones entre tablas.",
       reality:
@@ -644,10 +641,7 @@ const CONTENT: Record<
         "Comprender tablas, claves y relaciones",
         "Construir bases sólidas para backend, data y cloud",
       ],
-      ctaQuizSlug: "mysql-certification",
-      ctaCertSlug: "mysql-certification",
-      ctaPrimaryText: "Empezar quiz MySQL",
-      ctaSecondaryText: "Ver certificación MySQL",
+      ctaSecondaryText: "Ver Database Foundations",
     },
 
     {
@@ -822,7 +816,8 @@ const CONTENT: Record<
       title: "🟢 Niveau 0 — Fondamentaux SQL",
       body:
         "Commencez par la base universelle : SELECT, WHERE, ORDER BY, JOIN, GROUP BY, sous-requêtes, contraintes, index et normalisation de base. Avant de penser aux outils avancés, vous devez comprendre comment les données sont stockées, reliées et interrogées.",
-      recommended: ["MySQL", "SQL pratique"],
+      recommended: ["Database Foundations by CertifyQuiz", "MySQL", "SQL pratique"],
+      ctaCertSlug: "database-foundations",
       goal:
         "Écrire des requêtes SQL avec confiance et comprendre les relations entre les tables.",
       reality:
@@ -838,10 +833,7 @@ const CONTENT: Record<
         "Comprendre tables, clés et relations",
         "Construire des bases solides pour backend, data et cloud",
       ],
-      ctaQuizSlug: "mysql-certification",
-      ctaCertSlug: "mysql-certification",
-      ctaPrimaryText: "Commencer le quiz MySQL",
-      ctaSecondaryText: "Voir la certification MySQL",
+      ctaSecondaryText: "Voir Database Foundations",
     },
 
     {

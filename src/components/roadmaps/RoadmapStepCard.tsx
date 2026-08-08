@@ -14,6 +14,10 @@ type Level = {
   reality?: string;
   mistakes?: string[];
   outcomes?: string[];
+  prerequisites?: string;
+  preparationTime?: string;
+  role?: string;
+  access?: "free" | "premium" | "mixed";
 };
 
 type Props = {
@@ -50,6 +54,9 @@ export default function RoadmapStepCard({
   certCta,
 }: Props) {
   const title = cleanTitle(level.title);
+  const labels = LABELS[lang];
+  const access = level.access ?? (index === 0 ? "free" : "mixed");
+  const difficulty = index <= 1 ? labels.beginner : index <= 3 ? labels.intermediate : labels.advanced;
 
   return (
     <article className="relative rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -64,7 +71,7 @@ export default function RoadmapStepCard({
 
         <div>
           <p className="text-xs font-extrabold uppercase tracking-wide text-blue-700">
-            Step {index}
+            {labels.step} {index}
           </p>
 
           <h2 className="mt-1 text-2xl font-extrabold leading-tight text-slate-950">
@@ -72,18 +79,22 @@ export default function RoadmapStepCard({
           </h2>
 
           <div className="mt-2 flex flex-wrap gap-2">
-            {index === 0 ? (
+            {access === "free" ? (
               <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
                 FREE
               </span>
-            ) : (
+            ) : access === "premium" ? (
               <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                 PREMIUM
+              </span>
+            ) : (
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
+                FREE + PREMIUM
               </span>
             )}
 
             <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-              {index <= 1 ? "Beginner" : index <= 3 ? "Intermediate" : "Advanced"}
+              {difficulty}
             </span>
           </div>
         </div>
@@ -91,15 +102,30 @@ export default function RoadmapStepCard({
 
       <p className="text-base leading-relaxed text-slate-700">{level.body}</p>
 
+      <dl className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">{labels.prerequisites}</dt>
+          <dd className="mt-1 text-sm font-semibold text-slate-800">{level.prerequisites ?? (index === 0 ? labels.none : labels.previous)}</dd>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">{labels.time}</dt>
+          <dd className="mt-1 text-sm font-semibold text-slate-800">{level.preparationTime ?? defaultPreparationTime(index, lang)}</dd>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4">
+          <dt className="text-xs font-bold uppercase tracking-wide text-slate-500">{labels.role}</dt>
+          <dd className="mt-1 text-sm font-semibold text-slate-800">{level.role ?? level.goal ?? title}</dd>
+        </div>
+      </dl>
+
       {level.recommended?.length ? (
         <div className="mt-5 grid gap-3">
-          {level.recommended.map((item) => (
+          {level.recommended.map((item, itemIndex) => (
             <div
               key={item}
               className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
             >
               <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                Recommended certification
+                {itemIndex === 0 ? labels.recommended : labels.alternatives}
               </p>
               <p className="mt-1 text-lg font-extrabold text-slate-950">
                 {item}
@@ -151,7 +177,9 @@ export default function RoadmapStepCard({
       ) : null}
 
       {(level.ctaQuizSlug || level.ctaCertSlug) && (
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-5">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">{labels.resources}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
           {level.ctaQuizSlug ? (
             <Link
               href={quizHref(lang, level.ctaQuizSlug)}
@@ -169,8 +197,31 @@ export default function RoadmapStepCard({
               {level.ctaSecondaryText ?? certCta}
             </Link>
           ) : null}
+          </div>
         </div>
       )}
+
+      <p className="mt-5 border-t border-slate-100 pt-4 text-xs leading-relaxed text-slate-500">{labels.disclaimer}</p>
     </article>
   );
+}
+
+const LABELS: Record<Locale, {
+  step: string; recommended: string; alternatives: string; prerequisites: string;
+  time: string; role: string; resources: string; reality: string; mistakes: string;
+  outcomes: string; beginner: string; intermediate: string; advanced: string;
+  previous: string; none: string; disclaimer: string;
+}> = {
+  it: { step: "Livello", recommended: "Certificazione consigliata", alternatives: "Alternative possibili", prerequisites: "Prerequisiti", time: "Tempo indicativo", role: "Ruolo o obiettivo", resources: "Quiz e pagina certificazione", reality: "Nota realistica", mistakes: "Errori comuni", outcomes: "Risultati realistici", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzato", previous: "Completare il livello precedente o possedere conoscenze equivalenti.", none: "Nessuna esperienza richiesta.", disclaimer: "Una certificazione può dimostrare conoscenze, ma non garantisce automaticamente un lavoro." },
+  en: { step: "Level", recommended: "Recommended certification", alternatives: "Possible alternatives", prerequisites: "Prerequisites", time: "Estimated preparation", role: "Related role or objective", resources: "Quiz and certification page", reality: "Reality check", mistakes: "Common mistakes", outcomes: "Realistic outcomes", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", previous: "Complete the previous level or have equivalent knowledge.", none: "No previous experience required.", disclaimer: "A certification can demonstrate knowledge, but it does not automatically guarantee a job." },
+  fr: { step: "Niveau", recommended: "Certification recommandée", alternatives: "Alternatives possibles", prerequisites: "Prérequis", time: "Temps de préparation indicatif", role: "Rôle ou objectif associé", resources: "Quiz et page de certification", reality: "Point de vigilance", mistakes: "Erreurs fréquentes", outcomes: "Résultats réalistes", beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé", previous: "Terminer le niveau précédent ou posséder des connaissances équivalentes.", none: "Aucune expérience préalable requise.", disclaimer: "Une certification peut démontrer des connaissances, mais ne garantit pas automatiquement un emploi." },
+  es: { step: "Nivel", recommended: "Certificación recomendada", alternatives: "Alternativas posibles", prerequisites: "Prerrequisitos", time: "Tiempo estimado de preparación", role: "Rol u objetivo relacionado", resources: "Quiz y página de certificación", reality: "Nota realista", mistakes: "Errores comunes", outcomes: "Resultados realistas", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzado", previous: "Completar el nivel anterior o tener conocimientos equivalentes.", none: "No se requiere experiencia previa.", disclaimer: "Una certificación puede demostrar conocimientos, pero no garantiza automáticamente un empleo." },
+};
+
+function defaultPreparationTime(index: number, lang: Locale) {
+  const unit = lang === "it" ? ["settimane", "mesi"] : lang === "fr" ? ["semaines", "mois"] : lang === "es" ? ["semanas", "meses"] : ["weeks", "months"];
+  if (index === 0) return `2–4 ${unit[0]}`;
+  if (index === 1) return `4–8 ${unit[0]}`;
+  if (index <= 3) return `2–4 ${unit[1]}`;
+  return `3–6+ ${unit[1]}`;
 }

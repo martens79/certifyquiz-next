@@ -6,6 +6,37 @@ type Locale = "it" | "en" | "es" | "fr";
 type RoadmapQuizSlug = string;
 type RoadmapCertSlug = string;
 
+const SPECIALIZATIONS: Record<Locale, { title: string; intro: string; tracks: Array<{ name: string; focus: string; certs: string[] }> }> = {
+  it: { title: "Scegli una specializzazione", intro: "Dopo le fondamenta il percorso non è unico: scegli il ramo più vicino al lavoro che vuoi imparare.", tracks: [
+    { name: "SOC e blue team", focus: "Monitoraggio, incident response, endpoint e analisi degli eventi.", certs: ["ISC2 CC", "Security+"] },
+    { name: "Penetration testing", focus: "Metodologia offensiva, vulnerabilità, reti, Linux e pratica in laboratorio.", certs: ["Security+", "CEH"] },
+    { name: "Cloud security", focus: "Identity, responsabilità condivisa, configurazioni cloud e monitoraggio.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
+    { name: "Governance, risk e compliance", focus: "Rischio, policy, controlli, audit e continuità operativa.", certs: ["ISC2 CC", "CISSP (solo con esperienza)"] },
+    { name: "Security management", focus: "Architettura, strategia e decisioni di sicurezza aziendale.", certs: ["CISSP (senior)"] },
+  ] },
+  en: { title: "Choose a specialization", intro: "After the foundations there is no single path: choose the branch closest to the work you want to learn.", tracks: [
+    { name: "SOC and blue team", focus: "Monitoring, incident response, endpoints and event analysis.", certs: ["ISC2 CC", "Security+"] },
+    { name: "Penetration testing", focus: "Offensive methodology, vulnerabilities, networks, Linux and hands-on labs.", certs: ["Security+", "CEH"] },
+    { name: "Cloud security", focus: "Identity, shared responsibility, cloud configuration and monitoring.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
+    { name: "Governance, risk and compliance", focus: "Risk, policies, controls, audit and business continuity.", certs: ["ISC2 CC", "CISSP (with experience)"] },
+    { name: "Security management", focus: "Architecture, strategy and enterprise security decisions.", certs: ["CISSP (senior)"] },
+  ] },
+  fr: { title: "Choisir une spécialisation", intro: "Après les fondamentaux, il n’existe pas un parcours unique : choisissez la branche la plus proche du métier visé.", tracks: [
+    { name: "SOC et blue team", focus: "Supervision, réponse aux incidents, endpoints et analyse des événements.", certs: ["ISC2 CC", "Security+"] },
+    { name: "Test d’intrusion", focus: "Méthodologie offensive, vulnérabilités, réseaux, Linux et laboratoires.", certs: ["Security+", "CEH"] },
+    { name: "Sécurité cloud", focus: "Identité, responsabilité partagée, configuration cloud et supervision.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
+    { name: "Gouvernance, risque et conformité", focus: "Risque, politiques, contrôles, audit et continuité.", certs: ["ISC2 CC", "CISSP (avec expérience)"] },
+    { name: "Management de la sécurité", focus: "Architecture, stratégie et décisions de sécurité d’entreprise.", certs: ["CISSP (senior)"] },
+  ] },
+  es: { title: "Elige una especialización", intro: "Después de los fundamentos no existe una única ruta: elige la rama más cercana al trabajo que quieres aprender.", tracks: [
+    { name: "SOC y blue team", focus: "Monitorización, respuesta a incidentes, endpoints y análisis de eventos.", certs: ["ISC2 CC", "Security+"] },
+    { name: "Pentesting", focus: "Metodología ofensiva, vulnerabilidades, redes, Linux y laboratorios.", certs: ["Security+", "CEH"] },
+    { name: "Seguridad cloud", focus: "Identidad, responsabilidad compartida, configuración cloud y monitorización.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
+    { name: "Gobierno, riesgo y cumplimiento", focus: "Riesgo, políticas, controles, auditoría y continuidad.", certs: ["ISC2 CC", "CISSP (con experiencia)"] },
+    { name: "Gestión de seguridad", focus: "Arquitectura, estrategia y decisiones de seguridad empresarial.", certs: ["CISSP (senior)"] },
+  ] },
+};
+
 export default function CybersecurityRoadmapPage({
   lang,
 }: {
@@ -79,12 +110,26 @@ export default function CybersecurityRoadmapPage({
   </div>
 </section>
 
+      <section className="mt-10">
+        <h2 className="text-2xl font-extrabold">{SPECIALIZATIONS[lang].title}</h2>
+        <p className="mt-2 text-slate-700">{SPECIALIZATIONS[lang].intro}</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {SPECIALIZATIONS[lang].tracks.map((track) => (
+            <article key={track.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 className="font-extrabold text-slate-950">{track.name}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-700">{track.focus}</p>
+              <p className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{track.certs.join(" · ")}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-2xl font-extrabold">{t.salaryTitle}</h2>
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -247,9 +292,12 @@ const CONTENT: Record<
 levels: [
   {
     title: "🟢 Level 0 — No IT / security basics",
+    ctaQuizSlug: "cybersecurity-foundations",
+    ctaCertSlug: "cybersecurity-foundations",
     body:
       "If you are completely new, do not start with hacking tools. First understand how networks, operating systems, accounts, permissions, and basic security concepts work. Cybersecurity makes sense only when you understand what you are trying to protect.",
     recommended: [
+      "Cybersecurity Foundations by CertifyQuiz",
       "Basic networking: IP, DNS, routing",
       "Operating systems basics",
       "Accounts, permissions and access control",
@@ -441,9 +489,12 @@ levels: [
   levels: [
     {
       title: "🟢 Livello 0 — Nessuna base IT / sicurezza",
+      ctaQuizSlug: "cybersecurity-foundations",
+      ctaCertSlug: "cybersecurity-foundations",
       body:
         "Se sei completamente all’inizio, non partire dagli strumenti di hacking. Prima devi capire come funzionano reti, sistemi operativi, account, permessi e concetti base di sicurezza. La cybersecurity ha senso solo se comprendi cosa stai cercando di proteggere.",
       recommended: [
+        "Cybersecurity Foundations by CertifyQuiz",
         "Networking base: IP, DNS, routing",
         "Fondamenti di sistemi operativi",
         "Account, permessi e controllo accessi",
@@ -634,9 +685,12 @@ levels: [
   levels: [
     {
       title: "🟢 Nivel 0 — Sin bases IT / seguridad",
+      ctaQuizSlug: "cybersecurity-foundations",
+      ctaCertSlug: "cybersecurity-foundations",
       body:
         "Si empiezas desde cero, no comiences con herramientas de hacking. Primero debes entender cómo funcionan las redes, los sistemas operativos, las cuentas, los permisos y los conceptos básicos de seguridad. La ciberseguridad solo tiene sentido cuando entiendes qué estás intentando proteger.",
       recommended: [
+        "Cybersecurity Foundations by CertifyQuiz",
         "Networking básico: IP, DNS, routing",
         "Fundamentos de sistemas operativos",
         "Cuentas, permisos y control de acceso",
@@ -854,9 +908,12 @@ levels: [
   levels: [
     {
       title: "🟢 Niveau 0 — Aucune base IT / sécurité",
+      ctaQuizSlug: "cybersecurity-foundations",
+      ctaCertSlug: "cybersecurity-foundations",
       body:
         "Si vous débutez complètement, ne commencez pas par les outils de hacking. Vous devez d’abord comprendre comment fonctionnent les réseaux, les systèmes d’exploitation, les comptes, les permissions et les concepts fondamentaux de sécurité. La cybersécurité n’a de sens que si vous comprenez ce que vous essayez de protéger.",
       recommended: [
+        "Cybersecurity Foundations by CertifyQuiz",
         "Bases réseau : IP, DNS, routage",
         "Fondamentaux des systèmes d’exploitation",
         "Comptes, permissions et contrôle d’accès",

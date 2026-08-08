@@ -90,7 +90,7 @@ export default function VirtualizationRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -248,6 +248,7 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Level 0 — Virtualization fundamentals",
+        ctaCertSlug: "virtualization-foundations",
         body:
           "Start with the real basics: what a hypervisor does, how a VM differs from a physical machine, what snapshots are, how virtual networks work, and why storage performance matters. This step is less glamorous than cloud buzzwords, but it is where real infrastructure understanding begins.",
         recommended: [
@@ -321,8 +322,8 @@ const CONTENT: Record<
           "Understand VMware and Microsoft virtualization expectations",
           "Prepare for infrastructure or systems admin roles",
         ],
-        ctaQuizSlug: "vmware-certified-professional",
-        ctaCertSlug: "vmware-certified-professional",
+        ctaQuizSlug: "vmware-vcp",
+        ctaCertSlug: "vmware-vcp",
         ctaPrimaryText: "Start VMware quiz",
         ctaSecondaryText: "Explore VMware certification",
       },
@@ -437,6 +438,7 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Livello 0 — Fondamenta della virtualizzazione",
+        ctaCertSlug: "virtualization-foundations",
         body:
           "Parti dalle basi vere: cosa fa un hypervisor, in cosa una VM differisce da una macchina fisica, cosa sono gli snapshot, come funzionano le reti virtuali e perché lo storage incide così tanto sulle performance. Questa fase sembra meno affascinante del cloud, ma è quella che crea comprensione infrastrutturale reale.",
         recommended: [
@@ -510,8 +512,8 @@ const CONTENT: Record<
           "Capire le aspettative su VMware e Microsoft virtualization",
           "Prepararti a ruoli infrastructure o systems admin",
         ],
-        ctaQuizSlug: "vmware-certified-professional",
-        ctaCertSlug: "vmware-certified-professional",
+        ctaQuizSlug: "vmware-vcp",
+        ctaCertSlug: "vmware-vcp",
         ctaPrimaryText: "Inizia quiz VMware",
         ctaSecondaryText: "Scopri certificazione VMware",
       },
@@ -626,6 +628,7 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Nivel 0 — Fundamentos de virtualización",
+        ctaCertSlug: "virtualization-foundations",
         body:
           "Empieza por las bases reales: qué hace un hypervisor, en qué se diferencia una VM de una máquina física, qué son los snapshots, cómo funcionan las redes virtuales y por qué el storage afecta tanto al rendimiento. Esta fase parece menos atractiva que el cloud, pero aquí empieza la comprensión real de infraestructura.",
         recommended: [
@@ -699,8 +702,8 @@ const CONTENT: Record<
           "Comprender expectativas sobre VMware y Microsoft virtualization",
           "Prepararte para roles de infrastructure o systems admin",
         ],
-        ctaQuizSlug: "vmware-certified-professional",
-        ctaCertSlug: "vmware-certified-professional",
+        ctaQuizSlug: "vmware-vcp",
+        ctaCertSlug: "vmware-vcp",
         ctaPrimaryText: "Empezar quiz VMware",
         ctaSecondaryText: "Ver certificación VMware",
       },
@@ -815,6 +818,7 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Niveau 0 — Fondamentaux de la virtualisation",
+        ctaCertSlug: "virtualization-foundations",
         body:
           "Commencez par les vraies bases : rôle d’un hyperviseur, différence entre une VM et une machine physique, snapshots, réseaux virtuels et impact du stockage sur les performances. Cette étape semble moins attirante que le cloud, mais c’est là que commence la vraie compréhension infrastructure.",
         recommended: [
@@ -888,8 +892,8 @@ const CONTENT: Record<
           "Comprendre les attentes autour de VMware et Microsoft virtualization",
           "Se préparer à des rôles infrastructure ou systems admin",
         ],
-        ctaQuizSlug: "vmware-certified-professional",
-        ctaCertSlug: "vmware-certified-professional",
+        ctaQuizSlug: "vmware-vcp",
+        ctaCertSlug: "vmware-vcp",
         ctaPrimaryText: "Commencer le quiz VMware",
         ctaSecondaryText: "Voir la certification VMware",
       },

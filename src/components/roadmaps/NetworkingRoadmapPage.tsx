@@ -91,7 +91,7 @@ export default function NetworkingRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div key={r.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="font-bold">{r.label}</p>
               <p className="mt-1 text-slate-700">{r.range}</p>
@@ -229,9 +229,12 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Level 0 — No networking background",
+        ctaQuizSlug: "networking-foundations",
+        ctaCertSlug: "networking-foundations",
         body:
           "Start by understanding what really happens when a device connects to the internet: IP addresses, DNS, gateway, Wi-Fi, cables, routers, and basic troubleshooting. Before memorizing protocols, you need to understand the daily logic of networks.",
         recommended: [
+          "Networking Foundations by CertifyQuiz",
           "Basic IT concepts",
           "How home and office networks work",
           "IP, DNS, gateway, and Wi-Fi basics",
@@ -412,9 +415,12 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Livello 0 — Nessuna base networking",
+        ctaQuizSlug: "networking-foundations",
+        ctaCertSlug: "networking-foundations",
         body:
           "Parti da cosa succede davvero quando un dispositivo si collega a internet: indirizzi IP, DNS, gateway, Wi-Fi, cavi, router e troubleshooting base. Prima di memorizzare protocolli, devi capire la logica quotidiana delle reti.",
         recommended: [
+          "Networking Foundations by CertifyQuiz",
           "Concetti IT di base",
           "Come funzionano reti domestiche e aziendali",
           "Basi di IP, DNS, gateway e Wi-Fi",
@@ -595,9 +601,12 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Nivel 0 — Sin base networking",
+        ctaQuizSlug: "networking-foundations",
+        ctaCertSlug: "networking-foundations",
         body:
           "Empieza entendiendo qué ocurre realmente cuando un dispositivo se conecta a internet: direcciones IP, DNS, gateway, Wi-Fi, cables, routers y troubleshooting básico. Antes de memorizar protocolos, debes entender la lógica diaria de las redes.",
         recommended: [
+          "Networking Foundations by CertifyQuiz",
           "Conceptos IT básicos",
           "Cómo funcionan redes domésticas y de oficina",
           "Bases de IP, DNS, gateway y Wi-Fi",
@@ -778,9 +787,12 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Niveau 0 — Aucune base networking",
+        ctaQuizSlug: "networking-foundations",
+        ctaCertSlug: "networking-foundations",
         body:
           "Commencez par comprendre ce qui se passe réellement lorsqu’un appareil se connecte à internet : adresses IP, DNS, passerelle, Wi-Fi, câbles, routeurs et dépannage de base. Avant de mémoriser des protocoles, vous devez comprendre la logique quotidienne des réseaux.",
         recommended: [
+          "Networking Foundations by CertifyQuiz",
           "Concepts IT de base",
           "Fonctionnement des réseaux domestiques et professionnels",
           "Bases IP, DNS, passerelle et Wi-Fi",

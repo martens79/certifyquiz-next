@@ -93,7 +93,7 @@ export default function ProgrammingRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -220,6 +220,8 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Level 0 — Logic and fundamentals",
+        ctaQuizSlug: "programming-foundations",
+        ctaCertSlug: "programming-foundations",
         body:
           "Before choosing a language, learn how code works: variables, conditions, loops, functions, inputs, outputs, and basic problem solving. These concepts matter more than the language name.",
         recommended: [
@@ -263,8 +265,8 @@ const CONTENT: Record<
           "Understand variables, functions and data structures",
           "Build confidence with real coding practice",
         ],
-        ctaQuizSlug: "python",
-        ctaCertSlug: "python",
+        ctaQuizSlug: "python-developer",
+        ctaCertSlug: "python-developer",
         ctaPrimaryText: "Start Python quiz",
         ctaSecondaryText: "Explore Python certification",
       },
@@ -399,6 +401,8 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Livello 0 — Logica e fondamenta",
+        ctaQuizSlug: "programming-foundations",
+        ctaCertSlug: "programming-foundations",
         body:
           "Prima di scegliere un linguaggio, devi capire come funziona il codice: variabili, condizioni, cicli, funzioni, input, output e problem solving base. Questi concetti contano più del nome del linguaggio.",
         recommended: [
@@ -442,8 +446,8 @@ const CONTENT: Record<
           "Capire variabili, funzioni e strutture dati",
           "Costruire fiducia con pratica reale",
         ],
-        ctaQuizSlug: "python",
-        ctaCertSlug: "python",
+        ctaQuizSlug: "python-developer",
+        ctaCertSlug: "python-developer",
         ctaPrimaryText: "Inizia il quiz Python",
         ctaSecondaryText: "Scopri Python",
       },
@@ -578,6 +582,8 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Nivel 0 — Lógica y fundamentos",
+        ctaQuizSlug: "programming-foundations",
+        ctaCertSlug: "programming-foundations",
         body:
           "Antes de elegir un lenguaje, aprende cómo funciona el código: variables, condiciones, bucles, funciones, entradas, salidas y problem solving básico. Estos conceptos importan más que el nombre del lenguaje.",
         recommended: [
@@ -621,8 +627,8 @@ const CONTENT: Record<
           "Entender variables, funciones y estructuras de datos",
           "Construir confianza con práctica real",
         ],
-        ctaQuizSlug: "python",
-        ctaCertSlug: "python",
+        ctaQuizSlug: "python-developer",
+        ctaCertSlug: "python-developer",
         ctaPrimaryText: "Empezar quiz Python",
         ctaSecondaryText: "Ver Python",
       },
@@ -757,6 +763,8 @@ const CONTENT: Record<
     levels: [
       {
         title: "🟢 Niveau 0 — Logique et fondamentaux",
+        ctaQuizSlug: "programming-foundations",
+        ctaCertSlug: "programming-foundations",
         body:
           "Avant de choisir un langage, apprenez comment fonctionne le code : variables, conditions, boucles, fonctions, entrées, sorties et résolution de problèmes de base. Ces concepts comptent plus que le nom du langage.",
         recommended: [
@@ -800,8 +808,8 @@ const CONTENT: Record<
           "Comprendre variables, fonctions et structures de données",
           "Construire de la confiance avec une vraie pratique",
         ],
-        ctaQuizSlug: "python",
-        ctaCertSlug: "python",
+        ctaQuizSlug: "python-developer",
+        ctaCertSlug: "python-developer",
         ctaPrimaryText: "Commencer le quiz Python",
         ctaSecondaryText: "Voir Python",
       },

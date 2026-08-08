@@ -130,6 +130,8 @@ export default function CertificationPage({
     extraContent,
     imageSide = "left",
     examBlueprint,
+    lifecycleStatus,
+    lifecycleNotice,
   } = data;
 
   const pageTitle = pickLabel(title, lang) || "Certification";
@@ -306,6 +308,13 @@ const pageTopics =
         </header>
 
         {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
+
+        {lifecycleStatus && lifecycleStatus !== "active" && lifecycleNotice ? (
+          <aside className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
+            <strong className="mr-1 uppercase">{lifecycleStatus}:</strong>
+            {pickLabel(lifecycleNotice, lang)}
+          </aside>
+        ) : null}
 
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 

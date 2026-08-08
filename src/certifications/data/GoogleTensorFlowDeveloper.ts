@@ -7,6 +7,13 @@ const GoogleTensorFlowDeveloper = {
   slug: "google-tensorflow",
   imageUrl: "/images/certifications/tensorflow-icon.png",
   officialUrl: "https://www.tensorflow.org/certificate",
+  lifecycleStatus: "retired",
+  lifecycleNotice: {
+    it: "Il programma TensorFlow Developer Certificate è terminato il 31 maggio 2024. I quiz restano disponibili per esercitare competenze TensorFlow, non per preparare un esame attivo.",
+    en: "The TensorFlow Developer Certificate program closed on May 31, 2024. These quizzes remain available for TensorFlow skills practice, not for an active exam.",
+    fr: "Le programme TensorFlow Developer Certificate a pris fin le 31 mai 2024. Ces quiz restent disponibles pour pratiquer TensorFlow, et non pour préparer un examen actif.",
+    es: "El programa TensorFlow Developer Certificate finalizó el 31 de mayo de 2024. Estos cuestionarios siguen disponibles para practicar TensorFlow, no para preparar un examen activo.",
+  },
 
   levelOrder: 4,
 

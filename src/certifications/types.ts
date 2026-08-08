@@ -104,6 +104,10 @@ export type CertificationData = {
   level: LocalizedText;
   description: LocalizedText;
 
+  /** Stato editoriale del programma, distinto dalla disponibilità dei quiz. */
+  lifecycleStatus?: "active" | "retired" | "legacy" | "needs-review";
+  lifecycleNotice?: LocalizedText;
+
   metaTitle?: LocalizedText;
   metaDescription?: LocalizedText;
 

@@ -88,7 +88,7 @@ export default function CloudRoadmapPage({ lang }: { lang: Locale }) {
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {t.salaryRanges.map((r) => (
+          {([] as typeof t.salaryRanges).map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"
@@ -250,20 +250,20 @@ const CONTENT: Record<
 
     levels: [
       {
-  title: "🟢 Level 0 — Google Cloud Foundations",
+  title: "🟢 Level 0 — Cloud Foundations",
   body:
     "Before opening cloud consoles, build the foundations: cloud computing, infrastructure, networking, security, costs, data and basic Google Cloud concepts. This level is designed for complete beginners with an introductory certification by CertifyQuiz.",
   recommended: [
-    "Google Cloud Foundations by CertifyQuiz",
+    "Cloud Foundations by CertifyQuiz",
     "Cloud computing basics",
     "Networking, security and identity",
     "Costs, data and digital transformation",
   ],
   goal: "Understand cloud basics and prepare better for Google Cloud Digital Leader or other cloud paths.",
-  ctaQuizSlug: "google-cloud",
-  ctaCertSlug: "google-cloud",
-  ctaPrimaryText: "Start Google Cloud Foundations quiz",
-  ctaSecondaryText: "Explore Google Cloud Foundations",
+  ctaQuizSlug: "cloud-foundations",
+  ctaCertSlug: "cloud-foundations",
+  ctaPrimaryText: "Start Cloud Foundations quiz",
+  ctaSecondaryText: "Explore Cloud Foundations",
 },
       {
         title: "🟡 Level 1 — First cloud foundation",
@@ -304,8 +304,8 @@ const CONTENT: Record<
           "Modern cloud applications are often deployed with containers. Kubernetes is the missing bridge between cloud theory and real-world delivery: Pods, Deployments, Services, scaling, configuration, networking and troubleshooting.",
         recommended: ["Kubernetes KCNA", "Docker basics", "Cloud-native concepts"],
         goal: "Understand how modern applications are deployed, scaled and managed in production.",
-        ctaQuizSlug: "kubernetes",
-        ctaCertSlug: "kubernetes",
+        ctaQuizSlug: "kcna-kubernetes-cloud-native",
+        ctaCertSlug: "kcna-kubernetes-cloud-native",
         ctaPrimaryText: "Start Kubernetes quiz",
         ctaSecondaryText: "Explore Kubernetes KCNA certification",
       },
@@ -331,7 +331,7 @@ const CONTENT: Record<
         ctaSecondaryText: "Explore CompTIA Cloud+ certification",
       },
       {
-        title: "⚪ Optional track — IBM Cloud",
+        title: "⚪ Archive — IBM Cloud v5 (retired)",
         body:
           "IBM Cloud can be useful in specific enterprise contexts, but it should stay secondary compared to the main path: AWS, Azure, architecture, Kubernetes, Google Cloud and operations.",
         recommended: ["IBM Cloud v5"],
@@ -418,20 +418,20 @@ const CONTENT: Record<
 
     levels: [
     {
-  title: "🟢 Livello 0 — Google Cloud Foundations",
+  title: "🟢 Livello 0 — Fondamenti cloud",
   body:
     "Prima di entrare nei pannelli cloud, costruisci le fondamenta: cloud computing, infrastruttura, reti, sicurezza, costi, dati e concetti base di Google Cloud. Questo livello è pensato per partire da zero con una certificazione introduttiva by CertifyQuiz.",
   recommended: [
-    "Google Cloud Foundations by CertifyQuiz",
+    "Cloud Foundations by CertifyQuiz",
     "Basi di cloud computing",
     "Reti, sicurezza e identità",
     "Costi, dati e trasformazione digitale",
   ],
   goal: "Capire le basi del cloud e prepararti meglio a Google Cloud Digital Leader o ad altri percorsi cloud.",
-  ctaQuizSlug: "google-cloud",
-  ctaCertSlug: "google-cloud",
-  ctaPrimaryText: "Inizia il quiz Google Cloud Foundations",
-  ctaSecondaryText: "Scopri Google Cloud Foundations",
+  ctaQuizSlug: "cloud-foundations",
+  ctaCertSlug: "cloud-foundations",
+  ctaPrimaryText: "Inizia il quiz Cloud Foundations",
+  ctaSecondaryText: "Scopri Cloud Foundations",
 },
       {
         title: "🟡 Livello 1 — Prima base cloud",
@@ -472,8 +472,8 @@ const CONTENT: Record<
           "Le applicazioni cloud moderne vengono spesso distribuite con container. Kubernetes è il ponte tra teoria cloud e delivery reale: Pod, Deployment, Service, scaling, configurazione, networking e troubleshooting.",
         recommended: ["Kubernetes KCNA", "Basi Docker", "Concetti cloud-native"],
         goal: "Capire come le applicazioni moderne vengono distribuite, scalate e gestite in produzione.",
-        ctaQuizSlug: "kubernetes",
-        ctaCertSlug: "kubernetes",
+        ctaQuizSlug: "kcna-kubernetes-cloud-native",
+        ctaCertSlug: "kcna-kubernetes-cloud-native",
         ctaPrimaryText: "Inizia il quiz Kubernetes",
         ctaSecondaryText: "Scopri Kubernetes KCNA",
       },
@@ -499,7 +499,7 @@ const CONTENT: Record<
         ctaSecondaryText: "Scopri CompTIA Cloud+",
       },
       {
-        title: "⚪ Track opzionale — IBM Cloud",
+        title: "⚪ Archivio — IBM Cloud v5 (ritirata)",
         body:
           "IBM Cloud può essere utile in contesti enterprise specifici, ma deve restare secondario rispetto al percorso principale: AWS, Azure, architettura, Kubernetes, Google Cloud e operations.",
         recommended: ["IBM Cloud v5"],
@@ -586,20 +586,20 @@ const CONTENT: Record<
 
     levels: [
       {
-  title: "🟢 Nivel 0 — Google Cloud Foundations",
+  title: "🟢 Nivel 0 — Fundamentos cloud",
   body:
     "Antes de entrar en consolas cloud, construye las bases: cloud computing, infraestructura, redes, seguridad, costes, datos y conceptos básicos de Google Cloud. Este nivel está pensado para empezar desde cero con una certificación introductoria by CertifyQuiz.",
   recommended: [
-    "Google Cloud Foundations by CertifyQuiz",
+    "Cloud Foundations by CertifyQuiz",
     "Bases de cloud computing",
     "Redes, seguridad e identidad",
     "Costes, datos y transformación digital",
   ],
   goal: "Entender las bases del cloud y prepararte mejor para Google Cloud Digital Leader u otras rutas cloud.",
-  ctaQuizSlug: "google-cloud",
-  ctaCertSlug: "google-cloud",
-  ctaPrimaryText: "Empezar quiz Google Cloud Foundations",
-  ctaSecondaryText: "Ver Google Cloud Foundations",
+  ctaQuizSlug: "cloud-foundations",
+  ctaCertSlug: "cloud-foundations",
+  ctaPrimaryText: "Empezar quiz Cloud Foundations",
+  ctaSecondaryText: "Ver Cloud Foundations",
 },
       {
         title: "🟡 Nivel 1 — Primera base cloud",
@@ -640,8 +640,8 @@ const CONTENT: Record<
           "Las aplicaciones cloud modernas suelen desplegarse con contenedores. Kubernetes es el puente entre teoría cloud y delivery real: Pods, Deployments, Services, scaling, configuración, redes y troubleshooting.",
         recommended: ["Kubernetes KCNA", "Bases de Docker", "Conceptos cloud-native"],
         goal: "Entender cómo se despliegan, escalan y gestionan aplicaciones modernas en producción.",
-        ctaQuizSlug: "kubernetes",
-        ctaCertSlug: "kubernetes",
+        ctaQuizSlug: "kcna-kubernetes-cloud-native",
+        ctaCertSlug: "kcna-kubernetes-cloud-native",
         ctaPrimaryText: "Empezar quiz Kubernetes",
         ctaSecondaryText: "Ver Kubernetes KCNA",
       },
@@ -667,7 +667,7 @@ const CONTENT: Record<
         ctaSecondaryText: "Ver CompTIA Cloud+",
       },
       {
-        title: "⚪ Track opcional — IBM Cloud",
+        title: "⚪ Archivo — IBM Cloud v5 (retirada)",
         body:
           "IBM Cloud puede ser útil en contextos enterprise específicos, pero debe quedar como secundario frente a la ruta principal: AWS, Azure, arquitectura, Kubernetes, Google Cloud y operations.",
         recommended: ["IBM Cloud v5"],
@@ -754,20 +754,20 @@ const CONTENT: Record<
 
     levels: [
       {
-  title: "🟢 Niveau 0 — Google Cloud Foundations",
+  title: "🟢 Niveau 0 — Fondamentaux cloud",
   body:
     "Avant d’ouvrir des consoles cloud, construisez les bases : cloud computing, infrastructure, réseau, sécurité, coûts, données et concepts de base de Google Cloud. Ce niveau est conçu pour partir de zéro avec une certification introductive by CertifyQuiz.",
   recommended: [
-    "Google Cloud Foundations by CertifyQuiz",
+    "Cloud Foundations by CertifyQuiz",
     "Bases du cloud computing",
     "Réseau, sécurité et identité",
     "Coûts, données et transformation digitale",
   ],
   goal: "Comprendre les bases du cloud et mieux préparer Google Cloud Digital Leader ou d’autres parcours cloud.",
-  ctaQuizSlug: "google-cloud",
-  ctaCertSlug: "google-cloud",
-  ctaPrimaryText: "Commencer le quiz Google Cloud Foundations",
-  ctaSecondaryText: "Voir Google Cloud Foundations",
+  ctaQuizSlug: "cloud-foundations",
+  ctaCertSlug: "cloud-foundations",
+  ctaPrimaryText: "Commencer le quiz Cloud Foundations",
+  ctaSecondaryText: "Voir Cloud Foundations",
 },
       {
         title: "🟡 Niveau 1 — Première base cloud",
@@ -808,8 +808,8 @@ const CONTENT: Record<
           "Les applications cloud modernes sont souvent déployées avec des conteneurs. Kubernetes est le pont entre la théorie cloud et la livraison réelle : Pods, Deployments, Services, scaling, configuration, réseau et troubleshooting.",
         recommended: ["Kubernetes KCNA", "Bases Docker", "Concepts cloud-native"],
         goal: "Comprendre comment les applications modernes sont déployées, mises à l’échelle et gérées en production.",
-        ctaQuizSlug: "kubernetes",
-        ctaCertSlug: "kubernetes",
+        ctaQuizSlug: "kcna-kubernetes-cloud-native",
+        ctaCertSlug: "kcna-kubernetes-cloud-native",
         ctaPrimaryText: "Commencer le quiz Kubernetes",
         ctaSecondaryText: "Voir Kubernetes KCNA",
       },
@@ -836,7 +836,7 @@ const CONTENT: Record<
         ctaSecondaryText: "Voir CompTIA Cloud+",
       },
       {
-        title: "⚪ Track optionnel — IBM Cloud",
+        title: "⚪ Archive — IBM Cloud v5 (retirée)",
         body:
           "IBM Cloud peut être utile dans certains contextes enterprise, mais il doit rester secondaire par rapport au parcours principal : AWS, Azure, architecture, Kubernetes, Google Cloud et operations.",
         recommended: ["IBM Cloud v5"],

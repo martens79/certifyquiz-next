@@ -7,6 +7,13 @@ const IBMCloudV5 = {
   imageUrl: "/images/certifications/ibmcloud-icon.png",
   // Pagina overview certificazioni IBM Cloud
   officialUrl: "https://cloud.ibm.com/docs/overview?topic=overview-cloud-certifications",
+  lifecycleStatus: "retired",
+  lifecycleNotice: {
+    it: "La credenziale IBM Cloud Professional Architect v5 è stata ritirata. I quiz restano disponibili come materiale storico e non come preparazione a un esame attivo.",
+    en: "The IBM Cloud Professional Architect v5 credential has been retired. These quizzes remain available as historical learning material, not as preparation for an active exam.",
+    fr: "La certification IBM Cloud Professional Architect v5 a été retirée. Ces quiz restent disponibles comme contenu historique, et non comme préparation à un examen actif.",
+    es: "La credencial IBM Cloud Professional Architect v5 ha sido retirada. Estos cuestionarios siguen disponibles como material histórico, no como preparación para un examen activo.",
+  },
 
   title: {
     it: "IBM Cloud v5",

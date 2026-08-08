@@ -22,9 +22,9 @@ export const microsoftAiHub: HubData = {
 
   certs: [
     {
-      slug: "microsoft-ai-fundamentals",
+      slug: "microsoft-ai",
       badge: "AI",
-      examCode: "AI-900",
+      examCode: "AI-901",
       popularity: 75,
     },
   ],
