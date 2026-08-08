@@ -275,6 +275,10 @@ const CONTENT: Record<
       },
       {
         title: "🟡 Level 1 — Operational admin mindset",
+        ctaQuizSlug: "microsoft-virtualization",
+        ctaCertSlug: "microsoft-virtualization",
+        ctaPrimaryText: "Practice Microsoft virtualization",
+        ctaSecondaryText: "Explore Microsoft virtualization",
         body:
           "Now move into day-to-day operations: provisioning virtual machines, using templates, allocating CPU and RAM properly, monitoring usage, handling backups, and recovering from common failures. This is where you stop knowing definitions and start thinking like an admin.",
         recommended: [
@@ -352,10 +356,6 @@ const CONTENT: Record<
           "Connect virtualization skills to cloud and hybrid infrastructure",
           "Move closer to infrastructure engineering responsibilities",
         ],
-        ctaQuizSlug: "microsoft-virtualization",
-        ctaCertSlug: "microsoft-virtualization",
-        ctaPrimaryText: "Start Microsoft virtualization quiz",
-        ctaSecondaryText: "Explore Microsoft virtualization",
       },
     ],
 
@@ -465,6 +465,10 @@ const CONTENT: Record<
       },
       {
         title: "🟡 Livello 1 — Mentalità operativa da admin",
+        ctaQuizSlug: "microsoft-virtualization",
+        ctaCertSlug: "microsoft-virtualization",
+        ctaPrimaryText: "Allenati sulla virtualizzazione Microsoft",
+        ctaSecondaryText: "Scopri Microsoft virtualization",
         body:
           "Ora entri nell’operatività quotidiana: provisioning delle VM, uso dei template, allocazione corretta di CPU e RAM, monitoraggio, backup e recovery dai guasti più comuni. Qui smetti di sapere solo le definizioni e inizi a ragionare da admin.",
         recommended: [
@@ -542,10 +546,6 @@ const CONTENT: Record<
           "Collegare virtualizzazione, cloud e infrastruttura hybrid",
           "Avvicinarti a responsabilità da infrastructure engineer",
         ],
-        ctaQuizSlug: "microsoft-virtualization",
-        ctaCertSlug: "microsoft-virtualization",
-        ctaPrimaryText: "Inizia quiz Microsoft virtualization",
-        ctaSecondaryText: "Scopri Microsoft virtualization",
       },
     ],
 
@@ -655,6 +655,10 @@ const CONTENT: Record<
       },
       {
         title: "🟡 Nivel 1 — Mentalidad operativa de admin",
+        ctaQuizSlug: "microsoft-virtualization",
+        ctaCertSlug: "microsoft-virtualization",
+        ctaPrimaryText: "Practica virtualización Microsoft",
+        ctaSecondaryText: "Ver Microsoft virtualization",
         body:
           "Ahora pasas a la operación diaria: provisioning de VM, uso de templates, asignación correcta de CPU y RAM, monitorización, backups y recuperación ante fallos comunes. Aquí dejas de conocer definiciones y empiezas a pensar como admin.",
         recommended: [
@@ -732,10 +736,6 @@ const CONTENT: Record<
           "Conectar virtualización con cloud e infraestructura hybrid",
           "Acercarte a responsabilidades de infrastructure engineer",
         ],
-        ctaQuizSlug: "microsoft-virtualization",
-        ctaCertSlug: "microsoft-virtualization",
-        ctaPrimaryText: "Empezar quiz Microsoft virtualization",
-        ctaSecondaryText: "Ver Microsoft virtualization",
       },
     ],
 
@@ -845,6 +845,10 @@ const CONTENT: Record<
       },
       {
         title: "🟡 Niveau 1 — Mentalité opérationnelle d’admin",
+        ctaQuizSlug: "microsoft-virtualization",
+        ctaCertSlug: "microsoft-virtualization",
+        ctaPrimaryText: "Pratiquer la virtualisation Microsoft",
+        ctaSecondaryText: "Voir Microsoft virtualization",
         body:
           "Vous passez maintenant aux opérations quotidiennes : provisioning des VM, templates, allocation correcte CPU/RAM, monitoring, sauvegardes et récupération après pannes courantes. Ici, vous cessez de connaître seulement les définitions et commencez à penser comme un admin.",
         recommended: [
@@ -922,10 +926,6 @@ const CONTENT: Record<
           "Relier virtualisation, cloud et infrastructure hybrid",
           "Se rapprocher de responsabilités infrastructure engineer",
         ],
-        ctaQuizSlug: "microsoft-virtualization",
-        ctaCertSlug: "microsoft-virtualization",
-        ctaPrimaryText: "Commencer le quiz Microsoft virtualization",
-        ctaSecondaryText: "Voir Microsoft virtualization",
       },
     ],
 
