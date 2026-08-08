@@ -178,7 +178,7 @@ export default function QuizEngine({
 useEffect(() => {
   if (!isLoggedIn || isPremiumUser) return;
 
-  apiFetch("/me/explanation-status")
+  apiFetch(`/me/explanation-status${context?.certificationId ? `?certification_id=${context.certificationId}` : ""}`)
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
@@ -190,7 +190,7 @@ useEffect(() => {
     .catch((err) => {
       console.error("Errore explanation-status:", err);
     });
-}, [isLoggedIn, isPremiumUser]);
+}, [isLoggedIn, isPremiumUser, context?.certificationId]);
 
   // Chiamato quando l'utente free vede la spiegazione di un errore
 const consumeWrongExplanation = async (): Promise<boolean> => {
@@ -203,6 +203,8 @@ const consumeWrongExplanation = async (): Promise<boolean> => {
   try {
    const res = await apiFetch("/me/explanation-seen", {
   method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ certification_id: context?.certificationId ?? null }),
 });
 
     if (!res.ok) {

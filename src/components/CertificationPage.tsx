@@ -9,6 +9,7 @@ import type {
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
+import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
 import type { CertificationResources } from "@/lib/data";
 import { certPath, guidePath, mapsPath } from "@/lib/paths";
@@ -331,6 +332,12 @@ const pageTopics =
               : null
           }
           mapsHref={mapsPath(lang)}
+        />
+
+        <CertificationPackageOffers
+          lang={lang}
+          certificationSlug={data.slug}
+          resources={resources}
         />
 
         <PremiumResourcesCta

@@ -360,6 +360,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   kind: 'mixed',
   certificationName: currentSlug.toUpperCase(),
   certificationSlug: currentSlug,
+  certificationId: certId,
   backHref: withLang(currentLang, `/quiz/${currentSlug}`),
   backLabel:
     currentLang === 'it'

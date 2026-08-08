@@ -230,6 +230,7 @@ export default function MockExamPage() {
           kind: "mock",
           certificationName: certName.toUpperCase(),
           certificationSlug: currentSlug,
+          certificationId: certId,
           backHref: withLang(currentLang, `/quiz/${currentSlug}`),
           backLabel: t.backLabel,
           isPremiumUser: false,

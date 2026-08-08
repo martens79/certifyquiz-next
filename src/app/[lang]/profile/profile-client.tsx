@@ -8,6 +8,7 @@ import { apiFetch } from "@/lib/auth";
 import { getLabel } from "@/lib/i18n";
 import ReadinessCard from "@/components/profile/ReadinessCard";
 import PushNotificationCard from "@/components/push/PushNotificationCard";
+import MyPackages from "@/components/profile/MyPackages";
 import { reviewErrorsPath } from "@/lib/paths";
 
 // 📈 Grafico andamento
@@ -1256,6 +1257,9 @@ const avatarBorderClass =
   </div>
 </div>
 <PushNotificationCard lang={lang} />
+<div id="my-packages">
+  <MyPackages lang={lang} />
+</div>
 {/* Gestione abbonamento */}
 {user?.premium && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">

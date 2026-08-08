@@ -32,6 +32,7 @@ export type QuizContext = {
   kind: QuizKind;
   certificationName: string;
   certificationSlug?: string;
+  certificationId?: number | null;
   topicTitle?: string;
   topicSlug?: string;
   backLabel?: string;
