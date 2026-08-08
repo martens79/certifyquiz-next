@@ -21,3 +21,31 @@ export type InteractiveLab = {
   score?: number;
   elapsedSeconds?: number;
 };
+
+export type GuidedLabOption = { id: string; label: string };
+export type GuidedLabStep = {
+  id: string;
+  title: string;
+  instruction: string;
+  type: "single" | "multi" | "text";
+  options?: GuidedLabOption[];
+  placeholder?: string;
+};
+export type GuidedLabContent = {
+  scenario: string;
+  objective: string;
+  prerequisites: string[];
+  steps: GuidedLabStep[];
+};
+export type GuidedLabPayload = {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  difficulty: "base" | "intermediate" | "final";
+  estimatedMinutes: number;
+  rendererKey: "guided-steps-v1";
+  contentVersion: number;
+  certificationSlug: string;
+  content: GuidedLabContent;
+};

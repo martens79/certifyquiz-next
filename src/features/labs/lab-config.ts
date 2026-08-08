@@ -13,6 +13,12 @@ export const labSlugs = [
   "windows-server-users",
   "powershell-pipeline",
   "word-document",
+  "ccst-networking-ip-configuration",
+  "ccst-networking-devices-protocols",
+  "ccst-networking-dns-dhcp",
+  "ccst-networking-subnetting",
+  "ccst-networking-ping-traceroute",
+  "ccst-networking-office-offline",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];
