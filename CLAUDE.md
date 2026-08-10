@@ -16,6 +16,7 @@ CertifyQuiz (certifyquiz.com) è una piattaforma multilingua (IT/EN/FR/ES) di qu
 
 - Preferisco **diff di codice espliciti o riscritture complete di file**, non spiegazioni testuali generiche.
 - Le modifiche vanno proposte come diff prima di essere applicate — chiedi conferma sulle modifiche più invasive.
+- Rispondi sempre in italiano.
 
 ## Struttura contenuti quiz
 
