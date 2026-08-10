@@ -25,7 +25,7 @@ const reviewLabels: Record<Locale, string> = {
   es: "📘 Repaso rápido",
 };
 
-function looksLikeHtml(value: string) {
+export function looksLikeHtml(value: string) {
   return /<\/?[a-z][\s\S]*>/i.test(value);
 }
 

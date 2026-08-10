@@ -7,6 +7,7 @@ import { certSeoPath, topicSeoPath, type Locale } from "@/lib/paths";
 import { getLocalizedText } from "@/lib/i18n";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
+import TopicIntro from "@/components/TopicIntro";
 
 type Lang = Locale;
 
@@ -327,7 +328,7 @@ export default async function TopicPage({
 
           {data.topic.intro && (
             <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-              <p>{getLocalizedText(data.topic.intro, lang)}</p>
+              <TopicIntro text={getLocalizedText(data.topic.intro, lang)} />
             </div>
           )}
 

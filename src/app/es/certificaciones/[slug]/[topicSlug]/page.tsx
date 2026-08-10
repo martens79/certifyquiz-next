@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getTopicPageData } from "@/lib/server/topic-page";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
+import TopicIntro from "@/components/TopicIntro";
 
 function getLabels() {
   return {
@@ -187,7 +188,7 @@ export default async function TopicPageEs({
           {/* Intro SEO */}
           {data.topic.intro && (
             <div className="max-w-3xl text-slate-700 leading-7 mb-6">
-              <p>{data.topic.intro}</p>
+              <TopicIntro text={data.topic.intro} />
             </div>
           )}
 
