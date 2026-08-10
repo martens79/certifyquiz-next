@@ -229,7 +229,19 @@ function joinUrl(prefix: string, path: string) {
 
 import { isTokenRemembered } from "@/lib/auth";
 
+// Evita refresh concorrenti: se più fetch autenticate scadono nello stesso istante,
+// condividono la stessa richiesta POST /auth/refresh invece di spararne una a testa.
+let refreshInFlight: Promise<{ token: string | null; status: number | null }> | null = null;
+
 async function refreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = doRefreshAccessToken().finally(() => {
+    refreshInFlight = null;
+  });
+  return refreshInFlight;
+}
+
+async function doRefreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
   const attempt = async () => {
     const res = await fetch(joinUrl(API_PREFIX, "/auth/refresh"), {
       method: "POST",
