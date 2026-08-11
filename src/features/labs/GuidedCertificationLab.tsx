@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Clock3, Lightbulb, Loader2, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import type { GuidedLabPayload, GuidedLabStep } from "./types";

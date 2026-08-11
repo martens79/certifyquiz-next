@@ -6,6 +6,22 @@ const PSMI = {
   imageUrl: "/images/certifications/psm-i.png",
   officialUrl: "https://www.scrum.org/assessments/professional-scrum-master-i-certification",
 
+  // Verificato il 2026-08-04 sulla pagina ufficiale Scrum.org.
+  // Scrum.org non pubblica pesi percentuali per le Focus Area.
+  examBlueprint: {
+    examName: "Professional Scrum Master I (PSM I)",
+    provider: "Scrum.org",
+    officialSourceName: "Scrum.org — Professional Scrum Master I Certification",
+    officialSourceUrl: "https://www.scrum.org/assessments/professional-scrum-master-i-certification",
+    officialExamPageUrl: "https://www.scrum.org/assessments/professional-scrum-master-i-certification",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Understanding and Applying the Scrum Framework" },
+      { name: "Developing People and Teams" },
+      { name: "Managing Products with Agility" },
+    ],
+  },
+
   title: {
     it: "Professional Scrum Master I (PSM I)",
     en: "Professional Scrum Master I (PSM I)",

@@ -6,6 +6,24 @@ const PMP = {
   imageUrl: "/images/certifications/pmp2.png",
   officialUrl: "https://www.pmi.org/certifications/project-management-pmp",
 
+  // Verificato il 2026-08-04 sul documento ufficiale PMI (Examination Content
+  // Outline, aggiornamento di luglio 2026 — sostituisce lo schema precedente
+  // People 42% / Process 50% / Business Environment 8%).
+  examBlueprint: {
+    examName: "Project Management Professional (PMP)",
+    provider: "PMI",
+    officialSourceName: "PMI — PMP Examination Content Outline (July 2026 update)",
+    officialSourceUrl:
+      "https://www.pmi.org/-/media/pmi/documents/public/pdf/certifications/new-pmp-examination-content-outline-2026.pdf",
+    officialExamPageUrl: "https://www.pmi.org/certifications/project-management-pmp",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "People", percentage: 33 },
+      { name: "Process", percentage: 41 },
+      { name: "Business Environment", percentage: 26 },
+    ],
+  },
+
   title: {
     it: "PMP – Project Management Professional",
     en: "PMP – Project Management Professional",

@@ -11,6 +11,28 @@ const GoogleCloudDigitalLeader = {
 
   levelOrder: 3,
 
+  // Verificato il 2026-08-04 sull'exam guide ufficiale Google Cloud.
+  // Questa versione dell'esame scade l'11/08/2026 e sarà sostituita da una
+  // nuova versione: aggiornare domini/percentuali quando esce.
+  examBlueprint: {
+    examName: "Cloud Digital Leader",
+    provider: "Google Cloud",
+    officialSourceName: "Google Cloud — Cloud Digital Leader Certification Exam Guide",
+    officialSourceUrl:
+      "https://services.google.com/fh/files/misc/cloud_digital_leader_exam_guide_english.pdf",
+    officialExamPageUrl: "https://cloud.google.com/learn/certification/cloud-digital-leader",
+    lastVerifiedAt: "2026-08-04",
+    note: "Questa versione dell'esame è disponibile fino all'11 agosto 2026, dopodiché sarà sostituita da una nuova versione dell'exam guide.",
+    domains: [
+      { name: "Digital Transformation with Google Cloud", percentage: 17 },
+      { name: "Exploring Data Transformation with Google Cloud", percentage: 16 },
+      { name: "Innovating with Google Cloud Artificial Intelligence", percentage: 16 },
+      { name: "Modernize Infrastructure and Applications with Google Cloud", percentage: 17 },
+      { name: "Trust and Security with Google Cloud", percentage: 17 },
+      { name: "Scaling with Google Cloud Operations", percentage: 17 },
+    ],
+  },
+
   title: {
     it: "Google Cloud Digital Leader – Simulazione Esame 2026",
     en: "Google Cloud Digital Leader – Practice Test 2026",

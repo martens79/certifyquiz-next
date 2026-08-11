@@ -5,6 +5,24 @@ const KUBERNETES_KCNA = {
   imageUrl: "/images/certifications/kubernetes-kcna.png",
   officialUrl: "https://training.linuxfoundation.org/certification/kubernetes-cloud-native-associate/",
 
+  // Verificato il 2026-08-04 sulla pagina ufficiale Linux Foundation.
+  examBlueprint: {
+    examName: "Kubernetes and Cloud Native Associate (KCNA)",
+    provider: "Linux Foundation / CNCF",
+    officialSourceName: "Linux Foundation — Kubernetes and Cloud Native Associate (KCNA) certification page",
+    officialSourceUrl:
+      "https://training.linuxfoundation.org/certification/kubernetes-cloud-native-associate/",
+    officialExamPageUrl:
+      "https://training.linuxfoundation.org/certification/kubernetes-cloud-native-associate/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Kubernetes Fundamentals", percentage: 44 },
+      { name: "Container Orchestration", percentage: 28 },
+      { name: "Cloud Native Application Delivery", percentage: 16 },
+      { name: "Cloud Native Architecture", percentage: 12 },
+    ],
+  },
+
   title: {
     it: "Kubernetes KCNA – Cloud Native Associate",
     en: "Kubernetes KCNA – Cloud Native Associate",
