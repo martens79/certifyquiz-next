@@ -236,6 +236,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
         certificationSlug: certSlug ?? undefined,
         certificationId,
+        topicId: numericId,
         topicTitle: topicTitle ?? `Topic #${numericId}`,
         backHref: backToHref,
         backLabel:

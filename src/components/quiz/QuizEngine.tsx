@@ -7,13 +7,14 @@ import Link from 'next/link';
 
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
+import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
 import { withLang, getDict } from '@/lib/i18n';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import { trackEvent as trackAnalyticsEvent, trackFunnelEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { shouldRenderRewardedPlaceholder } from "@/lib/rewarded-ads";
+import RewardedAdExplanationCta from "@/components/quiz/RewardedAdExplanationCta";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -173,6 +174,15 @@ export default function QuizEngine({
   const [wrongExpLeft, setWrongExpLeft] = useState<number | null>(
     context?.freeWrongExpLeft ?? null
   );
+  // Limite effettivo (10 per il Gruppo A/controllo, eventualmente diverso per
+  // il Gruppo B dell'esperimento Rewarded Ads): serve per il testo del gate,
+  // che altrimenti resterebbe hardcoded su "10" anche per chi ha un limite diverso.
+  const [wrongExpLimit, setWrongExpLimit] = useState<number>(10);
+  const [experimentVariant, setExperimentVariant] = useState<string | null>(null);
+  // Domande sbloccate via rewarded ad in questa sessione: bypassano il gate
+  // senza toccare wrongExpLeft (il reward non è credito extra, è mirato a
+  // UNA domanda specifica, vedi rewardedAdsService.consumeGrant lato backend).
+  const [adUnlockedQuestionIds, setAdUnlockedQuestionIds] = useState<Set<number>>(new Set());
 
   // Carica lo stato dal backend al mount (solo utenti loggati non premium)
 useEffect(() => {
@@ -186,6 +196,8 @@ useEffect(() => {
     .then((data) => {
       if (data.unlimited) setWrongExpLeft(null);
       else setWrongExpLeft(data.remaining ?? 0);
+      if (typeof data.limit === "number") setWrongExpLimit(data.limit);
+      if (data.experimentVariant) setExperimentVariant(data.experimentVariant);
     })
     .catch((err) => {
       console.error("Errore explanation-status:", err);
@@ -212,6 +224,8 @@ const consumeWrongExplanation = async (): Promise<boolean> => {
     }
 
     const data = await res.json();
+    if (typeof data.limit === "number") setWrongExpLimit(data.limit);
+    if (data.experimentVariant) setExperimentVariant(data.experimentVariant);
 
     if (data.locked) {
       setWrongExpLeft(0);
@@ -303,12 +317,50 @@ const openFeedback = () => {
   const premiumClickedRef = useRef(false);
   const [premiumClicked, setPremiumClicked] = useState(false);
 
+  // Seed dello shuffle deterministico della sessione corrente (per scopedKey).
+  // Impostato nell'effetto di load/resume e in restart(), letto dall'autosave.
+  const seedRef = useRef<number | null>(null);
+
+  // Contatore monotono per scope: sale a ogni salvataggio (locale o DB),
+  // usato come tiebreak dal guard server-side su quiz_progress.rev. Dopo
+  // OGNI PUT riuscita viene riallineato al rev restituito dal server,
+  // incondizionatamente (non solo quando si sospetta un conflitto): è così
+  // che un client con rev disallineato (rete caduta, riga DB sconosciuta)
+  // si autocorregge al primo giro andato a buon fine, invece di continuare
+  // a scrivere nel vuoto scartato in silenzio dal guard >=.
+  const revRef = useRef<number>(0);
+
+  // true solo dopo che la riconciliazione locale/DB del load è conclusa:
+  // finché è false, l'autosave verso il DB non parte (nemmeno su
+  // visibilitychange/pagehide). Senza questo gate, un click nella finestra
+  // fra il mount e la risposta della GET (stato ancora "vuoto", seed
+  // fresco, rev 0) potrebbe far partire una PUT che compete con la
+  // riconciliazione stessa.
+  const hydratedRef = useRef(false);
+
+  // Ancora per il countdown exam quando la fonte è il server (sync riuscito
+  // via GET o PUT): {remainingAtSync, perfAtSync}. Il tick calcola SOLO un
+  // delta monotono locale da perfAtSync (performance.now(), immune a salti
+  // dell'orologio di sistema) — mai un timestamp assoluto del server
+  // reinterpretato lato client, mai l'orologio di parete per il confronto.
+  // Resta null (fallback al meccanismo Date.now()/startedAtRef esistente,
+  // invariato) finché nessun sync col server è ancora avvenuto: anonimo,
+  // rete giù, o sessione appena iniziata.
+  const examServerSyncRef = useRef<{ remainingAtSync: number; perfAtSync: number } | null>(null);
+
   /**
-   * Storage separato per modalità:
-   * - mixed:security-plus:en:training
-   * - mixed:security-plus:en:exam
+   * Storage separato per modalità E per utente:
+   * - mixed:security-plus:en:training:user:42
+   * - mixed:security-plus:en:exam:anon
+   * Senza lo user id nella chiave, il localStorage (scoped solo per
+   * origine/topic/lingua/mode, non per account) fa "sanguinare" lo stato di
+   * un utente in quello del successivo che accede sullo stesso browser —
+   * scoperto testando dal vivo il resume cross-device: le risposte di un
+   * utente finivano nella riga DB di un altro. Su un device condiviso (aula,
+   * ufficio — la norma per questo prodotto) non è un caso limite.
    */
-  const scopedKey = `${storageScope}:${effectiveMode}`;
+  const userKeyPart = user?.id != null ? `user:${user.id}` : 'anon';
+  const scopedKey = `${storageScope}:${effectiveMode}:${userKeyPart}`;
 
   useEffect(() => {
     assessmentStartedTrackedRef.current = false;
@@ -332,8 +384,8 @@ const openFeedback = () => {
     return durationSec;
   }, [durationsByMode, durationSec, effectiveMode]);
 
-  /** Pesca subset per TRAINING/EXAM: shuffle del pool + slice a limit (no mutazione del pool) */
-  function buildActiveQuestions(p: Question[], m: Mode): Question[] {
+  /** Pesca subset per TRAINING/EXAM: shuffle seedato del pool + slice a limit (no mutazione del pool) */
+  function buildActiveQuestions(p: Question[], m: Mode, seed: number): Question[] {
     if (!p?.length) return [];
 
     const target =
@@ -345,18 +397,16 @@ const openFeedback = () => {
 
     const n = Math.max(1, Math.min(p.length, target));
 
-    const copy = [...p];
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
+    const shuffled = seededShuffle(p, seed);
 
-    return copy.slice(0, n);
+    return shuffled.slice(0, n);
   }
 
   /* -------------------- LOAD POOL + RIPRISTINO PER MODE -------------------- */
   useEffect(() => {
     let alive = true;
+    const controller = new AbortController();
+    hydratedRef.current = false;
 
     (async () => {
       setLoading(true);
@@ -369,22 +419,122 @@ const openFeedback = () => {
         const poolQ = Array.isArray(qs) ? qs : [];
         setPool(poolQ);
 
-        const active = buildActiveQuestions(poolQ, effectiveMode);
+        let local = loadProgress(scopedKey) as any;
+
+        // Migrazione anon -> user: se l'utente è loggato ma non ha ancora
+        // nulla sotto la propria chiave, e c'era una sessione anonima
+        // precedente per lo stesso scope (stesso browser, tipicamente
+        // registrazione avvenuta a metà quiz), la adotto e la rinomino.
+        // Senza questo, dopo il login la chiave letta non è più quella
+        // anonima e il progresso fatto da ospite sparirebbe silenziosamente
+        // — il caso "DB vuoto + locale presente -> adotta il locale" più
+        // sotto non avrebbe più nulla da trovare.
+        if (user?.id != null && !local) {
+          const anonKey = `${storageScope}:${effectiveMode}:anon`;
+          const anonLocal = loadProgress(anonKey) as any;
+          if (anonLocal) {
+            saveProgress(scopedKey, anonLocal);
+            clearProgress(anonKey);
+            local = anonLocal;
+          }
+        }
+
+        // DB solo per loggati, e non per assessment (test one-shot, submit
+        // unico, nessun concetto di "riprendi dopo" — vedi onFinish in
+        // QuizTopicClient: assessment non ha resume, quiz_progress non va
+        // wired lì anche se il mode è nell'ENUM).
+        const topicId = context?.topicId;
+        const dbEligible = isLoggedIn && effectiveMode !== 'assessment' && !!topicId;
+
+        let dbRow: any = null;
+        let dbReachable = true; // true = risposta definitiva (riga o null); false = rete/errore
+
+        if (dbEligible) {
+          try {
+            const res = await apiFetch(
+              `/me/quiz-progress/${topicId}?lang=${lang}&mode=${effectiveMode}`,
+              { signal: controller.signal }
+            );
+            if (!alive) return;
+
+            if (res.ok) {
+              const data = await res.json();
+              if (!alive) return;
+              dbRow = data?.row ?? null;
+            } else {
+              dbReachable = false;
+            }
+          } catch {
+            if (!alive) return;
+            dbReachable = false;
+          }
+        }
+        if (!alive) return;
+
+        // ---- scelta della fonte ----
+        // (1) rete giù -> locale se c'è, mai azzerare un progresso che sta
+        //     letteralmente sul disco dell'utente solo perché non ho potuto
+        //     leggere il DB.
+        // (2) DB raggiungibile ma vuoto (prima volta, o subito dopo una
+        //     registrazione a metà quiz) -> adotta il locale se c'è.
+        // (3) DB ha una riga: locale vince SOLO se stesso seed e rev locale
+        //     più alto (es. l'ultimo flush prima della chiusura non è mai
+        //     arrivato) — in ogni altro caso vince il DB.
+        let source: { data: any; kind: 'local' | 'db' } | null = null;
+
+        if (!dbEligible) {
+          source = local ? { data: local, kind: 'local' } : null; // step 1 invariato (anonimo/assessment)
+        } else if (!dbReachable) {
+          source = local ? { data: local, kind: 'local' } : null;
+        } else if (!dbRow) {
+          source = local ? { data: local, kind: 'local' } : null;
+        } else if (local && local.seed === dbRow.seed && (local.rev ?? 0) > dbRow.rev) {
+          source = { data: local, kind: 'local' };
+        } else {
+          source = { data: dbRow, kind: 'db' };
+        }
+
+        // Seed "candidato" dalla fonte scelta (se c'è) — usato SOLO per
+        // verificare se è ancora valido contro il pool attuale.
+        const candidateSeed =
+          source && typeof source.data.seed === 'number' ? source.data.seed : makeSeed();
+
+        let active = buildActiveQuestions(poolQ, effectiveMode, candidateSeed);
+        let activeIds = active.map((q) => q.id);
+
+        // Guard sull'ordine domande: primitiva diversa a seconda della fonte
+        // (array intero per il locale, hash per il DB — vedi migrazione per
+        // il perché), stessa garanzia: se il pool è cambiato da quando la
+        // riga/il salvataggio è stato scritto, non ripristinare idx/risposte
+        // su un ordine che non corrisponde più.
+        const canRestore =
+          !!source &&
+          (source.kind === 'local'
+            ? Array.isArray(source.data.qIds) && arraysEqual(source.data.qIds, activeIds)
+            : typeof source.data.qidsHash === 'number' && hashIds(activeIds) === source.data.qidsHash);
+
+        // Se il candidato non è valido (pool cambiato, o nessuna fonte),
+        // il seed candidato NON va riusato per la sessione nuova: genero un
+        // seed davvero nuovo e ricostruisco active di conseguenza. Senza
+        // questo, un mismatch produceva un "reset" che azzerava risposte/
+        // indice ma continuava a usare il seed (eventualmente disallineato)
+        // della fonte scartata — trovato testando dal vivo, non dedotto.
+        let seed = candidateSeed;
+        if (!canRestore) {
+          seed = makeSeed();
+          active = buildActiveQuestions(poolQ, effectiveMode, seed);
+          activeIds = active.map((q) => q.id);
+        }
+        seedRef.current = seed;
         setQuestions(active);
 
         const total =
           effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
 
-        const persisted = loadProgress(scopedKey);
+        examServerSyncRef.current = null;
 
-        const activeIds = active.map((q) => q.id);
-        const canRestore =
-          persisted &&
-          Array.isArray((persisted as any).qIds) &&
-          arraysEqual((persisted as any).qIds, activeIds);
-
-        if (canRestore) {
-          const p: any = persisted;
+        if (canRestore && source!.kind === 'local') {
+          const p = source!.data;
 
           setMarked(p.marked ?? {});
           setReviewLater(new Set(p.reviewLater ?? []));
@@ -394,6 +544,24 @@ const openFeedback = () => {
           else setRemaining(Math.min(total, p.remainingSec ?? total));
 
           startedAtRef.current = p.startedAt ?? null;
+          revRef.current = p.rev ?? 0;
+        } else if (canRestore && source!.kind === 'db') {
+          const row = source!.data;
+          const st = row.state ?? {};
+
+          setMarked(st.marked ?? {});
+          setReviewLater(new Set(st.reviewLater ?? []));
+          setIdx(Math.min(row.currentIndex ?? 0, Math.max(0, active.length - 1)));
+          startedAtRef.current = null;
+
+          if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
+            setRemaining(Math.max(0, row.remainingSec));
+            examServerSyncRef.current = { remainingAtSync: row.remainingSec, perfAtSync: performance.now() };
+          } else {
+            setRemaining(total);
+          }
+
+          revRef.current = row.rev ?? 0;
         } else {
           setMarked({});
           setReviewLater(new Set());
@@ -401,6 +569,12 @@ const openFeedback = () => {
           setRemaining(total);
           startedAtRef.current = null;
           clearProgress(scopedKey);
+
+          // rev non riparte mai da 0 se sapevamo di una riga DB (anche se
+          // scartata per hash non combaciante): altrimenti la prima PUT del
+          // nuovo tentativo verrebbe scartata in silenzio dal guard >= lato
+          // server, e l'utente gioca una sessione intera mai persistita.
+          revRef.current = dbEligible && dbRow ? dbRow.rev + 1 : 0;
         }
 
         setFinished(false);
@@ -428,15 +602,19 @@ const openFeedback = () => {
             : 'Load error'
         );
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+          hydratedRef.current = true;
+        }
       }
     })();
 
     return () => {
       alive = false;
+      controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit]);
+  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId]);
 
     // ✅ Analytics — traccia quando un assessment/free test viene realmente avviato.
   // Usiamo un ref per evitare eventi doppi causati da re-render o Strict Mode.
@@ -601,11 +779,23 @@ clearProgress(`${storageScope}:assessment`);
     const loop = () => {
       tickRef.current = requestAnimationFrame(loop);
 
-      const elapsed = Math.floor(
-        (Date.now() - (startedAtRef.current || Date.now())) / 1000
-      );
+      // Se abbiamo un'ancora dal server (resume cross-device riuscito),
+      // il countdown scala da lì con un delta monotono locale
+      // (performance.now(), immune a salti dell'orologio di sistema) invece
+      // che dal meccanismo Date.now()/startedAtRef qui sotto — quel valore
+      // arriva già calcolato dal server (TIMESTAMPDIFF su NOW()), non è mai
+      // un timestamp assoluto che il client reinterpreta.
+      let rest: number;
+      if (examServerSyncRef.current) {
+        const { remainingAtSync, perfAtSync } = examServerSyncRef.current;
+        rest = Math.max(0, Math.floor(remainingAtSync - (performance.now() - perfAtSync) / 1000));
+      } else {
+        const elapsed = Math.floor(
+          (Date.now() - (startedAtRef.current || Date.now())) / 1000
+        );
+        rest = Math.max(0, total - elapsed);
+      }
 
-      const rest = Math.max(0, total - elapsed);
       setRemaining(rest);
 
       if (rest === 0) {
@@ -628,6 +818,12 @@ clearProgress(`${storageScope}:assessment`);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
+    // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
+    // anche per i cambi innescati dal ripristino nel load effect (non solo
+    // dalle azioni utente): non è un problema, resta monotono, che è
+    // l'unica garanzia che serve al tiebreak server-side.
+    revRef.current += 1;
+
     const payload = {
       qIds: questions.map((q) => q.id),
       marked,
@@ -636,10 +832,134 @@ clearProgress(`${storageScope}:assessment`);
       remainingSec: remaining,
       startedAt: startedAtRef.current,
       idx,
+      seed: seedRef.current ?? undefined,
+      rev: revRef.current,
     };
-    const id = requestAnimationFrame(() => saveProgress(scopedKey, payload));
-    return () => cancelAnimationFrame(id);
+
+    const flush = () => saveProgress(scopedKey, payload);
+    const id = requestAnimationFrame(flush);
+
+    // Chrome (e altri) sospendono i callback rAF nei tab in background: senza
+    // questo, "rispondi -> cambia tab/chiudi" perde l'ultimo autosave in modo
+    // silenzioso. visibilitychange/pagehide forzano il flush immediato.
+    const onHide = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(id);
+        flush();
+      }
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', flush);
+
+    return () => {
+      cancelAnimationFrame(id);
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', flush);
+    };
   }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey]);
+
+  /* -------------------------- SYNC DB (resume cross-device) -------------------------
+     Effetto separato da quello locale sopra, deliberatamente: quello locale
+     ha `remaining` fra le dipendenze (serve, per salvare il countdown ogni
+     tick), ma se lo stesso dep facesse ripartire anche il debounce verso il
+     DB, un countdown che cambia ogni secondo lo resetterebbe continuamente e
+     la PUT non partirebbe mai durante un esame attivo. Qui `remaining` non
+     c'è di proposito.
+  ------------------------------------------------------------------- */
+  useEffect(() => {
+    const topicId = context?.topicId;
+    const dbSyncEnabled = isLoggedIn && effectiveMode !== 'assessment' && !!topicId;
+    if (!dbSyncEnabled) return;
+
+    const flushDb = async () => {
+      // Gate di idratazione: finché il load effect non ha concluso la
+      // riconciliazione locale/DB, non scrivere — altrimenti una PUT con
+      // seed fresco e rev 0 competerebbe con la riconciliazione stessa
+      // (il guard >= lato server la scarterebbe comunque, ma è comunque
+      // uno stato transitorio da evitare, non solo da tollerare).
+      if (!hydratedRef.current) return;
+      if (seedRef.current == null) return;
+
+      // Dirty-state gate: niente PUT finché non c'è almeno una risposta data
+      // o un avanzamento reale (idx > 0) — altrimenti ogni apertura di un
+      // topic da loggato crea una riga vuota e genera traffico a vuoto.
+      // ECCEZIONE deliberata: in exam mode è sempre "dirty" fin dall'inizio.
+      // Il countdown parte comunque al mount (vedi tick loop sopra) — se
+      // aspettassimo la prima risposta anche lì, un utente potrebbe evitare
+      // di persistere mai l'inizio dell'esame semplicemente non rispondendo
+      // subito, chiudere e riaprire, e ottenere un countdown pieno ogni
+      // volta: esattamente l'exploit "pausa chiudendo il tab" che expires_at
+      // esiste per chiudere. Per training (e implicitamente assessment, già
+      // escluso sopra) non c'è un orologio da proteggere, quindi il gate si
+      // applica per intero.
+      const isDirty =
+        effectiveMode === 'exam' || Object.keys(marked).length > 0 || idx > 0;
+      if (!isDirty) return;
+
+      const body: Record<string, unknown> = {
+        seed: seedRef.current,
+        qidsHash: hashIds(questions.map((q) => q.id)),
+        currentIndex: idx,
+        currentBlock: 0,
+        state: { marked, reviewLater: Array.from(reviewLater) },
+        rev: revRef.current,
+      };
+
+      // Mandata a OGNI PUT in exam mode, non solo alla "prima" — è il
+      // server a decidere quando usarla (VALUES(seed) <> seed): il client
+      // non può sapere in modo affidabile quale PUT è la prima in assoluto
+      // per questo seed (rete/pagehide possono far perdere quella "giusta").
+      if (effectiveMode === 'exam' && effectiveDuration != null) {
+        body.durationSec = effectiveDuration;
+      }
+
+      try {
+        const res = await apiFetch(
+          `/me/quiz-progress/${topicId}?lang=${lang}&mode=${effectiveMode}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            keepalive: true,
+          }
+        );
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const row = data?.row;
+        if (!row) return;
+
+        // Incondizionato: è così che un client con rev disallineato (rete
+        // caduta prima, riga DB sconosciuta) si autocorregge al primo giro
+        // riuscito, invece di continuare a scrivere con un rev troppo
+        // basso che il guard server-side scarta in silenzio per sempre.
+        revRef.current = row.rev;
+
+        if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
+          examServerSyncRef.current = { remainingAtSync: row.remainingSec, perfAtSync: performance.now() };
+        }
+      } catch {
+        // offline: il prossimo giro (debounce, o il prossimo hide/pagehide) riprova
+      }
+    };
+
+    const timeoutId = setTimeout(flushDb, 2500);
+
+    const onHideDb = () => {
+      if (document.hidden) {
+        clearTimeout(timeoutId);
+        flushDb();
+      }
+    };
+    document.addEventListener('visibilitychange', onHideDb);
+    window.addEventListener('pagehide', flushDb);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('visibilitychange', onHideDb);
+      window.removeEventListener('pagehide', flushDb);
+    };
+  }, [questions, marked, reviewLater, effectiveMode, idx, scopedKey, isLoggedIn, context?.topicId, lang, effectiveDuration]);
 
   /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
@@ -955,7 +1275,9 @@ const submitAssessmentReport = async () => {
   startedAtRef.current = null;
   setReviewMode(false);
 
-  const active = buildActiveQuestions(pool, effectiveMode);
+  const newSeed = makeSeed();
+  seedRef.current = newSeed;
+  const active = buildActiveQuestions(pool, effectiveMode, newSeed);
   setQuestions(active);
 
   const total =
@@ -1852,7 +2174,12 @@ return (
     }
 
     // Risposta SBAGLIATA — controlla se restano spiegazioni free
-    const isLocked = !isPremiumUser && isLoggedIn && wrongExpLeft !== null && wrongExpLeft <= 0;
+    const isLocked =
+      !isPremiumUser &&
+      isLoggedIn &&
+      wrongExpLeft !== null &&
+      wrongExpLeft <= 0 &&
+      !adUnlockedQuestionIds.has(Number(q.id));
 
    if (isLocked) {
   // Gate mini — mostra solo su risposte sbagliate quando finito il credito
@@ -1871,12 +2198,12 @@ return (
         <div>
           <p className="font-semibold text-white">
             {lang === "it"
-              ? "Hai esaurito le 10 spiegazioni gratuite."
+              ? `Hai esaurito le ${wrongExpLimit} spiegazioni gratuite.`
               : lang === "fr"
-              ? "Vous avez épuisé vos 10 explications gratuites."
+              ? `Vous avez épuisé vos ${wrongExpLimit} explications gratuites.`
               : lang === "es"
-              ? "Has agotado tus 10 explicaciones gratuitas."
-              : "You've used all 10 free explanations."}
+              ? `Has agotado tus ${wrongExpLimit} explicaciones gratuitas.`
+              : `You've used all ${wrongExpLimit} free explanations.`}
           </p>
 
           <p className="mt-1 text-xs text-white/75">
@@ -1911,6 +2238,21 @@ return (
                 ? 'Pregunta "¿por qué me equivoqué?" y recibe una explicación a medida. Ilimitado con Premium.'
                 : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
+            {/*
+              Renderizza null per il 100% del traffico finché
+              REWARDED_ADS_ENABLED=false lato backend (default, invariato). Quando
+              eligible, appare QUI, sopra il pulsante Premium sotto: è lei la CTA
+              primaria, Premium/Octopus/Dolphin restano alternative secondarie.
+            */}
+            <RewardedAdExplanationCta
+              lang={lang}
+              certificationId={context?.certificationId ?? null}
+              certificationSlug={context?.certificationSlug ?? null}
+              questionId={Number(q.id)}
+              onUnlocked={() => {
+                setAdUnlockedQuestionIds((prev) => new Set(prev).add(Number(q.id)));
+              }}
+            />
             <Link
               href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {
@@ -1919,6 +2261,7 @@ return (
                   mode: effectiveMode,
                   source: 'locked_wrong_explanation',
                   question_id: Number(q.id),
+                  experiment_variant: experimentVariant,
                 });
 
                 // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
@@ -1940,9 +2283,6 @@ return (
                 ? 'Pasar a Premium'
                 : 'Go Premium'}
             </Link>
-            {shouldRenderRewardedPlaceholder() ? (
-              <div data-rewarded-placement="locked_wrong_explanation" className="mt-3" />
-            ) : null}
           </div>
         </div>
       );
