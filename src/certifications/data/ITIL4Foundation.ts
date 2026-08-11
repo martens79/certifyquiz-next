@@ -6,6 +6,29 @@ const ITIL_4_FOUNDATION = {
   officialUrl:
     "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
 
+  // Verificato il 2026-08-04 sul Candidate Syllabus ufficiale AXELOS/PeopleCert.
+  // AXELOS pubblica i punti per singolo criterio di valutazione, non un peso
+  // percentuale per dominio: elenco i 7 Learning Outcome senza inventare %.
+  examBlueprint: {
+    examName: "ITIL 4 Foundation",
+    provider: "AXELOS / PeopleCert",
+    officialSourceName: "AXELOS — ITIL 4 Foundation Candidate Syllabus",
+    officialSourceUrl:
+      "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+    officialExamPageUrl:
+      "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Understand the key concepts of service management" },
+      { name: "Understand how the ITIL guiding principles can help an organization adopt and adapt service management" },
+      { name: "Understand the four dimensions of service management" },
+      { name: "Understand the purpose and components of the ITIL service value system" },
+      { name: "Understand the activities of the service value chain, and how they interconnect" },
+      { name: "Know the purpose and key terms of 15 ITIL practices" },
+      { name: "Understand 7 ITIL practices" },
+    ],
+  },
+
   title: {
     it: "ITIL 4 Foundation",
     en: "ITIL 4 Foundation",

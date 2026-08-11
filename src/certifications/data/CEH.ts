@@ -9,6 +9,30 @@ const CEH = {
   officialUrl:
     "https://www.eccouncil.org/train-certify/certified-ethical-hacker-ceh/",
 
+  // Verificato il 2026-08-04 sul documento ufficiale EC-Council (Exam Blueprint v5.0).
+  // Le percentuali sommano a 101% per arrotondamento pubblicato dalla fonte,
+  // non corretto manualmente.
+  examBlueprint: {
+    examName: "Certified Ethical Hacker (CEH)",
+    examCode: "312-50",
+    provider: "EC-Council",
+    officialSourceName: "EC-Council — CEH Exam Blueprint v5.0",
+    officialSourceUrl: "https://cert.eccouncil.org/wp-content/uploads/2024/04/CEH-Exam-Blueprint-v5.pdf",
+    officialExamPageUrl: "https://www.eccouncil.org/train-certify/certified-ethical-hacker-ceh/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Information Security and Ethical Hacking Overview", percentage: 6 },
+      { name: "Reconnaissance Techniques", percentage: 17 },
+      { name: "System Hacking Phases and Attack Techniques", percentage: 15 },
+      { name: "Network and Perimeter Hacking", percentage: 24 },
+      { name: "Web Application Hacking", percentage: 14 },
+      { name: "Wireless Network Hacking", percentage: 5 },
+      { name: "Mobile Platform, IoT, and OT Hacking", percentage: 10 },
+      { name: "Cloud Computing", percentage: 5 },
+      { name: "Cryptography", percentage: 5 },
+    ],
+  },
+
   title: {
     it: "CEH Practice Test 2026 – Oltre 1000 Domande Tipo Esame (312-50)",
     en: "CEH Practice Test 2026 – 1000+ Questions + Exam Simulation (312-50)",

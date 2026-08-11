@@ -5,6 +5,24 @@ const NVIDIA_GENERATIVE_AI = {
   imageUrl: "/images/certifications/nvidia-generative-ai.png",
   officialUrl: "https://www.nvidia.com/en-us/learn/certification/generative-ai-llms/",
 
+  // Verificato il 2026-08-04 sulla pagina ufficiale NVIDIA (livello Associate, NCA-GENL).
+  examBlueprint: {
+    examName: "NVIDIA-Certified Associate: Generative AI and LLMs",
+    examCode: "NCA-GENL",
+    provider: "NVIDIA",
+    officialSourceName: "NVIDIA — Generative AI and LLMs Certification (Associate)",
+    officialSourceUrl: "https://www.nvidia.com/en-us/learn/certification/generative-ai-llm-associate/",
+    officialExamPageUrl: "https://www.nvidia.com/en-us/learn/certification/generative-ai-llms/",
+    lastVerifiedAt: "2026-08-04",
+    domains: [
+      { name: "Core Machine Learning and AI Knowledge", percentage: 30 },
+      { name: "Software Development", percentage: 24 },
+      { name: "Experimentation", percentage: 22 },
+      { name: "Data Analysis and Visualization", percentage: 14 },
+      { name: "Trustworthy AI", percentage: 10 },
+    ],
+  },
+
   title: {
     it: "NVIDIA Generative AI & LLMs",
     en: "NVIDIA Generative AI & LLMs",
