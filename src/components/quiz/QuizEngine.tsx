@@ -429,6 +429,7 @@ const openFeedback = () => {
         // anonima e il progresso fatto da ospite sparirebbe silenziosamente
         // — il caso "DB vuoto + locale presente -> adotta il locale" più
         // sotto non avrebbe più nulla da trovare.
+        let migratedFromAnon = false;
         if (user?.id != null && !local) {
           const anonKey = `${storageScope}:${effectiveMode}:anon`;
           const anonLocal = loadProgress(anonKey) as any;
@@ -436,6 +437,7 @@ const openFeedback = () => {
             saveProgress(scopedKey, anonLocal);
             clearProgress(anonKey);
             local = anonLocal;
+            migratedFromAnon = true;
           }
         }
 
@@ -482,7 +484,18 @@ const openFeedback = () => {
         //     arrivato) — in ogni altro caso vince il DB.
         let source: { data: any; kind: 'local' | 'db' } | null = null;
 
-        if (!dbEligible) {
+        // Se ho appena migrato una sessione anonima nella chiave dell'utente,
+        // quel locale vince SEMPRE, saltando il confronto seed/rev con la
+        // DB — perché l'utente lo ha appena fatto, su questo device, un
+        // attimo fa. Senza questo scavalco esplicito, un'eventuale riga DB
+        // preesistente (anche vecchia o vuota, es. da una visita precedente
+        // loggata sullo stesso topic) vince quasi sempre per il confronto
+        // standard (seed diverso = certo, dato che il seed anonimo è nuovo
+        // di zecca) e il progresso appena migrato sparisce silenziosamente
+        // — bug trovato testando dal vivo in produzione, non dedotto.
+        if (migratedFromAnon) {
+          source = { data: local, kind: 'local' };
+        } else if (!dbEligible) {
           source = local ? { data: local, kind: 'local' } : null; // step 1 invariato (anonimo/assessment)
         } else if (!dbReachable) {
           source = local ? { data: local, kind: 'local' } : null;
@@ -544,7 +557,12 @@ const openFeedback = () => {
           else setRemaining(Math.min(total, p.remainingSec ?? total));
 
           startedAtRef.current = p.startedAt ?? null;
-          revRef.current = p.rev ?? 0;
+          // Mai sotto il pavimento noto della DB (se una riga esiste, anche
+          // scartata/non usata come fonte, es. nel caso di migrazione
+          // anon->user sopra): altrimenti la prima PUT verrebbe scartata in
+          // silenzio dal guard >= lato server, e il progresso appena
+          // ripristinato non si sincronizzerebbe mai.
+          revRef.current = Math.max(p.rev ?? 0, dbEligible && dbRow ? dbRow.rev + 1 : 0);
         } else if (canRestore && source!.kind === 'db') {
           const row = source!.data;
           const st = row.state ?? {};
