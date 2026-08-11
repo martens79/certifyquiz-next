@@ -1,5 +1,7 @@
 // src/lib/auth.ts
 
+import { clearAllProgressForUser } from "./quiz-storage";
+
 /** Chiave token principale (stessa usata da apiClient) */
 export const AUTH_KEY = "cq:access";
 /** Chiave legacy (per compatibilità temporanea) */
@@ -151,8 +153,23 @@ export async function authFetch(
   });
 }
 
+/**
+ * Ripulisce dal localStorage il progresso quiz dell'utente che sta per
+ * uscire (chiave "cq:quiz:...:user:<id>"), prima che clearToken()/setUser()
+ * lo rendano irraggiungibile via getUser(). Senza questo, su un device
+ * condiviso (aula, ufficio — la norma per questo prodotto) il prossimo
+ * utente che accede sullo stesso browser potrebbe vedere/ereditare risposte
+ * non sue: il fix di scope per user id nella chiave (vedi QuizEngine.tsx)
+ * evita la lettura incrociata, questo evita che restino comunque leggibili.
+ */
+function clearOutgoingUserProgressCache() {
+  const u = getUser();
+  if (u?.id != null) clearAllProgressForUser(u.id);
+}
+
 /** Logout helper */
 export function logout() {
+  clearOutgoingUserProgressCache();
   clearToken();
   setUser(null); // NEW: pulisci anche l’utente
 }
@@ -191,6 +208,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
           res = await authFetch(url, init);
         }
       } else if (refreshRes.status === 401 || refreshRes.status === 403) {
+        clearOutgoingUserProgressCache();
         clearToken();
         setUser(null);
         // Un visitatore guest puo' legittimamente ricevere 401 dagli endpoint

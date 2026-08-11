@@ -33,6 +33,7 @@ export type QuizContext = {
   certificationName: string;
   certificationSlug?: string;
   certificationId?: number | null;
+  topicId?: number | null;
   topicTitle?: string;
   topicSlug?: string;
   backLabel?: string;
