@@ -7,6 +7,7 @@ import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 import { analyticsUserStateFrom, trackEvent, trackEventOnce, trackFunnelEvent } from "@/lib/analytics";
+import PackagesUpsell from "./PackagesUpsell";
 
 type Lang = "it" | "es" | "en" | "fr";
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
@@ -760,6 +761,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
 
           <PricingFaq t={t} />
+
+          <PackagesUpsell lang={lang} />
 
           <BusinessBanner t={t} href={BUSINESS_HREF[lang]} />
 
