@@ -209,6 +209,7 @@ export type CertificationResources = {
   quiz: { questionCount: number; topicCount: number };
   reviews: { count: number };
   scenarios: { count: number };
+  labs?: { count: number };
   guide: { available: boolean; slug: string | null; pageCount: number | null };
   maps: {
     available: boolean;
