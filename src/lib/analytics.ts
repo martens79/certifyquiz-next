@@ -29,6 +29,17 @@ function getAnonymousSessionId(): string | undefined {
   }
 }
 
+/**
+ * "production" | "preview" | "development", da NEXT_PUBLIC_APP_ENV (iniettata
+ * in next.config.ts da VERCEL_ENV). Allegato a ogni evento perché un solo
+ * GA4 stream copre oggi tutti gli ambienti: senza questo campo i click di
+ * anteprima/dev contaminerebbero i KPI di produzione (rilevante per
+ * l'esperimento Rewarded Ads, che va misurato solo su traffico reale).
+ */
+export function getAnalyticsEnvironment(): string {
+  return process.env.NEXT_PUBLIC_APP_ENV || "development";
+}
+
 export function trackEvent(eventName: string, params: TrackParams = {}) {
   if (typeof window === "undefined") return;
 
@@ -40,6 +51,7 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
 
   w.gtag("event", eventName, {
     anonymous_session_id: getAnonymousSessionId(),
+    environment: getAnalyticsEnvironment(),
     ...params,
   });
 }

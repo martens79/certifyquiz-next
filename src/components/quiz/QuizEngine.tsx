@@ -14,6 +14,7 @@ import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import { trackEvent as trackAnalyticsEvent, trackFunnelEvent } from "@/lib/analytics";
 import { useAuth } from "@/components/auth/AuthProvider";
+import RewardedAdExplanationCta from "@/components/quiz/RewardedAdExplanationCta";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -2255,6 +2256,21 @@ return (
                 ? 'Pregunta "¿por qué me equivoqué?" y recibe una explicación a medida. Ilimitado con Premium.'
                 : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
+            {/*
+              Renderizza null per il 100% del traffico finché
+              REWARDED_ADS_ENABLED=false lato backend (default, invariato). Quando
+              eligible, appare QUI, sopra il pulsante Premium sotto: è lei la CTA
+              primaria, Premium/Octopus/Dolphin restano alternative secondarie.
+            */}
+            <RewardedAdExplanationCta
+              lang={lang}
+              certificationId={context?.certificationId ?? null}
+              certificationSlug={context?.certificationSlug ?? null}
+              questionId={Number(q.id)}
+              onUnlocked={() => {
+                setAdUnlockedQuestionIds((prev) => new Set(prev).add(Number(q.id)));
+              }}
+            />
             <Link
               href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {

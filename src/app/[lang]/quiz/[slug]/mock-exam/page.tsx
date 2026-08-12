@@ -8,6 +8,7 @@ import QuizEngine from "@/components/quiz/QuizEngine";
 import type { Locale, Question as UiQuestion } from "@/lib/quiz-types";
 import { withLang } from "@/lib/i18n";
 import { CERT_ID_BY_SLUG } from "@/lib/certs";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 import {
   getMixedQuestions,
@@ -46,6 +47,7 @@ export default function MockExamPage() {
 
   const certName = useMemo(() => currentSlug.replace(/-/g, " "), [currentSlug]);
   const isAuthenticated = !!getAccessToken();
+  const { isPremiumUser, premiumLocked } = useAuth();
 
   useEffect(() => {
     if (staticCertId) {
@@ -158,6 +160,7 @@ export default function MockExamPage() {
       limit: Math.max(1, examSpec.questions),
       shuffle: true,
       strict: currentLang !== "it",
+      examMode: true,
     });
 
     const raw: ApiQuestion[] = Array.isArray(res)
@@ -233,8 +236,8 @@ export default function MockExamPage() {
           certificationId: certId,
           backHref: withLang(currentLang, `/quiz/${currentSlug}`),
           backLabel: t.backLabel,
-          isPremiumUser: false,
-          premiumLocked: false,
+          isPremiumUser,
+          premiumLocked,
           isAuthenticated,
         }}
         durationsByMode={{

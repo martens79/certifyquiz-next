@@ -475,12 +475,13 @@ export const getQuestionsByTopic = (
 export const getMixedQuestions = (
   id: number | string,
   lang: Locale = "it",
-  opts?: { limit?: number; shuffle?: boolean; strict?: boolean }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; examMode?: boolean }
 ) => {
   const params = new URLSearchParams({ lang });
   if (opts?.limit != null) params.set("limit", String(opts.limit));
   if (opts?.shuffle != null) params.set("shuffle", opts.shuffle ? "1" : "0");
   if (opts?.strict != null) params.set("strict", opts.strict ? "1" : "0");
+  if (opts?.examMode) params.set("exam", "1");
 
   return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,
