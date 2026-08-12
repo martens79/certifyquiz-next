@@ -32,6 +32,11 @@ export const metadata = {
   icons: {
     apple: "/icons/icon-192.png",
   },
+  other: {
+    // Verifica proprietà sito per l'account AdSense in revisione (ca-pub-9931117843269176).
+    // Nessuno script caricato: solo un meta tag statico, nessun annuncio servito da questo.
+    "google-adsense-account": "ca-pub-9931117843269176",
+  },
 };
 
 export const viewport = {
