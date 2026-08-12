@@ -2,6 +2,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // VERCEL_ENV ("production"|"preview"|"development") è sempre disponibile
+  // lato build su Vercel, ma senza prefisso NEXT_PUBLIC_ non arriverebbe al
+  // client. Lo inlineiamo qui una volta sola invece di richiedere il toggle
+  // "Automatically expose System Environment Variables" nel dashboard Vercel.
+  // Serve a separare eventi analytics prod/preview/dev (vedi src/lib/analytics.ts).
+  env: {
+    NEXT_PUBLIC_APP_ENV: process.env.VERCEL_ENV || process.env.NODE_ENV || "development",
+  },
+
   images: {
     remotePatterns: [
       {

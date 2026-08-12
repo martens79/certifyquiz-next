@@ -5,6 +5,7 @@
   "//": "🚀 Script principali per sviluppo, build e test",
   "scripts": {
     "dev": "next dev",
+    "dev:reward-preview": "node scripts/dev-reward-preview.js",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
