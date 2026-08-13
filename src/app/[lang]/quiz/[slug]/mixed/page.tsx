@@ -355,6 +355,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   // 🔥 MODE (assessment override)
   mode={isAssessmentMode ? "assessment" : undefined}
   hideModeSwitch={isAssessmentMode}
+  blockSize={10}
 
   context={{
   kind: 'mixed',

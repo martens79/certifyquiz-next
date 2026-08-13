@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import InteractiveLabsLanding from "@/features/labs/InteractiveLabsLanding";
+import { getLabsCatalog, type LabsCatalog } from "@/lib/server/labs";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com").replace(/\/+$/, "");
 export const metadata: Metadata = {
@@ -12,6 +13,14 @@ export const metadata: Metadata = {
   openGraph: { title: "Interactive certification practice labs | CertifyQuiz", description: "Task-based practice and simulated environments for hands-on certification training.", url: `${SITE}/interactive-labs`, siteName: "CertifyQuiz", type: "website" },
 };
 
-export default function Page() {
-  return <InteractiveLabsLanding lang="en" />;
+export default async function Page() {
+  // Fallback qui, non dentro getLabsCatalog: vedi il commento su quella funzione.
+  // Scatta solo se non esiste alcuna versione precedente da servire.
+  let catalog: LabsCatalog = { labs: [], certifications: [] };
+  try {
+    catalog = await getLabsCatalog("en");
+  } catch (error) {
+    console.error("[interactive-labs] getLabsCatalog failed, falling back to legacy-only catalog", error);
+  }
+  return <InteractiveLabsLanding lang="en" dbLabs={catalog.labs} dbCertifications={catalog.certifications} />;
 }

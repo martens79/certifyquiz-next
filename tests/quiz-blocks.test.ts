@@ -58,6 +58,16 @@ test('does not pause pools shorter than a block or non-training modes', () => {
   assert.equal(shouldPauseAtBlockBoundary({ mode: 'assessment', blockSize: 10, currentIndex: 9, questionCount: 10 }), false);
 });
 
+test('mixed training pauses every 10 while the same mixed pool in exam does not', () => {
+  const mixedQuestionCount = 120;
+  assert.equal(shouldPauseAtBlockBoundary({
+    mode: 'training', blockSize: 10, currentIndex: 9, questionCount: mixedQuestionCount,
+  }), true);
+  assert.equal(shouldPauseAtBlockBoundary({
+    mode: 'exam', blockSize: 10, currentIndex: 9, questionCount: mixedQuestionCount,
+  }), false);
+});
+
 test('uses the real remaining count in the continue CTA', () => {
   assert.equal(getNextBlockQuestionCount({ blockSize: 10, nextQuestionIndex: 10, questionCount: 23 }), 10);
   assert.equal(getNextBlockQuestionCount({ blockSize: 10, nextQuestionIndex: 20, questionCount: 23 }), 3);
