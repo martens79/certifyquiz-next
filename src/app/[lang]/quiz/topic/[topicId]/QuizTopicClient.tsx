@@ -231,6 +231,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       backToHref={backToHref}
       mode={isAssessmentMode ? "assessment" : undefined}
       hideModeSwitch={isAssessmentMode}
+      blockSize={10}
       context={{
         kind: "topic",
         certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",

@@ -8,7 +8,21 @@ import Link from 'next/link';
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
 import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
+import {
+  calculateCompletedBlock,
+  getCompletedBlockWrongPositions,
+  getNextBlockQuestionCount,
+  shouldPauseAtBlockBoundary,
+} from '@/lib/quiz-blocks';
 import { withLang, getDict } from '@/lib/i18n';
+import {
+  claimWrongExplanationConsumption,
+  isWrongExplanationLocked,
+} from '@/lib/quiz-explanation-access';
+import {
+  claimBlockReviewGateOpening,
+  explanationPaywallParams,
+} from '@/lib/quiz-block-review-tracking';
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
@@ -74,6 +88,174 @@ function label(key: keyof typeof L, lang: Locale) {
 }
 type Mode = 'training' | 'exam' | 'assessment';
 
+const BLOCK_COPY = {
+  title: {
+    it: 'Sessione completata',
+    en: 'Session complete',
+    fr: 'Session terminée',
+    es: 'Sesión completada',
+  },
+  correct: {
+    it: 'corrette',
+    en: 'correct',
+    fr: 'correctes',
+    es: 'correctas',
+  },
+  covered: {
+    it: 'In questo blocco hai affrontato {count} domande su {topic}.',
+    en: 'In this block, you covered {count} questions on {topic}.',
+    fr: 'Dans ce bloc, vous avez traité {count} questions sur {topic}.',
+    es: 'En este bloque has trabajado {count} preguntas sobre {topic}.',
+  },
+  coveredGeneric: {
+    it: 'In questo blocco hai completato {count} domande.',
+    en: 'You completed {count} questions in this block.',
+    fr: 'Vous avez terminé {count} questions dans ce bloc.',
+    es: 'Has completado {count} preguntas en este bloque.',
+  },
+  mistakes: {
+    it: '{count} risposte richiedono ancora attenzione.',
+    en: '{count} answers still need attention.',
+    fr: '{count} réponses demandent encore votre attention.',
+    es: '{count} respuestas todavía requieren atención.',
+  },
+  noMistakes: {
+    it: 'Nessun errore in questo blocco.',
+    en: 'No mistakes in this block.',
+    fr: 'Aucune erreur dans ce bloc.',
+    es: 'Ningún error en este bloque.',
+  },
+  continue: {
+    it: 'Continua con le prossime {count}',
+    en: 'Continue with the next {count}',
+    fr: 'Continuer avec les {count} suivantes',
+    es: 'Continuar con las siguientes {count}',
+  },
+  reviewErrors: {
+    it: 'Rivedi errori',
+    en: 'Review mistakes',
+    fr: 'Revoir les erreurs',
+    es: 'Revisar errores',
+  },
+} as const;
+
+const BLOCK_MOTIVATION = {
+  low: {
+    it: ['Questo blocco indica dove concentrare il prossimo ripasso.', 'Una base più solida nasce dal correggere pochi punti alla volta.', 'Usa questi errori per orientare il prossimo tratto di studio.'],
+    en: ['This block shows where to focus your next review.', 'A stronger foundation comes from correcting a few points at a time.', 'Use these mistakes to guide the next part of your study.'],
+    fr: ['Ce bloc indique où concentrer votre prochaine révision.', 'Une base plus solide se construit en corrigeant quelques points à la fois.', 'Utilisez ces erreurs pour orienter la suite de votre étude.'],
+    es: ['Este bloque indica dónde centrar el próximo repaso.', 'Una base más sólida se construye corrigiendo pocos puntos cada vez.', 'Utiliza estos errores para orientar la siguiente parte del estudio.'],
+  },
+  developing: {
+    it: ['La base è presente; ora conviene consolidare i punti meno sicuri.', 'Sei a metà strada: un ripasso mirato può rendere il risultato più stabile.', 'I concetti principali ci sono, ma alcuni dettagli meritano attenzione.'],
+    en: ['The foundation is there; now consolidate the less certain points.', 'You are halfway there: focused review can make the result more consistent.', 'The main concepts are in place, but some details need attention.'],
+    fr: ['La base est présente ; consolidez maintenant les points moins sûrs.', 'Vous êtes à mi-chemin : une révision ciblée rendra le résultat plus stable.', 'Les notions principales sont acquises, mais certains détails demandent de l’attention.'],
+    es: ['La base está presente; ahora conviene consolidar los puntos menos seguros.', 'Estás a mitad de camino: un repaso dirigido puede estabilizar el resultado.', 'Los conceptos principales están, pero algunos detalles requieren atención.'],
+  },
+  good: {
+    it: ['Preparazione buona: mantieni la precisione nel prossimo blocco.', 'Il risultato è solido; continua lavorando sugli errori residui.', 'Buon livello di comprensione, con margine per rendere il risultato più costante.'],
+    en: ['Good preparation: maintain this accuracy in the next block.', 'The result is solid; keep working on the remaining mistakes.', 'Good understanding, with room to make the result more consistent.'],
+    fr: ['Bonne préparation : conservez cette précision dans le prochain bloc.', 'Le résultat est solide ; continuez à travailler sur les erreurs restantes.', 'Bon niveau de compréhension, avec une marge pour gagner en régularité.'],
+    es: ['Buena preparación: mantén esta precisión en el siguiente bloque.', 'El resultado es sólido; sigue trabajando en los errores restantes.', 'Buen nivel de comprensión, con margen para ganar regularidad.'],
+  },
+  excellent: {
+    it: ['Padronanza molto buona: prosegui mantenendo lo stesso livello di attenzione.', 'Risultato molto solido; il prossimo obiettivo è confermare la continuità.', 'Ottima precisione nel blocco: continua con lo stesso metodo.'],
+    en: ['Very good command: continue with the same level of attention.', 'A very solid result; the next goal is to confirm this consistency.', 'Excellent accuracy in this block: keep using the same method.'],
+    fr: ['Très bonne maîtrise : poursuivez avec le même niveau d’attention.', 'Résultat très solide ; le prochain objectif est de confirmer cette régularité.', 'Excellente précision dans ce bloc : continuez avec la même méthode.'],
+    es: ['Muy buen dominio: continúa con el mismo nivel de atención.', 'Un resultado muy sólido; el siguiente objetivo es confirmar esta regularidad.', 'Excelente precisión en este bloque: continúa con el mismo método.'],
+  },
+} as const;
+
+function interpolate(template: string, values: Record<string, string | number>) {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
+}
+
+function BlockResultsScreen({
+  lang,
+  correct,
+  total,
+  percentage,
+  topicTitle,
+  blockNumber,
+  nextBlockSize,
+  categoryColor,
+  onReviewErrors,
+  onContinue,
+}: {
+  lang: Locale;
+  correct: number;
+  total: number;
+  percentage: number;
+  topicTitle?: string;
+  blockNumber: number;
+  nextBlockSize: number;
+  categoryColor: string;
+  onReviewErrors?: () => void;
+  onContinue: () => void;
+}) {
+  const band = correct <= 4 ? 'low' : correct <= 6 ? 'developing' : correct <= 8 ? 'good' : 'excellent';
+  const variants = BLOCK_MOTIVATION[band][lang];
+  const motivation = variants[(blockNumber - 1) % variants.length];
+  const wrong = total - correct;
+  const covered = topicTitle
+    ? interpolate(BLOCK_COPY.covered[lang], { count: total, topic: topicTitle })
+    : interpolate(BLOCK_COPY.coveredGeneric[lang], { count: total });
+
+  return (
+    <div className={`min-h-screen bg-gradient-to-b ${categoryColor} text-white grid place-items-center px-4 py-8`}>
+      <section className="w-full max-w-xl rounded-3xl border border-white/20 bg-black/20 p-6 shadow-2xl backdrop-blur sm:p-8">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-white/70">
+          {BLOCK_COPY.title[lang]}
+        </p>
+
+        <div className="mt-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-4xl font-bold tabular-nums sm:text-5xl">
+              {correct} / {total}
+            </p>
+            <p className="mt-1 text-base text-white/80">{BLOCK_COPY.correct[lang]}</p>
+          </div>
+          <p className="text-4xl font-bold tabular-nums sm:text-5xl">{percentage}%</p>
+        </div>
+
+        <div className="mt-6 h-2 overflow-hidden rounded-full bg-white/15">
+          <div className="h-full rounded-full bg-emerald-400" style={{ width: `${percentage}%` }} />
+        </div>
+
+        <div className="mt-6 space-y-2 rounded-2xl bg-white/10 p-4 text-sm leading-relaxed text-white/90">
+          <p>{covered}</p>
+          <p>
+            {wrong === 0
+              ? BLOCK_COPY.noMistakes[lang]
+              : interpolate(BLOCK_COPY.mistakes[lang], { count: wrong })}
+          </p>
+        </div>
+
+        <p className="mt-6 text-lg font-medium leading-relaxed">{motivation}</p>
+
+        <div className="mt-7 grid gap-3 sm:grid-cols-2">
+          {onReviewErrors && (
+            <button
+              type="button"
+              className="rounded-xl border border-white/25 bg-white/10 px-5 py-3 font-semibold text-white transition hover:bg-white/15"
+              onClick={onReviewErrors}
+            >
+              {BLOCK_COPY.reviewErrors[lang]}
+            </button>
+          )}
+          <button
+            type="button"
+            className={`rounded-xl bg-emerald-500 px-5 py-3 font-semibold text-white transition hover:bg-emerald-600 ${onReviewErrors ? '' : 'sm:col-span-2'}`}
+            onClick={onContinue}
+          >
+            {interpolate(BLOCK_COPY.continue[lang], { count: nextBlockSize })}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 type Props = {
   lang: Locale;
 
@@ -104,6 +286,14 @@ type Props = {
 
   /** Numero domande per modalità */
   limitsByMode?: Partial<Record<Mode, number>>;
+
+  /**
+   * Dimensione dei blocchi in training (es. 10): ogni multiplo mette in
+   * pausa l'avanzamento con una schermata di riepilogo blocco. Ignorato
+   * fuori da training (vedi condizione in next()). Passata solo da
+   * QuizTopicClient — exam/assessment/mixed/mock-exam non la usano.
+   */
+  blockSize?: number;
 
   /** callback best-effort quando finisce */
   onFinish?: (summary: QuizSummary & { mode: Mode }) => Promise<void> | void;
@@ -140,6 +330,7 @@ export default function QuizEngine({
   durationSec,
   durationsByMode,
   limitsByMode,
+  blockSize,
   onFinish,
   backToHref,
   onModeChange,
@@ -182,6 +373,9 @@ export default function QuizEngine({
   // senza toccare wrongExpLeft (il reward non è credito extra, è mirato a
   // UNA domanda specifica, vedi rewardedAdsService.consumeGrant lato backend).
   const [adUnlockedQuestionIds, setAdUnlockedQuestionIds] = useState<Set<number>>(new Set());
+  const consumedWrongExplanationQuestionIdsRef = useRef(new Set<string>());
+  const blockReviewGateTrackedOpeningsRef = useRef(new Set<number>());
+  const blockReviewOpeningCounterRef = useRef(0);
 
   // Carica lo stato dal backend al mount (solo utenti loggati non premium)
 useEffect(() => {
@@ -204,12 +398,17 @@ useEffect(() => {
 }, [isLoggedIn, isPremiumUser, context?.certificationId]);
 
   // Chiamato quando l'utente free vede la spiegazione di un errore
-const consumeWrongExplanation = async (): Promise<boolean> => {
+const consumeWrongExplanation = async (questionId: number | string): Promise<boolean> => {
   // premium/admin/non loggato: sempre ok
   if (isPremiumUser || !isLoggedIn) return true;
 
   // già a 0: blocca subito senza chiamata
   if (wrongExpLeft !== null && wrongExpLeft <= 0) return false;
+
+  if (!claimWrongExplanationConsumption(
+    consumedWrongExplanationQuestionIdsRef.current,
+    questionId
+  )) return true;
 
   try {
    const res = await apiFetch("/me/explanation-seen", {
@@ -296,6 +495,14 @@ const openFeedback = () => {
   const [idx, setIdx] = useState(0);
 
   const [reviewMode, setReviewMode] = useState(false);
+
+  /** true tra un blocco da blockSize e il successivo (solo training, vedi next()) */
+  const [blockPaused, setBlockPaused] = useState(false);
+  const [blockReview, setBlockReview] = useState<{
+    positions: number[];
+    cursor: number;
+    openingId: number;
+  } | null>(null);
 
   // q.id -> answer.id | null
   const [marked, setMarked] = useState<Record<string | number, string | number | null>>({});
@@ -597,6 +804,9 @@ const openFeedback = () => {
         setFinished(false);
         setLastSummary(null);
         setReviewMode(false);
+        setBlockPaused(false);
+        setBlockReview(null);
+        consumedWrongExplanationQuestionIdsRef.current.clear();
       } catch (e: unknown) {
         if (!alive) return;
 
@@ -709,7 +919,8 @@ const openFeedback = () => {
   const { setQuizTutorData } = useQuizTutor();
 
   useEffect(() => {
-    const current = questions[idx];
+    const tutorIndex = blockReview?.positions[blockReview.cursor] ?? idx;
+    const current = questions[tutorIndex];
     if (!current) return;
 
     const chosenId = marked[current.id];
@@ -726,7 +937,7 @@ const openFeedback = () => {
       topicTitle: context?.topicTitle ?? null,
       certificationName: context?.certificationName ?? null,
     });
-  }, [idx, marked, questions, context?.topicTitle, context?.certificationName, setQuizTutorData]);
+  }, [idx, marked, questions, blockReview, context?.topicTitle, context?.certificationName, setQuizTutorData]);
 
   // Reset del context tutor quando il quiz viene smontato
   useEffect(() => {
@@ -751,6 +962,13 @@ clearProgress(`${storageScope}:assessment`);
 
     setIdx(0);
     setReviewMode(false);
+    setBlockReview(null);
+    consumedWrongExplanationQuestionIdsRef.current.clear();
+    // Esplicito e non solo dedotto dal guard "marked non vuoto" sopra:
+    // se quel guard cambiasse in futuro, blockPaused non deve mai
+    // sopravvivere a un cambio di mode (schermata blocco visibile in
+    // training che resta appesa dopo lo switch a exam).
+    setBlockPaused(false);
     startedAtRef.current = null;
   };
 
@@ -913,11 +1131,19 @@ clearProgress(`${storageScope}:assessment`);
         effectiveMode === 'exam' || Object.keys(marked).length > 0 || idx > 0;
       if (!isDirty) return;
 
+      // Fuori dal training currentBlock deve restare 0 anche quando la
+      // stessa istanza di QuizTopicClient conserva blockSize durante lo
+      // switch runtime a exam. La colonna è INT UNSIGNED NOT NULL ed è
+      // validata server-side con isUInt; il doppio guard evita sia NaN
+      // quando la prop è assente, sia blocchi spurii nelle altre modalità.
       const body: Record<string, unknown> = {
         seed: seedRef.current,
         qidsHash: hashIds(questions.map((q) => q.id)),
         currentIndex: idx,
-        currentBlock: 0,
+        currentBlock:
+          effectiveMode === 'training' && blockSize
+            ? Math.floor(idx / blockSize)
+            : 0,
         state: { marked, reviewLater: Array.from(reviewLater) },
         rev: revRef.current,
       };
@@ -1021,15 +1247,50 @@ clearProgress(`${storageScope}:assessment`);
     return Math.round((ok / questions.length) * 100);
   }, [marked, questions]);
 
+  const blockResult = useMemo(() => {
+    if (!blockPaused || effectiveMode !== 'training' || !blockSize) return null;
+
+    // next() ha già avanzato idx alla prima domanda del blocco successivo.
+    // Il blocco appena concluso è quindi [idx - blockSize, idx), senza
+    // dipendere dall'ordine delle chiavi di marked o da query aggiuntive.
+    return calculateCompletedBlock({
+      questions,
+      marked,
+      nextQuestionIndex: idx,
+      blockSize,
+    });
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+
+  const blockWrongPositions = useMemo(() => {
+    if (!blockPaused || effectiveMode !== 'training' || !blockSize) return [];
+    return getCompletedBlockWrongPositions({
+      questions,
+      marked,
+      nextQuestionIndex: idx,
+      blockSize,
+    });
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+
   /* ----------------------------- HANDLER ------------------------------ */
  const choose = (q: Question, a: Answer) => {
   setActionsOpen(false);
+  if (blockReview) return;
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
 };
 
   const next = () => {
   setActionsOpen(false); // ✅ chiude menu quando vai avanti
+
+  if (blockReview) {
+    if (blockReview.cursor < blockReview.positions.length - 1) {
+      setBlockReview((current) => current ? { ...current, cursor: current.cursor + 1 } : null);
+    } else {
+      setBlockReview(null);
+      setBlockPaused(true);
+    }
+    return;
+  }
 
   if (reviewMode) {
     const currentPos = reviewPositions.indexOf(idx);
@@ -1041,6 +1302,14 @@ clearProgress(`${storageScope}:assessment`);
   }
 
   if (idx < questions.length - 1) {
+    if (shouldPauseAtBlockBoundary({
+      mode: effectiveMode,
+      blockSize,
+      currentIndex: idx,
+      questionCount: questions.length,
+    })) {
+      setBlockPaused(true);
+    }
     setIdx((i) => i + 1);
     return;
   }
@@ -1053,7 +1322,18 @@ clearProgress(`${storageScope}:assessment`);
 
 const prev = () => {
   setActionsOpen(false); // ✅ chiude menu quando vai indietro
+  if (blockReview) {
+    setBlockReview((current) =>
+      current && current.cursor > 0 ? { ...current, cursor: current.cursor - 1 } : current
+    );
+    return;
+  }
   setIdx((i) => Math.max(i - 1, 0));
+};
+
+const exitBlockReview = () => {
+  setBlockReview(null);
+  setBlockPaused(true);
 };
 
 
@@ -1291,6 +1571,9 @@ const submitAssessmentReport = async () => {
   setLastSummary(null);
   startedAtRef.current = null;
   setReviewMode(false);
+  setBlockPaused(false);
+  setBlockReview(null);
+  consumedWrongExplanationQuestionIdsRef.current.clear();
 
   const newSeed = makeSeed();
   seedRef.current = newSeed;
@@ -1309,6 +1592,36 @@ const submitAssessmentReport = async () => {
   if (!questions.length) return <div className="min-h-screen grid place-items-center">No questions.</div>;
 
   const gradient = `bg-gradient-to-b ${categoryColor} text-white`;
+
+  /* ---------------------- CHECKPOINT BLOCCO TRAINING ---------------------- */
+  if (blockPaused && effectiveMode === 'training' && blockSize && blockResult) {
+    return (
+      <BlockResultsScreen
+        lang={lang}
+        correct={blockResult.correct}
+        total={blockResult.total}
+        percentage={blockResult.percentage}
+        topicTitle={context?.topicTitle}
+        blockNumber={blockResult.blockNumber}
+        nextBlockSize={getNextBlockQuestionCount({
+          blockSize,
+          nextQuestionIndex: idx,
+          questionCount: questions.length,
+        })}
+        categoryColor={categoryColor}
+        onReviewErrors={blockWrongPositions.length > 0 ? () => {
+          blockReviewOpeningCounterRef.current += 1;
+          setBlockReview({
+            positions: blockWrongPositions,
+            cursor: 0,
+            openingId: blockReviewOpeningCounterRef.current,
+          });
+          setBlockPaused(false);
+        } : undefined}
+        onContinue={() => setBlockPaused(false)}
+      />
+    );
+  }
 
   /* ------------------------- SCHERMATA FINALE ------------------------- */
   if (finished) {
@@ -1763,7 +2076,8 @@ const assessmentCopy =
   }
 
   /* --------------------------- UI QUIZ NORMALE ------------------------ */
-const q = questions[idx];
+const displayedIndex = blockReview?.positions[blockReview.cursor] ?? idx;
+const q = questions[displayedIndex];
 
 const isExam = effectiveMode === 'exam';
 const isAssessment = effectiveMode === 'assessment';
@@ -1801,8 +2115,10 @@ const chosen = marked[q.id];
 
 const reviewTotal = reviewPositions.length;
 const reviewIndex = reviewMode ? Math.max(0, reviewPositions.indexOf(idx)) + 1 : 0;
+const blockReviewIndex = blockReview ? blockReview.cursor + 1 : 0;
 
 const canGoNext =
+  !!blockReview ||
   idx < questions.length - 1 ||
   (effectiveMode === 'training' && reviewPositions.length > 0);
    /* ============================================================
@@ -1887,7 +2203,9 @@ return (
       {/* header */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
         <div className="text-sm opacity-90">
-          {label('question', lang)} {idx + 1}/{questions.length} ·{' '}
+          {blockReview
+            ? `${BLOCK_COPY.reviewErrors[lang]} ${blockReviewIndex}/${blockReview.positions.length}`
+            : `${label('question', lang)} ${idx + 1}/${questions.length}`} ·{' '}
           {label('answered', lang)} {answeredCount}
           <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
             {isAssessment ? label('assessment', lang) : isExam ? tQuiz.modeExam : tQuiz.modeTraining}
@@ -2163,7 +2481,8 @@ return (
                 key={String(a.id)}
                 type="button"
                 onClick={() => choose(q, a)}
-                className={`w-full text-left rounded-2xl px-4 py-3 min-h-[56px] leading-snug whitespace-normal transition border-2 ${btnClasses}`}
+                disabled={!!blockReview}
+                className={`w-full text-left rounded-2xl px-4 py-3 min-h-[56px] leading-snug whitespace-normal transition border-2 ${btnClasses} ${blockReview ? 'cursor-default' : ''}`}
               >
                 {a.text}
                 {showFeedback && (
@@ -2191,12 +2510,12 @@ return (
     }
 
     // Risposta SBAGLIATA — controlla se restano spiegazioni free
-    const isLocked =
-      !isPremiumUser &&
-      isLoggedIn &&
-      wrongExpLeft !== null &&
-      wrongExpLeft <= 0 &&
-      !adUnlockedQuestionIds.has(Number(q.id));
+    const isLocked = isWrongExplanationLocked({
+      isPremiumUser,
+      isLoggedIn,
+      wrongExpLeft,
+      adUnlocked: adUnlockedQuestionIds.has(Number(q.id)),
+    });
 
    if (isLocked) {
   // Gate mini — mostra solo su risposte sbagliate quando finito il credito
@@ -2207,6 +2526,23 @@ return (
         lang={lang}
         mode={effectiveMode}
         certificationSlug={context?.certificationSlug ?? null}
+        source={blockReview ? 'block-review' : undefined}
+        onBlockReviewGateViewed={blockReview ? () => {
+          if (!claimBlockReviewGateOpening(
+            blockReviewGateTrackedOpeningsRef.current,
+            blockReview.openingId
+          )) return;
+
+          void apiFetch('/me/block-review-gate-viewed', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cert_slug: context?.certificationSlug ?? null,
+              topic_slug: context?.topicSlug ?? null,
+              lang,
+            }),
+          });
+        } : undefined}
       />
 
       <div className="flex items-start gap-3">
@@ -2300,6 +2636,7 @@ return (
         <b>{label('explain', lang)}</b>{' '}
         {explainText}
         <WrongExplanationTracker
+          key={String(q.id)}
           questionId={q.id}
           isLoggedIn={isLoggedIn}
           isPremiumUser={isPremiumUser}
@@ -2342,7 +2679,7 @@ return (
             type="button"
             className="w-full px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={prev}
-            disabled={idx === 0}
+            disabled={blockReview ? blockReview.cursor === 0 : idx === 0}
           >
             ‹ {label('back', lang)}
           </button>
@@ -2377,15 +2714,15 @@ return (
     </button>
   )}
 
-  <button
+  {!blockReview && <button
     type="button"
     className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
     onClick={() => toggleReviewLater(q.id)}
   >
     {label('review', lang)} {reviewLater.has(q.id) ? '★' : '☆'}
-  </button>
+  </button>}
 
-  <button
+  {!blockReview && <button
     type="button"
     className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
     onClick={goToFirstUnanswered}
@@ -2393,9 +2730,19 @@ return (
   >
     <span className="sm:hidden">{label('gotoUnShort', lang)}</span>
     <span className="hidden sm:inline">{label('gotoUn', lang)}</span>
-  </button>
+  </button>}
 
-  {isTestLike ? (
+  {blockReview && (
+    <button
+      type="button"
+      className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-white/10 text-sm"
+      onClick={exitBlockReview}
+    >
+      {lang === 'it' ? 'Torna al riepilogo' : lang === 'fr' ? 'Retour au récapitulatif' : lang === 'es' ? 'Volver al resumen' : 'Back to summary'}
+    </button>
+  )}
+
+  {blockReview ? null : isTestLike ? (
   <button
     type="button"
     className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-red-500 text-sm font-semibold"
@@ -2458,7 +2805,7 @@ function WrongExplanationTracker({
   questionId: number | string;
   isLoggedIn: boolean;
   isPremiumUser: boolean;
-  onConsume: () => Promise<boolean>;
+  onConsume: (questionId: number | string) => Promise<boolean>;
 }) {
   const calledRef = useRef(false);
 
@@ -2466,7 +2813,7 @@ function WrongExplanationTracker({
     if (calledRef.current) return;
     if (!isLoggedIn || isPremiumUser) return;
     calledRef.current = true;
-    onConsume();
+    onConsume(questionId);
   }, [questionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
@@ -2477,11 +2824,15 @@ function GateShownTracker({
   lang,
   mode,
   certificationSlug,
+  source,
+  onBlockReviewGateViewed,
 }: {
   questionId: number | string;
   lang: string;
   mode: string;
   certificationSlug: string | null;
+  source?: 'block-review';
+  onBlockReviewGateViewed?: () => void;
 }) {
   const firedRef = useRef(false);
 
@@ -2489,16 +2840,16 @@ function GateShownTracker({
     if (firedRef.current) return;
     firedRef.current = true;
 
-    trackQuizEvent("explanation_paywall_viewed", {
+    trackQuizEvent("explanation_paywall_viewed", explanationPaywallParams({
       language: lang,
-      quiz_mode: mode,
-      question_id: Number(questionId),
-      certification_slug: certificationSlug,
-      content_type: "explanation",
-      source_page: "quiz",
-    });
+      quizMode: mode,
+      questionId: Number(questionId),
+      certificationSlug,
+      source,
+    }));
+    onBlockReviewGateViewed?.();
     trackMetaPixel("Lead");
-  }, [questionId, lang, mode, certificationSlug]);
+  }, [questionId, lang, mode, certificationSlug, source, onBlockReviewGateViewed]);
 
   return null;
 }
