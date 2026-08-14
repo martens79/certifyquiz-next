@@ -2,7 +2,7 @@ import type { Locale } from "@/lib/paths";
 import type { CertificationResources } from "@/lib/data";
 import TrackedResourceLink from "@/components/certification/TrackedResourceLink";
 
-type ResourceType = "quiz" | "reviews" | "guide" | "map" | "scenarios";
+type ResourceType = "quiz" | "reviews" | "guide" | "map" | "labs" | "scenarios";
 
 type Props = {
   lang: Locale;
@@ -13,6 +13,7 @@ type Props = {
   scenariosHref: string;
   guideHref: string | null;
   mapsHref: string;
+  labsHref: string;
 };
 
 const LABELS = {
@@ -26,12 +27,15 @@ const LABELS = {
     guideDesc: "Guida PDF scaricabile",
     maps: "Mappa concettuale",
     mapsDesc: "Mappe concettuali PDF",
+    labs: "Interactive Labs",
+    labsDesc: "Esercizi pratici guidati",
     scenarios: "Scenari pratici",
     scenariosDesc: "Simulazioni in stile esame",
     questions: (n: number) => `${n.toLocaleString("it-IT")} domande`,
     topics: (n: number) => `${n} argomenti`,
     pages: (n: number) => `${n} pagine`,
     scenarioCount: (n: number) => `${n} scenari`,
+    labCount: (n: number) => `${n} lab`,
     soon: "In arrivo",
     premium: "Premium",
   },
@@ -45,12 +49,15 @@ const LABELS = {
     guideDesc: "Downloadable PDF guide",
     maps: "Concept Map",
     mapsDesc: "PDF concept maps",
+    labs: "Interactive Labs",
+    labsDesc: "Hands-on guided exercises",
     scenarios: "Practice scenarios",
     scenariosDesc: "Exam-style simulations",
     questions: (n: number) => `${n.toLocaleString("en-US")} questions`,
     topics: (n: number) => `${n} topics`,
     pages: (n: number) => `${n} pages`,
     scenarioCount: (n: number) => `${n} scenarios`,
+    labCount: (n: number) => `${n} labs`,
     soon: "Coming soon",
     premium: "Premium",
   },
@@ -64,12 +71,15 @@ const LABELS = {
     guideDesc: "Guide PDF téléchargeable",
     maps: "Carte conceptuelle",
     mapsDesc: "Cartes conceptuelles PDF",
+    labs: "Labs interactifs",
+    labsDesc: "Exercices pratiques guidés",
     scenarios: "Scénarios pratiques",
     scenariosDesc: "Simulations type examen",
     questions: (n: number) => `${n.toLocaleString("fr-FR")} questions`,
     topics: (n: number) => `${n} domaines`,
     pages: (n: number) => `${n} pages`,
     scenarioCount: (n: number) => `${n} scénarios`,
+    labCount: (n: number) => `${n} labs`,
     soon: "Bientôt",
     premium: "Premium",
   },
@@ -83,12 +93,15 @@ const LABELS = {
     guideDesc: "Guía PDF descargable",
     maps: "Mapa conceptual",
     mapsDesc: "Mapas conceptuales PDF",
+    labs: "Labs interactivos",
+    labsDesc: "Ejercicios prácticos guiados",
     scenarios: "Escenarios prácticos",
     scenariosDesc: "Simulaciones tipo examen",
     questions: (n: number) => `${n.toLocaleString("es-ES")} preguntas`,
     topics: (n: number) => `${n} temas`,
     pages: (n: number) => `${n} páginas`,
     scenarioCount: (n: number) => `${n} escenarios`,
+    labCount: (n: number) => `${n} labs`,
     soon: "Próximamente",
     premium: "Premium",
   },
@@ -207,8 +220,8 @@ function Card({
  * punto solo. I conteggi arrivano dall'endpoint aggregato
  * /api/certifications/:slug/resources — mai valori fissi nel codice.
  *
- * Guida e Mappe compaiono solo se esistono per quella certificazione, così
- * non restano card senza destinazione.
+ * Guida, Mappe e Labs compaiono solo se esistono per quella certificazione,
+ * così non restano card senza destinazione.
  */
 export default function StudyMaterialGrid({
   lang,
@@ -219,6 +232,7 @@ export default function StudyMaterialGrid({
   scenariosHref,
   guideHref,
   mapsHref,
+  labsHref,
 }: Props) {
   const t = LABELS[lang];
   const certificationId = resources?.certificationId ?? null;
@@ -227,9 +241,11 @@ export default function StudyMaterialGrid({
   const topicCount = resources?.quiz.topicCount ?? 0;
   const reviewCount = resources?.reviews.count ?? 0;
   const scenarioCount = resources?.scenarios.count ?? 0;
+  const labCount = resources?.labs?.count ?? 0;
 
   const showGuide = !!resources?.guide.available && !!guideHref;
   const showMaps = !!resources?.maps.available;
+  const showLabs = labCount > 0;
 
   // Scenari e' l'ultima card e chiude la griglia a 2 colonne. Quiz e Ripassi
   // sono sempre presenti (2); Guida e Mappe sono condizionali. Con un numero
@@ -239,7 +255,8 @@ export default function StudyMaterialGrid({
   // span: diventa una card normale e va proprio a occupare quello slot.
   // Con un numero PARI (0 o 2 condizionali) lo slot non si crea mai, quindi
   // Scenari resta a piena larghezza come oggi.
-  const cardsBeforeScenari = 2 + (showGuide ? 1 : 0) + (showMaps ? 1 : 0);
+  const cardsBeforeScenari =
+    2 + (showGuide ? 1 : 0) + (showMaps ? 1 : 0) + (showLabs ? 1 : 0);
   const scenariSpansFull = cardsBeforeScenari % 2 === 0;
 
   const quizMeta = [
@@ -313,6 +330,21 @@ export default function StudyMaterialGrid({
             certificationId={certificationId}
             certificationSlug={certificationSlug}
             resourceType="map"
+          />
+        ) : null}
+
+        {showLabs ? (
+          <Card
+            href={labsHref}
+            icon="🧪"
+            title={t.labs}
+            desc={t.labsDesc}
+            meta={t.labCount(labCount)}
+            tone="neutral"
+            lang={lang}
+            certificationId={certificationId}
+            certificationSlug={certificationSlug}
+            resourceType="labs"
           />
         ) : null}
 

@@ -12,7 +12,7 @@ import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta"
 import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
 import type { CertificationResources } from "@/lib/data";
-import { certPath, guidePath, mapsPath } from "@/lib/paths";
+import { certPath, guidePath, interactiveLabsPath, mapsPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
@@ -332,6 +332,7 @@ const pageTopics =
               : null
           }
           mapsHref={mapsPath(lang)}
+          labsHref={`${interactiveLabsPath(lang)}?certification=${encodeURIComponent(data.slug)}`}
         />
 
         <CertificationPackageOffers

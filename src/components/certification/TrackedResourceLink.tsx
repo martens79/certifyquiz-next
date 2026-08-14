@@ -13,7 +13,7 @@ type Props = {
   lang: Locale;
   certificationId: number | null;
   certificationSlug: string;
-  resourceType: "quiz" | "reviews" | "guide" | "map" | "scenarios";
+  resourceType: "quiz" | "reviews" | "guide" | "map" | "labs" | "scenarios";
 };
 
 /**

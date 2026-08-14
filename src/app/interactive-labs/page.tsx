@@ -13,7 +13,12 @@ export const metadata: Metadata = {
   openGraph: { title: "Interactive certification practice labs | CertifyQuiz", description: "Task-based practice and simulated environments for hands-on certification training.", url: `${SITE}/interactive-labs`, siteName: "CertifyQuiz", type: "website" },
 };
 
-export default async function Page() {
+type Props = { searchParams: Promise<{ certification?: string | string[] }> };
+
+export default async function Page({ searchParams }: Props) {
+  const { certification } = await searchParams;
+  const initialCertificationSlug =
+    typeof certification === "string" ? certification.trim() : null;
   // Fallback qui, non dentro getLabsCatalog: vedi il commento su quella funzione.
   // Scatta solo se non esiste alcuna versione precedente da servire.
   let catalog: LabsCatalog = { labs: [], certifications: [] };
@@ -22,5 +27,5 @@ export default async function Page() {
   } catch (error) {
     console.error("[interactive-labs] getLabsCatalog failed, falling back to legacy-only catalog", error);
   }
-  return <InteractiveLabsLanding lang="en" dbLabs={catalog.labs} dbCertifications={catalog.certifications} />;
+  return <InteractiveLabsLanding lang="en" dbLabs={catalog.labs} dbCertifications={catalog.certifications} initialCertificationSlug={initialCertificationSlug} />;
 }

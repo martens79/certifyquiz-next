@@ -121,8 +121,8 @@ export async function CertificationDetailView({
 
   // `resources` sostituisce la vecchia fetch degli scenari e copre in una
   // sola chiamata TUTTI i conteggi della griglia "Materiale di studio"
-  // (quiz, ripassi, guida, mappe, scenari): senza di essa servirebbero
-  // cinque fetch. Le altre due restano perché portano contenuto — l'elenco
+  // (quiz, ripassi, guida, mappe, lab, scenari): senza di essa servirebbero
+  // sei fetch. Le altre due restano perché portano contenuto — l'elenco
   // dei topic e i dati della certificazione — non conteggi.
   const [dbTopics, cert, resources] = await Promise.all([
     getTopicsByCertSlug(dbSlug, lang),

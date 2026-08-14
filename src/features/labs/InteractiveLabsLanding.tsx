@@ -124,19 +124,24 @@ const copy = {
 type Filter = "all" | Difficulty | "completed" | "incomplete";
 
 export default function InteractiveLabsLanding({
-  lang, dbLabs: dbLabsProp, dbCertifications,
+  lang, dbLabs: dbLabsProp, dbCertifications, initialCertificationSlug = null,
 }: {
   lang: Locale;
   /** Metadata risolti server-side (src/lib/server/labs.ts): sempre presenti dal
    *  primo render, mai da attendere. Nessun campo di accesso qui apposta. */
   dbLabs: LabsCatalogEntry[];
   dbCertifications: LabsCatalogCertificationFilter[];
+  initialCertificationSlug?: string | null;
 }) {
   const t = copy[lang];
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
-  const [certFilter, setCertFilter] = useState<string>("all");
+  const [certFilter, setCertFilter] = useState<string>(() =>
+    initialCertificationSlug && dbCertifications.some((item) => item.slug === initialCertificationSlug)
+      ? initialCertificationSlug
+      : "all"
+  );
   // Overlay di sola AUTORIZZAZIONE: id -> {locked, accessReason}. Popolato da un
   // fetch client-side separato (sotto), mai dal render server. Finche' e' vuota
   // (primo render, fetch in corso, o fetch fallita) ogni lab DB-backed appare
