@@ -30,8 +30,7 @@ const LABELS = {
     noResults: "Nessun risultato trovato.",
     count: "mappe",
     premium: "Premium",
-    pages: "pp.",
-    maps: "mappe",
+    pages: "pagine",
     preview: "Anteprima gratuita",
     download: "Scarica il PDF",
     downloading: "Download in corso…",
@@ -50,8 +49,7 @@ const LABELS = {
     noResults: "No results found.",
     count: "maps",
     premium: "Premium",
-    pages: "pp.",
-    maps: "maps",
+    pages: "pages",
     preview: "Free preview",
     download: "Download PDF",
     downloading: "Downloading…",
@@ -70,8 +68,7 @@ const LABELS = {
     noResults: "Aucun résultat trouvé.",
     count: "cartes",
     premium: "Premium",
-    pages: "pp.",
-    maps: "cartes",
+    pages: "pages",
     preview: "Aperçu gratuit",
     download: "Télécharger le PDF",
     downloading: "Téléchargement…",
@@ -90,8 +87,7 @@ const LABELS = {
     noResults: "No se encontraron resultados.",
     count: "mapas",
     premium: "Premium",
-    pages: "pp.",
-    maps: "mapas",
+    pages: "páginas",
     preview: "Vista previa gratuita",
     download: "Descargar PDF",
     downloading: "Descargando…",
@@ -194,10 +190,7 @@ function MapCard({
     }
   }
 
-  const meta = [
-    item.map_count ? `${item.map_count} ${t.maps}` : null,
-    item.page_count ? `${item.page_count} ${t.pages}` : null,
-  ].filter(Boolean);
+  const meta = item.page_count ? `${item.page_count} ${t.pages}` : null;
 
   return (
     <article className="flex flex-col rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-white p-4 shadow-sm transition hover:shadow-md">
@@ -244,9 +237,9 @@ function MapCard({
         </p>
       ) : null}
 
-      {meta.length > 0 ? (
+      {meta ? (
         <p className="mb-3 text-xs font-semibold text-slate-500">
-          {meta.join(" · ")}
+          {meta}
         </p>
       ) : null}
 

@@ -23,6 +23,7 @@ const LABELS = {
     empty: "Nessuna guida disponibile al momento.",
     noResults: "Nessun risultato trovato.",
     count: "guide",
+    pages: "pagine",
     open: "Apri guida",
     statusPremium: "Incluso in Premium",
     statusPurchased: "Acquistata",
@@ -39,6 +40,7 @@ const LABELS = {
     empty: "No guides available yet.",
     noResults: "No results found.",
     count: "guides",
+    pages: "pages",
     open: "Open guide",
     statusPremium: "Included in Premium",
     statusPurchased: "Purchased",
@@ -55,6 +57,7 @@ const LABELS = {
     empty: "Aucun guide disponible pour le moment.",
     noResults: "Aucun résultat trouvé.",
     count: "guides",
+    pages: "pages",
     open: "Ouvrir le guide",
     statusPremium: "Inclus dans Premium",
     statusPurchased: "Acheté",
@@ -71,6 +74,7 @@ const LABELS = {
     empty: "No hay guías disponibles por el momento.",
     noResults: "No se encontraron resultados.",
     count: "guías",
+    pages: "páginas",
     open: "Abrir guía",
     statusPremium: "Incluida en Premium",
     statusPurchased: "Comprada",
@@ -245,7 +249,7 @@ export default function GuideOverviewGrid({ lang, items }: Props) {
 
               {item.page_count ? (
                 <p className="mb-3 text-xs font-semibold text-slate-500">
-                  {item.page_count} pp.
+                  {item.page_count} {t.pages}
                 </p>
               ) : null}
 
