@@ -141,9 +141,7 @@ const nextConfig: NextConfig = {
       { source: "/es/certificaciones/google-tensorflow", destination: "/es/certificaciones/tensorflow", permanent: true },
       { source: "/es/certificaciones/google-tensorflow/:path*", destination: "/es/certificaciones/tensorflow/:path*", permanent: true },
 
-      // Microsoft C# — EN/IT: "microsoft-csharp" | FR/ES: "csharp"
-      { source: "/certifications/csharp", destination: "/certifications/microsoft-csharp", permanent: true },
-      { source: "/certifications/csharp/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
+      // Microsoft C# — slug pubblico canonico: "csharp" (tutte le lingue)
       { source: "/certifications/csharp-certification", destination: "/certifications/microsoft-csharp", permanent: true },
       { source: "/certifications/csharp-certification/:path*", destination: "/certifications/microsoft-csharp/:path*", permanent: true },
       { source: "/it/certificazioni/csharp-certification", destination: "/it/certificazioni/microsoft-csharp", permanent: true },
@@ -375,13 +373,6 @@ const nextConfig: NextConfig = {
       { source: "/it/certifications/microsoft-ai-fundamentals/:path*", destination: "/it/certificazioni/microsoft-ai-fundamentals/:path*", permanent: true },
       { source: "/it/certifications/google-tensorflow", destination: "/it/certificazioni/google-tensorflow", permanent: true },
 
-      // Google TensorFlow — slug finale: "tensorflow"
-      { source: "/certifications/tensorflow", destination: "/certifications/google-tensorflow", permanent: true },
-      { source: "/certifications/tensorflow/:path*", destination: "/certifications/google-tensorflow/:path*", permanent: true },
-
-      { source: "/it/certificazioni/tensorflow", destination: "/it/certificazioni/google-tensorflow", permanent: true },
-      { source: "/fr/certifications/tensorflow", destination: "/fr/certifications/google-tensorflow", permanent: true },
-      { source: "/es/certificaciones/tensorflow", destination: "/es/certificaciones/google-tensorflow", permanent: true },
       { source: "/it/certifications/google-tensorflow/:path*", destination: "/it/certificazioni/google-tensorflow/:path*", permanent: true },
       { source: "/it/certifications/google-tensorflow-developer", destination: "/it/certificazioni/google-tensorflow-developer", permanent: true },
       { source: "/it/certifications/google-tensorflow-developer/:path*", destination: "/it/certificazioni/google-tensorflow-developer/:path*", permanent: true },
@@ -417,11 +408,6 @@ const nextConfig: NextConfig = {
       { source: "/it/certifications/oracle-database-sql/:path*", destination: "/it/certificazioni/oracle-database-sql/:path*", permanent: true },
       { source: "/it/certifications/vmware-certified-professional", destination: "/it/certificazioni/vmware-certified-professional", permanent: true },
       { source: "/it/certifications/vmware-certified-professional/:path*", destination: "/it/certificazioni/vmware-certified-professional/:path*", permanent: true },
-     { source: "/certifications/csharp", destination: "/certifications/microsoft-csharp", permanent: true },
-{ source: "/it/certifications/csharp", destination: "/it/certificazioni/microsoft-csharp", permanent: true },
-{ source: "/it/certificazioni/csharp", destination: "/it/certificazioni/microsoft-csharp", permanent: true },
-{ source: "/fr/certifications/csharp", destination: "/fr/certifications/microsoft-csharp", permanent: true },
-{ source: "/es/certificaciones/csharp", destination: "/es/certificaciones/microsoft-csharp", permanent: true },
       { source: "/it/certifications/network-plus", destination: "/it/certificazioni/network-plus", permanent: true },
       { source: "/it/certifications/network-plus/:path*", destination: "/it/certificazioni/network-plus/:path*", permanent: true },
       { source: "/it/certifications/ccna", destination: "/it/certificazioni/ccna", permanent: true },

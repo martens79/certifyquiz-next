@@ -134,6 +134,13 @@ export async function generateTopicReviewMetadata({
       `${review.topicTitle} | CertifyQuiz`,
     description:
       review.metaDescription || review.intro || t.comingMetaDescription,
+    // Contenuto distinto dal topic genitore ma non pensato per competere
+    // in SERP: resta crawlabile (follow) così Google segue i link verso
+    // quiz/topic, ma non viene indicizzato come pagina a sé.
+    robots: {
+      index: false,
+      follow: true,
+    },
   };
 }
 
