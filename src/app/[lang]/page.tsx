@@ -116,10 +116,10 @@ export async function generateMetadata(
       canonical,
       languages: {
         it: `${SITE}/it`,
-        en: `${SITE}/en`,
+        en: `${SITE}/`,
         fr: `${SITE}/fr`,
         es: `${SITE}/es`,
-        "x-default": `${SITE}/en`,
+        "x-default": `${SITE}/`,
       },
     },
     openGraph: {

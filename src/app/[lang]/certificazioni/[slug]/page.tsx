@@ -8,6 +8,7 @@ import { locales, type Locale, isLocale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/registry";
 import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
+import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -18,21 +19,30 @@ const RAW_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
 
-const listPathByLang: Record<Lang, string> = {
-  it: "/it/certificazioni",
-  en: "/en/certifications",
-  fr: "/fr/certifications",
-  es: "/es/certificaciones",
+// Alias → slug PUBBLICO canonico. Stessa mappa di
+// certifications/[slug]/page.tsx (non consolidata in un modulo condiviso:
+// refactor separato), coerente con middleware.ts.
+const normalizeCertSlug = (slug: string) => {
+  if (slug === "network-plus") return "comptia-network-plus";
+  if (slug === "comptia-network") return "comptia-network-plus";
+  if (slug === "tensorflow-developer") return "tensorflow";
+  if (slug === "google-tensorflow") return "tensorflow";
+  if (slug === "microsoft-csharp") return "csharp";
+  if (slug === "microsoft-c") return "csharp";
+  if (slug === "comptia-a") return "comptia-a-plus";
+  if (slug === "comptia-cloud") return "comptia-cloud-plus";
+  if (slug === "comptia-security") return "security-plus";
+  if (slug === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
+  return slug;
 };
 
-const EN_ROOT_LIST_PATH = "/certifications";
-const enRootDetailPath = (slug: string) => `${EN_ROOT_LIST_PATH}/${slug}`;
-
-const localizedDetailPath = (l: Lang, slug: string) =>
-  `${listPathByLang[l]}/${slug}`;
-
-const toHreflang = (l: Lang): string =>
-  l === "it" ? "it-IT" : l === "en" ? "en-US" : l === "fr" ? "fr-FR" : "es-ES";
+// Slug pubblico → chiave registry/DB, solo dove le due cose differiscono.
+const PUBLIC_TO_REGISTRY_KEY: Record<string, string> = {
+  tensorflow: "google-tensorflow",
+  csharp: "microsoft-csharp",
+};
+const toRegistryKey = (publicSlug: string) =>
+  PUBLIC_TO_REGISTRY_KEY[publicSlug] ?? publicSlug;
 
 /* ----------------------------- Static params ----------------------------- */
 
@@ -50,7 +60,12 @@ type MetaProps = {
 };
 
 export async function generateMetadata({ params }: MetaProps): Promise<Metadata> {
-  const { lang, slug } = await params;
+  const { lang, slug: rawSlug } = await params;
+
+  // Slug pubblico canonico (usato per canonical/hreflang/pageUrl più sotto)
+  // e chiave registry/DB corrispondente (usata solo per i lookup dati).
+  const slug = normalizeCertSlug(rawSlug);
+  const registryKey = toRegistryKey(slug);
 
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
@@ -64,7 +79,7 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
       : "Quizzes & Exam";
 
   // 1) Registry
-  const reg = CERTS_BY_SLUG[slug];
+  const reg = CERTS_BY_SLUG[registryKey];
   let titleBase: string | undefined;
   let description: string | undefined;
   let ogImage: string | undefined;
@@ -75,7 +90,7 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
     ogImage = reg.imageUrl;
   } else {
     // 2) Fallback data layer
-    const cert = await getCertBySlug(slug, L);
+    const cert = await getCertBySlug(registryKey, L);
     if (cert) {
       titleBase = cert.title || cert.h1;
       description = cert.seoDescription || cert.intro;

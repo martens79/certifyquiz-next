@@ -102,6 +102,40 @@ export const topicSeoPath = (
   if (lang === "fr") return `/fr/certifications/${certSlug}/${topicSlug}`;
   return `/es/certificaciones/${certSlug}/${topicSlug}`;
 };
+
+/* ------------------------------------------------------------------ */
+/* CERTIFICATIONS — hreflang cluster                                   */
+/* Spostate da src/app/[lang]/certificazioni/[slug]/page.tsx           */
+/* (usate per generare alternates.languages reciproco EN <-> IT/FR/ES) */
+/* ------------------------------------------------------------------ */
+
+const HREFLANG_LIST_PATH_BY_LANG: Record<Locale, string> = {
+  it: "/it/certificazioni",
+  en: "/en/certifications",
+  fr: "/fr/certifications",
+  es: "/es/certificaciones",
+};
+
+const EN_ROOT_LIST_PATH = "/certifications";
+
+/** Path (relativo) della pagina certificazione EN root, es. "/certifications/ccna". */
+export const enRootDetailPath = (slug: string): string =>
+  `${EN_ROOT_LIST_PATH}/${slug}`;
+
+/** Path (relativo) della pagina certificazione per una lingua diversa da EN. */
+export const localizedDetailPath = (lang: Locale, slug: string): string =>
+  `${HREFLANG_LIST_PATH_BY_LANG[lang]}/${slug}`;
+
+/** Converte un Locale nel codice hreflang esteso (it-IT, en-US, fr-FR, es-ES). */
+export const toHreflang = (lang: Locale): string =>
+  lang === "it"
+    ? "it-IT"
+    : lang === "en"
+    ? "en-US"
+    : lang === "fr"
+    ? "fr-FR"
+    : "es-ES";
+
 /* ------------------------------------------------------------------ */
 /* CATEGORIES (SEO)                                                     */
 /* ------------------------------------------------------------------ */

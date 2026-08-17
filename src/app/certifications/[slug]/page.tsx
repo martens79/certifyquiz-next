@@ -2,22 +2,37 @@
 import type { Metadata } from "next";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 import { getCertificationDetailRSC } from "@/lib/server/certs";
+import { locales } from "@/lib/i18n";
+import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 
 type Props = { params: Promise<{ slug: string }> };
 
+// Alias → slug PUBBLICO canonico. Coerente con middleware.ts: chi arriva
+// con uno di questi slug deve risolvere sullo stesso slug che middleware.ts
+// impone come URL stabile (tensorflow, csharp — non le varianti registry/DB).
 const normalizeCertSlug = (slug: string) => {
   if (slug === "network-plus") return "comptia-network-plus";
   if (slug === "comptia-network") return "comptia-network-plus";
-  if (slug === "tensorflow") return "google-tensorflow";
-  if (slug === "tensorflow-developer") return "google-tensorflow";
-  if (slug === "csharp") return "microsoft-csharp";
-  if (slug === "microsoft-c") return "microsoft-csharp";
+  if (slug === "tensorflow-developer") return "tensorflow";
+  if (slug === "google-tensorflow") return "tensorflow";
+  if (slug === "microsoft-csharp") return "csharp";
+  if (slug === "microsoft-c") return "csharp";
   if (slug === "comptia-a") return "comptia-a-plus";
   if (slug === "comptia-cloud") return "comptia-cloud-plus";
   if (slug === "comptia-security") return "security-plus";
   if (slug === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
   return slug;
 };
+
+// Slug pubblico → chiave registry/DB, solo dove le due cose differiscono
+// (tensorflow/csharp sono lo slug pubblico canonico, ma DB e registry
+// interno usano ancora google-tensorflow/microsoft-csharp come chiave).
+const PUBLIC_TO_REGISTRY_KEY: Record<string, string> = {
+  tensorflow: "google-tensorflow",
+  csharp: "microsoft-csharp",
+};
+const toRegistryKey = (publicSlug: string) =>
+  PUBLIC_TO_REGISTRY_KEY[publicSlug] ?? publicSlug;
 
 const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = {
   "microsoft-sql-server": {
@@ -79,7 +94,7 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     description:
       "Prepare for the CompTIA Network+ N10-009 exam with practice questions, network troubleshooting quizzes, security topics and clear explanations.",
   },
-  "google-tensorflow": {
+  "tensorflow": {
     title: "Google TensorFlow Practice Test 2026 – TensorFlow Quiz | CertifyQuiz",
     description:
       "Practice TensorFlow with quiz questions on machine learning, neural networks, model training, evaluation and deployment.",
@@ -114,7 +129,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const canonicalSlug = normalizeCertSlug(slug);
 
-  const data = await getCertificationDetailRSC(canonicalSlug);
+  const data = await getCertificationDetailRSC(toRegistryKey(canonicalSlug));
 
   if (!data) {
     return {
@@ -149,11 +164,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     "Practice exam and quiz preparation"
   )}&category=${category}`;
 
+  // Hreflang reciproco: stesso mapping usato da [lang]/certificazioni/[slug]/page.tsx
+  // (IT/FR/ES), così il cluster punta in entrambe le direzioni.
+  const languages: Record<string, string> = {};
+  for (const l of locales) {
+    languages[toHreflang(l)] =
+      l === "en"
+        ? new URL(enRootDetailPath(canonicalSlug), siteUrl).toString()
+        : new URL(localizedDetailPath(l, canonicalSlug), siteUrl).toString();
+  }
+  languages["x-default"] = new URL(
+    enRootDetailPath(canonicalSlug),
+    siteUrl
+  ).toString();
+
   return {
     title,
     description,
     alternates: {
       canonical: pageUrl,
+      languages,
     },
     openGraph: {
       title,
@@ -183,5 +213,8 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   const canonicalSlug = normalizeCertSlug(slug);
 
-  return <CertificationDetailView lang="en" slug={canonicalSlug} />;
+  // CertificationDetailView fa il proprio fetch/lookup sulla chiave
+  // registry/DB (vedi normalizeDbSlug in _views/CertificationDetailView.tsx),
+  // non sullo slug pubblico: le passiamo la stessa chiave di sempre.
+  return <CertificationDetailView lang="en" slug={toRegistryKey(canonicalSlug)} />;
 }

@@ -143,8 +143,8 @@ function getLabels(lang: Lang) {
 
 const CERT_SLUG_ALIASES: Record<string, string> = {
   "vmware-certified-professional": "vmware-vcp",
-  "tensorflow": "google-tensorflow",
-  "tensorflow-developer": "google-tensorflow",
+  "tensorflow-developer": "tensorflow",
+  "google-tensorflow": "tensorflow",
   "network-plus": "comptia-network-plus",
   "cisco-ccst-security": "cisco-ccst-cybersecurity",
   "microsoft-csharp": "csharp",
