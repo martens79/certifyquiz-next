@@ -117,6 +117,20 @@ metaDescription: {
   },
   {
     title: {
+      it: "Cavi di rete e dispositivi endpoint",
+      en: "Endpoints and Media Types",
+      fr: "Câbles réseau et équipements terminaux",
+      es: "Cables de red y dispositivos finales",
+    },
+    slug: {
+      it: "cavi-di-rete-e-dispositivi-endpoint",
+      en: "endpoints-and-media-types",
+      fr: "cables-reseau-et-equipements-terminaux",
+      es: "cables-de-red-y-dispositivos-finales",
+    },
+  },
+  {
+    title: {
       it: "Tipi di reti e topologie",
       en: "Network Types and Topologies",
       fr: "Types de réseaux et topologies",
