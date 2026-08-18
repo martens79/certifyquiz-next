@@ -19,6 +19,10 @@ export const labSlugs = [
   "ccst-networking-subnetting",
   "ccst-networking-ping-traceroute",
   "ccst-networking-office-offline",
+  "ccst-networking-switch-vlan-configuration",
+  "ccst-networking-secure-guest-wifi",
+  "ccst-networking-wireless-performance",
+  "ccst-networking-branch-recovery-capstone",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];
