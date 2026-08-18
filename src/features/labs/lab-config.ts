@@ -23,6 +23,15 @@ export const labSlugs = [
   "ccst-networking-secure-guest-wifi",
   "ccst-networking-wireless-performance",
   "ccst-networking-branch-recovery-capstone",
+  "ccst-cybersecurity-classify-the-incident",
+  "ccst-cybersecurity-spot-the-exposed-device",
+  "ccst-cybersecurity-write-the-acl",
+  "ccst-cybersecurity-investigate-with-netstat-tcpdump",
+  "ccst-cybersecurity-malware-remediation",
+  "ccst-cybersecurity-recon-passive-active",
+  "ccst-cybersecurity-scan-to-risk",
+  "ccst-cybersecurity-escalate-or-not",
+  "ccst-cybersecurity-full-incident-response",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];
