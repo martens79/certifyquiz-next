@@ -58,6 +58,7 @@ const localized = (it: string, en: string, fr: string, es: string): Record<Local
 // docs/labs-architecture-audit.md.
 const DB_CERTIFICATION_CATEGORY: Record<string, string> = {
   "cisco-ccst-networking": "networking",
+  "cisco-ccst-cybersecurity": "cybersecurity",
 };
 const FALLBACK_CATEGORY_ID = "certification-labs";
 
