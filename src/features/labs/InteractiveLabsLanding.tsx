@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Locale } from "@/lib/paths";
-import { apiFetch, getToken } from "@/lib/auth";
+import { apiFetch } from "@/lib/auth";
 import type { LabsCatalogEntry, LabsCatalogCertificationFilter } from "@/lib/server/labs";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
@@ -142,32 +142,36 @@ export default function InteractiveLabsLanding({
       ? initialCertificationSlug
       : "all"
   );
-  // Overlay di sola AUTORIZZAZIONE: id -> {locked, accessReason}. Popolato da un
-  // fetch client-side separato (sotto), mai dal render server. Finche' e' vuota
-  // (primo render, fetch in corso, o fetch fallita) ogni lab DB-backed appare
-  // SENZA lucchetto/badge Premium -- mai il lucchetto lampeggiante che poi
-  // sparisce per chi ha gia' pagato.
+  // Overlay di sola AUTORIZZAZIONE per la vista "All Labs": id -> {locked,
+  // accessReason}. Popolato da un fetch client-side separato (sotto), mai dal
+  // render server. Finche' e' vuota (primo render, fetch in corso, o fetch
+  // fallita) ogni lab DB-backed appare SENZA lucchetto/badge Premium -- mai il
+  // lucchetto lampeggiante che poi sparisce per chi ha gia' pagato.
   const [accessById, setAccessById] = useState<Map<number, { locked: boolean; accessReason: string }>>(new Map());
+  // Overlay separato per la vista filtrata su UNA certificazione (vedi
+  // certFilterLabs sotto). Deve restare un fetch indipendente da accessById:
+  // `certification=all` (usato per accessById) forza server-side
+  // freeAssociation=null per ogni lab (labRoutes.js, "'all' non e' un contesto
+  // commerciale"), quindi non puo' MAI riportare un lab come FREE, nemmeno per
+  // chi lo e' davvero -- e' un invariante deliberato e testato
+  // (verify-interactive-labs-api.js), da NON aggirare qui. Interrogare invece
+  // l'API con lo slug reale della certificazione fa risolvere is_free
+  // correttamente, anche per un anonimo: checkLabAccess/isExplicitlyFree
+  // concede full access a un lab FREE indipendentemente da user/premium
+  // (labAccessService.js) -- l'unica ragione per cui prima appariva sempre
+  // "Premium" qui e' che questa vista riusava l'overlay "all", mai perche' un
+  // anonimo non potesse vedere un lab FREE come tale.
+  const [certAccessById, setCertAccessById] = useState<Map<number, { locked: boolean; accessReason: string }>>(new Map());
   const base = lang === "en" ? "/interactive-labs" : `/${lang}/interactive-labs`;
 
-  // Step 4 (rivisto): SOLO lo stato di accesso e' client-side. Se questa chiamata
-  // fallisce, i lab restano visibili e cliccabili senza badge (fail-soft): la
-  // protezione reale e' server-side sul dettaglio (GuidedCertificationLab.tsx),
-  // quindi degradare qui il lucchetto non apre un buco di sicurezza.
-  //
-  // Utente anonimo: nessuna chiamata. getToken() (src/lib/auth.ts) legge in modo
-  // sincrono da session/localStorage, e' lo stesso segnale che usa apiFetch per
-  // decidere se allegare l'Authorization header -- senza token l'esito lato
-  // backend e' SEMPRE "locked" (FREE_PREVIEW_TYPES include 'lab', vedi
-  // accessResolver.js), quindi e' un risultato noto, non stimato: impostarlo
-  // direttamente risparmia una chiamata al rate limiter condiviso per un esito
-  // gia' certo, ed elimina anche il breve stato "non ancora locked" che un
-  // anonimo vedrebbe altrimenti prima che il fetch risolva.
+  // Se questa chiamata fallisce, i lab restano visibili e cliccabili senza
+  // badge (fail-soft): la protezione reale e' server-side sul dettaglio
+  // (GuidedCertificationLab.tsx), quindi degradare qui il lucchetto non apre
+  // un buco di sicurezza. Nessuno skip per l'anonimo: /labs e' pubblica
+  // (optionalAuthMiddleware) e senza token invia semplicemente nessun header
+  // Authorization (apiFetch/authHeader), quindi la chiamata e' valida anche
+  // per un visitatore non loggato.
   useEffect(() => {
-    if (!getToken()) {
-      setAccessById(new Map(dbLabsProp.map((item) => [item.id, { locked: true, accessReason: "free_preview" }])));
-      return;
-    }
     let active = true;
     (async () => {
       try {
@@ -182,6 +186,25 @@ export default function InteractiveLabsLanding({
     })();
     return () => { active = false; };
   }, [lang, dbLabsProp]);
+
+  // Stessa logica fail-soft di sopra, ma per il contesto di UNA certificazione
+  // specifica: attiva solo quando certFilter e' effettivamente selezionato.
+  useEffect(() => {
+    if (certFilter === "all") return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/labs?certification=${encodeURIComponent(certFilter)}&lang=${lang}`);
+        if (!active || !res.ok) return;
+        const json = await res.json();
+        const items: LabAccessApiItem[] = Array.isArray(json.items) ? json.items : [];
+        setCertAccessById(new Map(items.map((item) => [item.id, { locked: item.locked, accessReason: item.accessReason }])));
+      } catch {
+        // silenzioso: fail-soft, vedi commento sopra
+      }
+    })();
+    return () => { active = false; };
+  }, [certFilter, lang]);
 
   // Merge metadata (prop, SSR) + overlay di accesso (stato, client-side).
   const dbLabs = useMemo<Lab[]>(() => dbLabsProp.map((item) => {
@@ -244,10 +267,30 @@ export default function InteractiveLabsLanding({
 
   // dbCertifications arriva gia' risolto (slug, label per lingua, count) da
   // src/lib/server/labs.ts: nessuna risoluzione client-side qui.
-  const certFilterLabs = useMemo(
-    () => dbLabs.filter((lab) => lab.certificationSlug === certFilter),
-    [dbLabs, certFilter]
-  );
+  // Costruita da dbLabsProp (metadata SSR) + certAccessById (overlay per-
+  // certificazione), MAI da dbLabs: dbLabs porta l'overlay "all", che non puo'
+  // mai riportare un lab come FREE (vedi commento su certAccessById sopra) --
+  // riusarlo qui riprodurrebbe esattamente il badge Premium errato sui lab
+  // FREE che questo overlay dedicato risolve.
+  const certFilterLabs = useMemo<Lab[]>(() => {
+    if (certFilter === "all") return [];
+    return dbLabsProp
+      .filter((item) => item.certificationSlug === certFilter)
+      .map((item) => {
+        const access = certAccessById.get(item.id);
+        return {
+          slug: item.slug,
+          title: item.title,
+          description: item.description,
+          difficulty: DB_DIFFICULTY_MAP[item.difficulty] ?? "intermediate",
+          duration: item.estimatedMinutes,
+          locked: access?.locked,
+          accessReason: access?.accessReason,
+          isDbBacked: true,
+          certificationSlug: item.certificationSlug ?? "",
+        };
+      });
+  }, [dbLabsProp, certAccessById, certFilter]);
   const certFilterLabel = certFilter === "all" ? "" : (dbCertifications.find((c) => c.slug === certFilter)?.label ?? certFilter);
 
   const filteredLabs = useMemo(() => {
