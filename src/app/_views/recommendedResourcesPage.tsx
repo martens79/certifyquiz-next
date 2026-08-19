@@ -38,6 +38,9 @@ export function recommendedResourcesMetadata(lang: Locale): Metadata {
     ...SEO[lang],
     alternates: { canonical, languages },
     openGraph: { ...SEO[lang], url: canonical, type: "website", siteName: "CertifyQuiz" },
+    // Pagina senza contenuto reale (catalogo risorse vuoto): noindex finché non
+    // pubblichiamo materiali affiliati verificati.
+    robots: { index: false, follow: true },
   };
 }
 

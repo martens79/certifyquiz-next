@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import { ExternalLink, GraduationCap } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink, GraduationCap, Mail } from "lucide-react";
 
 import {
   recommendedCertificationOrder,
@@ -10,6 +12,7 @@ import {
   type RecommendedResourceType,
 } from "../../content/recommended-resources";
 import { trackEvent } from "@/lib/analytics";
+import { legalPath } from "@/lib/i18n";
 import type { Locale } from "@/lib/paths";
 
 type Props = { lang: Locale };
@@ -28,6 +31,16 @@ const COPY = {
     courseCta: "Scopri il corso",
     equipmentCta: "Vedi la risorsa",
     onAmazon: "Vedi su Amazon",
+    notifyTitle: "Avvisami quando è pronto",
+    notifyText: "Lascia la tua email: ti scriviamo appena pubblichiamo i primi materiali consigliati.",
+    notifyPlaceholder: "La tua email",
+    notifyButton: "Avvisami",
+    notifySending: "Invio...",
+    notifySuccess: "Fatto! Ti avviseremo appena la sezione sarà pronta.",
+    notifyExists: "Sei già iscritto con questa email.",
+    notifyError: "Errore nell'iscrizione. Riprova.",
+    notifyDisclaimerPre: "Iscrivendoti accetti la nostra ",
+    privacyLabel: "Privacy Policy",
   },
   en: {
     eyebrow: "Study resources",
@@ -42,6 +55,16 @@ const COPY = {
     courseCta: "Explore the course",
     equipmentCta: "View resource",
     onAmazon: "View on Amazon",
+    notifyTitle: "Notify me when it's ready",
+    notifyText: "Leave your email and we'll let you know as soon as we publish the first recommended materials.",
+    notifyPlaceholder: "Your email",
+    notifyButton: "Notify me",
+    notifySending: "Sending...",
+    notifySuccess: "Done! We'll let you know as soon as this section is ready.",
+    notifyExists: "You are already subscribed with this email.",
+    notifyError: "Subscription error. Please try again.",
+    notifyDisclaimerPre: "By subscribing you accept our ",
+    privacyLabel: "Privacy Policy",
   },
   fr: {
     eyebrow: "Ressources d’étude",
@@ -56,6 +79,16 @@ const COPY = {
     courseCta: "Découvrir le cours",
     equipmentCta: "Voir la ressource",
     onAmazon: "Voir sur Amazon",
+    notifyTitle: "Prévenez-moi quand c'est prêt",
+    notifyText: "Laissez votre email : nous vous préviendrons dès la publication des premiers contenus recommandés.",
+    notifyPlaceholder: "Votre email",
+    notifyButton: "Me prévenir",
+    notifySending: "Envoi...",
+    notifySuccess: "C'est fait ! Nous vous préviendrons dès que cette section sera prête.",
+    notifyExists: "Vous êtes déjà inscrit avec cette adresse email.",
+    notifyError: "Erreur lors de l'inscription. Veuillez réessayer.",
+    notifyDisclaimerPre: "En vous inscrivant, vous acceptez notre ",
+    privacyLabel: "Politique de confidentialité",
   },
   es: {
     eyebrow: "Recursos de estudio",
@@ -70,8 +103,102 @@ const COPY = {
     courseCta: "Descubrir el curso",
     equipmentCta: "Ver el recurso",
     onAmazon: "Ver en Amazon",
+    notifyTitle: "Avísame cuando esté listo",
+    notifyText: "Déjanos tu email: te avisaremos en cuanto publiquemos los primeros materiales recomendados.",
+    notifyPlaceholder: "Tu email",
+    notifyButton: "Avisarme",
+    notifySending: "Enviando...",
+    notifySuccess: "¡Listo! Te avisaremos en cuanto esta sección esté disponible.",
+    notifyExists: "Ya estás suscrito con este email.",
+    notifyError: "Error al suscribirte. Inténtalo de nuevo.",
+    notifyDisclaimerPre: "Al suscribirte aceptas nuestra ",
+    privacyLabel: "Política de privacidad",
   },
 } as const;
+
+type NotifyStatus = "idle" | "loading" | "ok" | "exists" | "error";
+
+function NotifyMeForm({ lang, t }: { lang: Locale; t: (typeof COPY)[Locale] }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<NotifyStatus>("idle");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const cleanEmail = email.trim();
+    if (!cleanEmail) return;
+
+    try {
+      setStatus("loading");
+
+      const res = await fetch("/api/backend/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: cleanEmail,
+          lang,
+          gdprConsent: true,
+          source: "recommended-resources-notify",
+        }),
+      });
+
+      const data = (await res.json().catch(() => ({}))) as { status?: string; ok?: boolean };
+
+      if (res.ok) {
+        setStatus(data?.status === "already" ? "exists" : "ok");
+        trackEvent("recommended_resources_notify_signup", { page_language: lang });
+        if (data?.status !== "already") setEmail("");
+      } else {
+        setStatus(data?.status === "already" ? "exists" : "error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  return (
+    <div className="mx-auto mt-6 max-w-md rounded-xl border border-blue-200 bg-white p-5 text-left shadow-sm">
+      <p className="flex items-center gap-2 text-sm font-bold text-slate-900">
+        <Mail size={16} className="text-blue-700" aria-hidden /> {t.notifyTitle}
+      </p>
+      <p className="mt-1 text-sm leading-6 text-slate-600">{t.notifyText}</p>
+
+      <form onSubmit={onSubmit} className="mt-3" noValidate>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={t.notifyPlaceholder}
+            aria-label={t.notifyPlaceholder}
+            disabled={status === "loading"}
+            className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+          />
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            aria-busy={status === "loading"}
+            className="shrink-0 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
+          >
+            {status === "loading" ? t.notifySending : t.notifyButton}
+          </button>
+        </div>
+
+        <p className="mt-2 text-xs leading-5 text-slate-500">
+          {t.notifyDisclaimerPre}
+          <Link href={legalPath(lang, "privacy")} className="underline">
+            {t.privacyLabel}
+          </Link>
+          .
+        </p>
+
+        {status === "ok" && <p className="mt-2 text-sm font-semibold text-green-700">{t.notifySuccess}</p>}
+        {status === "exists" && <p className="mt-2 text-sm font-semibold text-amber-700">{t.notifyExists}</p>}
+        {status === "error" && <p className="mt-2 text-sm font-semibold text-red-700">{t.notifyError}</p>}
+      </form>
+    </div>
+  );
+}
 
 function ctaFor(resource: RecommendedResource, t: (typeof COPY)[Locale]) {
   if (resource.platform.toLowerCase() === "amazon") return t.onAmazon;
@@ -114,6 +241,7 @@ export default function RecommendedResourcesPage({ lang }: Props) {
           <GraduationCap className="mx-auto h-10 w-10 text-blue-700" aria-hidden />
           <h2 className="mt-3 text-xl font-extrabold text-slate-900">{t.emptyTitle}</h2>
           <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600">{t.emptyText}</p>
+          <NotifyMeForm lang={lang} t={t} />
         </section>
       ) : (
         recommendedCertificationOrder.map((certification) => {
