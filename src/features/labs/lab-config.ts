@@ -32,6 +32,20 @@ export const labSlugs = [
   "ccst-cybersecurity-scan-to-risk",
   "ccst-cybersecurity-escalate-or-not",
   "ccst-cybersecurity-full-incident-response",
+  "ccna-vlsm-network-design",
+  "ccna-vlan-port-assignment",
+  "ccna-trunking-native-vlan",
+  "ccna-inter-vlan-routing",
+  "ccna-spanning-tree",
+  "ccna-etherchannel",
+  "ccna-static-routing",
+  "ccna-ospf-single-area",
+  "ccna-access-control-lists",
+  "ccna-nat-pat",
+  "ccna-dhcp-relay-dns",
+  "ccna-port-security-wireless",
+  "ccna-network-programmability",
+  "ccna-branch-outage-capstone",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];
