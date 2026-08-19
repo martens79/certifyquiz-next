@@ -228,19 +228,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.75,
             lastModified: now,
           },
-          {
-            url:
-              lang === "it"
-                ? `${SITE}/it/materiale-consigliato`
-                : lang === "en"
-                ? `${SITE}/en/recommended-resources`
-                : lang === "fr"
-                ? `${SITE}/fr/ressources-recommandees`
-                : `${SITE}/es/material-recomendado`,
-            changeFrequency: "monthly" as const,
-            priority: 0.7,
-            lastModified: now,
-          },
+          // NB: /materiale-consigliato (e varianti EN/FR/ES) sono noindex finché
+          // il catalogo risorse resta vuoto: escluse di proposito dalla sitemap.
           {
             url:
               lang === "en"
