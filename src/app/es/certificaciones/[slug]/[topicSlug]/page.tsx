@@ -15,16 +15,6 @@ function getLabels() {
     quizShort: "🚀 Quiz",
     availableQuestions: "Preguntas disponibles",
     relatedTopics: "Temas relacionados",
-    whatYouWillLearn: "Qué aprenderás en este tema",
-    whyItMatters: "Por qué este tema es importante",
-    practiceIntro: "Este tema forma parte del recorrido",
-    learnText1: "...",
-    learnText2: "El quiz sobre",
-    learnText3: "...",
-    whyText1: "Estudiar bien",
-    whyText2: "...",
-    whyText3: "...",
-    whyText4: "...",
     faqTitle: "Preguntas frecuentes",
     contentTitle: "Guía rápida",
     mobileHint: "🎯 Repasa o practica este tema",
@@ -202,38 +192,6 @@ export default async function TopicPageEs({
             quizHref={quizHref}
             className="mb-8"
           />
-        </section>
-
-        {/* WHAT YOU WILL LEARN */}
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whatYouWillLearn}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            {labels.practiceIntro} <strong>{data.certification.title}</strong>.{" "}
-            {labels.learnText1}
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">
-            {labels.learnText2} <strong>{data.topic.title}</strong>{" "}
-            {labels.learnText3}
-          </p>
-        </section>
-
-        {/* WHY IT MATTERS */}
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whyItMatters}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            {labels.whyText1} <strong>{data.topic.title}</strong>{" "}
-            {labels.whyText2} <strong>{data.certification.title}</strong>.{" "}
-            {labels.whyText3}
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
         </section>
 
         {/* CONTENT */}

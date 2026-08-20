@@ -38,18 +38,6 @@ function getLabels(lang: Lang) {
       en: "Related topics",
     }[lang],
 
-    whatYouWillLearn: {
-      en: "What you will learn in this topic",
-    }[lang],
-
-    whyItMatters: {
-      en: "Why this topic matters",
-    }[lang],
-
-    practiceIntro: {
-      en: "This topic is part of the",
-    }[lang],
-
     contentTitle: {
       en: "Quick guide",
     }[lang],
@@ -234,45 +222,6 @@ export default async function TopicPageEn({
             quizHref={quizHref}
             className="mb-8"
           />
-        </section>
-
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whatYouWillLearn}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            {labels.practiceIntro} <strong>{data.certification.title}</strong>{" "}
-            path. This page helps you understand what this topic covers, which
-            concepts matter most, and why practicing with a focused quiz can
-            improve your exam preparation.
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">
-            The quiz on <strong>{data.topic.title}</strong> helps you focus on
-            definitions, practical scenarios, recurring concepts, and the kind of
-            knowledge that often appears during certification study and review.
-          </p>
-        </section>
-
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whyItMatters}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            Studying <strong>{data.topic.title}</strong> properly is important
-            because it strengthens your overall understanding of the{" "}
-            <strong>{data.certification.title}</strong> certification. Good
-            topic-level preparation makes it easier to answer both theoretical
-            and practical questions with more confidence and speed.
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">
-            Training one topic at a time also helps you identify weak points,
-            review more efficiently, and build a more structured preparation
-            path before moving to mixed quizzes or full exam simulations.
-          </p>
         </section>
 
         {data.topic.content && (
