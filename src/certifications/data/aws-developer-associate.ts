@@ -15,11 +15,10 @@
 //    (2026-08-19-add-aws-developer-associate-cert-topics.sql). id = 71,
 //    da aggiungere a IDS_BY_SLUG in src/certifications/data/index.ts allo
 //    Step 3 (non ancora fatto: aspettiamo che tutti i topic siano pronti).
-// 2. Domande quiz: Topic 1-6 (180/210) pronte e caricate via SQL
-//    (2026-08-19-add-aws-developer-associate-topic1-topic2-60-it.sql +
-//    ...-topic3-topic6-120-it.sql). Manca ancora il Topic 7
-//    (Troubleshooting, osservabilità e ottimizzazione), poi le traduzioni
-//    EN/FR/ES di tutte le domande.
+// 2. FATTO — tutte le 210 domande IT (7 topic × 30) pronte e caricate via
+//    SQL (2026-08-19-add-aws-developer-associate-topic1-topic2-60-it.sql +
+//    ...-topic3-topic6-120-it.sql + ...-topic7-30-it.sql). Resta da fare:
+//    le traduzioni EN/FR/ES di tutte le domande.
 // 3. Import di questo file + aggiunta a RAW_CERTS in
 //    src/certifications/data/index.ts.
 // 4. Logo in /public/images/certifications/aws-developer-associate.png
