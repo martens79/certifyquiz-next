@@ -15,21 +15,6 @@ function getLabels() {
     quizShort: "🚀 Quiz",
     availableQuestions: "Domande disponibili",
     relatedTopics: "Argomenti correlati",
-    whatYouWillLearn: "Cosa imparerai in questo argomento",
-    whyItMatters: "Perché questo argomento è importante",
-    practiceIntro: "Questo argomento fa parte del percorso",
-    learnText1:
-      "In questa pagina puoi capire meglio cosa copre questo argomento, quali concetti sono più importanti e perché è utile esercitarsi con un quiz dedicato prima di affrontare l'esame completo o i quiz misti.",
-    learnText2: "Il quiz su",
-    learnText3:
-      "ti aiuta a concentrarti su nozioni specifiche, definizioni, scenari pratici e concetti ricorrenti che possono comparire durante la preparazione alla certificazione.",
-    whyText1: "Studiare bene",
-    whyText2:
-      "è importante perché questo argomento contribuisce alla comprensione complessiva della certificazione",
-    whyText3:
-      "Una buona preparazione su ogni argomento facilita la gestione delle domande teoriche e pratiche, migliorando allo stesso tempo la sicurezza e la velocità di risposta.",
-    whyText4:
-      "Allenarsi argomento per argomento ti permette anche di identificare con maggiore precisione i tuoi punti deboli, ripassare meglio e costruire una preparazione più solida nel tempo.",
     faqTitle: "FAQ",
     contentTitle: "Guida rapida",
     mobileHint: "🎯 Ripassa o allenati su questo argomento",
@@ -205,36 +190,6 @@ export default async function TopicPageIt({
             quizHref={quizHref}
             className="mb-8"
           />
-        </section>
-
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whatYouWillLearn}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            {labels.practiceIntro} <strong>{data.certification.title}</strong>.{" "}
-            {labels.learnText1}
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">
-            {labels.learnText2} <strong>{data.topic.title}</strong>{" "}
-            {labels.learnText3}
-          </p>
-        </section>
-
-        <section className="bg-white border rounded-2xl p-6 mb-8">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-3">
-            {labels.whyItMatters}
-          </h2>
-
-          <p className="text-slate-700 leading-7">
-            {labels.whyText1} <strong>{data.topic.title}</strong>{" "}
-            {labels.whyText2} <strong>{data.certification.title}</strong>.{" "}
-            {labels.whyText3}
-          </p>
-
-          <p className="text-slate-700 leading-7 mt-4">{labels.whyText4}</p>
         </section>
 
         {data.topic.content && (
