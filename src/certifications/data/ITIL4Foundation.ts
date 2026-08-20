@@ -4,20 +4,20 @@ const ITIL_4_FOUNDATION = {
   slug: "itil-4-foundation",
   imageUrl: "/images/certifications/itil-4-foundation.png",
   officialUrl:
-    "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+    "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
 
-  // Verificato il 2026-08-04 sul Candidate Syllabus ufficiale AXELOS/PeopleCert.
+  // Verificato il 2026-08-20 sulla pagina ufficiale PeopleCert.
   // AXELOS pubblica i punti per singolo criterio di valutazione, non un peso
   // percentuale per dominio: elenco i 7 Learning Outcome senza inventare %.
   examBlueprint: {
     examName: "ITIL 4 Foundation",
-    provider: "AXELOS / PeopleCert",
-    officialSourceName: "AXELOS — ITIL 4 Foundation Candidate Syllabus",
+    provider: "PeopleCert",
+    officialSourceName: "PeopleCert — ITIL 4 Foundation",
     officialSourceUrl:
-      "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+      "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
     officialExamPageUrl:
-      "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
-    lastVerifiedAt: "2026-08-04",
+      "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
+    lastVerifiedAt: "2026-08-20",
     domains: [
       { name: "Understand the key concepts of service management" },
       { name: "Understand how the ITIL guiding principles can help an organization adopt and adapt service management" },
@@ -218,26 +218,26 @@ const ITIL_4_FOUNDATION = {
     examReference: {
       it: [
         {
-          text: "ITIL 4 Foundation — Pagina ufficiale Axelos/PeopleCert",
-          url: "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+          text: "ITIL 4 Foundation — Pagina ufficiale PeopleCert",
+          url: "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
         },
       ],
       en: [
         {
-          text: "ITIL 4 Foundation — Official Axelos/PeopleCert page",
-          url: "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+          text: "ITIL 4 Foundation — Official PeopleCert page",
+          url: "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
         },
       ],
       fr: [
         {
-          text: "ITIL 4 Foundation — Page officielle Axelos/PeopleCert",
-          url: "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+          text: "ITIL 4 Foundation — Page officielle PeopleCert",
+          url: "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
         },
       ],
       es: [
         {
-          text: "ITIL 4 Foundation — Página oficial Axelos/PeopleCert",
-          url: "https://www.axelos.com/certifications/itil-service-management/itil-4-foundation",
+          text: "ITIL 4 Foundation — Página oficial PeopleCert",
+          url: "https://www.peoplecert.org/browse-certifications/it-governance-and-service-management/ITIL-1/itil-4-foundation-2565",
         },
       ],
     },
@@ -285,7 +285,7 @@ const ITIL_4_FOUNDATION = {
         },
         {
           q: "Qual è il punteggio minimo per superare l'esame?",
-          a: "Di solito servono 26 risposte corrette su 40, cioè il 65%.",
+          a: "Servono 26 risposte corrette su 40, cioè il 65%.",
         },
         {
           q: "Come posso prepararmi?",
@@ -303,7 +303,7 @@ const ITIL_4_FOUNDATION = {
         },
         {
           q: "What is the passing score?",
-          a: "Usually you need 26 correct answers out of 40, which is 65%.",
+          a: "You need 26 correct answers out of 40, which is 65%.",
         },
         {
           q: "How can I prepare?",
@@ -321,7 +321,7 @@ const ITIL_4_FOUNDATION = {
         },
         {
           q: "Quel est le score minimum pour réussir ?",
-          a: "Il faut généralement 26 bonnes réponses sur 40, soit 65 %.",
+          a: "Il faut 26 bonnes réponses sur 40, soit 65 %.",
         },
         {
           q: "Comment se préparer ?",
@@ -339,7 +339,7 @@ const ITIL_4_FOUNDATION = {
         },
         {
           q: "¿Cuál es la puntuación mínima para aprobar?",
-          a: "Normalmente se necesitan 26 respuestas correctas de 40, es decir, el 65%.",
+          a: "Se necesitan 26 respuestas correctas de 40, es decir, el 65%.",
         },
         {
           q: "¿Cómo puedo prepararme?",

@@ -71,6 +71,9 @@ export const EXAM_SPECS_BY_CERT_ID: Record<number, ExamSpec> = {
   // 31 — Google Cloud (Cloud Digital Leader)
   31: { questions: 50, durationSec: 90 * 60 },
 
+  // 38 — ITIL 4 Foundation
+  38: { questions: 40, durationSec: 60 * 60 },
+
   // 16 — Microsoft Azure Fundamentals
   16: { questions: 40, durationSec: 60 * 60 },
 
