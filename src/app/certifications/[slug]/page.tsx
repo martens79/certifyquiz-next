@@ -4,6 +4,7 @@ import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 import { getCertificationDetailRSC } from "@/lib/server/certs";
 import { locales } from "@/lib/i18n";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
+import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -128,6 +129,11 @@ function getCategoryFromSlug(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const canonicalSlug = normalizeCertSlug(slug);
+  const registryCert = getRegistryCertBySlug(toRegistryKey(canonicalSlug));
+
+  if (registryCert?.publicationStatus === "planned") {
+    return { robots: { index: false, follow: false } };
+  }
 
   const data = await getCertificationDetailRSC(toRegistryKey(canonicalSlug));
 

@@ -85,6 +85,9 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
   let ogImage: string | undefined;
 
   if (reg) {
+    if (reg.publicationStatus === "planned") {
+      return { robots: { index: false, follow: false } };
+    }
     titleBase = reg.metaTitle?.[L] ?? reg.metaTitle?.it ?? reg.title?.[L] ?? reg.title?.it;
     description = reg.metaDescription?.[L] ?? reg.metaDescription?.it ?? reg.description?.[L] ?? reg.description?.it;
     ogImage = reg.imageUrl;

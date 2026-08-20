@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Building2 } from "lucide-react";
-import type { Locale } from "@/lib/paths";
+import { certPath, type Locale } from "@/lib/paths";
 import { BUSINESS_ECOSYSTEMS, sapHubPath } from "./data";
 
 const copy = {
@@ -29,8 +29,11 @@ export default function BusinessEcosystems({ lang }: { lang: Locale }) {
           </>
         );
 
+        const href = item.key === "salesforce"
+          ? certPath(lang, "salesforce-platform-administrator")
+          : sapHubPath(lang);
         return item.available ? (
-          <Link key={item.key} href={sapHubPath(lang)} className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <Link key={item.key} href={href} className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             {content}
           </Link>
         ) : (

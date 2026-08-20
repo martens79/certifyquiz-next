@@ -125,6 +125,7 @@ export const getCategoryStyle = (key?: string | null): CatStyle => {
  * Supporta sia gli slug "vecchi" del frontend sia quelli reali del DB.
  */
 export const CERT_CATEGORY_BY_SLUG: Record<string, CategoryKey> = {
+  "salesforce-platform-administrator": "business-applications",
   "sap-s4hana-financial-accounting": "business-applications",
   "sap-s4hana-sourcing-procurement": "business-applications",
   "sap-s4hana-sales": "business-applications",
