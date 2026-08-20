@@ -1,5 +1,7 @@
 import NetworkingRoadmapPage from "@/components/roadmaps/NetworkingRoadmapPage";
 import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
+import { buildRoadmapMetadata } from "@/lib/roadmap-metadata";
 
 type Locale = "it" | "en" | "es" | "fr";
 
@@ -33,7 +35,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const { title, description } = SEO[lang] ?? SEO.en;
-  return { title, description };
+  return buildRoadmapMetadata({ lang, area: "networking", title, description });
 }
 
 export default async function Page({
@@ -42,5 +44,6 @@ export default async function Page({
   params: Promise<{ lang: Locale }>;
 }) {
   const { lang } = await params;
+  if (lang === "en") permanentRedirect("/roadmap-networking");
   return <NetworkingRoadmapPage lang={lang} />;
 }

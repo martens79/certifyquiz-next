@@ -235,6 +235,7 @@ metaDescription: {
         { q: "Is CCNA still worth it in 2026?", a: "Yes. It’s a strong foundation for networking, troubleshooting, and enterprise concepts—often required for junior roles." },
         { q: "How long is the 200-301 exam?", a: "Typically around 120 minutes (format and duration can change over time)." },
         { q: "What’s the best way to prepare?", a: "Learn the concepts and practice daily: mixed quizzes + reviewing mistakes is the fastest way to improve." },
+        { q: "Does CertifyQuiz include a CCNA mock test?", a: "Yes. After practicing by topic, use the CCNA mock exam to test your timing and apply concepts across the full 200-301 blueprint." },
       ],
       fr: [
         { q: "CCNA est-elle utile en 2026 ?", a: "Oui. C’est une base solide en réseau et dépannage, souvent demandée pour des postes junior." },

@@ -256,6 +256,10 @@ metaDescription: {
           q: "Do CertifyQuiz quizzes help with ISC2 CC preparation?",
           a: "Yes. The quizzes are designed to reflect exam-style thinking and reinforce key concepts through detailed explanations.",
         },
+        {
+          q: "Where can I practice ISC2 CC exam questions?",
+          a: "Use the ISC2 CC quiz and practice test on CertifyQuiz to work through exam-style questions by topic, then review explanations for the areas you miss.",
+        },
       ],
       fr: [
         {

@@ -1,6 +1,7 @@
 import CybersecurityRoadmapPage from "@/components/roadmaps/CybersecurityRoadmapPage";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { buildRoadmapMetadata } from "@/lib/roadmap-metadata";
 
 type Lang = "it" | "es" | "fr";
 
@@ -30,7 +31,12 @@ export async function generateMetadata({
   const { lang } = await params;
   const seo = SEO[lang as Lang];
   if (!seo) return {};
-  return { title: seo.title, description: seo.description };
+  return buildRoadmapMetadata({
+    lang: lang as Lang,
+    area: "cybersecurity",
+    title: seo.title,
+    description: seo.description,
+  });
 }
 
 export default async function Page({

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCertTopicReviews, type Locale } from "@/lib/data";
 import { cleanReviewTitle } from "@/lib/text";
-import { reviewsCertPath, reviewsPath } from "@/lib/paths";
+import { certPath, reviewsCertPath, reviewsPath, roadmapPath } from "@/lib/paths";
 
 type Props = {
   lang: Locale;
@@ -26,6 +26,11 @@ const labels = {
     emptyText: "Nessun ripasso disponibile per questa certificazione al momento.",
     metaDescription: (name: string) =>
       `Ripassi rapidi per la certificazione ${name}: rivedi i concetti chiave prima del quiz.`,
+    heading: (name: string) => `${name}: ripassi rapidi`,
+    intro: (name: string) => `Rivedi i concetti chiave di ${name}, poi verifica la preparazione con i quiz dedicati.`,
+    certificationLink: "Pagina certificazione",
+    quizLink: "Quiz della certificazione",
+    roadmapLink: "Roadmap correlata",
   },
   en: {
     badge: "CertifyQuiz Reviews",
@@ -38,6 +43,11 @@ const labels = {
     emptyText: "No reviews available for this certification yet.",
     metaDescription: (name: string) =>
       `Quick reviews for ${name}: go through the key concepts before the quiz.`,
+    heading: (name: string) => `${name} Quick Reviews`,
+    intro: (name: string) => `Review the key ${name} concepts, then test your understanding with the related practice quizzes.`,
+    certificationLink: "Certification page",
+    quizLink: "Practice quizzes",
+    roadmapLink: "Related roadmap",
   },
   fr: {
     badge: "CertifyQuiz Reviews",
@@ -50,6 +60,11 @@ const labels = {
     emptyText: "Aucune révision disponible pour cette certification pour le moment.",
     metaDescription: (name: string) =>
       `Révisions rapides pour la certification ${name} : repassez les concepts clés avant le quiz.`,
+    heading: (name: string) => `${name} : révisions rapides`,
+    intro: (name: string) => `Révisez les concepts clés de ${name}, puis testez vos connaissances avec les quiz associés.`,
+    certificationLink: "Page de certification",
+    quizLink: "Quiz de certification",
+    roadmapLink: "Roadmap associée",
   },
   es: {
     badge: "CertifyQuiz Reviews",
@@ -62,11 +77,22 @@ const labels = {
     emptyText: "Todavía no hay repasos disponibles para esta certificación.",
     metaDescription: (name: string) =>
       `Repasos rápidos de la certificación ${name}: repasa los conceptos clave antes del quiz.`,
+    heading: (name: string) => `${name}: repasos rápidos`,
+    intro: (name: string) => `Repasa los conceptos clave de ${name} y después comprueba tu preparación con los cuestionarios relacionados.`,
+    certificationLink: "Página de certificación",
+    quizLink: "Cuestionarios de certificación",
+    roadmapLink: "Roadmap relacionada",
   },
 } satisfies Record<Locale, Record<string, unknown>>;
 
 const ogLocale = (lang: Locale) =>
   lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
+
+function relatedRoadmap(certSlug: string): "networking" | "cybersecurity" | null {
+  if (["ccna", "cisco-ccst-networking", "comptia-network-plus", "ccnp-enterprise", "networking-foundations"].includes(certSlug)) return "networking";
+  if (["isc2-cc", "cisco-ccst-cybersecurity", "security-plus", "ceh", "cissp", "cybersecurity-foundations"].includes(certSlug)) return "cybersecurity";
+  return null;
+}
 
 export async function generateReviewsCertificationMetadata({
   lang,
@@ -125,6 +151,9 @@ export default async function ReviewsCertificationIndexPage({ lang, certSlug }: 
     );
   }
 
+  const roadmap = relatedRoadmap(certSlug);
+  const quizSlug = certSlug === "ccna" ? "ccna" : certSlug;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8">
       <section className="rounded-3xl bg-slate-950 px-5 py-6 text-white shadow-sm md:px-8 md:py-8">
@@ -133,12 +162,18 @@ export default async function ReviewsCertificationIndexPage({ lang, certSlug }: 
         </p>
 
         <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
-          {certification.name}
+          {t.heading(certification.name)}
         </h1>
 
         <p className="mt-3 text-sm leading-6 text-slate-200 md:text-base">
-          {t.available(items.length)}
+          {t.intro(certification.name)} {t.available(items.length)}.
         </p>
+
+        <nav className="mt-4 flex flex-wrap gap-4 text-sm font-semibold" aria-label={certification.name}>
+          <Link href={certPath(lang, certSlug)} className="text-blue-200 hover:text-white">{t.certificationLink} →</Link>
+          <Link href={`/${lang}/quiz/${quizSlug}`} className="text-blue-200 hover:text-white">{t.quizLink} →</Link>
+          {roadmap && <Link href={roadmapPath(lang, roadmap)} className="text-blue-200 hover:text-white">{t.roadmapLink} →</Link>}
+        </nav>
       </section>
 
       <div className="mt-4">

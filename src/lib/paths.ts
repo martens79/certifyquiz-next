@@ -429,6 +429,28 @@ export const reviewsPath = (lang: Locale): string => {
 export const reviewsCertPath = (lang: Locale, certSlug: string): string =>
   `${reviewsPath(lang)}/${certSlug}`;
 
+export const topicReviewPath = (
+  lang: Locale,
+  certSlug: string,
+  topicSlug: string
+): string => {
+  const topicPath = topicSeoPath(lang, certSlug, topicSlug);
+  const reviewSegment =
+    lang === "it"
+      ? "ripasso"
+      : lang === "es"
+      ? "repaso"
+      : lang === "fr"
+      ? "revision"
+      : "review";
+  return `${topicPath}/${reviewSegment}`;
+};
+
+export const roadmapPath = (
+  lang: Locale,
+  area: "networking" | "cybersecurity"
+): string => (lang === "en" ? `/roadmap-${area}` : `/${lang}/roadmap-${area}`);
+
 export const SCENARIOS_SLUG_BY_LANG: Record<Locale, string> = {
   it: "scenari",
   en: "scenarios",

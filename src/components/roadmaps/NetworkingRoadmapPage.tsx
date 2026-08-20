@@ -6,6 +6,33 @@ import RoadmapStepCard from "@/components/roadmaps/RoadmapStepCard";
 type RoadmapQuizSlug = string;
 type RoadmapCertSlug = string;
 
+const PATH_SUMMARY: Record<Locale, { label: string; steps: Array<{ label: string; slug: string }> }> = {
+  en: { label: "Recommended network engineer roadmap", steps: [
+    { label: "Networking Foundations", slug: "networking-foundations" },
+    { label: "CCST Networking", slug: "cisco-ccst-networking" },
+    { label: "CCNA", slug: "ccna" },
+    { label: "CCNP Enterprise", slug: "ccnp-enterprise" },
+  ] },
+  it: { label: "Percorso consigliato per network engineer", steps: [
+    { label: "Fondamenti Networking", slug: "networking-foundations" },
+    { label: "CCST Networking", slug: "cisco-ccst-networking" },
+    { label: "CCNA", slug: "ccna" },
+    { label: "CCNP Enterprise", slug: "ccnp-enterprise" },
+  ] },
+  es: { label: "Ruta recomendada para network engineer", steps: [
+    { label: "Fundamentos de Networking", slug: "networking-foundations" },
+    { label: "CCST Networking", slug: "cisco-ccst-networking" },
+    { label: "CCNA", slug: "ccna" },
+    { label: "CCNP Enterprise", slug: "ccnp-enterprise" },
+  ] },
+  fr: { label: "Parcours recommandé pour network engineer", steps: [
+    { label: "Fondamentaux Networking", slug: "networking-foundations" },
+    { label: "CCST Networking", slug: "cisco-ccst-networking" },
+    { label: "CCNA", slug: "ccna" },
+    { label: "CCNP Enterprise", slug: "ccnp-enterprise" },
+  ] },
+};
+
 export default function NetworkingRoadmapPage({
   lang,
 }: {
@@ -47,6 +74,18 @@ export default function NetworkingRoadmapPage({
         <p className="mt-5 text-slate-700 leading-relaxed">
           {t.intro}
         </p>
+
+        <nav aria-label={PATH_SUMMARY[lang].label} className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <p className="text-sm font-bold text-blue-950">{PATH_SUMMARY[lang].label}</p>
+          <ol className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            {PATH_SUMMARY[lang].steps.map((step, index) => (
+              <li key={step.slug} className="flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true" className="text-slate-400">→</span>}
+                <Link href={cert(step.slug)} className="font-semibold text-blue-700 hover:underline">{step.label}</Link>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
@@ -91,7 +130,7 @@ export default function NetworkingRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {([] as typeof t.salaryRanges).map((r) => (
+          {t.salaryRanges.map((r) => (
             <div key={r.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="font-bold">{r.label}</p>
               <p className="mt-1 text-slate-700">{r.range}</p>

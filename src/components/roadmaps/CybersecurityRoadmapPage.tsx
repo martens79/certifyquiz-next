@@ -6,6 +6,37 @@ type Locale = "it" | "en" | "es" | "fr";
 type RoadmapQuizSlug = string;
 type RoadmapCertSlug = string;
 
+const PATH_SUMMARY: Record<Locale, { label: string; steps: Array<{ label: string; slug: string }> }> = {
+  en: { label: "Recommended beginner cybersecurity roadmap", steps: [
+    { label: "ISC2 CC", slug: "isc2-cc" },
+    { label: "CCST Cybersecurity", slug: "cisco-ccst-cybersecurity" },
+    { label: "CompTIA Security+", slug: "security-plus" },
+    { label: "CEH", slug: "ceh" },
+    { label: "CISSP later", slug: "cissp" },
+  ] },
+  it: { label: "Roadmap cybersecurity consigliata per principianti", steps: [
+    { label: "ISC2 CC", slug: "isc2-cc" },
+    { label: "CCST Cybersecurity", slug: "cisco-ccst-cybersecurity" },
+    { label: "CompTIA Security+", slug: "security-plus" },
+    { label: "CEH", slug: "ceh" },
+    { label: "CISSP in seguito", slug: "cissp" },
+  ] },
+  es: { label: "Ruta de ciberseguridad recomendada para principiantes", steps: [
+    { label: "ISC2 CC", slug: "isc2-cc" },
+    { label: "CCST Cybersecurity", slug: "cisco-ccst-cybersecurity" },
+    { label: "CompTIA Security+", slug: "security-plus" },
+    { label: "CEH", slug: "ceh" },
+    { label: "CISSP después", slug: "cissp" },
+  ] },
+  fr: { label: "Roadmap cybersécurité recommandée aux débutants", steps: [
+    { label: "ISC2 CC", slug: "isc2-cc" },
+    { label: "CCST Cybersecurity", slug: "cisco-ccst-cybersecurity" },
+    { label: "CompTIA Security+", slug: "security-plus" },
+    { label: "CEH", slug: "ceh" },
+    { label: "CISSP ensuite", slug: "cissp" },
+  ] },
+};
+
 const SPECIALIZATIONS: Record<Locale, { title: string; intro: string; tracks: Array<{ name: string; focus: string; certs: string[] }> }> = {
   it: { title: "Scegli una specializzazione", intro: "Dopo le fondamenta il percorso non è unico: scegli il ramo più vicino al lavoro che vuoi imparare.", tracks: [
     { name: "SOC e blue team", focus: "Monitoraggio, incident response, endpoint e analisi degli eventi.", certs: ["ISC2 CC", "Security+"] },
@@ -72,6 +103,18 @@ export default function CybersecurityRoadmapPage({
         <p className="mt-2 text-lg text-slate-600">{t.subtitle}</p>
         <p className="mt-5 text-slate-700 leading-relaxed">{t.intro}</p>
 
+        <nav aria-label={PATH_SUMMARY[lang].label} className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+          <p className="text-sm font-bold text-blue-950">{PATH_SUMMARY[lang].label}</p>
+          <ol className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            {PATH_SUMMARY[lang].steps.map((step, index) => (
+              <li key={step.slug} className="flex items-center gap-2">
+                {index > 0 && <span aria-hidden="true" className="text-slate-400">→</span>}
+                <Link href={cert(step.slug)} className="font-semibold text-blue-700 hover:underline">{step.label}</Link>
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         <div className="mt-6 flex flex-wrap gap-3">
           <Link
             href={quiz("isc2-cc")}
@@ -129,7 +172,7 @@ export default function CybersecurityRoadmapPage({
         <p className="mt-2 text-slate-700 leading-relaxed">{t.salaryIntro}</p>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {([] as typeof t.salaryRanges).map((r) => (
+          {t.salaryRanges.map((r) => (
             <div
               key={r.label}
               className="rounded-xl border border-slate-200 bg-slate-50 p-4"

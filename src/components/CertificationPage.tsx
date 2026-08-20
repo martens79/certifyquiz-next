@@ -238,6 +238,28 @@ const pageTopics =
 
   const basePath = lang === "en" ? "" : `/${lang}`;
 
+  const prioritySeoLinks = (() => {
+    if (data.slug === "ccna") {
+      return {
+        title: { it: "Continua il percorso CCNA", en: "Continue your CCNA preparation", fr: "Poursuivre votre préparation CCNA", es: "Continúa tu preparación CCNA" }[lang],
+        links: [
+          { label: { it: "Roadmap networking", en: "Network engineer and CCNA roadmap", fr: "Roadmap networking et CCNA", es: "Roadmap networking y CCNA" }[lang], href: lang === "en" ? "/roadmap-networking" : `/${lang}/roadmap-networking` },
+          { label: { it: "Simulazione esame CCNA", en: "CCNA 200-301 mock test", fr: "Examen blanc CCNA 200-301", es: "Simulacro CCNA 200-301" }[lang], href: `/${lang}/quiz/ccna/mock-exam` },
+        ],
+      };
+    }
+    if (data.slug === "isc2-cc") {
+      return {
+        title: { it: "Continua il percorso ISC2 CC", en: "Continue your ISC2 CC preparation", fr: "Poursuivre votre préparation ISC2 CC", es: "Continúa tu preparación ISC2 CC" }[lang],
+        links: [
+          { label: { it: "Roadmap cybersecurity", en: "Beginner cybersecurity roadmap", fr: "Roadmap cybersécurité débutant", es: "Roadmap de ciberseguridad para principiantes" }[lang], href: lang === "en" ? "/roadmap-cybersecurity" : `/${lang}/roadmap-cybersecurity` },
+          { label: { it: "Quiz ISC2 CC", en: "ISC2 CC quiz and practice questions", fr: "Quiz et questions ISC2 CC", es: "Quiz y preguntas ISC2 CC" }[lang], href: `/${lang}/quiz/isc2-cc` },
+        ],
+      };
+    }
+    return null;
+  })();
+
   //solo le cert foundations hanno il riquadro con le guide 
   const isFoundationCert =
   data.slug.includes("foundations") || data.slug.includes("foundation");
@@ -396,6 +418,19 @@ es: '¿Cuál es la certificación SQL "actual"?',
           quizHref={quizHref}
           topics={practiceBoxTopics}
         />
+
+        {prioritySeoLinks && (
+          <nav aria-label={prioritySeoLinks.title} className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <h2 className="text-lg font-semibold text-blue-900">{prioritySeoLinks.title}</h2>
+            <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {prioritySeoLinks.links.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="font-semibold text-blue-700 hover:underline">{item.label} →</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
 
         {/* Blocchi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">

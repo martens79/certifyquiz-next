@@ -179,6 +179,26 @@ const SEO_BASE: Record<Locale, { quizLabel: string; desc: string }> = {
   es: { quizLabel: "Quiz", desc: "Entrena con los temas oficiales de esta certificación." },
 };
 
+function priorityQuizSeo(lang: Locale, slug: string, certName: string) {
+  if (slug === "ccna") {
+    return {
+      it: { title: "Quiz CCNA per argomento", description: "Scegli un argomento CCNA 200-301 e allenati con domande dedicate prima della simulazione completa." },
+      en: { title: "Free CCNA Quiz by Topic — Practice 200-301 Questions", description: "Choose a CCNA 200-301 topic and practice focused questions before taking the complete mock test." },
+      fr: { title: "Quiz CCNA gratuit par sujet", description: "Choisissez un sujet CCNA 200-301 et entraînez-vous avec des questions ciblées avant l'examen blanc." },
+      es: { title: "Quiz CCNA gratis por tema", description: "Elige un tema de CCNA 200-301 y practica preguntas específicas antes del simulacro completo." },
+    }[lang];
+  }
+  if (slug === "isc2-cc") {
+    return {
+      it: { title: "Quiz ISC2 CC per argomento", description: "Scegli un dominio ISC2 CC e allenati con domande mirate e spiegazioni prima del practice test completo." },
+      en: { title: "Free ISC2 CC Quiz by Topic — Practice Questions", description: "Choose an ISC2 CC domain and practice focused exam questions with explanations before the complete practice test." },
+      fr: { title: "Quiz ISC2 CC gratuit par sujet", description: "Choisissez un domaine ISC2 CC et entraînez-vous avec des questions ciblées et leurs explications." },
+      es: { title: "Quiz ISC2 CC gratis por tema", description: "Elige un dominio de ISC2 CC y practica preguntas específicas con explicaciones." },
+    }[lang];
+  }
+  return { title: `${SEO_BASE[lang].quizLabel} — ${certName}`, description: SEO_BASE[lang].desc };
+}
+
 const ogLocale = (lang: Locale) =>
   lang === "it" ? "it-IT" : lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "es-ES";
 
@@ -321,11 +341,9 @@ export async function generateMetadata({
   const { lang, slug } = await params;
   const L: Locale = isLocale(lang) ? (lang as Locale) : "it";
 
-  const base = SEO_BASE[L];
 const resolvedSlug = resolveQuizSlug(slug);
 const certName = shortCertName(resolvedSlug);
-const title = `${base.quizLabel} — ${certName}`;
-const description = base.desc;
+const { title, description } = priorityQuizSeo(L, resolvedSlug, certName);
 
   const canonicalPath = quizCertPath(L, resolvedSlug);
   const canonical = `${SITE}${canonicalPath}`;
@@ -479,9 +497,9 @@ const mockCta =
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       <header className={`rounded-2xl p-6 mb-8 shadow-sm ${css.header}`}>
-        {/* Desktop (md+): LEFT CTA — CENTER title — RIGHT badge */}
-        <div className="relative hidden md:flex md:items-center md:mb-2">
-          <div className="absolute left-0">
+        {/* Un solo H1; su desktop i link sono allineati ai lati. */}
+        <div className="relative flex items-center mb-2">
+          <div className="absolute left-0 hidden md:block">
             <Link
               href={certPath(L, resolvedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white/70 px-4 py-1.5 text-sm font-semibold hover:bg-white"
@@ -495,7 +513,7 @@ const mockCta =
             {base.quizLabel} — {certName}
           </h1>
 
-          <div className="absolute right-0">
+          <div className="absolute right-0 hidden md:block">
             <Link
               href={categoryHref}
               className={`inline-flex items-center gap-2 text-xs font-extrabold px-3 py-1 rounded-full shadow-sm bg-white/80 border hover:bg-white transition ${
@@ -509,12 +527,8 @@ const mockCta =
           </div>
         </div>
 
-        {/* Mobile (<md): title centered + pills centered below */}
+        {/* Mobile (<md): pills centered below the shared title */}
         <div className="md:hidden">
-          <h1 className="text-2xl font-bold text-center">
-            {base.quizLabel} — {certName}
-          </h1>
-
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             <Link
               href={certPath(L, resolvedSlug)}

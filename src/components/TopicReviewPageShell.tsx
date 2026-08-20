@@ -3,7 +3,9 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getTopicReviewPage, getCertTopicReviews, type Locale } from "@/lib/data";
-import { reviewsCertPath } from "@/lib/paths";
+import { reviewsCertPath, roadmapPath, topicReviewPath, toHreflang } from "@/lib/paths";
+import { evaluateReviewIndexability } from "@/lib/review-indexability";
+import StructuredData from "@/components/StructuredData";
 
 type Props = {
   lang: Locale;
@@ -26,6 +28,7 @@ const labels = {
     finalTitle: "Ora metti alla prova quello che hai ripassato",
     finalText:
       "Dopo il ripasso, passa al quiz per verificare se hai davvero capito i concetti principali.",
+    roadmap: "Continua con la roadmap correlata",
     comingMetaTitle: "Ripasso rapido in arrivo | CertifyQuiz",
     comingMetaDescription:
       "Questa scheda di ripasso rapido sarà disponibile prossimamente su CertifyQuiz.",
@@ -44,6 +47,7 @@ const labels = {
     finalTitle: "Now test what you reviewed",
     finalText:
       "After the review, start the quiz to check whether you really understand the key concepts.",
+    roadmap: "Continue with the related roadmap",
     comingMetaTitle: "Quick review coming soon | CertifyQuiz",
     comingMetaDescription:
       "This quick review page will be available soon on CertifyQuiz.",
@@ -62,6 +66,7 @@ const labels = {
     finalTitle: "Testez maintenant ce que vous avez révisé",
     finalText:
       "Après la révision, passez au quiz pour vérifier si vous maîtrisez vraiment les concepts principaux.",
+    roadmap: "Continuer avec la roadmap associée",
     comingMetaTitle: "Révision rapide bientôt disponible | CertifyQuiz",
     comingMetaDescription:
       "Cette fiche de révision rapide sera bientôt disponible sur CertifyQuiz.",
@@ -80,11 +85,26 @@ const labels = {
     finalTitle: "Ahora pon a prueba lo que has repasado",
     finalText:
       "Después del repaso, pasa al quiz para comprobar si realmente has entendido los conceptos principales.",
+    roadmap: "Continúa con la roadmap relacionada",
     comingMetaTitle: "Repaso rápido próximamente | CertifyQuiz",
     comingMetaDescription:
       "Esta ficha de repaso rápido estará disponible próximamente en CertifyQuiz.",
   },
 };
+
+const locales: readonly Locale[] = ["it", "en", "fr", "es"];
+const RAW_SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
+const SITE = RAW_SITE.replace(/\/+$/, "");
+
+function absoluteUrl(path: string) {
+  return `${SITE}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function relatedRoadmap(certSlug: string): "networking" | "cybersecurity" | null {
+  if (["ccna", "cisco-ccst-networking", "comptia-network-plus", "ccnp-enterprise", "networking-foundations"].includes(certSlug)) return "networking";
+  if (["isc2-cc", "cisco-ccst-cybersecurity", "security-plus", "ceh", "cissp", "cybersecurity-foundations"].includes(certSlug)) return "cybersecurity";
+  return null;
+}
 
 function getCertificationPath(lang: Locale, slug: string) {
   if (lang === "en") return `/certifications/${slug}`;
@@ -124,7 +144,42 @@ export async function generateTopicReviewMetadata({
         index: false,
         follow: true,
       },
+      alternates: {
+        canonical: absoluteUrl(topicReviewPath(lang, slug, topicSlug)),
+      },
     };
+  }
+
+  const indexability = evaluateReviewIndexability(review);
+  const canonical = absoluteUrl(topicReviewPath(lang, slug, topicSlug));
+  const languages: Record<string, string> = {};
+
+  if (indexability.indexable) {
+    const localizedReviews = await Promise.all(
+      locales.map(async (locale) => {
+        const { items } = await getCertTopicReviews(slug, locale);
+        const item = items.find((candidate) => candidate.topicId === review.topicId);
+        if (!item) return null;
+
+        const localizedReview = await getTopicReviewPage({
+          certSlug: slug,
+          topicSlug: item.topicSlug,
+          lang: locale,
+        });
+        if (!localizedReview) return null;
+
+        return evaluateReviewIndexability(localizedReview).indexable
+          ? { locale, href: item.href }
+          : null;
+      })
+    );
+
+    for (const localized of localizedReviews) {
+      if (localized) {
+        languages[toHreflang(localized.locale)] = absoluteUrl(localized.href);
+      }
+    }
+    if (languages["en-US"]) languages["x-default"] = languages["en-US"];
   }
 
   return {
@@ -134,12 +189,16 @@ export async function generateTopicReviewMetadata({
       `${review.topicTitle} | CertifyQuiz`,
     description:
       review.metaDescription || review.intro || t.comingMetaDescription,
-    // Contenuto distinto dal topic genitore ma non pensato per competere
-    // in SERP: resta crawlabile (follow) così Google segue i link verso
-    // quiz/topic, ma non viene indicizzato come pagina a sé.
     robots: {
-      index: false,
+      index: indexability.indexable,
       follow: true,
+    },
+    alternates: {
+      canonical,
+      languages:
+        indexability.indexable && Object.keys(languages).length > 0
+          ? languages
+          : undefined,
     },
   };
 }
@@ -200,6 +259,32 @@ export default async function TopicReviewPageShell({
   }
 
   const quizPath = getQuizPath(lang, review.topicId);
+  const roadmap = relatedRoadmap(slug);
+  const indexability = evaluateReviewIndexability(review);
+  const reviewUrl = absoluteUrl(topicReviewPath(lang, slug, topicSlug));
+  const reviewLd = indexability.indexable
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: review.title || review.topicTitle,
+        description: review.metaDescription || review.intro || undefined,
+        mainEntityOfPage: reviewUrl,
+        inLanguage: lang,
+        author: { "@type": "Organization", name: "CertifyQuiz" },
+        publisher: { "@type": "Organization", name: "CertifyQuiz" },
+      }
+    : null;
+  const breadcrumbLd = indexability.indexable
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: review.certificationName, item: absoluteUrl(certPath) },
+          { "@type": "ListItem", position: 2, name: review.topicTitle, item: absoluteUrl(topicPath) },
+          { "@type": "ListItem", position: 3, name: review.title || review.topicTitle, item: reviewUrl },
+        ],
+      }
+    : null;
 
   const { items: certReviews } = await getCertTopicReviews(slug, lang);
   const currentIndex = certReviews.findIndex(
@@ -214,6 +299,8 @@ export default async function TopicReviewPageShell({
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      {reviewLd && <StructuredData id={`ld-review-${review.id}`} data={reviewLd} />}
+      {breadcrumbLd && <StructuredData id={`ld-review-breadcrumb-${review.id}`} data={breadcrumbLd} />}
       <nav className="mb-6 text-sm text-slate-500">
         <Link href={certPath} className="hover:text-blue-700">
           {review.certificationName}
@@ -281,13 +368,18 @@ export default async function TopicReviewPageShell({
           {t.finalText}
         </p>
 
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-4">
           <Link
             href={quizPath}
             className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
           >
             {t.startQuiz}
           </Link>
+          {roadmap && (
+            <Link href={roadmapPath(lang, roadmap)} className="inline-flex items-center font-bold text-blue-800 hover:underline">
+              {t.roadmap} →
+            </Link>
+          )}
         </div>
       </section>
 

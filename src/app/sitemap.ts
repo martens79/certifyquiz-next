@@ -228,6 +228,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.75,
             lastModified: now,
           },
+          {
+            url: lang === "en" ? `${SITE}/roadmap-networking` : `${SITE}/${lang}/roadmap-networking`,
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+            lastModified: now,
+          },
+          {
+            url: lang === "en" ? `${SITE}/roadmap-cybersecurity` : `${SITE}/${lang}/roadmap-cybersecurity`,
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+            lastModified: now,
+          },
           // NB: /materiale-consigliato (e varianti EN/FR/ES) sono noindex finché
           // il catalogo risorse resta vuoto: escluse di proposito dalla sitemap.
           {
