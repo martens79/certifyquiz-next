@@ -12,10 +12,10 @@ export const awsCloudHub: HubData = {
     es: "AWS Cloud: certificaciones y quizzes",
   },
   description: {
-    it: "Percorso AWS Cloud: fondamentali, AI generativa e servizi core, con pratica su quiz in stile esame. Contenuti in crescita.",
-    en: "AWS Cloud path: fundamentals, generative AI and core services, with exam-style quiz practice. Growing content.",
-    fr: "Parcours AWS Cloud : fondamentaux, IA générative et services clés, avec entraînement via quiz type examen. Contenu en croissance.",
-    es: "Ruta AWS Cloud: fundamentos, IA generativa y servicios clave, con práctica con quizzes estilo examen. Contenido en crecimiento.",
+    it: "Percorso AWS Cloud: fondamentali, sviluppo applicativo, AI generativa e servizi core, con pratica su quiz in stile esame. Contenuti in crescita.",
+    en: "AWS Cloud path: fundamentals, application development, generative AI and core services, with exam-style quiz practice. Growing content.",
+    fr: "Parcours AWS Cloud : fondamentaux, développement d'applications, IA générative et services clés, avec entraînement via quiz type examen. Contenu en croissance.",
+    es: "Ruta AWS Cloud: fundamentos, desarrollo de aplicaciones, IA generativa y servicios clave, con práctica con quizzes estilo examen. Contenido en crecimiento.",
   },
   certs: [
     {
@@ -35,6 +35,12 @@ export const awsCloudHub: HubData = {
       badge: "Foundational",
       examCode: "AIF-C01",
       popularity: 90,
+    },
+    {
+      slug: "aws-developer-associate",
+      badge: "Associate",
+      examCode: "DVA-C02",
+      popularity: 88,
     },
   ],
 };

@@ -1,36 +1,27 @@
 // src/certifications/data/aws-developer-associate.ts
-// 🚧 DRAFT — struttura e 7 topic definiti, NON ancora attivo.
+// ✅ LIVE dal 2026-08-20 — collegata al registro (IDS_BY_SLUG/RAW_CERTS) e
+// alla hub aws-cloud (quarta card). Completa il trio Associate insieme a
+// Solutions Architect e SysOps Administrator (quest'ultima ancora da fare).
 //
-// Prossima certificazione AWS da aggiungere dopo AI Practitioner (completa il
-// trio Associate con Solutions Architect e SysOps Administrator).
+// ⚠️ Le 210 domande sono SOLO in italiano (question_en/fr/es NULL in DB).
+// L'endpoint quiz (/api/questions/:topicId) non ha fallback IT per le altre
+// lingue: un utente EN/FR/ES che fa questo quiz vede domande/risposte vuote
+// finché non si eseguono le UPDATE di traduzione — gap noto e accettato
+// (decisione 2026-08-20), da chiudere appena possibile.
 //
-// Stato: i 7 topic sono definitivi (approvati). Extra content (learn/
-// whyChoose/examReference/faq, 4 lingue) completato — la pagina non è più
-// "scarna". Le domande IT vengono generate un topic alla volta e caricate in
-// DB via SQL — questo file resta lo specchio delle traduzioni EN/FR/ES di
-// titoli/slug dei topic e del contenuto editoriale, non contiene le domande.
-//
-// Cosa manca prima di poter pubblicare questa pagina:
-// 1. FATTO — certificazione + 7 topic creati in DB il 2026-08-19
-//    (2026-08-19-add-aws-developer-associate-cert-topics.sql). id = 71,
-//    da aggiungere a IDS_BY_SLUG in src/certifications/data/index.ts allo
-//    Step 3 (non ancora fatto: aspettiamo che tutti i topic siano pronti).
-// 2. FATTO — tutte le 210 domande IT (7 topic × 30) pronte e caricate via
-//    SQL (2026-08-19-add-aws-developer-associate-topic1-topic2-60-it.sql +
-//    ...-topic3-topic6-120-it.sql + ...-topic7-30-it.sql). Resta da fare:
-//    le traduzioni EN/FR/ES di tutte le domande.
-// 3. Import di questo file + aggiunta a RAW_CERTS in
-//    src/certifications/data/index.ts.
-// 4. Logo in /public/images/certifications/aws-developer-associate.png
-//    (imageUrl sotto è già puntato lì).
-// 5. Entry in `certs` di src/content/hubs/vendor-domains/aws-cloud.ts, es.:
-//      { slug: "aws-developer-associate", badge: "Associate", examCode: "DVA-C02", popularity: 88 }
+// Logo: /public/images/certifications/aws-developer-associate.png non esiste
+// ancora — imageUrl è volutamente "" (vedi commento sotto) per mostrare il
+// placeholder generico invece di un'icona rotta. Aggiornare quando pronto.
 //
 // Blueprint verificato il 2026-08-19 sull'exam guide ufficiale AWS.
 
 const AWSDeveloperAssociate = {
   slug: "aws-developer-associate",
-  imageUrl: "/images/certifications/aws-developer-associate.png",
+  // Logo non ancora caricato in /public/images/certifications/. Stringa
+  // vuota invece del path atteso: i componenti (hub card, ecc.) trattano
+  // imageUrl falsy come "nessun logo" e mostrano il placeholder generico,
+  // invece di un'icona rotta. Aggiornare non appena il file è disponibile.
+  imageUrl: "",
   officialUrl: "https://aws.amazon.com/certification/certified-developer-associate/",
 
   examBlueprint: {
