@@ -7,7 +7,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { CERT_SLUGS } from "@/certifications/data";
+import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
 
 import {
   seoPrefix,
@@ -421,7 +421,11 @@ const roadmapLabel =
 const certSlugs =
   key === "foundations"
     ? FOUNDATION_CERT_SLUGS
-    : CERT_SLUGS.filter((s) => CERT_CATEGORY_BY_SLUG[s] === key);
+    : CERT_SLUGS.filter(
+        (s) =>
+          CERT_CATEGORY_BY_SLUG[s] === key &&
+          CERTS_BY_SLUG[s]?.publicationStatus !== "planned"
+      );
 
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -482,12 +486,12 @@ const certSlugs =
   {key === "business-applications" && (
     <p className="mt-3 opacity-80 max-w-4xl">
       {lang === "it"
-        ? "SAP è il primo ecosistema disponibile. La categoria è predisposta per accogliere anche certificazioni di altri vendor e piattaforme business."
+        ? "Esplora gli ecosistemi SAP e Salesforce. La categoria è predisposta per accogliere anche certificazioni di altri vendor e piattaforme business."
         : lang === "fr"
-        ? "SAP est le premier écosystème disponible. La catégorie accueillera également des certifications d’autres fournisseurs et plateformes métier."
+        ? "Explorez les écosystèmes SAP et Salesforce. La catégorie accueillera également des certifications d’autres fournisseurs et plateformes métier."
         : lang === "es"
-        ? "SAP es el primer ecosistema disponible. La categoría también incorporará certificaciones de otros proveedores y plataformas empresariales."
-        : "SAP is the first available ecosystem. The category is also designed for certifications from other vendors and business platforms."}
+        ? "Explora los ecosistemas SAP y Salesforce. La categoría también incorporará certificaciones de otros proveedores y plataformas empresariales."
+        : "Explore the SAP and Salesforce ecosystems. The category is also designed for certifications from other vendors and business platforms."}
     </p>
   )}
 

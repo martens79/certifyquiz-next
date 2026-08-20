@@ -127,6 +127,7 @@ import DataAnalyticsFoundations from "./data-analytics-foundations";
 import PL300PowerBIDataAnalyst from "./PL300PowerBIDataAnalyst";
 import DP900AzureDataFundamentals from "./DP900AzureDataFundamentals";
 import AWSDeveloperAssociate from "./aws-developer-associate";
+import SalesforcePlatformAdministrator from "./salesforce-platform-administrator";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -190,6 +191,7 @@ const RAW_CERTS = [
   PL300PowerBIDataAnalyst,
   DP900AzureDataFundamentals,
   AWSDeveloperAssociate,      // slug: "aws-developer-associate"
+  SalesforcePlatformAdministrator,
 ] as const;
 
 /**

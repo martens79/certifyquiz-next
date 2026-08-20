@@ -119,6 +119,9 @@ export async function CertificationDetailView({
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[slug] ??
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
+  // Phase A contracts can live in the registry without publishing thin pages.
+  if (reg?.publicationStatus === "planned") return notFound();
+
   // `resources` sostituisce la vecchia fetch degli scenari e copre in una
   // sola chiamata TUTTI i conteggi della griglia "Materiale di studio"
   // (quiz, ripassi, guida, mappe, lab, scenari): senza di essa servirebbero

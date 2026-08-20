@@ -19,8 +19,8 @@ export const getSapPlaceholderCertification = (slug: string) =>
 
 export const BUSINESS_ECOSYSTEMS = [
   { key: "sap", title: "SAP", badge: "ERP · Finance · HR · Analytics", available: true },
-  { key: "microsoft-365", title: "Microsoft 365", badge: "Productivity · Collaboration", available: false },
-  { key: "salesforce", title: "Salesforce", badge: "CRM · Sales · Service", available: false },
+  { key: "microsoft-business-applications", title: "Microsoft Dynamics 365 & Power Platform", badge: "CRM · ERP · Low-code · Automation", available: false },
+  { key: "salesforce", title: "Salesforce", badge: "CRM · Sales · Service · Agentforce", available: true },
   { key: "oracle-business", title: "Oracle Business Applications", badge: "ERP · HCM · Finance", available: false },
   { key: "servicenow", title: "ServiceNow", badge: "Workflows · ITSM · Automation", available: false },
 ] as const;

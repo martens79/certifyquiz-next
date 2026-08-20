@@ -70,6 +70,57 @@ export type ExamBlueprint = Readonly<{
   }>>;
 }>;
 
+export type TaxonomyScenarioPriority = "none" | "low" | "medium" | "high";
+export type TaxonomyLabSuitability = "low" | "medium" | "high";
+export type TaxonomyDifficulty = "foundational" | "intermediate" | "advanced";
+
+export type CertificationTaxonomy = Readonly<{
+  officialObjectives: ReadonlyArray<Readonly<{
+    id: string;
+    domain: string;
+    summary: string;
+    primaryTopicSlug: string;
+    secondaryTopicSlugs: ReadonlyArray<string>;
+  }>>;
+  topics: ReadonlyArray<Readonly<{
+    order: number;
+    slug: string;
+    titleEn: string;
+    purpose: string;
+    blueprintDomains: ReadonlyArray<string>;
+    officialObjectiveIds: ReadonlyArray<string>;
+    prerequisites: ReadonlyArray<string>;
+    coreConcepts: ReadonlyArray<string>;
+    commonMistakes: ReadonlyArray<string>;
+    crossTopicDependencies: ReadonlyArray<string>;
+    mvpQuizCount: number;
+    targetExpandedQuizCount: number;
+    predominantDifficulty: TaxonomyDifficulty;
+    allocationRationale: string;
+    reviewRequired: boolean;
+    scenarioPriority: TaxonomyScenarioPriority;
+    scenarioCount: number;
+    futureLabSuitability: TaxonomyLabSuitability;
+  }>>;
+  domainQuizAllocation: ReadonlyArray<Readonly<{
+    domain: string;
+    quizCount: number;
+  }>>;
+  scenarioGroups: ReadonlyArray<Readonly<{
+    id: string;
+    topicSlug: string;
+    blueprintObjectiveIds: ReadonlyArray<string>;
+    count: number;
+    competency: string;
+    difficulty: TaxonomyDifficulty;
+    requiresRationale: true;
+  }>>;
+  reviewContract: Readonly<{
+    requiredSections: ReadonlyArray<string>;
+    requiresLastVerifiedAt: true;
+  }>;
+}>;
+
 export type ExtraContent = {
   // liste immutabili per ogni lingua
   learn?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
@@ -96,6 +147,8 @@ export type CertificationData = {
   id?: number;
 
   slug: string;
+  /** Planned entries are registry contracts only: they must not render or be indexed. */
+  publicationStatus?: "published" | "planned";
   imageUrl: string;
   officialUrl: string;
   companyProductsUrl?: string;
@@ -113,6 +166,9 @@ export type CertificationData = {
 
   /** Programma verificato dell'esame; se assente la relativa card non viene mostrata. */
   examBlueprint?: ExamBlueprint;
+
+  /** Planning contract used before topics and editorial resources are persisted. */
+  taxonomy?: CertificationTaxonomy;
 
   
 

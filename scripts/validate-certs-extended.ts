@@ -15,6 +15,7 @@ import type {
   LocalizedText,
   LocalizedRoute,
   ExtraContent,
+  CertificationTaxonomy,
 } from "@/certifications/types";
 
 // ---- Config ---------------------------------------------------------------
@@ -119,6 +120,92 @@ function validateExtra(extra: ExtraContent | undefined, push: (msg: string) => v
   }
 }
 
+function validateTaxonomy(
+  taxonomy: CertificationTaxonomy | undefined,
+  pushError: (msg: string) => void
+) {
+  if (!taxonomy) return;
+
+  const topics = taxonomy.topics;
+  const objectives = taxonomy.officialObjectives;
+  const topicSlugs = topics.map((topic) => topic.slug);
+  const topicSlugSet = new Set(topicSlugs);
+  const objectiveIds = objectives.map((objective) => objective.id);
+  const objectiveIdSet = new Set(objectiveIds);
+
+  if (topics.length < 10 || topics.length > 12) {
+    pushError(`taxonomy.topics: attesi 10-12 topic, trovati ${topics.length}`);
+  }
+  if (topicSlugSet.size !== topicSlugs.length) {
+    pushError("taxonomy.topics: slug duplicati");
+  }
+  if (objectiveIdSet.size !== objectiveIds.length) {
+    pushError("taxonomy.officialObjectives: id duplicati");
+  }
+
+  topics.forEach((topic, index) => {
+    if (topic.order !== index + 1) {
+      pushError(`taxonomy.topics[${index}].order: atteso ${index + 1}`);
+    }
+    if (topic.officialObjectiveIds.length === 0) {
+      pushError(`taxonomy topic "${topic.slug}": nessun objective primario`);
+    }
+    if (topic.targetExpandedQuizCount <= topic.mvpQuizCount) {
+      pushError(`taxonomy topic "${topic.slug}": target espanso non superiore al MVP`);
+    }
+    topic.officialObjectiveIds.forEach((id) => {
+      const objective = objectives.find((item) => item.id === id);
+      if (!objective) pushError(`taxonomy topic "${topic.slug}": objective sconosciuto ${id}`);
+      else if (objective.primaryTopicSlug !== topic.slug) {
+        pushError(`taxonomy objective ${id}: primary mapping incoerente con topic "${topic.slug}"`);
+      }
+    });
+  });
+
+  objectives.forEach((objective) => {
+    if (!topicSlugSet.has(objective.primaryTopicSlug)) {
+      pushError(`taxonomy objective ${objective.id}: primary topic mancante`);
+    }
+    objective.secondaryTopicSlugs.forEach((slug) => {
+      if (!topicSlugSet.has(slug)) {
+        pushError(`taxonomy objective ${objective.id}: secondary topic sconosciuto "${slug}"`);
+      }
+      if (slug === objective.primaryTopicSlug) {
+        pushError(`taxonomy objective ${objective.id}: topic primary duplicato come secondary`);
+      }
+    });
+  });
+
+  const primaryIds = topics.flatMap((topic) => topic.officialObjectiveIds);
+  if (primaryIds.length !== objectiveIds.length || new Set(primaryIds).size !== objectiveIds.length) {
+    pushError("taxonomy coverage: ogni objective deve avere esattamente un primary topic");
+  }
+
+  const mvpTotal = topics.reduce((sum, topic) => sum + topic.mvpQuizCount, 0);
+  if (mvpTotal !== 200) pushError(`taxonomy MVP quiz: atteso 200, trovato ${mvpTotal}`);
+
+  const domainQuizTotal = taxonomy.domainQuizAllocation.reduce(
+    (sum, domain) => sum + domain.quizCount,
+    0
+  );
+  if (domainQuizTotal !== 200) {
+    pushError(`taxonomy domain quiz: atteso 200, trovato ${domainQuizTotal}`);
+  }
+
+  const scenarioTotal = taxonomy.scenarioGroups.reduce((sum, group) => sum + group.count, 0);
+  if (scenarioTotal !== 30) pushError(`taxonomy scenari: atteso 30, trovato ${scenarioTotal}`);
+  taxonomy.scenarioGroups.forEach((group) => {
+    if (!topicSlugSet.has(group.topicSlug)) {
+      pushError(`taxonomy scenario group "${group.id}": topic sconosciuto`);
+    }
+    group.blueprintObjectiveIds.forEach((id) => {
+      if (!objectiveIdSet.has(id)) {
+        pushError(`taxonomy scenario group "${group.id}": objective sconosciuto ${id}`);
+      }
+    });
+  });
+}
+
 // ---- Validazione principale ----------------------------------------------
 const seen = new Set<string>();
 let errors = 0;
@@ -168,6 +255,20 @@ function validateCert(c: CertificationData) {
 
   // extraContent
   validateExtra(c.extraContent, (m) => warns.push(m));
+  validateTaxonomy(c.taxonomy, (m) => errs.push(m));
+
+  if (c.examBlueprint && c.taxonomy) {
+    if (c.examBlueprint.domains.length !== 8) {
+      errs.push(`examBlueprint.domains: attesi 8, trovati ${c.examBlueprint.domains.length}`);
+    }
+    const weightTotal = c.examBlueprint.domains.reduce(
+      (sum, domain) => sum + (domain.percentage ?? 0),
+      0
+    );
+    if (weightTotal !== 100) {
+      errs.push(`examBlueprint.domains: peso atteso 100, trovato ${weightTotal}`);
+    }
+  }
 
   if (errs.length || warns.length) {
     const head = `• ${c.slug || "(slug mancante)"}`;
