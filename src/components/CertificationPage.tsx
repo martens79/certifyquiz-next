@@ -16,6 +16,7 @@ import { certPath, guidePath, interactiveLabsPath, mapsPath } from "@/lib/paths"
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
+import TopicIntro from "@/components/TopicIntro";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -330,7 +331,9 @@ const pageTopics =
           </div>
         </header>
 
-        {pageDescription ? <p className="text-gray-700 mb-4">{pageDescription}</p> : null}
+        {pageDescription ? (
+          <TopicIntro text={pageDescription} className="text-gray-700 mb-4" />
+        ) : null}
 
         {lifecycleStatus && lifecycleStatus !== "active" && lifecycleNotice ? (
           <aside className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
