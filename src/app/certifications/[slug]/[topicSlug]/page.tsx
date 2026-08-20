@@ -189,9 +189,10 @@ export default async function TopicPageEn({
             {data.topic.title}
           </h1>
 
-          <p className="text-base md:text-lg text-slate-700 max-w-3xl mb-4">
-            {data.topic.description}
-          </p>
+          <TopicIntro
+            text={data.topic.description}
+            className="text-base md:text-lg text-slate-700 max-w-3xl mb-4"
+          />
 
           {/* CTA above the fold */}
           <div className="mb-6">

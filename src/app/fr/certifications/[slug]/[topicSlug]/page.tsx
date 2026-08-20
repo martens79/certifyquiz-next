@@ -161,9 +161,10 @@ export default async function TopicPageFr({
             {data.topic.title}
           </h1>
 
-          <p className="text-base md:text-lg text-slate-700 max-w-3xl mb-4">
-            {data.topic.description}
-          </p>
+          <TopicIntro
+            text={data.topic.description}
+            className="text-base md:text-lg text-slate-700 max-w-3xl mb-4"
+          />
 
           <div className="mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

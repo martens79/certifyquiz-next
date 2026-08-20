@@ -45,6 +45,7 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname === "/robots.txt" ||
+    pathname === "/ads.txt" ||
     pathname.startsWith("/sitemap") ||
     pathname === "/favicon.ico"
   ) {
