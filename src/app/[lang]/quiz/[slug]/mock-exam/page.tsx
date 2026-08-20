@@ -158,6 +158,7 @@ export default function MockExamPage() {
       limit: Math.max(1, examSpec.questions),
       shuffle: true,
       strict: currentLang !== "it",
+      exam: true,
     });
 
     const raw: ApiQuestion[] = Array.isArray(res)
