@@ -64,6 +64,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "data-analytics-foundations": 50,
   "pl-300-power-bi-data-analyst": 51,
   "dp-900-azure-data-fundamentals": 52,
+  "aws-developer-associate": 71,
 };
 
 /* ---------------------------------------------------------------------
@@ -125,6 +126,7 @@ import ProjectManagementFoundations from "./project-management-foundations";
 import DataAnalyticsFoundations from "./data-analytics-foundations";
 import PL300PowerBIDataAnalyst from "./PL300PowerBIDataAnalyst";
 import DP900AzureDataFundamentals from "./DP900AzureDataFundamentals";
+import AWSDeveloperAssociate from "./aws-developer-associate";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -187,6 +189,7 @@ const RAW_CERTS = [
   DataAnalyticsFoundations,
   PL300PowerBIDataAnalyst,
   DP900AzureDataFundamentals,
+  AWSDeveloperAssociate,      // slug: "aws-developer-associate"
 ] as const;
 
 /**
