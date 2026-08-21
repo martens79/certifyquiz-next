@@ -541,13 +541,15 @@ function ComparisonTable({ t, onCta, isLoading, activePlan, isPromoLink }: { t: 
   );
 }
 
-function Guarantee({ t }: { t: CopyEntry }) {
+function Guarantee({ t, isPromoLink }: { t: CopyEntry; isPromoLink: boolean }) {
   return (
     <div className="mt-6 flex items-start gap-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-6 shadow-sm">
       <div className="text-4xl">🛡️</div>
       <div>
         <div className="text-lg font-bold text-emerald-900">{t.guaranteeTitle}</div>
-        <p className="mt-1 text-sm text-emerald-800">{t.guaranteeDesc}</p>
+        {!isPromoLink && (
+          <p className="mt-1 text-sm text-emerald-800">{t.guaranteeDesc}</p>
+        )}
       </div>
     </div>
   );
@@ -743,12 +745,14 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
 
           <div className="mt-4 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">{t.urgencyLine}</p>
-            <p className="mt-2 text-sm text-amber-800">{t.pizzaLine}</p>
+            {!isPromoLink && (
+              <p className="mt-2 text-sm text-amber-800">{t.pizzaLine}</p>
+            )}
           </div>
         </section>
 
         <div className="px-6 py-6">
-          <Guarantee t={t} />
+          <Guarantee t={t} isPromoLink={isPromoLink} />
 
           {/* Features */}
           <section className="mt-6 grid gap-6 lg:grid-cols-2">
