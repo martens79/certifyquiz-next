@@ -590,6 +590,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
   const [explanationsUsed, setExplanationsUsed] = useState<{ used: number; limit: number } | null>(null);
+  // Link di campagna (es. ?promo=grazie1mese): parte subito allo sconto, niente trial 7gg
+  const [isPromoLink, setIsPromoLink] = useState(false);
 
   const lang = useMemo<Lang>(() => {
     if (forceLang === "it" || forceLang === "es" || forceLang === "en" || forceLang === "fr") {
@@ -611,6 +613,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       source_page: params.get("source") || document.referrer || "direct",
       certification_slug: params.get("certification_slug"),
     });
+    setIsPromoLink((params.get("promo") || "").toLowerCase() === "grazie1mese");
   }, [authLoading, lang, user]);
 
   function selectPlan(plan: Plan) {
@@ -666,7 +669,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": lang },
-        body: JSON.stringify({ lang, plan: selectedPlan }),
+        body: JSON.stringify({ lang, plan: selectedPlan, skipTrial: isPromoLink }),
       });
 
       if (res.status === 401) {
