@@ -45,6 +45,7 @@ type CopyEntry = {
   subCta: string;
   subCtaMonthly: string;
   trialNote: string;
+  promoNote: string;
   featuresTitle: string;
   checkoutError: string;
   pizzaLine: string;
@@ -103,6 +104,7 @@ const COPY: Record<Lang, CopyEntry> = {
     subCta: "59,90€ addebitati oggi in un unico pagamento per 12 mesi",
     subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
     trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
+    promoNote: "Sconto del 50% già applicato sul primo mese, addebitato subito — nessun periodo di prova.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
     pizzaLine: "Scegli il mensile per provare senza addebito per 7 giorni, oppure risparmia il 50% con l'annuale.",
@@ -172,6 +174,7 @@ const COPY: Record<Lang, CopyEntry> = {
     subCta: "59,90€ cobrados hoy en un único pago por 12 meses",
     subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
     trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
+    promoNote: "Descuento del 50% ya aplicado en el primer mes, cobrado ahora — sin periodo de prueba.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
     pizzaLine: "Elige el plan mensual para probar 7 días sin cargo o ahorra un 50% con el anual.",
@@ -241,6 +244,7 @@ const COPY: Record<Lang, CopyEntry> = {
     subCta: "€59.90 charged today as one payment for 12 months",
     subCtaMonthly: "7 days free · No charge today · Cancel anytime",
     trialNote: "Try free for 7 days, then €9.99/month.",
+    promoNote: "50% off your first month already applied, charged now — no free trial.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
     pizzaLine: "Choose monthly to try Premium for 7 days with no charge, or save 50% with annual.",
@@ -310,6 +314,7 @@ const COPY: Record<Lang, CopyEntry> = {
     subCta: "59,90€ débités aujourd'hui en un paiement unique pour 12 mois",
     subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
     trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
+    promoNote: "Réduction de 50% déjà appliquée sur le premier mois, débité maintenant — aucun essai gratuit.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
     pizzaLine: "Choisissez le mensuel pour essayer 7 jours sans débit, ou économisez 50% avec l'annuel.",
@@ -442,11 +447,13 @@ function CtaBlock({
   t,
   activePlan,
   isLoading,
+  isPromoLink,
   onCta,
 }: {
   t: CopyEntry;
   activePlan: PlanOption;
   isLoading: boolean;
+  isPromoLink: boolean;
   onCta: () => void;
 }) {
   const isMonthly = activePlan.id === "premium_monthly";
@@ -454,7 +461,7 @@ function CtaBlock({
     <div className="mt-5">
       {isMonthly && (
         <p className="mb-2 text-sm font-medium text-emerald-700">
-          🎁 {t.trialNote}
+          🎁 {isPromoLink ? t.promoNote : t.trialNote}
         </p>
       )}
       <button
@@ -465,9 +472,11 @@ function CtaBlock({
       >
         {isLoading ? t.ctaLoading : t.cta}
       </button>
-      <p className="mt-2 text-xs text-gray-500">
-        {isMonthly ? t.subCtaMonthly : t.subCta}
-      </p>
+      {!(isMonthly && isPromoLink) && (
+        <p className="mt-2 text-xs text-gray-500">
+          {isMonthly ? t.subCtaMonthly : t.subCta}
+        </p>
+      )}
     </div>
   );
 }
@@ -487,7 +496,7 @@ function FeatureCard({ title, desc, variant }: { title: string; desc: string; va
   );
 }
 
-function ComparisonTable({ t, onCta, isLoading, activePlan }: { t: CopyEntry; onCta: () => void; isLoading: boolean; activePlan: PlanOption }) {
+function ComparisonTable({ t, onCta, isLoading, activePlan, isPromoLink }: { t: CopyEntry; onCta: () => void; isLoading: boolean; activePlan: PlanOption; isPromoLink: boolean }) {
   const isMonthly = activePlan.id === "premium_monthly";
   return (
     <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200">
@@ -514,7 +523,7 @@ function ComparisonTable({ t, onCta, isLoading, activePlan }: { t: CopyEntry; on
       </div>
       <div className="border-t border-gray-200 px-6 py-4 text-center">
         {isMonthly && (
-          <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>
+          <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
         )}
         <button
           type="button"
@@ -524,7 +533,7 @@ function ComparisonTable({ t, onCta, isLoading, activePlan }: { t: CopyEntry; on
         >
           {isLoading ? t.ctaLoading : t.cta}
         </button>
-        {isMonthly && (
+        {isMonthly && !isPromoLink && (
           <p className="mt-2 text-xs text-gray-500">{t.subCtaMonthly}</p>
         )}
       </div>
@@ -730,7 +739,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           )}
 
           {/* CTA principale */}
-          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} onCta={startPremiumCheckout} />
+          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startPremiumCheckout} />
 
           <div className="mt-4 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">{t.urgencyLine}</p>
@@ -746,7 +755,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
             <div className="rounded-2xl border border-gray-200 p-6">
               <div className="text-lg font-semibold text-gray-900">{t.title}</div>
               <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
-              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} onCta={startPremiumCheckout} />
+              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startPremiumCheckout} />
               <p className="mt-4 text-sm font-medium text-gray-900">{t.finalLine}</p>
             </div>
 
@@ -761,7 +770,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
             </div>
           </section>
 
-          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} />
+          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} isPromoLink={isPromoLink} />
 
           <PricingFaq t={t} />
 
@@ -775,7 +784,7 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
               <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
             <div className="mt-5 flex flex-col items-center">
               {isMonthly && (
-                <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {t.trialNote}</p>
+                <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
               )}
               <button
                 type="button"
@@ -785,9 +794,11 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
               >
                 {isLoading ? t.ctaLoading : t.cta}
               </button>
-              <p className="mt-2 text-xs text-gray-500">
-                {isMonthly ? t.subCtaMonthly : t.subCta}
-              </p>
+              {!(isMonthly && isPromoLink) && (
+                <p className="mt-2 text-xs text-gray-500">
+                  {isMonthly ? t.subCtaMonthly : t.subCta}
+                </p>
+              )}
             </div>
           </div>
         </div>
