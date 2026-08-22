@@ -9,6 +9,7 @@ import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
 import { setToken, backendUrl } from '@/lib/auth';
 import { trackEvent, trackEventOnce } from '@/lib/analytics';
+import { readConversionContext, withConversionContext } from '@/lib/conversion-context';
 
 type FormDataState = {
   username: string;
@@ -56,12 +57,12 @@ export default function RegisterPageClient() {
   const lang = useMemo<Locale>(() => langFromPathname(pathname), [pathname]);
   const router = useRouter();
   const sp = useSearchParams();
+  const conversion = useMemo(() => readConversionContext(sp), [sp]);
 
   // ?redirect=/it/pricing (solo path interni, stesso pattern della pagina di login)
   const redirectParam = useMemo(() => {
-    const r = sp.get('redirect');
-    return r && r.startsWith('/') ? r : null;
-  }, [sp]);
+    return conversion.redirect ?? null;
+  }, [conversion.redirect]);
 
   const [formData, setFormData] = useState<FormDataState>({
     username: '',
@@ -83,8 +84,12 @@ export default function RegisterPageClient() {
       language: lang,
       user_state: "anonymous",
       source_page: redirectParam ? "conversion_redirect" : "registration",
+      conversion_source: conversion.source,
+      certification_slug: conversion.certificationSlug,
+      topic_slug: conversion.topicSlug,
+      assessment_score: conversion.score,
     });
-  }, [pathname, redirectParam, lang]);
+  }, [pathname, redirectParam, lang, conversion]);
 
   function resetTurnstile() {
     setTurnstileToken('');
@@ -219,6 +224,10 @@ export default function RegisterPageClient() {
           language: lang,
           user_state: "free",
           source_page: redirectParam ? "conversion_redirect" : "registration",
+          conversion_source: conversion.source,
+          certification_slug: conversion.certificationSlug,
+          topic_slug: conversion.topicSlug,
+          assessment_score: conversion.score,
         });
         try {
           setToken?.(data.token, true); // persistente
@@ -249,10 +258,12 @@ export default function RegisterPageClient() {
         language: lang,
         user_state: "free",
         source_page: redirectParam ? "conversion_redirect" : "registration",
+        conversion_source: conversion.source,
+        certification_slug: conversion.certificationSlug,
+        topic_slug: conversion.topicSlug,
+        assessment_score: conversion.score,
       });
-      const loginHref = redirectParam
-        ? `/${lang}/login?redirect=${encodeURIComponent(redirectParam)}`
-        : `/${lang}/login`;
+      const loginHref = withConversionContext(`/${lang}/login`, conversion);
       setTimeout(() => router.replace(loginHref), 1200);
     } catch (err: unknown) {
       resetTurnstile();
@@ -400,7 +411,7 @@ export default function RegisterPageClient() {
 
         <p className="text-sm mt-4 text-center text-gray-700">
           {String(getLabel({ it: 'Hai già un account?', en: 'Already have an account?' }, lang))}{' '}
-          <Link href={`/${lang}/login`} className="text-blue-600 hover:underline font-semibold">
+          <Link href={withConversionContext(`/${lang}/login`, conversion)} className="text-blue-600 hover:underline font-semibold">
             {String(getLabel({ it: 'Accedi', en: 'Login' }, lang))}
           </Link>
         </p>

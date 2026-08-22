@@ -16,6 +16,7 @@ import {
   setUser, // ✅ salva l’utente in cache locale
 } from "@/lib/auth";
 import { authMe } from "@/lib/apiClient";
+import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
 
 type Props = {
   initialLang: Locale;
@@ -25,6 +26,7 @@ export default function LoginPageClient({ initialLang }: Props) {
   const pathname = usePathname() ?? "/it";
   const router = useRouter();
   const sp = useSearchParams();
+  const conversion = useMemo(() => readConversionContext(sp), [sp]);
 
   // 🔧 usa lang iniziale dal server, ma se il pathname cambia si riallinea
   const lang = useMemo<Locale>(
@@ -45,9 +47,8 @@ export default function LoginPageClient({ initialLang }: Props) {
 
   // ?redirect=/it/quiz/topic/184 (solo path interni)
   const redirectParam = useMemo(() => {
-    const r = sp.get("redirect");
-    return r && r.startsWith("/") ? r : null;
-  }, [sp]);
+    return conversion.redirect ?? null;
+  }, [conversion.redirect]);
 
     const googleHref = useMemo(() => {
     const redirectTarget = redirectParam || withLang(lang, "/profile");
@@ -377,7 +378,7 @@ export default function LoginPageClient({ initialLang }: Props) {
             )
           )}{" "}
           <Link
-  href={withLang(lang, "/register")}
+  href={withConversionContext(withLang(lang, "/register"), conversion)}
   className="text-blue-600 hover:underline font-semibold"
 >
             {String(getLabel({ it: "Registrati", en: "Register" }, lang))}

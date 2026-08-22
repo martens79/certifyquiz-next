@@ -360,6 +360,16 @@ const pageTopics =
           labsHref={`${interactiveLabsPath(lang)}?certification=${encodeURIComponent(data.slug)}`}
         />
 
+        {/* Acquisition primaria: il test viene prima delle offerte e chiede
+            l'email solo dopo aver mostrato il risultato. */}
+        <ContextualLeadMagnetBox
+          lang={lang}
+          variant="cert"
+          certificationSlug={data.slug}
+          quizHref={quizHref}
+          className="mb-8"
+        />
+
         <CertificationPackageOffers
           lang={lang}
           certificationSlug={data.slug}
@@ -403,16 +413,6 @@ es: '¿Cuál es la certificación SQL "actual"?',
             </div>
           </section>
         )}
-
-        {/* 👇 LEAD MAGNET */}
-<ContextualLeadMagnetBox
-  lang={lang}
-  variant="cert"
-  certificationSlug={data.slug}
-  className="mb-8"
-/>
-
-      
 
         {/* Practice box */}
         <CertificationPracticeBox

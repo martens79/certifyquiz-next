@@ -1,7 +1,6 @@
 // src/components/newsletter/ContextualLeadMagnetBox.tsx
 "use client";
 import Link from "next/link";
-import { authFetch } from "@/lib/auth";
 
 type Lang = "it" | "en" | "fr" | "es";
 type Variant = "topic" | "cert";
@@ -157,10 +156,6 @@ const CERT_COPY: Record<string, Partial<Record<Lang, CertCopy>>> = {
   },
 };
 
-function localizePath(lang: Lang, path: string) {
-  return lang === "en" ? path : `/${lang}${path}`;
-}
-
 export default function ContextualLeadMagnetBox({
   lang = "en",
   variant = "topic",
@@ -191,28 +186,19 @@ export default function ContextualLeadMagnetBox({
 
   const button = isTopic ? t.topicButton : t.certButton;
 
-  // Lead magnet contestuale: porta a una pagina dedicata al test gratuito/newsletter
- const searchParams = new URLSearchParams({
-  source: `${variant}-lead-magnet`,
-  cert: certificationSlug ?? "general",
-  topic: topicSlug ?? "general",
-});
-
-const fallbackQuizHref =
-  certificationSlug
-    ? `/${safeLang}/quiz/${certificationSlug}/mixed`
-    : "";
+  // L'assessment eroga valore prima di chiedere l'email. Il capture resta
+  // disponibile nel risultato, dove l'utente puo' salvare il report.
+const fallbackQuizHref = certificationSlug
+  ? `${safeLang === "en" ? "" : `/${safeLang}`}/quiz/${certificationSlug}/mixed`
+  : "";
 
 const finalQuizHref = quizHref || fallbackQuizHref;
 
-if (finalQuizHref) {
-  const quizWithAssessment = finalQuizHref.includes("?")
+const href = finalQuizHref
+  ? finalQuizHref.includes("?")
     ? `${finalQuizHref}&mode=assessment`
-    : `${finalQuizHref}?mode=assessment`;
-
-  searchParams.set("quiz", quizWithAssessment);
-}
-const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
+    : `${finalQuizHref}?mode=assessment`
+  : safeLang === "en" ? "/quiz-home" : `/${safeLang}/quiz-home`;
 
   return (
     <section
@@ -238,20 +224,6 @@ const href = localizePath(safeLang, `/free-test?${searchParams.toString()}`);
   data-variant={variant}
   data-cert={certificationSlug ?? "general"}
   data-topic={topicSlug ?? "general"}
-  onClick={() => {
-    authFetch("/api/backend/funnel-event", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-  event: "assessment_started",
-  cert_slug: certificationSlug ?? "general",
-  topic_slug: topicSlug ?? "general",
-  lang: safeLang,
-}),
-    }).catch(console.error);
-  }}
   className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-800"
 >
   {button}

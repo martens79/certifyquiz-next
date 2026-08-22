@@ -67,6 +67,9 @@ export default function CertificationPracticeBox({
     .map((t) => pickTopicLabel(t, lang))
     .filter(Boolean)
     .slice(0, 6);
+  const assessmentHref = quizHref.includes("?")
+    ? `${quizHref}&mode=assessment`
+    : `${quizHref}?mode=assessment`;
 
   return (
     <section
@@ -98,7 +101,7 @@ export default function CertificationPracticeBox({
 
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Link
-          href={quizHref}
+          href={assessmentHref}
           className="inline-flex items-center justify-center rounded-xl bg-blue-900 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
         >
           {c.start}

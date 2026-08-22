@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Clock3, Loader2, LockKeyhole, RotateCcw, ShieldCheck } from "lucide-react";
 import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import type { GuidedLabPayload, GuidedLabStep } from "./types";
+import { trackEvent, trackFunnelEvent } from "@/lib/analytics";
 
 type Preview = { title:string; description:string; difficulty:string; estimatedMinutes:number; locked:boolean; accessReason:string };
 // Etichetta della certificazione mostrata nell'header del lab sbloccato: punto di
@@ -37,12 +38,19 @@ export default function GuidedCertificationLab({lang,slug}:{lang:Locale;slug:str
   const [attempt,setAttempt]=useState<number|null>(null); const [index,setIndex]=useState(0); const [answers,setAnswers]=useState<Record<string,unknown>>({});
   const [feedback,setFeedback]=useState<"correct"|"wrong"|null>(null); const [busy,setBusy]=useState(true); const [fatal,setFatal]=useState(false);
   const [result,setResult]=useState<{score:number;passed:boolean;solution?:{explanation?:string}}|null>(null);
+  const lifecycleTrackedRef=useRef<"study"|"paywall"|null>(null);
   const step=lab?.content.steps[index]; const answered=useMemo(()=>step ? (Array.isArray(answers[step.id]) ? (answers[step.id] as unknown[]).length>0 : String(answers[step.id]??"").trim().length>0) : false,[answers,step]);
 
   useEffect(()=>{let active=true;(async()=>{setBusy(true);try{
     const p=await apiFetch(`/labs/${slug}/preview?lang=${lang}`); if(!p.ok) throw new Error(); const pj=await p.json(); if(active)setPreview(pj.lab);
     const r=await apiFetch(`/labs/${slug}/content?lang=${lang}`); if(r.ok){const j=await r.json();if(active)setLab(j.lab);} else if(r.status!==401&&r.status!==403) throw new Error();
   }catch{if(active)setFatal(true);}finally{if(active)setBusy(false);}})();return()=>{active=false};},[lang,slug]);
+
+  useEffect(()=>{
+    if(busy||fatal||lifecycleTrackedRef.current)return;
+    if(lab){lifecycleTrackedRef.current="study";trackEvent("study_started",{language:lang,study_type:"interactive_lab",lab_slug:slug,certification_slug:lab.certificationSlug});trackFunnelEvent({event:"study_started",cert_slug:lab.certificationSlug,topic_slug:null,lang});return;}
+    if(preview){lifecycleTrackedRef.current="paywall";trackEvent("paywall_viewed",{language:lang,paywall_type:"interactive_lab",lab_slug:slug});trackFunnelEvent({event:"paywall_viewed",cert_slug:null,topic_slug:null,lang});}
+  },[busy,fatal,lab,preview,lang,slug]);
 
   async function ensureAttempt(){if(attempt)return attempt;const r=await apiFetch(`/labs/${slug}/attempts?lang=${lang}`,{method:"POST",body:"{}"});if(!r.ok)throw new Error();const j=await r.json();setAttempt(j.attemptId);return Number(j.attemptId);}
   async function check(){if(!step||!answered)return;setBusy(true);try{const id=await ensureAttempt();const r=await apiFetch(`/labs/${slug}/attempts/${id}/check?lang=${lang}`,{method:"POST",body:JSON.stringify({stepId:step.id,response:answers[step.id]})});if(!r.ok)throw new Error();const j=await r.json();setFeedback(j.correct?"correct":"wrong");}catch{setFatal(true);}finally{setBusy(false);}}

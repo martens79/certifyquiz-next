@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Locale } from "@/lib/paths";
@@ -92,9 +92,23 @@ function formatPrice(lang: Locale, price: number) {
 
 export default function GuideAccessGate({ lang, slug, price }: Props) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const paywallTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (authLoading || paywallTrackedRef.current) return;
+    paywallTrackedRef.current = true;
+    trackEvent("paywall_viewed", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      paywall_type: "guide",
+      guide_slug: slug,
+      source_page: "guide_preview",
+    });
+    trackFunnelEvent({ event: "paywall_viewed", cert_slug: null, topic_slug: null, lang });
+  }, [authLoading, lang, slug, user]);
 
   const loggedIn = !!user;
   const priceLabel = formatPrice(lang, price);
