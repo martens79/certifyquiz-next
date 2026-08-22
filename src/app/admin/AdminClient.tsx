@@ -7,6 +7,13 @@ import AdminFeedbackClient from "./feedback/AdminFeedbackClient";
 import AdminSubscriptionsClient from "./subscriptions/AdminSubscriptionsClient";
 import AdminOrganizationsClient from "./organizations/AdminOrganizationsClient";
 import AdminPushClient from "./push/AdminPushClient";
+import {
+  BUSINESS_STEPS,
+  businessStepCounts,
+  eventCategory,
+  normalizedBusinessEvents,
+  type AdminFunnelEvent,
+} from "@/lib/admin-analytics";
 type Lead = {
   id: number;
   email: string;
@@ -28,17 +35,6 @@ type Overview = {
   };
   topCerts: { cert_slug: string; total: number }[];
   topTopics: { topic_slug: string; total: number }[];
-};
-
-type FunnelEvent = {
-  id: number;
-  email: string | null;
-  event: string;
-  cert_slug: string | null;
-  topic_slug: string | null;
-  lang: string | null;
-  score: number | null;
-  created_at: string;
 };
 
 type FunnelSummary = {
@@ -86,7 +82,7 @@ export default function AdminClient() {
   const [overview, setOverview] = useState<Overview | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [funnelSummary, setFunnelSummary] = useState<FunnelSummary | null>(null);
-  const [funnelEvents, setFunnelEvents] = useState<FunnelEvent[]>([]);
+  const [funnelEvents, setFunnelEvents] = useState<AdminFunnelEvent[]>([]);
   const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -100,6 +96,7 @@ export default function AdminClient() {
   const [dateFilter, setDateFilter] = useState<DateFilter>("30d");
 
   const [paywall20, setPaywall20] = useState<Paywall20 | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const availableCerts = useMemo(() => {
     const set = new Set<string>();
@@ -171,6 +168,17 @@ export default function AdminClient() {
     });
   }, [funnelEvents, search, eventFilter, langFilter, certFilter, dateFilter]);
 
+  const businessFilteredEvents = useMemo(
+    () =>
+      funnelEvents.filter((event) => {
+        const matchesLang = langFilter === "all" || event.lang === langFilter;
+        const matchesCert = certFilter === "all" || event.cert_slug === certFilter;
+        const matchesDate = matchesDateFilter(event.created_at, dateFilter);
+        return matchesLang && matchesCert && matchesDate;
+      }),
+    [funnelEvents, langFilter, certFilter, dateFilter],
+  );
+
   const filteredHotLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
 
@@ -189,42 +197,37 @@ export default function AdminClient() {
     });
   }, [hotLeads, search, langFilter, certFilter, dateFilter]);
 
-  const filteredStats = useMemo(() => {
-    const premiumClicks = filteredFunnelEvents.filter(
-      (event) => event.event === "premium_clicked"
-    ).length;
+  const businessCounts = useMemo(
+    () => businessStepCounts(businessFilteredEvents),
+    [businessFilteredEvents],
+  );
 
-    const resultViewed = filteredFunnelEvents.filter(
-      (event) => event.event === "result_viewed"
-    ).length;
+  const normalizedEvents = useMemo(
+    () => normalizedBusinessEvents(businessFilteredEvents),
+    [businessFilteredEvents],
+  );
 
-    const assessmentStarted = filteredFunnelEvents.filter(
-      (event) => event.event === "assessment_started"
-    ).length;
+  const assessmentAverageScore = useMemo(() => {
+    const scores = normalizedEvents
+      .filter((event) => event.step === "assessment_completed" && event.score !== null)
+      .map((event) => Number(event.score))
+      .filter(Number.isFinite);
+    if (!scores.length) return null;
+    return Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10;
+  }, [normalizedEvents]);
 
-    const assessmentCompleted = filteredLeads.filter(
-      (lead) => lead.mode === "assessment"
-    ).length;
-
-    const leadMagnets = filteredLeads.filter(
-      (lead) => lead.mode === "lead_magnet"
-    ).length;
-
-    const anonymousPremiumClicks = filteredFunnelEvents.filter(
-      (event) => event.event === "premium_clicked" && !event.email
-    ).length;
-
-    return {
-      totalLeads: filteredLeads.length,
-      assessmentCompleted,
-      leadMagnets,
-      premiumClicks,
-      resultViewed,
-      assessmentStarted,
-      hotLeads: filteredHotLeads.length,
-      anonymousPremiumClicks,
-    };
-  }, [filteredLeads, filteredFunnelEvents, filteredHotLeads]);
+  const certificationPerformance = useMemo(() => {
+    const rows = new Map<string, Record<string, number>>();
+    normalizedEvents.forEach((event) => {
+      if (!event.cert_slug) return;
+      const row = rows.get(event.cert_slug) ?? {};
+      row[event.step] = (row[event.step] ?? 0) + 1;
+      rows.set(event.cert_slug, row);
+    });
+    return Array.from(rows.entries())
+      .map(([certification, counts]) => ({ certification, counts }))
+      .sort((a, b) => (b.counts.assessment_started ?? 0) - (a.counts.assessment_started ?? 0));
+  }, [normalizedEvents]);
 
   const paywallStats = useMemo(() => {
   const gateShown = filteredFunnelEvents.filter(
@@ -554,125 +557,105 @@ return (
 
         {overview && (
           <>
+            <div style={styles.reliabilityNote}>
+              <strong>Copertura:</strong> i KPI usano gli eventi DB caricati (massimo 500) e
+              rispettano i filtri. Visitors, sessioni e revenue non sono disponibili in questa
+              API; non vengono stimati. Legacy e canonici accoppiati non sono contati due volte.
+            </div>
+
             <div style={styles.kpiGrid}>
-              <KpiCard
-                label="Lead filtrati"
-                value={filteredStats.totalLeads}
-                hint={`Totale reale: ${overview.totals.total_leads}`}
-              />
+              <KpiCard label="Visitors / Sessions" value="—" hint="GA4 non collegato a questa dashboard" />
+              <KpiCard label="Assessment avviati" value={businessCounts.assessment_started} hint="Evento canonico + legacy non duplicati" />
+              <KpiCard label="Assessment completati" value={businessCounts.assessment_completed} hint={rateHint(businessCounts.assessment_completed, businessCounts.assessment_started, "completion")} />
+              <KpiCard label="Lead acquisiti" value={businessCounts.email_captured} hint={rateHint(businessCounts.email_captured, businessCounts.assessment_completed, "assessment → email")} />
+              <KpiCard label="Studio avviato" value={businessCounts.study_started} hint={rateHint(businessCounts.study_started, businessCounts.email_captured, "lead → study")} />
+              <KpiCard label="Paywall raggiunto" value={businessCounts.paywall_reached} hint="Occorrenze normalizzate, non utenti unici" />
+              <KpiCard label="Checkout avviati" value={businessCounts.checkout_started} hint={rateHint(businessCounts.checkout_started, businessCounts.paywall_reached, "paywall → checkout")} />
+              <KpiCard label="Acquisti" value={businessCounts.purchase_completed} hint={rateHint(businessCounts.purchase_completed, businessCounts.checkout_started, "checkout → purchase")} />
+              <KpiCard label="Revenue" value="—" hint="Importi non presenti in funnel_events" />
+            </div>
 
-              <KpiCard
-                label="Assessment completati"
-                value={filteredStats.assessmentCompleted}
-                hint={`Totale reale: ${overview.totals.assessment_leads}`}
-              />
+            <div style={styles.funnelCard}>
+              <div style={styles.tableHeader}>
+                <div>
+                  <h2 style={styles.sectionTitle}>Funnel di conversione</h2>
+                  <p style={styles.sectionHint}>Conteggi di eventi; il traffico iniziale non è disponibile nel DB admin.</p>
+                </div>
+                <div style={styles.tableCount}>Score medio: {assessmentAverageScore === null ? "n/d" : `${assessmentAverageScore}%`}</div>
+              </div>
+              <div style={styles.funnelSteps}>
+                {BUSINESS_STEPS.map((step, index) => {
+                  const count = businessCounts[step.key];
+                  const previous = index === 0 ? null : businessCounts[BUSINESS_STEPS[index - 1].key];
+                  const conversion = previous && previous > 0 ? Math.round((count / previous) * 1000) / 10 : null;
+                  return (
+                    <div key={step.key} style={styles.funnelStep}>
+                      <div style={styles.funnelStepHeader}><span>{step.label}</span><strong>{count}</strong></div>
+                      {previous !== null && (
+                        <div style={styles.funnelRate}>
+                          {conversion === null ? "Conversione n/d" : `${conversion}% dal passaggio precedente · drop-off ${Math.max(0, Math.round((100 - conversion) * 10) / 10)}%`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-              <KpiCard
-                label="Lead magnet"
-                value={filteredStats.leadMagnets}
-                hint={`Totale reale: ${overview.totals.lead_magnet_leads}`}
-              />
+            <div style={{ ...styles.tableCard, marginTop: 24 }}>
+              <div style={styles.tableHeader}>
+                <div>
+                  <h2 style={styles.sectionTitle}>Performance certificazioni</h2>
+                  <p style={styles.sectionHint}>Attribution parziale basata sul `cert_slug` presente nel singolo evento.</p>
+                </div>
+              </div>
+              <div style={styles.tableWrap}>
+                <table style={styles.table}>
+                  <thead><tr><Th>Certification</Th><Th>Views</Th><Th>Assessments</Th><Th>Leads</Th><Th>Study starts</Th><Th>Purchases</Th><Th>Revenue</Th><Th>Assessment → lead</Th></tr></thead>
+                  <tbody>
+                    {certificationPerformance.map(({ certification, counts }) => (
+                      <tr key={certification} style={styles.row}>
+                        <Td strong>{certification}</Td><Td>n/d</Td>
+                        <Td>{counts.assessment_started ?? 0}</Td><Td>{counts.email_captured ?? 0}</Td>
+                        <Td>{counts.study_started ?? 0}</Td><Td>{counts.purchase_completed ?? 0}</Td><Td>n/d</Td>
+                        <Td>{formatRate(counts.email_captured ?? 0, counts.assessment_started ?? 0)}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {!loading && certificationPerformance.length === 0 && <div style={styles.empty}>Nessun evento correlabile a una certificazione.</div>}
+            </div>
+          </>
+        )}
 
-              <KpiCard
-                label="Premium click"
-                value={filteredStats.premiumClicks}
-                hint={`Totale reale: ${
-                  funnelSummary?.events.find((e) => e.event === "premium_clicked")
-                    ?.total ?? 0
-                }`}
-              />
+        <button onClick={() => setShowAdvanced((value) => !value)} style={styles.advancedToggle}>
+          {showAdvanced ? "Nascondi Advanced Events" : "Mostra Advanced Events"}
+        </button>
 
-              <KpiCard
-                label="Result viewed"
-                value={filteredStats.resultViewed}
-                hint={`Totale reale: ${
-                  funnelSummary?.events.find((e) => e.event === "result_viewed")
-                    ?.total ?? 0
-                }`}
-              />
-
-              <KpiCard
-                label="Assessment started"
-                value={filteredStats.assessmentStarted}
-                hint={`Totale reale: ${
-                  funnelSummary?.events.find((e) => e.event === "assessment_started")
-                    ?.total ?? 0
-                }`}
-              />
-
-              <KpiCard
-                label="Lead caldi"
-                value={filteredStats.hotLeads}
-                hint="Score alto, eventi o click Premium"
-              />
-
-              <KpiCard
-                label="Premium anonimi"
-                value={filteredStats.anonymousPremiumClicks}
-                hint="Click Premium senza email"
-              />
-
-              <KpiCard
-                label="Gate 20 visto"
-                value={paywallStats.gateShown}
-                hint="wrong_explanation_gate_shown"
-              />
-
-              <KpiCard
-                label="CTA Paywall cliccato"
-                value={paywallStats.ctaClicked}
-                hint={`Conversione gate → click: ${paywallStats.conversion}%`}
-              />
-
-              <KpiCard
-                label="Utenti al limite 20"
-                value={paywallStats.usersAtLimit}
-                hint={`${paywallStats.usersAtLimitFree} free · ${paywallStats.usersAtLimitPremium} premium`}
-              />
+        {showAdvanced && (
+          <>
+            <div style={styles.advancedHeader}>
+              <h2 style={styles.sectionTitle}>Advanced Events</h2>
+              <p style={styles.sectionHint}>Telemetria operativa, legacy e debug. Non è usata come KPI principale.</p>
             </div>
 
             <div style={styles.insightGrid}>
-              {filteredTopCerts.length > 0 && (
-                <RankingCard
-                  title="Top certificazioni filtrate"
-                  items={filteredTopCerts}
-                  keyName="name"
-                />
-              )}
-
-              {filteredTopTopics.length > 0 && (
-                <RankingCard
-                  title="Top topic filtrati"
-                  items={filteredTopTopics}
-                  keyName="name"
-                />
-              )}
-
-              <RankingCard
-                title="Eventi funnel filtrati"
-                items={filteredEventCounts}
-                keyName="name"
-              />
-
+              {filteredTopCerts.length > 0 && <RankingCard title="Top certificazioni lead" items={filteredTopCerts} keyName="name" />}
+              {filteredTopTopics.length > 0 && <RankingCard title="Top topic lead" items={filteredTopTopics} keyName="name" />}
+              <RankingCard title="Tutti gli eventi grezzi" items={filteredEventCounts} keyName="name" />
               <div style={styles.insightCard}>
-                <h3 style={styles.cardTitle}>Lettura veloce</h3>
-                <p style={styles.note}>
-                  Se i click Premium sono alti ma i lead caldi restano bassi,
-                  significa che l’interesse c’è, ma spesso non è ancora collegato
-                  a una email. In quel caso conviene spingere email capture prima
-                  o subito dopo il click Premium.
-                </p>
+                <h3 style={styles.cardTitle}>Paywall tecnico</h3>
+                <div style={styles.compactStatsGrid}>
+                  <MiniStat label="Gate legacy" value={paywallStats.gateShown} />
+                  <MiniStat label="CTA click" value={paywallStats.ctaClicked} />
+                  <MiniStat label="Utenti al limite" value={paywallStats.usersAtLimit} />
+                </div>
               </div>
             </div>
 
             <div style={styles.compactCard}>
-              <div>
-                <h3 style={styles.cardTitle}>📱 PWA</h3>
-                <p style={styles.sectionHint}>
-                  Statistiche installazione Progressive Web App.
-                </p>
-              </div>
-
+              <h3 style={styles.cardTitle}>PWA / product telemetry</h3>
               <div style={styles.compactStatsGrid}>
                 <MiniStat label="Prompt" value={pwaStats.promptShown} />
                 <MiniStat label="Click" value={pwaStats.clicked} />
@@ -681,8 +664,6 @@ return (
                 <MiniStat label="Conv." value={`${pwaStats.conversion}%`} />
               </div>
             </div>
-          </>
-        )}
 
         <div style={styles.actionBar}>
           <button onClick={exportLeadsCsv} style={styles.exportButton}>
@@ -842,9 +823,7 @@ return (
                   {filteredFunnelEvents.map((event) => (
                     <tr key={event.id} style={styles.row}>
                       <Td strong>{event.email || "-"}</Td>
-                      <Td>
-                        <EventBadge event={event.event} />
-                      </Td>
+                      <Td><EventBadge event={event.event} /> <span style={styles.eventCategory}>{eventCategory(event.event)}</span></Td>
                       <Td>{event.cert_slug || "-"}</Td>
                       <Td>{event.topic_slug || "-"}</Td>
                       <Td>
@@ -866,6 +845,8 @@ return (
               <div style={styles.empty}>Nessun evento funnel trovato con questi filtri.</div>
             )}
           </div>
+          </>
+        )}
         </section>
       )}
 
@@ -897,7 +878,7 @@ function KpiCard({
   hint,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   hint: string;
 }) {
   return (
@@ -1017,6 +998,15 @@ function formatDate(value: string | null | undefined) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatRate(value: number, denominator: number) {
+  if (denominator <= 0) return "n/d";
+  return `${Math.round((value / denominator) * 1000) / 10}%`;
+}
+
+function rateHint(value: number, denominator: number, label: string) {
+  return `${label}: ${formatRate(value, denominator)}`;
 }
 
 function matchesDateFilter(value: string | null | undefined, filter: DateFilter) {
@@ -1171,6 +1161,17 @@ const styles: Record<string, CSSProperties> = {
     marginBottom: 18,
   },
 
+  reliabilityNote: {
+    border: "1px solid #bfdbfe",
+    background: "#eff6ff",
+    color: "#1e3a8a",
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 18,
+    fontSize: 13,
+    lineHeight: 1.5,
+  },
+
   filterPanel: {
     border: "1px solid #e2e8f0",
     borderRadius: 18,
@@ -1276,6 +1277,64 @@ const styles: Record<string, CSSProperties> = {
     color: "#64748b",
     fontSize: 13,
     marginTop: 4,
+  },
+
+  funnelCard: {
+    border: "1px solid #cbd5e1",
+    borderRadius: 18,
+    background: "#fff",
+    overflow: "hidden",
+    boxShadow: "0 10px 25px rgba(15, 23, 42, 0.05)",
+  },
+
+  funnelSteps: {
+    display: "grid",
+    gap: 1,
+    background: "#e2e8f0",
+  },
+
+  funnelStep: {
+    background: "#fff",
+    padding: "14px 18px",
+  },
+
+  funnelStepHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 20,
+    color: "#0f172a",
+    fontSize: 16,
+  },
+
+  funnelRate: {
+    color: "#64748b",
+    fontSize: 12,
+    marginTop: 5,
+  },
+
+  advancedToggle: {
+    display: "block",
+    margin: "24px 0 16px auto",
+    border: "1px solid #cbd5e1",
+    background: "#f8fafc",
+    color: "#334155",
+    padding: "10px 14px",
+    borderRadius: 12,
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+
+  advancedHeader: {
+    borderTop: "1px solid #e2e8f0",
+    paddingTop: 20,
+    marginBottom: 16,
+  },
+
+  eventCategory: {
+    marginLeft: 8,
+    color: "#64748b",
+    fontSize: 10,
+    fontWeight: 800,
   },
 
   insightGrid: {
