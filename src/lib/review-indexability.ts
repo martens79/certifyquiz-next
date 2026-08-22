@@ -64,13 +64,6 @@ export function evaluateReviewIndexability(
     if (!value?.trim()) reasons.push(`missing_${name}`);
   }
 
-  if (
-    review.title?.trim().toLocaleLowerCase() ===
-    review.topicTitle.trim().toLocaleLowerCase()
-  ) {
-    reasons.push("generic_title_matches_topic");
-  }
-
   const combined = [
     review.title,
     review.metaTitle,

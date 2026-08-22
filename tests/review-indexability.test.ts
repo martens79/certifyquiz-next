@@ -38,6 +38,5 @@ test("keeps thin or placeholder reviews noindex and explains why", () => {
   assert.ok(result.reasons.includes("content_below_150_words"));
   assert.ok(result.reasons.includes("fewer_than_two_h2_sections"));
   assert.ok(result.reasons.includes("missing_meta_title"));
-  assert.ok(result.reasons.includes("generic_title_matches_topic"));
   assert.ok(result.reasons.includes("placeholder_language_detected"));
 });
