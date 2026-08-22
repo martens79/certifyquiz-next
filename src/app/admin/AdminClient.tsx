@@ -640,6 +640,37 @@ return (
               <p style={styles.sectionHint}>Telemetria operativa, legacy e debug. Non è usata come KPI principale.</p>
             </div>
 
+            <details style={styles.legendCard} open>
+              <summary style={styles.legendSummary}>Legenda eventi e categorie</summary>
+              <p style={styles.sectionHint}>
+                Una riga rappresenta un evento registrato, non necessariamente una persona unica.
+              </p>
+              <div style={styles.legendGrid}>
+                <div>
+                  <h3 style={styles.legendTitle}>Eventi principali</h3>
+                  <LegendItem code="assessment_started" text="Una persona ha iniziato il test di valutazione." />
+                  <LegendItem code="assessment_completed" text="Il test è stato completato e il risultato calcolato." />
+                  <LegendItem code="email_captured" text="È stata lasciata un’email per ricevere il report." />
+                  <LegendItem code="study_started" text="È iniziato realmente un quiz di studio o un Interactive Lab." />
+                  <LegendItem code="free_limit_reached" text="Un account free ha consumato l’ultima quota gratuita." />
+                  <LegendItem code="paywall_viewed" text="È stato mostrato un blocco Premium/acquisto. Non significa che l’utente abbia comprato." />
+                  <LegendItem code="checkout_started / checkout_created" text="È stata avviata la procedura di pagamento." />
+                  <LegendItem code="purchase_completed" text="Il pagamento è stato confermato." />
+                  <LegendItem code="map_preview_viewed / guide_preview_viewed" text="È stata aperta l’anteprima di una mappa o guida." />
+                  <LegendItem code="pwa_install_prompt_shown" text="È comparso l’invito a installare CertifyQuiz come app." />
+                </div>
+                <div>
+                  <h3 style={styles.legendTitle}>Categorie</h3>
+                  <LegendItem code="CORE KPI" text="Passaggio fondamentale del funnel business." />
+                  <LegendItem code="FUNNEL" text="Passaggio che avvicina l’utente alla conversione." />
+                  <LegendItem code="PRODUCT" text="Utilizzo o interesse verso contenuti e funzionalità." />
+                  <LegendItem code="COMMERCE" text="Checkout, pagamento, acquisto o relativo lifecycle." />
+                  <LegendItem code="DEBUG/TECHNICAL" text="Telemetria utile per controllare il prodotto, non un risultato commerciale diretto." />
+                  <LegendItem code="LEGACY" text="Vecchio nome conservato per continuità storica; il KPI normalizzato evita il doppio conteggio." />
+                </div>
+              </div>
+            </details>
+
             <div style={styles.insightGrid}>
               {filteredTopCerts.length > 0 && <RankingCard title="Top certificazioni lead" items={filteredTopCerts} keyName="name" />}
               {filteredTopTopics.length > 0 && <RankingCard title="Top topic lead" items={filteredTopTopics} keyName="name" />}
@@ -902,7 +933,17 @@ function MiniStat({
       <div style={styles.miniStatValue}>{value}</div>
     </div>
   );
-} 
+}
+
+function LegendItem({ code, text }: { code: string; text: string }) {
+  return (
+    <div style={styles.legendItem}>
+      <code style={styles.legendCode}>{code}</code>
+      <span style={styles.legendText}>{text}</span>
+    </div>
+  );
+}
+
 function RankingCard({
   title,
   items,
@@ -1335,6 +1376,59 @@ const styles: Record<string, CSSProperties> = {
     color: "#64748b",
     fontSize: 10,
     fontWeight: 800,
+  },
+
+  legendCard: {
+    border: "1px solid #cbd5e1",
+    borderRadius: 16,
+    padding: 16,
+    background: "#f8fafc",
+    marginBottom: 18,
+  },
+
+  legendSummary: {
+    cursor: "pointer",
+    fontWeight: 900,
+    fontSize: 17,
+    color: "#0f172a",
+  },
+
+  legendGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gap: 24,
+    marginTop: 14,
+  },
+
+  legendTitle: {
+    fontSize: 14,
+    fontWeight: 900,
+    margin: "0 0 10px",
+    color: "#334155",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+
+  legendItem: {
+    display: "grid",
+    gridTemplateColumns: "minmax(145px, auto) 1fr",
+    gap: 12,
+    alignItems: "start",
+    padding: "8px 0",
+    borderBottom: "1px solid #e2e8f0",
+  },
+
+  legendCode: {
+    color: "#1e3a8a",
+    fontSize: 11,
+    fontWeight: 800,
+    overflowWrap: "anywhere",
+  },
+
+  legendText: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 1.45,
   },
 
   insightGrid: {
