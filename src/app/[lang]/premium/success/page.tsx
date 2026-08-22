@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider"; // <-- adatta se serve
-import { trackMetaPixel } from "@/lib/metaPixel";
 
 const COPY: Record<string, any> = {
   it: {
@@ -50,17 +49,6 @@ export default function PremiumSuccessLangPage() {
       }
     })();
   }, [refreshMe]);
-
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("cq_pending_purchase");
-      if (raw) {
-        const { value, currency } = JSON.parse(raw);
-        trackMetaPixel("Purchase", { value, currency });
-        sessionStorage.removeItem("cq_pending_purchase");
-      }
-    } catch {}
-  }, [lang]);
 
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 text-center">

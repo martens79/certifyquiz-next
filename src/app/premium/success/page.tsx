@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider"; // <-- se il path è diverso, adattalo
-import { trackMetaPixel } from "@/lib/metaPixel";
 
 export default function PremiumSuccessPage() {
   const { refreshMe } = useAuth();
@@ -23,17 +22,6 @@ export default function PremiumSuccessPage() {
       }
     })();
   }, [refreshMe]);
-
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem("cq_pending_purchase");
-      if (raw) {
-        const { value, currency } = JSON.parse(raw);
-        trackMetaPixel("Purchase", { value, currency });
-        sessionStorage.removeItem("cq_pending_purchase");
-      }
-    } catch {}
-  }, []);
 
   return (
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">

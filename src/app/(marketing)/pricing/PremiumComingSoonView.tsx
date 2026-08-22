@@ -677,13 +677,6 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       const data: { url?: string; error?: string } = await res.json();
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
-      try {
-        sessionStorage.setItem(
-          "cq_pending_purchase",
-          JSON.stringify({ value: PREMIUM_PLAN_VALUES[selectedPlan], currency: "EUR", plan: selectedPlan })
-        );
-      } catch {}
-
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);
