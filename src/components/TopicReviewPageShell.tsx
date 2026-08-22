@@ -6,6 +6,7 @@ import { getTopicReviewPage, getCertTopicReviews, type Locale } from "@/lib/data
 import { reviewsCertPath, roadmapPath, topicReviewPath, toHreflang } from "@/lib/paths";
 import { evaluateReviewIndexability } from "@/lib/review-indexability";
 import StructuredData from "@/components/StructuredData";
+import ReviewPremiumContent from "@/components/reviews/ReviewPremiumContent";
 
 type Props = {
   lang: Locale;
@@ -345,13 +346,15 @@ export default async function TopicReviewPageShell({
 
       <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
         <div className="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-a:text-blue-700">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {review.content}
-          </ReactMarkdown>
+          {review.locked ? (
+            <ReviewPremiumContent lang={lang} certSlug={slug} topicSlug={topicSlug} reviewId={review.id} preview={review.content || ""} />
+          ) : (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{review.content}</ReactMarkdown>
+          )}
         </div>
       </section>
 
-      {review.faq && (
+      {!review.locked && review.faq && (
         <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <div className="prose prose-slate max-w-none prose-a:text-blue-700">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>

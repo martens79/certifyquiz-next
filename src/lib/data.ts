@@ -31,6 +31,7 @@ export type TopicReviewListItem = {
   certificationId: number;
   certificationTitle: string;
   certSlug: string;
+  topicSlug: string;
   title: string;
   href: string;
 };
@@ -63,6 +64,9 @@ export type CertReviewItem = {
   title: string;
   keyConcepts: string[];
   href: string;
+  access: "free" | "premium" | "unlocked";
+  locked: boolean;
+  accessReason: string | null;
 };
 
 export type CertReviewsResponse = {
@@ -951,6 +955,9 @@ export type TopicReviewPage = {
   intro: string | null;
   content: string | null;
   faq: string | null;
+  access: "free" | "premium" | "unlocked";
+  locked: boolean;
+  accessReason: string | null;
 };
 
 export async function getTopicReviewPage(params: {

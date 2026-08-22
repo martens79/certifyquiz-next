@@ -40,3 +40,28 @@ test("keeps thin or placeholder reviews noindex and explains why", () => {
   assert.ok(result.reasons.includes("missing_meta_title"));
   assert.ok(result.reasons.includes("placeholder_language_detected"));
 });
+
+test("allows a substantial premium public excerpt to remain indexable", () => {
+  const result = evaluateReviewIndexability({
+    topicTitle: "Network Fundamentals",
+    title: "Network Fundamentals Review",
+    metaTitle: "Network Fundamentals Review | CertifyQuiz",
+    metaDescription: "A useful public overview of network fundamentals.",
+    intro: "Start with this public foundation before unlocking the complete review.",
+    content: `## Overview\n\n${substantialSection}\n\n## Key concepts\n\n${substantialSection}`,
+  });
+  assert.equal(result.indexable, true);
+});
+
+test("excludes a thin premium preview from indexing", () => {
+  const result = evaluateReviewIndexability({
+    topicTitle: "Advanced routing",
+    title: "Advanced routing",
+    metaTitle: "Advanced routing review",
+    metaDescription: "Preview of the advanced routing review.",
+    intro: "Short preview.",
+    content: "## Preview\n\nShort excerpt.",
+  });
+  assert.equal(result.indexable, false);
+  assert.ok(result.reasons.includes("content_below_150_words"));
+});

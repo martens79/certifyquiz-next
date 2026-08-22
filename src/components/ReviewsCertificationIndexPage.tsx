@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCertTopicReviews, type Locale } from "@/lib/data";
-import { cleanReviewTitle } from "@/lib/text";
 import { certPath, reviewsCertPath, reviewsPath, roadmapPath } from "@/lib/paths";
+import ReviewAccessList from "@/components/reviews/ReviewAccessList";
 
 type Props = {
   lang: Locale;
@@ -187,33 +187,7 @@ export default async function ReviewsCertificationIndexPage({ lang, certSlug }: 
           {t.emptyText}
         </section>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => {
-            const title = cleanReviewTitle(item.title, certification.name);
-
-            return (
-              <li
-                key={item.id}
-                className="flex flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-5"
-              >
-                <div className="font-semibold text-slate-950">{title}</div>
-
-                {item.keyConcepts.length > 0 && (
-                  <div className="mt-1 text-sm text-slate-600">
-                    {t.keyConcepts}: {item.keyConcepts.join(", ")}
-                  </div>
-                )}
-
-                <Link
-                  href={item.href}
-                  className="mt-3 inline-flex text-sm font-extrabold text-blue-700 hover:text-blue-900"
-                >
-                  {t.open} →
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <ReviewAccessList lang={lang} certSlug={certSlug} certificationName={certification.name} initialItems={items} keyConceptsLabel={t.keyConcepts} openLabel={t.open} />
       )}
     </main>
   );
