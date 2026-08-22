@@ -1,7 +1,7 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
 import { sanityServerClient } from "@/lib/sanity.server";
-import { evaluateReviewIndexability } from "@/lib/review-indexability";
+import { selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -51,29 +51,25 @@ type RemoteTopic = {
   certification_slug: string;
 };
 
-type RemoteReviewListItem = { certSlug:string; topicSlug:string; href:string };
+type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
 
-async function getIndexableRemoteReviews(lang:Lang, timeoutMs=15000):Promise<string[]> {
+export async function getIndexableRemoteReviews(timeoutMs=15000):Promise<Record<Lang,string[]>> {
   const controller=new AbortController();
   const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  const empty=():Record<Lang,string[]>=>({it:[],es:[],en:[],fr:[]});
   try {
-    const listRes=await fetch(`${API_BASE}/topic-reviews?lang=${lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});
-    if(!listRes.ok) return [];
-    const list=(await listRes.json()) as RemoteReviewListItem[];
-    const urls:string[]=[];
-    const batchSize=12;
-    for(let offset=0;offset<list.length;offset+=batchSize){
-      const batch=list.slice(offset,offset+batchSize);
-      const results=await Promise.all(batch.map(async item=>{
-        const res=await fetch(`${API_BASE}/certifications/${encodeURIComponent(item.certSlug)}/topics/${encodeURIComponent(item.topicSlug)}/review?lang=${lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});
-        if(!res.ok)return null;
-        const review=await res.json();
-        return evaluateReviewIndexability(review).indexable?item.href:null;
-      }));
-      urls.push(...results.filter((url):url is string=>!!url));
-    }
+    const lists=await Promise.all(langs.map(async lang=>{const response=await fetch(`${API_BASE}/topic-reviews?lang=${lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});return response.ok?{lang,items:await response.json() as RemoteReviewListItem[]}:null}));
+    if(lists.some(list=>!list))return empty();
+    const clusters=new Map<string,Array<{lang:Lang;href:string;review:ReviewIndexabilityInput}>>();
+    const localizedReviews=await Promise.all(lists.flatMap(list=>list?list.items.map(async item=>{
+      const response=await fetch(`${API_BASE}/certifications/${encodeURIComponent(item.certSlug)}/topics/${encodeURIComponent(item.topicSlug)}/review?lang=${list.lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});
+      return response.ok?{key:`${item.certSlug}:${item.topicId}`,lang:list.lang,href:item.href,review:await response.json() as ReviewIndexabilityInput}:null;
+    }):[]));
+    for(const item of localizedReviews){if(!item)continue;const cluster=clusters.get(item.key)||[];cluster.push(item);clusters.set(item.key,cluster)}
+    const urls=empty();
+    for(const item of selectIndexableReviewClusterItems(clusters.values()))urls[item.lang].push(item.href);
     return urls;
-  } catch { return []; } finally { clearTimeout(timer); }
+  } catch { return empty(); } finally { clearTimeout(timer); }
 }
 
 type SanityArticle = {
@@ -186,11 +182,12 @@ async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const indexableReviews=await getIndexableRemoteReviews();
 
   const [perLang, blogEntries] = await Promise.all([
     Promise.all(
       langs.map(async (lang) => {
-        const [certs,topics,indexableReviews] = await Promise.all([getRemoteCerts(lang),getRemoteTopics(lang),getIndexableRemoteReviews(lang)]);
+        const [certs,topics] = await Promise.all([getRemoteCerts(lang),getRemoteTopics(lang)]);
 
         const base = lang === "en" ? SITE : `${SITE}/${lang}`;
         const listSegment = CERT_SEGMENT_BY_LANG[lang];
@@ -326,7 +323,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.7,
             lastModified: now,
           })),
-          ...indexableReviews.map((href)=>({
+          ...indexableReviews[lang].map((href)=>({
             url: `${SITE}${href}`,
             changeFrequency: "monthly" as const,
             priority: 0.65,

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { getTopicReviewPage, getCertTopicReviews, type Locale } from "@/lib/data";
+import { getTopicReviewPage, getCertTopicReviews, type Locale, type TopicReviewPage } from "@/lib/data";
 import { reviewsCertPath, roadmapPath, topicReviewPath, toHreflang } from "@/lib/paths";
-import { evaluateReviewIndexability } from "@/lib/review-indexability";
+import { evaluateReviewClusterIndexability } from "@/lib/review-indexability";
 import StructuredData from "@/components/StructuredData";
 import ReviewPremiumContent from "@/components/reviews/ReviewPremiumContent";
 
@@ -124,6 +124,17 @@ function getQuizPath(lang: Locale, topicId: number) {
     : `/${lang}/quiz/topic/${topicId}`;
 }
 
+async function getReviewLocaleCluster(slug:string, topicId:number):Promise<Array<{locale:Locale;href:string;review:TopicReviewPage}>> {
+  const localized=await Promise.all(locales.map(async locale=>{
+    const {items}=await getCertTopicReviews(slug,locale);
+    const item=items.find(candidate=>candidate.topicId===topicId);
+    if(!item)return null;
+    const review=await getTopicReviewPage({certSlug:slug,topicSlug:item.topicSlug,lang:locale});
+    return review?{locale,href:item.href,review}:null;
+  }));
+  return localized.filter((item):item is {locale:Locale;href:string;review:TopicReviewPage}=>!!item);
+}
+
 export async function generateTopicReviewMetadata({
   lang,
   slug,
@@ -151,34 +162,14 @@ export async function generateTopicReviewMetadata({
     };
   }
 
-  const indexability = evaluateReviewIndexability(review);
+  const localizedReviews=await getReviewLocaleCluster(slug,review.topicId);
+  const indexability = evaluateReviewClusterIndexability(localizedReviews.map(item=>item.review));
   const canonical = absoluteUrl(topicReviewPath(lang, slug, topicSlug));
   const languages: Record<string, string> = {};
 
   if (indexability.indexable) {
-    const localizedReviews = await Promise.all(
-      locales.map(async (locale) => {
-        const { items } = await getCertTopicReviews(slug, locale);
-        const item = items.find((candidate) => candidate.topicId === review.topicId);
-        if (!item) return null;
-
-        const localizedReview = await getTopicReviewPage({
-          certSlug: slug,
-          topicSlug: item.topicSlug,
-          lang: locale,
-        });
-        if (!localizedReview) return null;
-
-        return evaluateReviewIndexability(localizedReview).indexable
-          ? { locale, href: item.href }
-          : null;
-      })
-    );
-
     for (const localized of localizedReviews) {
-      if (localized) {
-        languages[toHreflang(localized.locale)] = absoluteUrl(localized.href);
-      }
+      languages[toHreflang(localized.locale)] = absoluteUrl(localized.href);
     }
     if (languages["en-US"]) languages["x-default"] = languages["en-US"];
   }
@@ -261,7 +252,8 @@ export default async function TopicReviewPageShell({
 
   const quizPath = getQuizPath(lang, review.topicId);
   const roadmap = relatedRoadmap(slug);
-  const indexability = evaluateReviewIndexability(review);
+  const localizedReviews=await getReviewLocaleCluster(slug,review.topicId);
+  const indexability = evaluateReviewClusterIndexability(localizedReviews.map(item=>item.review));
   const reviewUrl = absoluteUrl(topicReviewPath(lang, slug, topicSlug));
   const reviewLd = indexability.indexable
     ? {

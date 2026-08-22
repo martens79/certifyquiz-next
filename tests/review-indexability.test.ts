@@ -1,67 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { evaluateReviewIndexability } from "../src/lib/review-indexability.ts";
+import { evaluateReviewClusterIndexability, evaluateReviewIndexability, selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "../src/lib/review-indexability.ts";
 
-const substantialSection = Array.from(
-  { length: 90 },
-  (_, index) => `concept${index} is explained with a practical certification example`
-).join(" ");
+const substantialSection=Array.from({length:90},(_,i)=>`concept${i} is explained with a practical technical example`).join(" ");
+function review(overrides:Partial<ReviewIndexabilityInput>={}):ReviewIndexabilityInput{return {
+  certificationSlug:"ccna",topicId:81,access:"free",topicTitle:"Cisco hardware",title:"Cisco network hardware",
+  metaTitle:"Cisco network hardware | CertifyQuiz",metaDescription:"Routers, switches, cabling and physical network interfaces.",
+  intro:"A technical guide to Cisco network devices and physical interfaces.",content:`## Devices\n\n${substantialSection}\n\n## Interfaces\n\n${substantialSection}`,...overrides,
+}}
 
-test("indexes only a substantial, structured and fully described review", () => {
-  const result = evaluateReviewIndexability({
-    topicTitle: "Network Fundamentals",
-    title: "Network Fundamentals: exam review and key concepts",
-    metaTitle: "Network Fundamentals Review for CCNA | CertifyQuiz",
-    metaDescription:
-      "Review the essential network fundamentals for CCNA with practical examples and exam-focused explanations.",
-    intro:
-      "A focused review of the network concepts you should understand before attempting the related CCNA quiz.",
-    content: `## Core concepts\n\n${substantialSection}\n\n## Exam application\n\n${substantialSection}`,
-  });
-
-  assert.equal(result.indexable, true);
-  assert.deepEqual(result.reasons, []);
-});
-
-test("keeps thin or placeholder reviews noindex and explains why", () => {
-  const result = evaluateReviewIndexability({
-    topicTitle: "Network Fundamentals",
-    title: "Network Fundamentals",
-    metaTitle: null,
-    metaDescription: null,
-    intro: "Full review coming soon.",
-    content: "## Summary\n\nShort placeholder.",
-  });
-
-  assert.equal(result.indexable, false);
-  assert.ok(result.reasons.includes("content_below_900_characters"));
-  assert.ok(result.reasons.includes("content_below_150_words"));
-  assert.ok(result.reasons.includes("fewer_than_two_h2_sections"));
-  assert.ok(result.reasons.includes("missing_meta_title"));
-  assert.ok(result.reasons.includes("placeholder_language_detected"));
-});
-
-test("allows a substantial premium public excerpt to remain indexable", () => {
-  const result = evaluateReviewIndexability({
-    topicTitle: "Network Fundamentals",
-    title: "Network Fundamentals Review",
-    metaTitle: "Network Fundamentals Review | CertifyQuiz",
-    metaDescription: "A useful public overview of network fundamentals.",
-    intro: "Start with this public foundation before unlocking the complete review.",
-    content: `## Overview\n\n${substantialSection}\n\n## Key concepts\n\n${substantialSection}`,
-  });
-  assert.equal(result.indexable, true);
-});
-
-test("excludes a thin premium preview from indexing", () => {
-  const result = evaluateReviewIndexability({
-    topicTitle: "Advanced routing",
-    title: "Advanced routing",
-    metaTitle: "Advanced routing review",
-    metaDescription: "Preview of the advanced routing review.",
-    intro: "Short preview.",
-    content: "## Preview\n\nShort excerpt.",
-  });
-  assert.equal(result.indexable, false);
-  assert.ok(result.reasons.includes("content_below_150_words"));
-});
+test("distinct technical intent with sufficient content can be indexed",()=>assert.equal(evaluateReviewIndexability(review()).indexable,true));
+test("certification-level intent is noindex even when substantial",()=>{const r=evaluateReviewIndexability(review({topicId:83}));assert.equal(r.indexable,false);assert.ok(r.reasons.includes("seo_intent_certification"))});
+test("borderline intent fails closed",()=>assert.equal(evaluateReviewIndexability(review({topicId:84})).indexable,false));
+test("unclassified new reviews fail closed",()=>assert.equal(evaluateReviewIndexability(review({topicId:99999})).indexable,false));
+test("FREE does not imply index",()=>assert.equal(evaluateReviewIndexability(review({topicId:83,access:"free"})).indexable,false));
+test("Premium does not imply noindex when its public preview is autonomous",()=>assert.equal(evaluateReviewIndexability(review({access:"premium"})).indexable,true));
+test("thin Premium preview is noindex",()=>{const r=evaluateReviewIndexability(review({access:"premium",content:"## Preview\n\nShort.\n\n## More\n\nShort."}));assert.equal(r.indexable,false);assert.ok(r.reasons.includes("premium_preview_below_300_words"))});
+test("Spanish ordinary use of todo is not treated as a TODO placeholder",()=>assert.equal(evaluateReviewIndexability(review({intro:"Todo el hardware necesario para una red Cisco."})).indexable,true));
+test("an actual standalone TODO marker remains noindex",()=>assert.equal(evaluateReviewIndexability(review({content:`## Devices\n\n${substantialSection}\n\nTODO`})).indexable,false));
+test("locale cluster is indexable only when all four equivalents pass",()=>{const cluster=[review(),review(),review(),review()];assert.equal(evaluateReviewClusterIndexability(cluster).indexable,true);cluster[3]=review({content:"short"});assert.equal(evaluateReviewClusterIndexability(cluster).indexable,false)});
+test("incomplete hreflang cluster fails closed",()=>assert.equal(evaluateReviewClusterIndexability([review(),review(),review()]).indexable,false));
+test("sitemap selector includes index clusters and excludes noindex clusters",()=>{const indexed=[0,1,2,3].map(i=>({href:`/index-${i}`,review:review()}));const blocked=[0,1,2,3].map(i=>({href:`/blocked-${i}`,review:review({topicId:83})}));assert.deepEqual(selectIndexableReviewClusterItems([indexed,blocked]).map(x=>x.href),indexed.map(x=>x.href))});
