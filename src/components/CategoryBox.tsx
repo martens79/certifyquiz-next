@@ -136,13 +136,13 @@ export default function CategoryBox({
   const chipsMaxH = compact ? "max-h-[86px]" : "max-h-none";
 
   const titleStr =
-    typeof title === "string" ? title : (getLabel(title) as string);
+    typeof title === "string" ? title : (getLabel(title, lang) as string);
 
   const descStr =
     typeof description === "string"
       ? description
       : description
-      ? (getLabel(description) as string)
+      ? (getLabel(description, lang) as string)
       : "";
 
   const roadmapHref = roadmapKey
@@ -155,13 +155,13 @@ export default function CategoryBox({
     typeof roadmapLabel === "string"
       ? roadmapLabel
       : roadmapLabel
-      ? (getLabel(roadmapLabel) as string)
+      ? (getLabel(roadmapLabel, lang) as string)
       : (getLabel({
           it: "Guida: Roadmap →",
           en: "Guide: Roadmap →",
           fr: "Guide : Roadmap →",
           es: "Guía: Roadmap →",
-        }) as string);
+        }, lang) as string);
 
   const btnClasses =
     "rounded-md font-semibold text-xs py-1.5 px-3 bg-blue-600 text-white hover:bg-blue-700 transition";
@@ -275,7 +275,7 @@ export default function CategoryBox({
                 en: "From technical skills to leadership.",
                 fr: "Des compétences techniques au leadership.",
                 es: "De las habilidades técnicas al liderazgo.",
-              })}
+              }, lang)}
             </p>
 
             <p className="mt-1 text-sm text-gray-600">
@@ -284,7 +284,7 @@ export default function CategoryBox({
                 en: "Paths designed to grow your career, lead teams and manage real projects.",
                 fr: "Des parcours pour faire évoluer votre carrière, diriger des équipes et gérer des projets réels.",
                 es: "Rutas pensadas para crecer profesionalmente, liderar equipos y gestionar proyectos reales.",
-              })}
+              }, lang)}
             </p>
           </div>
         )}
@@ -300,7 +300,7 @@ export default function CategoryBox({
             prefetch={false}
             className={btnClasses}
           >
-            {getLabel({ it: "Quiz", en: "Quiz", fr: "Quiz", es: "Quiz" })}
+            {getLabel({ it: "Quiz", en: "Quiz", fr: "Quiz", es: "Quiz" }, lang)}
           </Link>
         </div>
       </div>
