@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
@@ -27,6 +27,7 @@ import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import { trackEvent as trackAnalyticsEvent, trackFunnelEvent } from "@/lib/analytics";
+import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
@@ -339,6 +340,8 @@ export default function QuizEngine({
   onFeedback,
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();
 
   // i18n quiz microcopy
@@ -414,7 +417,12 @@ const consumeWrongExplanation = async (questionId: number | string): Promise<boo
    const res = await apiFetch("/me/explanation-seen", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ certification_id: context?.certificationId ?? null }),
+  body: JSON.stringify({
+    certification_id: context?.certificationId ?? null,
+    cert_slug: context?.certificationSlug ?? null,
+    topic_slug: context?.topicSlug ?? null,
+    lang,
+  }),
 });
 
     if (!res.ok) {
@@ -430,7 +438,16 @@ const consumeWrongExplanation = async (questionId: number | string): Promise<boo
       return false;
     }
 
-    setWrongExpLeft(data.remaining ?? 0);
+    const remaining = data.remaining ?? 0;
+    setWrongExpLeft(remaining);
+    if (remaining === 0) {
+      trackQuizEvent('free_limit_reached', {
+        language: lang,
+        certification_slug: context?.certificationSlug ?? null,
+        limit_type: 'wrong_explanations',
+        limit: data.limit ?? wrongExpLimit,
+      });
+    }
     return true;
   } catch (err) {
     console.error("Errore explanation-seen:", err);
@@ -469,6 +486,7 @@ const [fbSent, setFbSent] = useState(false);
 
 const [reportEmail, setReportEmail] = useState("");
 const [reportSending, setReportSending] = useState(false);
+const [reportSubmitted, setReportSubmitted] = useState(false);
 const [reportMessage, setReportMessage] = useState<string | null>(null);
 
 const openFeedback = () => {
@@ -516,6 +534,7 @@ const openFeedback = () => {
   const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const assessmentStartedTrackedRef = useRef(false);
+  const studyStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
   const milestoneTrackedRef = useRef(new Set<number>());
   const abandonedTrackedRef = useRef(false);
@@ -570,6 +589,7 @@ const openFeedback = () => {
 
   useEffect(() => {
     assessmentStartedTrackedRef.current = false;
+    studyStartedTrackedRef.current = false;
     completedTrackedRef.current = false;
     milestoneTrackedRef.current.clear();
     abandonedTrackedRef.current = false;
@@ -852,7 +872,7 @@ const openFeedback = () => {
 
     assessmentStartedTrackedRef.current = true;
 
-    trackQuizEvent('diagnostic_quiz_started', {
+    const assessmentStartProperties = {
       lang,
       quiz_mode: effectiveMode,
       certification_slug: context?.certificationSlug ?? null,
@@ -861,6 +881,14 @@ const openFeedback = () => {
       topic: context?.topicTitle ?? null,
       kind: context?.kind ?? null,
       total_questions: questions.length,
+    };
+    trackQuizEvent('assessment_started', assessmentStartProperties);
+    trackQuizEvent('diagnostic_quiz_started', assessmentStartProperties);
+    trackFunnelEvent({
+      event: 'assessment_started',
+      cert_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null,
+      lang,
     });
   }, [
     effectiveMode,
@@ -871,8 +899,41 @@ const openFeedback = () => {
     storageScope,
     context?.certificationName,
     context?.certificationSlug,
+    context?.topicSlug,
     context?.topicTitle,
     context?.kind,
+  ]);
+
+  useEffect(() => {
+    if (effectiveMode === 'assessment') return;
+    if (loading || err || !questions.length || studyStartedTrackedRef.current) return;
+    studyStartedTrackedRef.current = true;
+
+    trackQuizEvent('study_started', {
+      language: lang,
+      quiz_mode: effectiveMode,
+      certification_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null,
+      source_page: 'quiz',
+      conversion_source: conversionContext.source,
+      assessment_score: conversionContext.score,
+    });
+    trackFunnelEvent({
+      event: 'study_started',
+      cert_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null,
+      lang,
+    });
+  }, [
+    effectiveMode,
+    loading,
+    err,
+    questions.length,
+    lang,
+    context?.certificationSlug,
+    context?.topicSlug,
+    conversionContext.source,
+    conversionContext.score,
   ]);
 
   useEffect(() => {
@@ -1415,32 +1476,21 @@ const goToFirstUnanswered = () => {
   setLastSummary(summary);
 
 
-  // ✅ Funnel tracking — result_viewed
-// Salva nel DB quando l’utente vede il risultato dell’assessment.
-// Questo evento serve per misurare quanti utenti completano davvero il free test,
-// con score e contesto certificazione/topic per hot leads e analisi funnel.
-
-if (effectiveMode === "assessment") {
-  fetch("/api/backend/funnel-event", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  body: JSON.stringify({
-  event: "quiz_result_viewed",
-  cert_slug: context?.certificationSlug ?? null,
-  topic_slug: context?.topicSlug ?? null,
-  lang,
-  score: scorePct,
-}),
-  }).catch(console.error);
-}
-
   // ✅ Analytics — completamento quiz / assessment.
 // Serve per capire quanti utenti finiscono davvero il free test.
 if (!completedTrackedRef.current) {
   completedTrackedRef.current = true;
+
+  if (effectiveMode === "assessment") {
+    const funnelContext = {
+      cert_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null,
+      lang,
+      score: scorePct,
+    };
+    trackFunnelEvent({ event: "assessment_completed", ...funnelContext });
+    trackFunnelEvent({ event: "quiz_result_viewed", ...funnelContext });
+  }
 
   trackQuizEvent(
     effectiveMode === 'assessment'
@@ -1478,7 +1528,7 @@ if (!completedTrackedRef.current) {
 }
 
 const submitAssessmentReport = async () => {
-  if (!lastSummary) return;
+  if (!lastSummary || reportSubmitted) return;
 
   const email = reportEmail.trim().toLowerCase();
 
@@ -1526,6 +1576,8 @@ const submitAssessmentReport = async () => {
       throw new Error(data?.message || "Report failed");
     }
 
+    setReportSubmitted(true);
+
    trackQuizEvent("assessment_email_submitted", {
   lang,
   source: "assessment_result",
@@ -1563,6 +1615,8 @@ const submitAssessmentReport = async () => {
 
   assessmentStartedTrackedRef.current = false;
   completedTrackedRef.current = false;
+  setReportSubmitted(false);
+  setReportMessage(null);
 
   setIdx(0);
   setMarked({});
@@ -1635,6 +1689,19 @@ const submitAssessmentReport = async () => {
     const markedMap = lastSummary?.marked ?? marked;
 
     const isAssessmentResult = effectiveMode === 'assessment';
+    const assessmentStudyHref = withConversionContext(context?.backHref || backUrl, {
+      source: 'assessment_result',
+      certificationSlug: context?.certificationSlug,
+      topicSlug: context?.topicSlug,
+      score: scorePct,
+    });
+    const assessmentRegisterHref = withConversionContext(withLang(lang, '/register'), {
+      source: 'assessment_result',
+      certificationSlug: context?.certificationSlug,
+      topicSlug: context?.topicSlug,
+      score: scorePct,
+      redirect: assessmentStudyHref,
+    });
 
 const assessmentCopy =
   scorePct < 50
@@ -1834,7 +1901,7 @@ const assessmentCopy =
 
       <button
         type="button"
-        disabled={reportSending}
+        disabled={reportSending || reportSubmitted}
         onClick={submitAssessmentReport}
         className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
       >
@@ -1871,6 +1938,21 @@ const assessmentCopy =
         ? "Sin spam. Puedes darte de baja cuando quieras."
         : "No spam. You can unsubscribe anytime."}
     </p>
+
+    {!user && (
+      <Link
+        href={assessmentRegisterHref}
+        className="mt-4 inline-flex w-full items-center justify-center rounded-xl border border-emerald-300 bg-white px-5 py-3 text-sm font-bold text-emerald-800 hover:bg-emerald-50"
+      >
+        {lang === 'it'
+          ? 'Salva il risultato e continua a studiare'
+          : lang === 'fr'
+          ? 'Enregistrer le résultat et continuer à étudier'
+          : lang === 'es'
+          ? 'Guardar el resultado y seguir estudiando'
+          : 'Save your result and continue studying'}
+      </Link>
+    )}
   </div>
 )}
 
@@ -2526,6 +2608,7 @@ return (
         lang={lang}
         mode={effectiveMode}
         certificationSlug={context?.certificationSlug ?? null}
+        topicSlug={context?.topicSlug ?? null}
         source={blockReview ? 'block-review' : undefined}
         onBlockReviewGateViewed={blockReview ? () => {
           if (!claimBlockReviewGateOpening(
@@ -2824,6 +2907,7 @@ function GateShownTracker({
   lang,
   mode,
   certificationSlug,
+  topicSlug,
   source,
   onBlockReviewGateViewed,
 }: {
@@ -2831,6 +2915,7 @@ function GateShownTracker({
   lang: string;
   mode: string;
   certificationSlug: string | null;
+  topicSlug: string | null;
   source?: 'block-review';
   onBlockReviewGateViewed?: () => void;
 }) {
@@ -2847,9 +2932,23 @@ function GateShownTracker({
       certificationSlug,
       source,
     }));
+    trackQuizEvent('paywall_viewed', {
+      language: lang,
+      quiz_mode: mode,
+      certification_slug: certificationSlug,
+      topic_slug: topicSlug,
+      paywall_type: 'wrong_explanation',
+      source: source ?? 'quiz',
+    });
+    trackFunnelEvent({
+      event: 'paywall_viewed',
+      cert_slug: certificationSlug,
+      topic_slug: topicSlug,
+      lang,
+    });
     onBlockReviewGateViewed?.();
     trackMetaPixel("Lead");
-  }, [questionId, lang, mode, certificationSlug, source, onBlockReviewGateViewed]);
+  }, [questionId, lang, mode, certificationSlug, topicSlug, source, onBlockReviewGateViewed]);
 
   return null;
 }

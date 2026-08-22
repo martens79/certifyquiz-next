@@ -1,8 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/quiz-types';
 import { withLang } from '@/lib/i18n';
+import { withConversionContext } from '@/lib/conversion-context';
 
 type Props = {
   lang: Locale;
@@ -66,16 +67,28 @@ const COPY = {
 
 export default function RegistrationGate({
   lang,
+  certificationSlug,
+  topicSlug,
   correctCount = 0,
   totalAnswered = 5,
   onBack,
 }: Props) {
   const pathname = usePathname();
-  const redirect = encodeURIComponent(pathname ?? '/');
+  const searchParams = useSearchParams();
+  const redirectPath = `${pathname ?? '/'}${searchParams.size ? `?${searchParams.toString()}` : ''}`;
+  const redirectWithContext = withConversionContext(redirectPath, {
+    source: 'quiz_registration_gate',
+    certificationSlug,
+    topicSlug,
+  });
+  const conversion = {
+    source: 'quiz_registration_gate', certificationSlug, topicSlug,
+    redirect: redirectWithContext,
+  };
 
-  const googleHref = `https://api.certifyquiz.com/api/auth/google?redirect=${redirect}&remember=1`;
-  const registerHref = withLang(lang, `/register?redirect=${redirect}`);
-  const loginHref = withLang(lang, `/login?redirect=${redirect}`);
+  const googleHref = `https://api.certifyquiz.com/api/auth/google?redirect=${encodeURIComponent(redirectWithContext)}&remember=1`;
+  const registerHref = withConversionContext(withLang(lang, '/register'), conversion);
+  const loginHref = withConversionContext(withLang(lang, '/login'), conversion);
 
   const percentage = totalAnswered > 0
     ? Math.round((correctCount / totalAnswered) * 100)
