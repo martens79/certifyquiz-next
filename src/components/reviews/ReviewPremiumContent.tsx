@@ -9,6 +9,9 @@ import { analyticsUserStateFrom, trackEvent, trackFunnelEvent } from "@/lib/anal
 import { useAuth } from "@/components/auth/AuthProvider";
 import { certPath, pricingPath, type Locale } from "@/lib/paths";
 import type { TopicReviewPage } from "@/lib/data";
+import type { ReviewModuleStructure } from "@/lib/review-module-types";
+import ReviewModuleShell from "@/components/reviews/module/ReviewModuleShell";
+import { Lock } from "lucide-react";
 
 const copy = {
   it: { badge:"Review Premium", title:"Continua con la Review completa", body:"Hai letto l'anteprima gratuita. Sblocca questa Review e gli altri contenuti di preparazione.", premium:"Sblocca con Premium", package:"Scopri il pacchetto Complete", unlocked:"Contenuto sbloccato" },
@@ -17,9 +20,19 @@ const copy = {
   es: { badge:"Repaso Premium", title:"Continúa con el repaso completo", body:"Has leído la vista previa gratuita. Desbloquea este repaso y los demás recursos de preparación.", premium:"Desbloquear con Premium", package:"Ver el paquete Complete", unlocked:"Contenido desbloqueado" },
 } as const;
 
-type Props = { lang:Locale; certSlug:string; topicSlug:string; reviewId:number; preview:string; };
+const outlineLabel = { it: "Indice del modulo", en: "Module outline", fr: "Sommaire du module", es: "Índice del módulo" } as const;
 
-export default function ReviewPremiumContent({lang,certSlug,topicSlug,reviewId,preview}:Props) {
+type Props = {
+  lang: Locale;
+  certSlug: string;
+  topicSlug: string;
+  reviewId: number;
+  preview: string;
+  /** Outline redatta (id/type/title, niente body) di una review a moduli ancora locked: vedi publicStructurePreview lato backend. */
+  structureOutline?: ReviewModuleStructure | null;
+};
+
+export default function ReviewPremiumContent({lang,certSlug,topicSlug,reviewId,preview,structureOutline}:Props) {
   const t=copy[lang];
   const { user, loading }=useAuth();
   const [full,setFull]=useState<TopicReviewPage|null>(null);
@@ -44,9 +57,15 @@ export default function ReviewPremiumContent({lang,certSlug,topicSlug,reviewId,p
   },[certSlug,lang,loading,reviewId,topicSlug,user]);
 
   if(full) return <>
-    <p className="mb-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">✓ {t.unlocked}</p>
-    <ReactMarkdown remarkPlugins={[remarkGfm]}>{full.content || ""}</ReactMarkdown>
-    {full.faq&&<ReactMarkdown remarkPlugins={[remarkGfm]}>{full.faq}</ReactMarkdown>}
+    <p className="not-prose mb-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">✓ {t.unlocked}</p>
+    {full.structure ? (
+      <ReviewModuleShell lang={lang} review={full} certSlug={certSlug} />
+    ) : (
+      <>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{full.content || ""}</ReactMarkdown>
+        {full.faq&&<ReactMarkdown remarkPlugins={[remarkGfm]}>{full.faq}</ReactMarkdown>}
+      </>
+    )}
   </>;
 
   function click(offerType:"premium"|"certification_package") {
@@ -56,6 +75,16 @@ export default function ReviewPremiumContent({lang,certSlug,topicSlug,reviewId,p
 
   return <>
     {preview&&<ReactMarkdown remarkPlugins={[remarkGfm]}>{preview}</ReactMarkdown>}
+    {!!structureOutline?.sections?.length && (
+      <nav aria-label={outlineLabel[lang]} className="not-prose mt-6 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+        {structureOutline.sections.map((section, index) => (
+          <div key={section.id} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-500">
+            <Lock className="h-4 w-4 shrink-0 text-slate-300" aria-hidden="true" />
+            <span>{index + 1}. {section.title}</span>
+          </div>
+        ))}
+      </nav>
+    )}
     {!checked?null:
     <aside className="not-prose mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 sm:p-6">
       <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-amber-900">🔒 {t.badge}</span>
