@@ -78,8 +78,6 @@ export default function FreeTestForm({
     setMessage("");
 
     try {
-      const enrichedSource = `${source}|cert:${cert}|topic:${topic}`;
-
       const res = await fetch("/api/backend/newsletter/subscribe", {
         method: "POST",
         headers: {
@@ -89,7 +87,9 @@ export default function FreeTestForm({
           email,
           lang: safeLang,
           gdprConsent: true,
-          source: enrichedSource,
+          source,
+          certSlug: cert,
+          topicSlug: topic,
           quizHref: quizHref,
         }),
       });
