@@ -79,6 +79,29 @@ export function analyticsUserStateFrom(user: { premium?: boolean; trial?: boolea
   return user.premium ? "premium" : "free";
 }
 
+/** Nomi evento per la nuova UX Review a moduli (vedi FASE 12 del piano). */
+export type ReviewModuleEventName =
+  | "review_module_started"
+  | "review_section_started"
+  | "review_section_completed"
+  | "review_module_completed"
+  | "review_module_assessment_completed";
+
+export function trackReviewModuleEvent(
+  eventName: ReviewModuleEventName,
+  params: {
+    certification_slug: string;
+    review_slug: string;
+    section_id?: string;
+    score?: number;
+    total?: number;
+    language: string;
+    user_state: AnalyticsUserState;
+  }
+) {
+  trackEvent(eventName, params);
+}
+
 type FunnelEventBody = {
   event: string;
   email?: string | null;
