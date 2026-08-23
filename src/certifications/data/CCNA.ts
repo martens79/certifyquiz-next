@@ -20,7 +20,7 @@ const CCNA = {
       "https://learningcontent.cisco.com/documents/marketing/exam-topics/200-301-CCNA-v1.1.pdf",
     officialExamPageUrl:
       "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
-    lastVerifiedAt: "2026-08-04",
+    lastVerifiedAt: "2026-08-23",
     domains: [
       { name: "Network Fundamentals", percentage: 20 },
       { name: "Network Access", percentage: 20 },
@@ -33,8 +33,8 @@ const CCNA = {
 
   // ✅ EN: numero reale (600). Altre lingue: no numeri falsi, ma intent “exam practice”.
   title: {
-    it: "Cisco CCNA – Quiz e Simulazione Esame 200-301",
-    en: "CCNA Practice Test 2026 – 1000+ Exam Questions (200-301)",
+    it: "Cisco CCNA 200-301 – 1300+ domande e 18 lab",
+    en: "CCNA 200-301 Practice – 1300+ Questions and 18 Labs",
     fr: "Cisco CCNA – Quiz et Simulation Examen 200-301",
     es: "Cisco CCNA – Quiz y Simulación de Examen 200-301",
   },
@@ -48,98 +48,43 @@ const CCNA = {
 
   // ✅ Spostiamo il focus: pratica + exam-style + simulation
   description: {
-    it: "Preparati al Cisco CCNA 200-301 con quiz in stile esame, modalità training e simulazioni. Allenati su networking fundamentals, routing/switching, IP addressing, security e automazione di base.",
-    en: "Practice for the Cisco CCNA 200-301 exam with 1000+ exam-style questions (English pool). Includes training mode, mixed quizzes, and realistic practice across networking fundamentals, routing & switching, IP services, security, and automation.",
+    it: "Preparati al Cisco CCNA 200-301 v1.1 con oltre 1300 practice question, mock exam bilanciato sui sei domini, 10 Reviews e 18 lab interattivi, inclusi routing, IPv6, switching, security e automazione.",
+    en: "Prepare for Cisco CCNA 200-301 v1.1 with 1300+ practice questions, a six-domain blueprint-balanced mock exam, 10 Reviews, and 18 interactive labs covering routing, IPv6, switching, security, and automation.",
     fr: "Préparez l’examen Cisco CCNA 200-301 avec des quiz type examen, un mode entraînement et des séries mixtes. Réseaux, routage/commutation, adressage IP, sécurité et automatisation de base.",
     es: "Prepárate para el examen Cisco CCNA 200-301 con quizzes tipo examen, modo entrenamiento y cuestionarios mixtos. Redes, routing/switching, direccionamiento IP, seguridad y automatización básica.",
   },
   metaTitle: {
   it: "CCNA 200-301 – Quiz e Simulazione Esame Cisco 2026 | CertifyQuiz",
-  en: "CCNA Practice Test 2026 – 1000+ Exam Questions 200-301 | CertifyQuiz",
+  en: "CCNA 200-301 Practice – 1300+ Questions & 18 Labs | CertifyQuiz",
   fr: "CCNA 200-301 – Quiz et Simulation Examen Cisco 2026 | CertifyQuiz",
   es: "CCNA 200-301 – Quiz y Simulacro Examen Cisco 2026 | CertifyQuiz",
 },
 metaDescription: {
-  it: "Preparati al Cisco CCNA 200-301 con quiz in stile esame: routing, switching, subnetting, VLAN, OSPF e sicurezza. Inizia gratis.",
-  en: "Practice for Cisco CCNA 200-301 with 1000+ exam-style questions. Covers routing, switching, subnetting, VLANs, OSPF and security. Start free.",
+  it: "CCNA 200-301 v1.1: oltre 1300 domande, 10 Reviews, mock exam blueprint-based e 18 lab interattivi, di cui 4 gratuiti.",
+  en: "CCNA 200-301 v1.1: 1300+ questions, 10 Reviews, a blueprint-based mock exam, and 18 interactive labs including 4 free labs.",
   fr: "Préparez le Cisco CCNA 200-301 avec des quiz type examen : routage, switching, subnetting, VLAN, OSPF et sécurité. Commencez gratuitement.",
   es: "Prepárate para el Cisco CCNA 200-301 con quizzes tipo examen: routing, switching, subnetting, VLAN, OSPF y seguridad. Empieza gratis.",
 },
-  // ✅ Topics più “syllabus-like” (più credibili per CCNA 200-301)
  topics: [
-  {
-    title: {
-      it: "Hardware",
-      en: "Hardware",
-      fr: "Matériel",
-      es: "Hardware",
-    },
-    slug: {
-      it: "hardware",
-      en: "hardware",
-      fr: "materiel",
-      es: "hardware",
-    },
-  },
-  {
-    title: {
-      it: "Sistemi operativi",
-      en: "Operating Systems",
-      fr: "Systèmes d'exploitation",
-      es: "Sistemas operativos",
-    },
-    slug: {
-      it: "sistemi-operativi",
-      en: "operating-systems",
-      fr: "systemes-dexploitation",
-      es: "sistemas-operativos",
-    },
-  },
-  {
-    title: {
-      it: "Networking",
-      en: "Networking",
-      fr: "Réseautage",
-      es: "Redes",
-    },
-    slug: {
-      it: "networking",
-      en: "networking",
-      fr: "reseautage",
-      es: "redes",
-    },
-  },
-  {
-    title: {
-      it: "Sicurezza",
-      en: "Security",
-      fr: "Sécurité",
-      es: "Seguridad",
-    },
-    slug: {
-      it: "sicurezza",
-      en: "security",
-      fr: "securite",
-      es: "seguridad",
-    },
-  },
-  {
-    title: {
-      it: "Supporto tecnico",
-      en: "Technical Support",
-      fr: "Support technique",
-      es: "Soporte técnico",
-    },
-    slug: {
-      it: "supporto-tecnico",
-      en: "technical-support",
-      fr: "support-technique",
-      es: "soporte-tecnico",
-    },
-  },
+  { title:{it:"Dispositivi e hardware di rete Cisco",en:"Cisco Networking Devices and Hardware",fr:"Équipements et matériel réseau Cisco",es:"Dispositivos y hardware de red Cisco"}, slug:{it:"dispositivi-hardware-cisco",en:"cisco-network-devices-hardware",fr:"equipements-materiel-cisco",es:"dispositivos-hardware-cisco"} },
+  { title:{it:"Cisco IOS e comandi CLI",en:"Cisco IOS and CLI Commands",fr:"Cisco IOS et commandes CLI",es:"Cisco IOS y comandos CLI"}, slug:{it:"cisco-ios-comandi-cli",en:"cisco-ios-cli-commands",fr:"cisco-ios-commandes-cli",es:"cisco-ios-comandos-cli"} },
+  { title:{it:"Networking",en:"Networking",fr:"Réseaux",es:"Networking"}, slug:{it:"networking",en:"networking",fr:"reseaux",es:"networking"} },
+  { title:{it:"Sicurezza",en:"Security",fr:"Sécurité",es:"Seguridad"}, slug:{it:"sicurezza",en:"security",fr:"securite",es:"seguridad"} },
+  { title:{it:"Troubleshooting e diagnostica di rete",en:"Network Troubleshooting and Diagnostics",fr:"Dépannage et diagnostic réseau",es:"Troubleshooting y diagnóstico de red"}, slug:{it:"troubleshooting-diagnostica-rete",en:"network-troubleshooting-diagnostics",fr:"depannage-diagnostic-reseau",es:"troubleshooting-diagnostico-red"} },
+  { title:{it:"Servizi IP",en:"IP Services",fr:"Services IP",es:"Servicios IP"}, slug:{it:"servizi-ip",en:"ip-services",fr:"services-ip",es:"servicios-ip"} },
+  { title:{it:"Routing",en:"Routing",fr:"Routage",es:"Routing"}, slug:{it:"routing",en:"routing",fr:"routage",es:"routing"} },
+  { title:{it:"Switching",en:"Switching",fr:"Commutation",es:"Switching"}, slug:{it:"switching",en:"switching",fr:"commutation",es:"switching"} },
+  { title:{it:"Automazione e Programmabilità",en:"Automation and Programmability",fr:"Automatisation et programmabilité",es:"Automatización y programabilidad"}, slug:{it:"automazione-programmabilita",en:"automation-programmability",fr:"automatisation-programmabilite",es:"automatizacion-programabilidad"} },
+  { title:{it:"Wireless",en:"Wireless",fr:"Sans fil",es:"Wireless"}, slug:{it:"wireless",en:"wireless",fr:"sans-fil",es:"wireless"} },
 ],
 
   extraContent: {
+    currentCertification: {
+      it:["Aggiornato il 23 agosto 2026 sul blueprint Cisco 200-301 v1.1.","1305 practice question in 10 topic, 10 Reviews e mock exam distribuito 20/20/25/10/15/10.","18 lab interattivi: 4 gratuiti e 14 inclusi negli accessi che comprendono i lab.","Le practice question allenano concetti e rapidità; il mock exam miscela i domini; le Reviews spiegano; i lab richiedono decisioni operative."],
+      en:["Updated August 23, 2026 against the Cisco 200-301 v1.1 blueprint.","1305 practice questions across 10 topics, 10 Reviews, and a 20/20/25/10/15/10 blueprint-balanced mock exam.","18 interactive labs: 4 free and 14 included with access levels that contain labs.","Practice questions build knowledge and speed; the mock exam mixes domains; Reviews explain concepts; labs require operational decisions."],
+      fr:["Mis à jour le 23 août 2026 selon le blueprint Cisco 200-301 v1.1.","1305 questions dans 10 thèmes, 10 Reviews et un mock exam réparti 20/20/25/10/15/10.","18 labs interactifs : 4 gratuits et 14 inclus dans les accès comprenant les labs.","Les questions développent connaissances et rapidité ; le mock exam mélange les domaines ; les Reviews expliquent ; les labs demandent des décisions opérationnelles."],
+      es:["Actualizado el 23 de agosto de 2026 según el blueprint Cisco 200-301 v1.1.","1305 preguntas en 10 temas, 10 Reviews y un mock exam distribuido 20/20/25/10/15/10.","18 labs interactivos: 4 gratuitos y 14 incluidos en los accesos que contienen labs.","Las preguntas desarrollan conocimiento y velocidad; el mock exam mezcla dominios; las Reviews explican; los labs requieren decisiones operativas."],
+    },
     learn: {
       it: [
         "Capire davvero OSI/TCP-IP, switching e routing (non solo teoria).",

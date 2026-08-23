@@ -29,6 +29,11 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
     id: Number(q.id),
     question: q.question ?? "",
     explanation: q.explanation ?? undefined,
+    questionType: q.question_type,
+    blueprintDomain: q.blueprint_domain,
+    blueprintObjectiveId: q.blueprint_objective_id,
+    skillType: q.skill_type,
+    exhibit: q.exhibit,
     answers: (q.answers ?? []).map((a: any) => ({
       id: Number(a.id),
       text: a.text ?? "",

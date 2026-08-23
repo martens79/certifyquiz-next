@@ -2450,8 +2450,18 @@ return (
      <div className="max-w-5xl mx-auto w-full px-3 sm:px-4 flex-1 min-h-0 overflow-y-auto pb-24 sm:pb-16">
 
 
-        {/* domanda (altezza stabile) */}
-        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-32 flex items-center">
+        {/* domanda + exhibit realmente necessario per gli item pratici */}
+        <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-5 mb-4 min-h-32">
+          {q.exhibit?.content && (
+            <figure className="mb-5 overflow-hidden rounded-xl border border-slate-300 bg-slate-950 text-slate-100">
+              <figcaption className="border-b border-slate-700 bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-300">
+                {q.exhibit.title || (lang === "it" ? "Exhibit" : "Exhibit")}
+              </figcaption>
+              <pre className="overflow-x-auto whitespace-pre p-4 font-mono text-xs leading-relaxed sm:text-sm" aria-label={q.exhibit.title || "Question exhibit"}>
+                {q.exhibit.content}
+              </pre>
+            </figure>
+          )}
           <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 

@@ -42,6 +42,15 @@ export type Question = {
   topic_title?: string | null;
   question: string | null;
   explanation: string | null;
+  question_type?: string | null;
+  blueprint_domain?: string | null;
+  blueprint_objective_id?: string | null;
+  skill_type?: string | null;
+  exhibit?: {
+    title?: string;
+    kind?: "cli" | "table" | "topology" | "wlan-gui" | "text";
+    content?: string;
+  } | null;
   answers: Answer[];
 };
 
