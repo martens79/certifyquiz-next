@@ -14,6 +14,15 @@ export type Question = {
   id: number | string;
   question: string;
   explanation?: string | null;
+  questionType?: string | null;
+  blueprintDomain?: string | null;
+  blueprintObjectiveId?: string | null;
+  skillType?: string | null;
+  exhibit?: {
+    title?: string;
+    kind?: "cli" | "table" | "topology" | "wlan-gui" | "text";
+    content?: string;
+  } | null;
   answers: Answer[];
 };
 
