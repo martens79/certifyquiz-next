@@ -25,6 +25,7 @@ type Lead = {
   assessment_completed_at: string | null;
   lang: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 type Overview = {
@@ -141,7 +142,7 @@ export default function AdminClient() {
       const matchesMode = modeFilter === "all" || lead.mode === modeFilter;
       const matchesLang = langFilter === "all" || lead.lang === langFilter;
       const matchesCert = certFilter === "all" || lead.cert_slug === certFilter;
-      const matchesDate = matchesDateFilter(lead.created_at, dateFilter);
+      const matchesDate = matchesDateFilter(lead.updated_at || lead.created_at, dateFilter);
 
       return matchesSearch && matchesMode && matchesLang && matchesCert && matchesDate;
     });
@@ -383,6 +384,7 @@ export default function AdminClient() {
       assessment_score: lead.assessment_score ?? "",
       lang: lead.lang ?? "",
       created_at: lead.created_at,
+      updated_at: lead.updated_at,
     }));
 
     downloadCsv("certifyquiz-leads.csv", rows);
@@ -730,7 +732,7 @@ return (
                     <Th>Mode</Th>
                     <Th>Score</Th>
                     <Th>Lang</Th>
-                    <Th>Data</Th>
+                    <Th>Ultima attività</Th>
                   </tr>
                 </thead>
 
@@ -752,7 +754,7 @@ return (
                         )}
                       </Td>
                       <Td>{lead.lang || "-"}</Td>
-                      <Td>{formatDate(lead.created_at)}</Td>
+                      <Td>{formatDate(lead.updated_at || lead.created_at)}</Td>
                     </tr>
                   ))}
                 </tbody>
