@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getAnonymousSessionId } from "@/lib/analytics";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -57,6 +58,7 @@ async function trackPwaEvent(event: string) {
       body: JSON.stringify({
         event,
         lang,
+        session_id: getAnonymousSessionId() ?? null,
       }),
     });
   } catch {
