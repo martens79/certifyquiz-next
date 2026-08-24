@@ -15,7 +15,7 @@ const SESSION_KEY = "cq_analytics_session";
 const onceKeys = new Set<string>();
 const pendingEvents: Array<{ eventName: string; params: TrackParams }> = [];
 
-function getAnonymousSessionId(): string | undefined {
+export function getAnonymousSessionId(): string | undefined {
   if (typeof window === "undefined") return undefined;
   try {
     let value = sessionStorage.getItem(SESSION_KEY);
@@ -126,7 +126,13 @@ export function trackFunnelEvent(
 ) {
   if (typeof window === "undefined") return;
 
-  const payload = JSON.stringify(body);
+  // ✅ Stesso anonymous_session_id già inviato a GA4: permette di leggere
+  // funnel_events per sessione invece che per riga (es. 105 paywall_viewed
+  // potrebbero essere 3 sessioni molto attive, non 105 persone).
+  const payload = JSON.stringify({
+    session_id: getAnonymousSessionId() ?? null,
+    ...body,
+  });
 
   if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([payload], { type: "application/json" });
