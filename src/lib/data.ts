@@ -1,5 +1,6 @@
 // src/lib/data.ts
 import "server-only";
+import type { ReviewModuleStructure } from "@/lib/review-module-types";
 
 /**
  * Data layer SEO-friendly con ISR:
@@ -955,6 +956,15 @@ export type TopicReviewPage = {
   intro: string | null;
   content: string | null;
   faq: string | null;
+  /**
+   * Presente solo per le review convertite alla nuova UX a moduli (vedi
+   * src/lib/review-module-types.ts). null per tutte le review legacy: in
+   * quel caso TopicReviewPageShell continua a renderizzare `content` come
+   * blob Markdown singolo, invariato. Se la review è locked, il backend
+   * manda già solo l'outline (id/type/title, niente body) — vedi
+   * publicStructurePreview lato API.
+   */
+  structure: ReviewModuleStructure | null;
   access: "free" | "premium" | "unlocked";
   locked: boolean;
   accessReason: string | null;
