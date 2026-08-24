@@ -10,6 +10,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "prebuild": "npm run typecheck",
+    "test:unit": "tsx --tsconfig tsconfig.test.json --test tests/*.test.tsx",
     "//e2e": "🧪 Test end-to-end con Playwright",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
