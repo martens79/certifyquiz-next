@@ -186,67 +186,6 @@ const getSlides = (lang: Lang): FeatureCard[][] => {
 
     [
       {
-        eyebrow: "🧭 START HERE",
-        title: T(
-          {
-            it: "Scopri il tuo livello",
-            en: "Discover your level",
-            fr: "Découvrez votre niveau",
-            es: "Descubre tu nivel",
-          },
-          lang
-        ),
-        description: T(
-          {
-            it: "Fai un test gratuito e capisci da dove iniziare senza perdere tempo.",
-            en: "Take a free test and understand where to start.",
-            fr: "Faites un test gratuit et découvrez par où commencer.",
-            es: "Haz una prueba gratuita y descubre por dónde empezar.",
-          },
-          lang
-        ),
-        href: `${p}/free-test`,
-        cta: T(
-          {
-            it: "Avvia il test →",
-            en: "Start the test →",
-            fr: "Commencer le test →",
-            es: "Iniciar el test →",
-          },
-          lang
-        ),
-        items: [
-          T(
-            {
-              it: "Test gratuito",
-              en: "Free test",
-              fr: "Test gratuit",
-              es: "Test gratuito",
-            },
-            lang
-          ),
-          T(
-            {
-              it: "Risultato immediato",
-              en: "Instant result",
-              fr: "Résultat immédiat",
-              es: "Resultado inmediato",
-            },
-            lang
-          ),
-          T(
-            {
-              it: "Percorso consigliato",
-              en: "Suggested path",
-              fr: "Parcours conseillé",
-              es: "Ruta sugerida",
-            },
-            lang
-          ),
-        ],
-        tone: "orange",
-      },
-      {
         eyebrow: "🏢 VENDOR HUBS",
         title: T(
           {

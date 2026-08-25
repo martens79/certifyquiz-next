@@ -366,7 +366,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
           <Link
-            href={safeLang === "en" ? "/free-test" : `/${safeLang}/free-test`}
+            href={`/${safeLang}/quiz-home`}
             onClick={() => trackEvent("homepage_primary_cta_clicked", {
               language: safeLang,
               user_state: isLoggedIn ? "free" : "anonymous",
