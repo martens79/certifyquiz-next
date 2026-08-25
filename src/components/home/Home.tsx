@@ -15,6 +15,7 @@ import HomeFeatureCarousel from "@/components/home/HomeFeatureCarousel";
 import ResourceTypesSection from "@/components/home/ResourceTypesSection";
 import BrandLineBand from "@/components/home/BrandLineBand";
 import NextChapterSection from "@/components/home/NextChapterSection";
+import AssessmentEntrySection from "@/components/home/AssessmentEntrySection";
 import MethodSection from "@/components/home/MethodSection";
 import {
   BrainCircuit,
@@ -447,7 +448,8 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
       <NextChapterSection lang={safeLang} />
 
-      {/* Punto di inserimento futuro: blocco assessment entry, fra Next Chapter e Metodo */}
+      <AssessmentEntrySection lang={safeLang} />
+
       <MethodSection lang={safeLang} />
 
       <ResourceTypesSection lang={safeLang} />

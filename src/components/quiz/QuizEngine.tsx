@@ -485,6 +485,7 @@ const [fbSending, setFbSending] = useState(false);
 const [fbSent, setFbSent] = useState(false);
 
 const [reportEmail, setReportEmail] = useState("");
+const [reportConsent, setReportConsent] = useState(false);
 const [reportSending, setReportSending] = useState(false);
 const [reportSubmitted, setReportSubmitted] = useState(false);
 const [reportMessage, setReportMessage] = useState<string | null>(null);
@@ -1545,6 +1546,19 @@ const submitAssessmentReport = async () => {
     return;
   }
 
+  if (!reportConsent) {
+    setReportMessage(
+      lang === "it"
+        ? "Devi accettare per ricevere il report via email."
+        : lang === "fr"
+        ? "Tu dois accepter pour recevoir le rapport par email."
+        : lang === "es"
+        ? "Debes aceptar para recibir el informe por email."
+        : "You need to accept to receive the report by email."
+    );
+    return;
+  }
+
   setReportSending(true);
   setReportMessage(null);
 
@@ -1559,6 +1573,7 @@ const submitAssessmentReport = async () => {
   email,
   lang,
   source: "assessment_result",
+  gdprConsent: reportConsent,
 
   certification: context?.certificationSlug ?? null,
   topic: context?.topicSlug ?? null,
@@ -1901,7 +1916,7 @@ const assessmentCopy =
 
       <button
         type="button"
-        disabled={reportSending || reportSubmitted}
+        disabled={reportSending || reportSubmitted || !reportConsent}
         onClick={submitAssessmentReport}
         className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
       >
@@ -1922,6 +1937,25 @@ const assessmentCopy =
           : "Send report"}
       </button>
     </div>
+
+    <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-emerald-900">
+      <input
+        type="checkbox"
+        checked={reportConsent}
+        onChange={(e) => setReportConsent(e.target.checked)}
+        disabled={reportSubmitted}
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-emerald-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span>
+        {lang === "it"
+          ? "Accetto di ricevere il report via email."
+          : lang === "fr"
+          ? "J'accepte de recevoir le rapport par email."
+          : lang === "es"
+          ? "Acepto recibir el informe por email."
+          : "I agree to receive the report by email."}
+      </span>
+    </label>
 
     {reportMessage && (
       <p className="mt-2 text-xs font-medium text-emerald-900">

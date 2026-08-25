@@ -32,28 +32,28 @@ const LOCALIZED_PATHS: Record<
   it: {
     certs: "/it/certificazioni",
     paths: "/it/percorsi",
-    freeTest: "/it/free-test",
+    freeTest: "/it/quiz-home",
     reviews: "/it/ripassi",
     premium: "/it/premium",
   },
   en: {
     certs: "/certifications",
     paths: "/paths",
-    freeTest: "/free-test",
+    freeTest: "/en/quiz-home",
     reviews: "/reviews",
     premium: "/premium",
   },
   fr: {
     certs: "/fr/certifications",
     paths: "/fr/parcours",
-    freeTest: "/fr/free-test",
+    freeTest: "/fr/quiz-home",
     reviews: "/fr/revisions",
     premium: "/fr/premium",
   },
   es: {
     certs: "/es/certificaciones",
     paths: "/es/rutas",
-    freeTest: "/es/free-test",
+    freeTest: "/es/quiz-home",
     reviews: "/es/repasos",
     premium: "/es/premium",
   },
@@ -147,7 +147,7 @@ Important product positioning:
 Localized useful links:
 - Certifications page: ${SITE_ORIGIN}${paths.certs}
 - Career roadmaps: ${SITE_ORIGIN}${paths.paths}
-- Free test: ${SITE_ORIGIN}${paths.freeTest}
+- Practice quizzes: ${SITE_ORIGIN}${paths.freeTest}
 - Quick reviews: ${SITE_ORIGIN}${paths.reviews}
 - Premium: ${SITE_ORIGIN}${paths.premium}
 
