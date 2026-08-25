@@ -98,10 +98,10 @@ export async function generateMetadata(
 
   const description = getLabel(
     {
-      it: "Preparati alle certificazioni IT con quiz gratuiti, spiegazioni dettagliate e simulazioni realistiche. AWS, Azure, Security+, CCNA, PMP e altro.",
-      en: "Prepare for IT certifications with free practice quizzes and detailed explanations. AWS, Azure, Security+, CCNA, PMP and more.",
-      fr: "Préparez vos certifications IT avec des quiz gratuits et des explications détaillées. AWS, Azure, Security+, CCNA, PMP et plus.",
-      es: "Prepárate para certificaciones IT con quiz gratuitos y explicaciones detalladas. AWS, Azure, Security+, CCNA, PMP y más.",
+      it: "Apri porte a cui oggi non puoi ancora bussare. Quiz, simulazioni d'esame e lab per AWS, CCNA, Security+, Azure, CompTIA e 50+ certificazioni IT.",
+      en: "Open doors you can't knock on yet. Free practice tests, exam simulations and labs for AWS, CCNA, Security+, Azure, CompTIA and 50+ IT certifications.",
+      fr: "Ouvrez des portes encore fermées. Quiz gratuits, simulations d'examen et labs pour AWS, CCNA, Security+, Azure, CompTIA et plus de 50 certifications IT.",
+      es: "Abre puertas que hoy ni siquiera puedes tocar. Tests, simulacros y labs para AWS, CCNA, Security+, Azure, CompTIA y 50+ certificaciones IT.",
     },
     lang
   );

@@ -5,7 +5,7 @@ import Image from "next/image";
 import React from "react";
 
 import { withLang } from "@/lib/i18n";
-import { categoryPath, pricingPath, type CategoryKey, type Locale } from "@/lib/paths";
+import { categoryPath, certificationsPath, type CategoryKey, type Locale } from "@/lib/paths";
 import { trackEvent } from "@/lib/analytics";
 
 import BlogTeaser from "@/components/BlogTeaser";
@@ -340,29 +340,25 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             priority
           />
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800">
-            CertifyQuiz
+            {L(
+              {
+                it: "Prendi la certificazione. Apri porte a cui oggi non puoi ancora bussare.",
+                en: "Get certified. Open doors you can't knock on yet.",
+                fr: "Décrochez votre certification. Ouvrez des portes encore fermées.",
+                es: "Consigue la certificación. Abre puertas que hoy ni siquiera puedes tocar.",
+              },
+              safeLang
+            )}
           </h1>
         </div>
 
         <p className="text-sm md:text-base text-slate-600 font-semibold mb-2">
           {L(
             {
-              it: "Scopri cosa devi migliorare e preparati alle certificazioni IT con quiz realistici e spiegazioni chiare.",
-              en: "Find what you need to improve and prepare for IT certifications with realistic quizzes and clear explanations.",
-              fr: "Identifiez vos points faibles et préparez vos certifications IT avec des quiz réalistes et des explications claires.",
-              es: "Descubre qué debes mejorar y prepárate para certificaciones IT con cuestionarios realistas y explicaciones claras.",
-            },
-            safeLang
-          )}
-        </p>
-
-        <p className="text-xs md:text-sm text-slate-500 mb-4">
-          {L(
-            {
-              it: "AWS, CCNA, Security+, Azure, CompTIA e altre: scegli una categoria e inizia subito.",
-              en: "AWS, CCNA, Security+, Azure, CompTIA and more: pick a category and start now.",
-              fr: "AWS, CCNA, Security+, Azure, CompTIA et plus : choisissez une catégorie et commencez.",
-              es: "AWS, CCNA, Security+, Azure, CompTIA y más: elige una categoría y empieza ya.",
+              it: "Valuta il tuo livello, scopri dove sei debole e preparati con quiz d'esame, ripassi, simulazioni e laboratori interattivi per le certificazioni IT riconosciute in tutto il mondo: AWS, CCNA, Security+, Azure, CompTIA e altre.",
+              en: "Assess your current level, find your gaps, and prepare with practice tests, reviews, exam simulations and interactive labs for globally recognized IT certifications — AWS, CCNA, Security+, Azure, CompTIA and more.",
+              fr: "Évaluez votre niveau, identifiez vos lacunes et préparez-vous avec des quiz d'examen, des fiches de révision, des simulations et des labs interactifs pour les certifications IT reconnues dans le monde entier : AWS, CCNA, Security+, Azure, CompTIA et bien d'autres.",
+              es: "Evalúa tu nivel, descubre tus puntos débiles y prepárate con tests de examen, repasos, simulacros y laboratorios interactivos para las certificaciones IT reconocidas en todo el mundo: AWS, CCNA, Security+, Azure, CompTIA y más.",
             },
             safeLang
           )}
@@ -370,21 +366,21 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
           <Link
-            href={`/${safeLang}/quiz-home`}
+            href={safeLang === "en" ? "/free-test" : `/${safeLang}/free-test`}
             onClick={() => trackEvent("homepage_primary_cta_clicked", {
               language: safeLang,
               user_state: isLoggedIn ? "free" : "anonymous",
               source_page: "homepage",
-              content_type: "quiz_practice",
+              content_type: "readiness_assessment",
             })}
             className="inline-flex justify-center bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-[1.02]"
           >
             {L(
               {
-                it: "Preparati gratis alla tua certificazione",
-                en: "Prepare for your certification for free",
-                fr: "Préparez gratuitement votre certification",
-                es: "Prepárate gratis para tu certificación",
+                it: "Scopri quanto sei pronto",
+                en: "Check my readiness",
+                fr: "Évaluer mon niveau",
+                es: "Mide qué tan preparado estás",
               },
               safeLang
             )}
@@ -392,15 +388,15 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
           {!isLoggedIn && (
             <Link
-              href={pricingPath(safeLang)}
+              href={certificationsPath(safeLang)}
               className="inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
               {L(
                 {
-                  it: "Scopri Premium",
-                  en: "See Premium",
-                  fr: "Découvrir Premium",
-                  es: "Descubrir Premium",
+                  it: "Esplora le certificazioni",
+                  en: "Browse certifications",
+                  fr: "Explorer les certifications",
+                  es: "Explorar certificaciones",
                 },
                 safeLang
               )}
@@ -411,10 +407,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         <p className="mt-3 text-sm text-neutral-600">
           {L(
             {
-              it: "Quiz gratuiti. Le prime 10 spiegazioni degli errori sono incluse.",
-              en: "Free quizzes. Your first 10 explanations for incorrect answers are included.",
-              fr: "Quiz gratuits. Les 10 premières explications de vos erreurs sont incluses.",
-              es: "Cuestionarios gratuitos. Se incluyen las primeras 10 explicaciones de tus errores.",
+              it: "Inizi gratis. Ogni risposta sbagliata arriva con il ragionamento, non solo con la correzione.",
+              en: "Free to start. Every wrong answer comes with the reasoning, not just the correction.",
+              fr: "Démarrez gratuitement. Chaque erreur est accompagnée du raisonnement, pas seulement de la correction.",
+              es: "Empieza gratis. Cada error viene con el razonamiento, no solo con la corrección.",
             },
             safeLang
           )}
@@ -442,17 +438,6 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           </p>
         )}
 
-        <p className="text-xs text-slate-500 mt-2">
-          {L(
-            {
-              it: "I tuoi progressi vengono salvati nel profilo.",
-              en: "Your progress is saved in your profile.",
-              fr: "Vos progrès sont enregistrés dans votre profil.",
-              es: "Tu progreso se guarda en tu perfil.",
-            },
-            safeLang
-          )}
-        </p>
       </header>
 
       <ResourceTypesSection lang={safeLang} />

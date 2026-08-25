@@ -16,9 +16,9 @@ const pathBase = {
 const content = {
   it: {
     eyebrow: "🎯 PERCORSI GUIDATI",
-    title: "Non sai da dove iniziare?",
+    title: "Non sai quale porta aprire per prima?",
     subtitle:
-      "Scegli una roadmap chiara e capisci quali certificazioni seguire per entrare in cybersecurity, cloud, reti, database o programmazione.",
+      "Scegli l'area verso cui vuoi muoverti — cybersecurity, cloud, networking, dati o programmazione — e segui un percorso che ti dice quale certificazione viene prima, e perché.",
     cta: "Vedi tutti i percorsi",
     items: [
       { label: "Cybersecurity", href: "/it/roadmap-cybersecurity" },
@@ -30,9 +30,9 @@ const content = {
   },
   en: {
     eyebrow: "🎯 GUIDED PATHS",
-    title: "Not sure where to start?",
+    title: "Don't know which door to open first?",
     subtitle:
-      "Choose a clear roadmap and understand which certifications to follow for cybersecurity, cloud, networking, databases, or programming.",
+      "Pick the area you want to move toward — cybersecurity, cloud, networking, data or programming — and follow a path that says which certification comes first, and why.",
     cta: "Explore all paths",
     items: [
       { label: "Cybersecurity", href: "/roadmap-cybersecurity" },
@@ -44,9 +44,9 @@ const content = {
   },
   fr: {
     eyebrow: "🎯 PARCOURS GUIDÉS",
-    title: "Vous ne savez pas par où commencer ?",
+    title: "Vous ne savez pas quelle porte ouvrir en premier ?",
     subtitle:
-      "Choisissez une roadmap claire et découvrez quelles certifications suivre pour la cybersécurité, le cloud, les réseaux, les bases de données ou la programmation.",
+      "Choisissez le domaine vers lequel vous voulez aller — cybersécurité, cloud, réseaux, données ou programmation — et suivez un parcours qui vous dit quelle certification vient en premier, et pourquoi.",
     cta: "Voir tous les parcours",
     items: [
       { label: "Cybersécurité", href: "/fr/roadmap-cybersecurity" },
@@ -58,15 +58,15 @@ const content = {
   },
   es: {
     eyebrow: "🎯 RUTAS GUIADAS",
-    title: "¿No sabes por dónde empezar?",
+    title: "¿No sabes qué puerta abrir primero?",
     subtitle:
-      "Elige una ruta clara y descubre qué certificaciones seguir para entrar en ciberseguridad, cloud, redes, bases de datos o programación.",
+      "Elige el área hacia la que quieres moverte — ciberseguridad, cloud, redes, datos o programación — y sigue una ruta que te dice qué certificación va primero, y por qué.",
     cta: "Ver todas las rutas",
     items: [
       { label: "Cybersecurity", href: "/es/roadmap-cybersecurity" },
       { label: "Cloud", href: "/es/roadmap-cloud" },
       { label: "Networking", href: "/es/roadmap-networking" },
-      { label: "AI", href: "/es/roadmap-ai" },
+      { label: "IA", href: "/es/roadmap-ai" },
     ],
     go: "Ver ruta",
   },

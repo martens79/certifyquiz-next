@@ -10,7 +10,7 @@ const SITE =
 
 const HOME_TITLE = "CertifyQuiz — IT Certification Practice Tests & Quizzes";
 const HOME_DESCRIPTION =
-  "Prepare for IT certifications with free practice quizzes and detailed explanations. AWS, Azure, Security+, CCNA, PMP and more.";
+  "Open doors you can't knock on yet. Free practice tests, exam simulations and labs for AWS, CCNA, Security+, Azure, CompTIA and 50+ IT certifications.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
