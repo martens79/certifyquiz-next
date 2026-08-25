@@ -13,6 +13,9 @@ import logo from "@/../public/images/logo-certifyquiz.png";
 import PathBox from "@/components/home/PathBox";
 import HomeFeatureCarousel from "@/components/home/HomeFeatureCarousel";
 import ResourceTypesSection from "@/components/home/ResourceTypesSection";
+import BrandLineBand from "@/components/home/BrandLineBand";
+import NextChapterSection from "@/components/home/NextChapterSection";
+import MethodSection from "@/components/home/MethodSection";
 import {
   BrainCircuit,
   LockKeyhole,
@@ -440,12 +443,19 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
 
       </header>
 
-      <ResourceTypesSection lang={safeLang} />
+      <BrandLineBand lang={safeLang} />
 
-      <HomeFeatureCarousel lang={safeLang} />
+      <NextChapterSection lang={safeLang} />
+
+      {/* Punto di inserimento futuro: blocco assessment entry, fra Next Chapter e Metodo */}
+      <MethodSection lang={safeLang} />
+
+      <ResourceTypesSection lang={safeLang} />
 
 {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
 <PathBox lang={safeLang} />
+
+      <HomeFeatureCarousel lang={safeLang} />
 
 
       {/* BLOG SECTION — spostata più in alto e resa più visibile */}
@@ -621,7 +631,15 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <div className="max-w-3xl">
       <div className="text-xs font-bold uppercase tracking-wide text-indigo-700">
-        FREE • CERTIFYQUIZ
+        {L(
+          {
+            it: "GRATIS • CERTIFYQUIZ",
+            en: "FREE • CERTIFYQUIZ",
+            fr: "GRATUIT • CERTIFYQUIZ",
+            es: "GRATIS • CERTIFYQUIZ",
+          },
+          safeLang
+        )}
       </div>
 
       <h3 className="mt-1 text-xl font-extrabold text-slate-800">
@@ -629,12 +647,28 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       </h3>
 
       <p className="mt-2 text-sm text-slate-600">
-        Start with free beginner certifications created by CertifyQuiz.
+        {L(
+          {
+            it: "Parti dalle basi con le certificazioni gratuite create da CertifyQuiz.",
+            en: "Start with free beginner certifications created by CertifyQuiz.",
+            fr: "Commencez par les bases avec des certifications gratuites créées par CertifyQuiz.",
+            es: "Empieza desde lo básico con certificaciones gratuitas creadas por CertifyQuiz.",
+          },
+          safeLang
+        )}
       </p>
     </div>
 
     <span className="shrink-0 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white">
-      Explore Foundations →
+      {L(
+        {
+          it: "Esplora Foundations →",
+          en: "Explore Foundations →",
+          fr: "Explorer Foundations →",
+          es: "Explorar Foundations →",
+        },
+        safeLang
+      )}
     </span>
   </div>
 </Link>
