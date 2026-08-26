@@ -334,41 +334,76 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
     <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 overflow-x-hidden min-h-[100dvh]">
       {/* HERO */}
       <header className="text-center max-w-3xl mx-auto">
-        <div className="flex justify-center items-center gap-3 mb-2">
+        <div className="flex justify-center mb-3">
           <Image
             src={logo}
             alt="CertifyQuiz"
-            width={44}
-            height={44}
-            className="h-10 w-auto"
+            width={40}
+            height={40}
+            className="h-9 w-auto"
             priority
           />
-          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800">
-            {L(
-              {
-                it: "Prendi la certificazione. Apri porte a cui oggi non puoi ancora bussare.",
-                en: "Get certified. Open doors you can't knock on yet.",
-                fr: "Décrochez votre certification. Ouvrez des portes encore fermées.",
-                es: "Consigue la certificación. Abre puertas que hoy ni siquiera puedes tocar.",
-              },
-              safeLang
-            )}
-          </h1>
         </div>
 
-        <p className="text-sm md:text-base text-slate-600 font-semibold mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight">
           {L(
             {
-              it: "Valuta il tuo livello, scopri dove sei debole e preparati con quiz d'esame, ripassi, simulazioni e laboratori interattivi per le certificazioni IT riconosciute in tutto il mondo: AWS, CCNA, Security+, Azure, CompTIA e altre.",
-              en: "Assess your current level, find your gaps, and prepare with practice tests, reviews, exam simulations and interactive labs for globally recognized IT certifications — AWS, CCNA, Security+, Azure, CompTIA and more.",
-              fr: "Évaluez votre niveau, identifiez vos lacunes et préparez-vous avec des quiz d'examen, des fiches de révision, des simulations et des labs interactifs pour les certifications IT reconnues dans le monde entier : AWS, CCNA, Security+, Azure, CompTIA et bien d'autres.",
-              es: "Evalúa tu nivel, descubre tus puntos débiles y prepárate con tests de examen, repasos, simulacros y laboratorios interactivos para las certificaciones IT reconocidas en todo el mundo: AWS, CCNA, Security+, Azure, CompTIA y más.",
+              it: "Quiz e simulazioni per le certificazioni IT",
+              en: "Practice Quizzes and Exam Simulations for IT Certifications",
+              fr: "Quiz et simulations d'examen pour les certifications IT",
+              es: "Tests y simulacros de examen para certificaciones IT",
+            },
+            safeLang
+          )}
+        </h1>
+
+        <p className="mt-3 text-lg md:text-xl font-medium text-slate-700">
+          {L(
+            {
+              it: "Sei davvero pronto per l'esame? Non scoprirlo il giorno dell'esame.",
+              en: "Are you really ready for the exam? Don't find out on exam day.",
+              fr: "Êtes-vous vraiment prêt pour l'examen ? Ne l'apprenez pas le jour J.",
+              es: "¿Estás realmente preparado para el examen? No lo descubras el día del examen.",
             },
             safeLang
           )}
         </p>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+        <p className="mt-3 text-sm md:text-base text-slate-600">
+          {L(
+            {
+              it: "Mettiti alla prova prima: quiz, simulazioni, assessment e pratica per capire dove sei preparato — e dove no.",
+              en: "Test yourself first: quizzes, simulations, assessments and hands-on practice to see where you're ready — and where you're not.",
+              fr: "Testez-vous avant : quiz, simulations, évaluations et pratique pour savoir où vous êtes prêt — et où vous ne l'êtes pas.",
+              es: "Ponte a prueba antes: tests, simulacros, evaluaciones y práctica para saber dónde estás preparado — y dónde no.",
+            },
+            safeLang
+          )}
+        </p>
+
+        {stats && (
+          <p className="mt-4 text-xs md:text-sm text-slate-600">
+            {L(
+              {
+                it: `${stats.questions.toLocaleString("it-IT")} domande • ${stats.topics.toLocaleString(
+                  "it-IT"
+                )} topic • ${stats.certifications.toLocaleString("it-IT")} certificazioni`,
+                en: `${stats.questions.toLocaleString("en-US")} questions • ${stats.topics.toLocaleString(
+                  "en-US"
+                )} topics • ${stats.certifications.toLocaleString("en-US")} certifications`,
+                fr: `${stats.questions.toLocaleString("fr-FR")} questions • ${stats.topics.toLocaleString(
+                  "fr-FR"
+                )} sujets • ${stats.certifications.toLocaleString("fr-FR")} certifications`,
+                es: `${stats.questions.toLocaleString("es-ES")} preguntas • ${stats.topics.toLocaleString(
+                  "es-ES"
+                )} temas • ${stats.certifications.toLocaleString("es-ES")} certificaciones`,
+              },
+              safeLang
+            )}
+          </p>
+        )}
+
+        <div className="mt-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
           <Link
             href={`/${safeLang}/quiz-home`}
             onClick={() => trackEvent("homepage_primary_cta_clicked", {
@@ -381,10 +416,10 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           >
             {L(
               {
-                it: "Scopri quanto sei pronto",
-                en: "Check my readiness",
-                fr: "Évaluer mon niveau",
-                es: "Mide qué tan preparado estás",
+                it: "Scopri se sei pronto",
+                en: "Find out if you're ready",
+                fr: "Découvrez si vous êtes prêt",
+                es: "Descubre si estás preparado",
               },
               safeLang
             )}
@@ -412,36 +447,13 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
           {L(
             {
               it: "Inizi gratis. Ogni risposta sbagliata arriva con il ragionamento, non solo con la correzione.",
-              en: "Free to start. Every wrong answer comes with the reasoning, not just the correction.",
-              fr: "Démarrez gratuitement. Chaque erreur est accompagnée du raisonnement, pas seulement de la correction.",
-              es: "Empieza gratis. Cada error viene con el razonamiento, no solo con la corrección.",
+              en: "Start free. Every wrong answer comes with the reasoning, not just the correction.",
+              fr: "Commencez gratuitement. Chaque mauvaise réponse est accompagnée du raisonnement, pas seulement de la correction.",
+              es: "Empieza gratis. Cada respuesta incorrecta viene con el razonamiento, no solo con la corrección.",
             },
             safeLang
           )}
         </p>
-
-        {stats && (
-          <p className="mt-3 text-xs md:text-sm text-slate-600">
-            {L(
-              {
-                it: `${stats.questions.toLocaleString("it-IT")} domande • ${stats.topics.toLocaleString(
-                  "it-IT"
-                )} topic • ${stats.certifications.toLocaleString("it-IT")} certificazioni`,
-                en: `${stats.questions.toLocaleString("en-US")} questions • ${stats.topics.toLocaleString(
-                  "en-US"
-                )} topics • ${stats.certifications.toLocaleString("en-US")} certifications`,
-                fr: `${stats.questions.toLocaleString("fr-FR")} questions • ${stats.topics.toLocaleString(
-                  "fr-FR"
-                )} sujets • ${stats.certifications.toLocaleString("fr-FR")} certifications`,
-                es: `${stats.questions.toLocaleString("es-ES")} preguntas • ${stats.topics.toLocaleString(
-                  "es-ES"
-                )} temas • ${stats.certifications.toLocaleString("es-ES")} certificaciones`,
-              },
-              safeLang
-            )}
-          </p>
-        )}
-
       </header>
 
       <BrandLineBand lang={safeLang} />
