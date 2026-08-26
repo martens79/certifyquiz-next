@@ -34,6 +34,19 @@ function redirect301(req: NextRequest, pathname: string) {
 
   return withLangCookie(res, lang);
 }
+
+// 307 helper (non permanente) + set language cookie.
+// Usato per redirect che potrebbero tornare indietro in futuro (es. pagine
+// dismesse per traffico organico trascurabile, non per un errore di URL).
+function redirect307(req: NextRequest, pathname: string) {
+  const url = req.nextUrl.clone();
+  url.pathname = pathname;
+
+  const res = NextResponse.redirect(url, 307);
+  const lang = detectLocaleFromPath(pathname);
+
+  return withLangCookie(res, lang);
+}
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const pathname = url.pathname;
@@ -60,6 +73,24 @@ export function middleware(req: NextRequest) {
   // Asset sporchi tipo /favicon.ico/undefined/database
   if (pathname.startsWith("/favicon.ico/")) {
     return redirect301(req, "/favicon.ico");
+  }
+
+  // /free-test dismessa: 9 clic in 90gg su tutta la superficie, 4 lingue
+  // (dato Search Console, 25/08/2026) — indistinguibile dal rumore di fondo
+  // del sito. 307 e non 301: potrebbe tornare utile come landing di
+  // campagna in futuro. La query string (source/cert/topic/quiz) viene
+  // preservata da redirect307 ma ignorata da quiz-home: innocua.
+  if (pathname === "/free-test") {
+    return redirect307(req, "/quiz-home");
+  }
+  if (pathname === "/it/free-test") {
+    return redirect307(req, "/it/quiz-home");
+  }
+  if (pathname === "/fr/free-test") {
+    return redirect307(req, "/fr/quiz-home");
+  }
+  if (pathname === "/es/free-test") {
+    return redirect307(req, "/es/quiz-home");
   }
 
   // URL rotti con "undefined" generati/scoperti da crawler o vecchi link.

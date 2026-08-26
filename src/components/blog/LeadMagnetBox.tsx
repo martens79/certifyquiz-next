@@ -50,8 +50,9 @@ export default function LeadMagnetBox({ lang }: { lang: string }) {
       setDone(true);
 
       // 👉 redirect dopo 1 secondo
+      const prefix = lang === "it" || lang === "es" || lang === "fr" ? `/${lang}` : "";
       setTimeout(() => {
-        window.location.href = "/free-test";
+        window.location.href = `${prefix}/quiz-home`;
       }, 1000);
     } catch (err) {
       console.error(err);
