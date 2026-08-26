@@ -13,6 +13,9 @@ import {
   Server,
   Cpu,
   BriefcaseBusiness,
+  Layers,
+  Building2,
+  BarChart3,
 } from "lucide-react";
 
 import QuizTitle from "@/components/QuizTitle";
@@ -186,7 +189,6 @@ const baseCerts = [
   { name: "PEKIT", link: certPath(lang, "pekit") },
   { name: "ITIL 4 Foundation", link: certPath(lang, "itil-4-foundation") },
   { name: "A+", link: certPath(lang, "comptia-a-plus") },
-  { name: "IC3", link: null },
   { name: "CompTIA Tech+ (ex ITF+)", link: certPath(lang, "comptia-itf-plus") },
 
 ]; // ✅ niente "as const"
@@ -201,26 +203,18 @@ const certificationNames: CertificationNames = {
     { name: "SAP S/4HANA Financial Accounting", link: certPath(lang, "sap-s4hana-financial-accounting") },
     { name: "SAP S/4HANA Sourcing and Procurement", link: certPath(lang, "sap-s4hana-sourcing-procurement") },
     { name: "SAP S/4HANA Sales", link: certPath(lang, "sap-s4hana-sales") },
-    { name: "SAP S/4HANA Production Planning and Manufacturing", link: certPath(lang, "sap-s4hana-production-planning"), comingSoon: true },
-    { name: "SAP ABAP Cloud Developer", link: certPath(lang, "sap-abap-cloud-developer"), comingSoon: true },
-    { name: "SAP Business Technology Platform", link: certPath(lang, "sap-business-technology-platform"), comingSoon: true },
-    { name: "SAP SuccessFactors", link: certPath(lang, "sap-successfactors"), comingSoon: true },
-    { name: "SAP Analytics Cloud", link: certPath(lang, "sap-analytics-cloud"), comingSoon: true },
   ],
 
     management: [
     { name: "PMP", link: certPath(lang, "pmp") },
     { name: "ITIL 4 Foundation", link: certPath(lang, "itil-4-foundation") },
-    { name: "CAPM", link: null, comingSoon: true },
     { name: "PSM I Scrum Master", link: certPath(lang, "psm-i") },
-    { name: "PRINCE2 Foundation", link: null, comingSoon: true },
   ],
 
   sicurezza: [
     { name: "Security+", link: certPath(lang, "security-plus") },
     { name: "CEH", link: certPath(lang, "ceh") },
     { name: "CISSP", link: certPath(lang, "cissp") },
-    { name: "CISM", link: null },
     { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },
     { name: "CCST Cybersecurity", link: certPath(lang, "cisco-ccst-cybersecurity") },
 
@@ -259,16 +253,10 @@ cloud: [
     { name: "Python", link: certPath(lang, "python-developer") },
     { name: "JavaScript", link: certPath(lang, "javascript-developer") },
     { name: "C#", link: certPath(lang, "csharp") },
-    { name: "TypeScript", link: null, comingSoon: true },
-    { name: "Kotlin", link: null, comingSoon: true },
-    { name: "Go", link: null, comingSoon: true },
-    { name: "Rust", link: null, comingSoon: true },
-    { name: "Swift", link: null, comingSoon: true },
   ],
 
   virtualizzazione: [
     { name: "VMware VCP", link: certPath(lang, "vmware-vcp") },
-    { name: "Hyper-V", link: null },
     { name: "Microsoft Virtualization", link: certPath(lang, "microsoft-virtualization") },
   ],
 
@@ -284,9 +272,6 @@ cloud: [
   { name: "AWS AI Practitioner", link: certPath(lang, "aws-ai-practitioner") },
   { name: "NVIDIA Generative AI & LLMs", link: certPath(lang, "nvidia-generative-ai-llm") },
   { name: "Google TensorFlow Developer", link: certPath(lang, "tensorflow") },
-
-  { name: "PyTorch", link: null },
-  { name: "OpenAI", link: null },
 ],
 
 "data-analytics": [
@@ -596,37 +581,113 @@ name: getLabel(
   </a>
 </div>
 
-        {/* Management: area business/career in evidenza */}
-        <section id="management" className="mx-auto max-w-345 mt-4">
-          <CategoryBox
-            title={getLabel(
-              {
-                it: "Management & Project Management",
-                en: "Management & Project Management",
-                es: "Gestión y Project Management",
-                fr: "Management & Gestion de Projet",
-              },
-              lang
-            )}
-            icon={<BriefcaseBusiness size={32} />}
-            description={getLabel(
-              {
-                it: "Project management, leadership, processi Agile, governance e organizzazione aziendale.",
-                en: "Project management, leadership, Agile processes, governance and business organization.",
-                es: "Gestión de proyectos, liderazgo, procesos Agile, gobernanza y organización empresarial.",
-                fr: "Gestion de projet, leadership, processus Agile, gouvernance et organisation d’entreprise.",
-              },
-              lang
-            )}
-            categoryKey="management"
-            lang={lang}
-            color="blue"
-            certifications={certificationNames.management}
-            compact
-            variant="wide"
-            className="min-h-42"
-          />
-        </section>
+        {/* Management / Foundations / Business Applications / Data Analytics: riga unica di 4 box */}
+        <div
+          className="
+            mx-auto max-w-345
+            grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4
+            gap-3 mt-3
+          "
+        >
+          <section id="management" className="h-55">
+            <CategoryBox
+              title={getLabel(
+                {
+                  it: "Management & Project Management",
+                  en: "Management & Project Management",
+                  es: "Gestión y Project Management",
+                  fr: "Management & Gestion de Projet",
+                },
+                lang
+              )}
+              icon={<BriefcaseBusiness size={30} />}
+              description={getLabel(
+                {
+                  it: "Project management, leadership, processi Agile, governance e organizzazione aziendale.",
+                  en: "Project management, leadership, Agile processes, governance and business organization.",
+                  es: "Gestión de proyectos, liderazgo, procesos Agile, gobernanza y organización empresarial.",
+                  fr: "Gestion de projet, leadership, processus Agile, gouvernance et organisation d’entreprise.",
+                },
+                lang
+              )}
+              categoryKey="management"
+              lang={lang}
+              color="blue"
+              certifications={certificationNames.management}
+              compact
+              className="h-full"
+            />
+          </section>
+
+          <section id="foundations" className="h-55">
+            <CategoryBox
+              title={getLabel(
+                { it: "Fondamenti", en: "Foundations", es: "Fundamentos", fr: "Fondamentaux" },
+                lang
+              )}
+              icon={<Layers size={30} />}
+              description={getLabel(
+                {
+                  it: "Percorsi introduttivi per chi parte da zero.",
+                  en: "Beginner-friendly intro paths.",
+                  es: "Rutas introductorias para empezar desde cero.",
+                  fr: "Parcours d’introduction pour débutants.",
+                },
+                lang
+              )}
+              categoryKey="foundations"
+              lang={lang}
+              color="indigo"
+              certifications={certificationNames.foundations}
+              compact
+              className="h-full"
+            />
+          </section>
+
+          <section id="business-applications" className="h-55">
+            <CategoryBox
+              title="Business Applications"
+              icon={<Building2 size={30} />}
+              description={getLabel(
+                {
+                  it: "Certificazioni SAP S/4HANA per i processi aziendali.",
+                  en: "SAP S/4HANA certifications for business processes.",
+                  es: "Certificaciones SAP S/4HANA para procesos empresariales.",
+                  fr: "Certifications SAP S/4HANA pour les processus métier.",
+                },
+                lang
+              )}
+              categoryKey="business-applications"
+              lang={lang}
+              color="red"
+              certifications={certificationNames["business-applications"]}
+              compact
+              className="h-full"
+            />
+          </section>
+
+          <section id="data-analytics" className="h-55">
+            <CategoryBox
+              title="Data Analytics"
+              icon={<BarChart3 size={30} />}
+              description={getLabel(
+                {
+                  it: "Analisi dati, Power BI e data fundamentals.",
+                  en: "Data analysis, Power BI and data fundamentals.",
+                  es: "Análisis de datos, Power BI y fundamentos de datos.",
+                  fr: "Analyse de données, Power BI et fondamentaux data.",
+                },
+                lang
+              )}
+              categoryKey="data-analytics"
+              lang={lang}
+              color="purple"
+              certifications={certificationNames["data-analytics"]}
+              compact
+              className="h-full"
+            />
+          </section>
+        </div>
 
       </main>
 
