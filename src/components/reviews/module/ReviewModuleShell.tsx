@@ -81,15 +81,26 @@ export default function ReviewModuleShell({ lang, review, certSlug }: Props) {
     progress.setCurrentSection(id);
   }
 
-  function markComplete() {
-    progress.markSectionComplete(activeSection.id);
+  function markComplete(sectionId: string = activeSection.id) {
+    progress.markSectionComplete(sectionId);
     trackReviewModuleEvent("review_section_completed", {
       certification_slug: certSlug,
       review_slug: review.reviewSlug,
-      section_id: activeSection.id,
+      section_id: sectionId,
       language: lang,
       user_state: analyticsUserStateFrom(user),
     });
+  }
+
+  // "Successiva" segna completata la sezione che si sta lasciando prima di
+  // avanzare: senza questo, chi naviga solo con Successiva non vede mai
+  // avanzare il progresso (serviva un click separato su "Segna come
+  // completato" per ogni sezione, non intuitivo). Il pulsante esplicito
+  // resta comunque disponibile per chi vuole segnare senza spostarsi.
+  function goNext() {
+    if (activeIndex >= sections.length - 1) return;
+    markComplete(activeSection.id);
+    goTo(sections[activeIndex + 1].id);
   }
 
   return (
@@ -113,8 +124,8 @@ export default function ReviewModuleShell({ lang, review, certSlug }: Props) {
         reviewId={review.id}
         certSlug={certSlug}
         onPrev={() => activeIndex > 0 && goTo(sections[activeIndex - 1].id)}
-        onNext={() => activeIndex < sections.length - 1 && goTo(sections[activeIndex + 1].id)}
-        onMarkComplete={markComplete}
+        onNext={goNext}
+        onMarkComplete={() => markComplete(activeSection.id)}
         onAssessmentFinish={(score, total) => {
           progress.setAssessmentResult(score, total);
           progress.markSectionComplete(activeSection.id);
