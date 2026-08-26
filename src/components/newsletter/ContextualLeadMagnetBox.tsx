@@ -192,7 +192,15 @@ const fallbackQuizHref = certificationSlug
   ? `${safeLang === "en" ? "" : `/${safeLang}`}/quiz/${certificationSlug}/mixed`
   : "";
 
-const finalQuizHref = quizHref || fallbackQuizHref;
+// Variante "cert": il quizHref ricevuto viene da data.quizRoute, che punta
+// all'hub dei topic (elenco argomenti), non a un assessment -- quella route
+// ignora ?mode=assessment e l'utente non vede mai ne' quiz ne' risultato.
+// Va sempre costruito il link diretto al mixed-assessment.
+// Variante "topic": il quizHref ricevuto (/quiz/topic/{id}) e' gia' una
+// route reale e va rispettato.
+const finalQuizHref = isTopic
+  ? (quizHref || fallbackQuizHref)
+  : (fallbackQuizHref || quizHref);
 
 const href = finalQuizHref
   ? finalQuizHref.includes("?")
