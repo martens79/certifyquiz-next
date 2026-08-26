@@ -21,7 +21,7 @@ const COPY: Record<Locale, { heading: string; steps: Step[] }> = {
         body: "Ripassi, mappe concettuali, guide e laboratori interattivi trasformano le risposte in comprensione.",
       },
       {
-        title: "Sappi di essere pronto",
+        title: "Verifica di essere pronto",
         body: "Scenari d'esame e simulazioni complete ti dicono quando è il momento di prenotare.",
       },
     ],
@@ -42,7 +42,7 @@ const COPY: Record<Locale, { heading: string; steps: Step[] }> = {
         body: "Reviews, concept maps, guides and interactive labs turn answers into understanding.",
       },
       {
-        title: "Know you're ready",
+        title: "Confirm you're ready",
         body: "Exam scenarios and full simulations tell you when it's time to book.",
       },
     ],
@@ -63,7 +63,7 @@ const COPY: Record<Locale, { heading: string; steps: Step[] }> = {
         body: "Fiches de révision, cartes conceptuelles, guides et labs interactifs transforment les réponses en compréhension.",
       },
       {
-        title: "Savoir que vous êtes prêt",
+        title: "Vérifiez que vous êtes prêt",
         body: "Scénarios d'examen et simulations complètes vous indiquent quand réserver.",
       },
     ],
@@ -84,7 +84,7 @@ const COPY: Record<Locale, { heading: string; steps: Step[] }> = {
         body: "Repasos, mapas conceptuales, guías y laboratorios interactivos convierten respuestas en comprensión.",
       },
       {
-        title: "Sabe que estás listo",
+        title: "Comprueba que estás listo",
         body: "Escenarios de examen y simulacros completos te dicen cuándo es momento de reservar.",
       },
     ],
