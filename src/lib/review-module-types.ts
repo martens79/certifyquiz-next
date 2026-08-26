@@ -9,6 +9,9 @@
 // Nessun campo qui è obbligatorio per la retrocompatibilità: una review
 // legacy ha semplicemente structure = null e continua a renderizzare
 // review.content come oggi.
+//
+// Contratto dati e regole editoriali complete: quiz_project/docs/review-structure-v1.md
+// (source of truth, non duplicare qui). Golden sample: topic_id=229.
 
 export type ReviewSectionType =
   | "intro"
