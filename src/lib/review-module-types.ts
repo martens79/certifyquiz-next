@@ -13,6 +13,8 @@
 export type ReviewSectionType =
   | "intro"
   | "lesson"
+  | "concept"
+  | "comparison"
   | "practice"
   | "assessment"
   | "summary";
@@ -25,8 +27,13 @@ type ReviewSectionBase = {
 };
 
 export type ReviewMicroQuizRef = {
-  /** Topic da cui pescare UNA domanda reale a caso per il "verifica subito" (nessuna domanda inventata). */
-  topicId: number;
+  /**
+   * Topic da cui pescare UNA domanda reale a caso per il "verifica subito"
+   * (nessuna domanda inventata). Opzionale dalla spec Review Structure v1:
+   * se assente si deriva dal topic della pagina (vedi ReviewModuleShell).
+   * Un JSON pre-v1 che lo valorizza esplicitamente resta valido.
+   */
+  topicId?: number;
 };
 
 export type ReviewIntroSection = ReviewSectionBase & {
@@ -34,10 +41,27 @@ export type ReviewIntroSection = ReviewSectionBase & {
   body: string; // markdown
 };
 
+/** Formato pre-v1 (pilota CCST Networking topic 229), superato da "concept" ma ancora renderizzato. */
 export type ReviewLessonSection = ReviewSectionBase & {
   type: "lesson";
   body: string; // markdown
   microQuiz?: ReviewMicroQuizRef;
+};
+
+export type ReviewConceptSection = ReviewSectionBase & {
+  type: "concept";
+  body: string; // markdown ristretto, no heading/tabelle (vedi Review Structure v1 §2.4)
+  microQuiz?: ReviewMicroQuizRef;
+};
+
+export type ReviewComparisonRow = { aspect: string; left: string; right: string };
+
+export type ReviewComparisonSection = ReviewSectionBase & {
+  type: "comparison";
+  body?: string; // inquadramento opzionale, una o due frasi
+  leftLabel: string;
+  rightLabel: string;
+  rows: ReviewComparisonRow[];
 };
 
 export type ReviewPracticeSection = ReviewSectionBase & {
@@ -48,8 +72,14 @@ export type ReviewPracticeSection = ReviewSectionBase & {
 
 export type ReviewAssessmentSection = ReviewSectionBase & {
   type: "assessment";
-  topicId: number;
-  certificationId: number;
+  /**
+   * Opzionali dalla spec Review Structure v1: se assenti si derivano dal
+   * topic/certificazione della pagina (vedi ReviewModuleShell). Un JSON
+   * pre-v1 che li valorizza esplicitamente (come il pilota topic 229) resta
+   * valido e ha precedenza.
+   */
+  topicId?: number;
+  certificationId?: number;
   /** Numero di domande della valutazione finale (5-10 tipicamente). */
   questionLimit: number;
 };
@@ -66,6 +96,8 @@ export type ReviewSummarySection = ReviewSectionBase & {
 export type ReviewModuleSection =
   | ReviewIntroSection
   | ReviewLessonSection
+  | ReviewConceptSection
+  | ReviewComparisonSection
   | ReviewPracticeSection
   | ReviewAssessmentSection
   | ReviewSummarySection;
@@ -89,6 +121,9 @@ export type ReviewModuleStructure = {
 /** True solo se la sezione ha davvero un body renderizzabile (non un outline redatto). */
 export function sectionHasBody(
   section: ReviewModuleSection | ReviewModuleSectionOutline
-): section is ReviewIntroSection | ReviewLessonSection | ReviewPracticeSection {
-  return (section.type === "intro" || section.type === "lesson" || section.type === "practice") && "body" in section;
+): section is ReviewIntroSection | ReviewLessonSection | ReviewConceptSection | ReviewPracticeSection {
+  return (
+    (section.type === "intro" || section.type === "lesson" || section.type === "concept" || section.type === "practice") &&
+    "body" in section
+  );
 }

@@ -123,6 +123,8 @@ export default function ReviewModuleShell({ lang, review, certSlug }: Props) {
         isLast={activeIndex === sections.length - 1}
         reviewId={review.id}
         certSlug={certSlug}
+        pageTopicId={review.topicId}
+        pageCertificationId={review.certificationId}
         onPrev={() => activeIndex > 0 && goTo(sections[activeIndex - 1].id)}
         onNext={goNext}
         onMarkComplete={() => markComplete(activeSection.id)}

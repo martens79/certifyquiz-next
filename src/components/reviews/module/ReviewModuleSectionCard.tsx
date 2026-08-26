@@ -17,6 +17,9 @@ type Props = {
   isLast: boolean;
   reviewId: number;
   certSlug: string;
+  /** Topic/certificazione della pagina review: fallback quando la sezione (JSON v1) non porta il proprio id. */
+  pageTopicId: number;
+  pageCertificationId: number;
   onPrev: () => void;
   onNext: () => void;
   onMarkComplete: () => void;
@@ -32,6 +35,8 @@ export default function ReviewModuleSectionCard({
   isLast,
   reviewId,
   certSlug,
+  pageTopicId,
+  pageCertificationId,
   onPrev,
   onNext,
   onMarkComplete,
@@ -47,11 +52,37 @@ export default function ReviewModuleSectionCard({
       <div className="prose prose-slate mt-4 max-w-none prose-headings:scroll-mt-24 prose-a:text-blue-700">
         {section.type === "intro" && <ReactMarkdown remarkPlugins={[remarkGfm]}>{section.body}</ReactMarkdown>}
 
-        {(section.type === "lesson" || section.type === "practice") && (
+        {(section.type === "lesson" || section.type === "concept" || section.type === "practice") && (
           <>
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{section.body}</ReactMarkdown>
-            {section.microQuiz && <ReviewMicroQuiz topicId={section.microQuiz.topicId} lang={lang} />}
+            {section.microQuiz && <ReviewMicroQuiz topicId={section.microQuiz.topicId ?? pageTopicId} lang={lang} />}
           </>
+        )}
+
+        {section.type === "comparison" && (
+          <div className="not-prose space-y-3">
+            {section.body && <ReactMarkdown remarkPlugins={[remarkGfm]}>{section.body}</ReactMarkdown>}
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full min-w-[480px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-left">
+                    <th className="w-1/3 px-3 py-2" aria-hidden="true" />
+                    <th className="px-3 py-2 font-bold text-slate-900">{section.leftLabel}</th>
+                    <th className="px-3 py-2 font-bold text-slate-900">{section.rightLabel}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {section.rows.map((row) => (
+                    <tr key={row.aspect}>
+                      <td className="px-3 py-2 font-semibold text-slate-700">{row.aspect}</td>
+                      <td className="px-3 py-2 text-slate-700">{row.left}</td>
+                      <td className="px-3 py-2 text-slate-700">{row.right}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
 
         {section.type === "assessment" && (
@@ -59,8 +90,8 @@ export default function ReviewModuleSectionCard({
             <ReviewModuleAssessment
               lang={lang}
               reviewId={reviewId}
-              topicId={section.topicId}
-              certificationId={section.certificationId}
+              topicId={section.topicId ?? pageTopicId}
+              certificationId={section.certificationId ?? pageCertificationId}
               certSlug={certSlug}
               topicTitle={section.title}
               questionLimit={section.questionLimit}
