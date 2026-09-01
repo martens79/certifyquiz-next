@@ -604,13 +604,14 @@ return (
               </div>
             </div>
 
-            <div style={{ ...styles.tableCard, marginTop: 24 }}>
-              <div style={styles.tableHeader}>
+            <details style={{ ...styles.tableCard, marginTop: 24 }}>
+              <summary style={styles.collapsibleTableHeader}>
                 <div>
                   <h2 style={styles.sectionTitle}>Performance certificazioni</h2>
                   <p style={styles.sectionHint}>Attribution parziale basata sul `cert_slug` presente nel singolo evento.</p>
                 </div>
-              </div>
+                <div style={styles.tableCount}>{certificationPerformance.length} certificazioni</div>
+              </summary>
               <div style={styles.tableWrap}>
                 <table style={styles.table}>
                   <thead><tr><Th>Certification</Th><Th>Views</Th><Th>Assessments</Th><Th>Leads</Th><Th>Study starts</Th><Th>Purchases</Th><Th>Revenue</Th><Th>Assessment → lead</Th></tr></thead>
@@ -627,7 +628,7 @@ return (
                 </table>
               </div>
               {!loading && certificationPerformance.length === 0 && <div style={styles.empty}>Nessun evento correlabile a una certificazione.</div>}
-            </div>
+            </details>
           </>
         )}
 
@@ -708,8 +709,8 @@ return (
           </button>
         </div>
 
-          <div style={styles.tableCard}>
-            <div style={styles.tableHeader}>
+          <details style={styles.tableCard}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Ultimi lead</h2>
                 <p style={styles.sectionHint}>
@@ -720,7 +721,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredLeads.length} / {leads.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -764,10 +765,10 @@ return (
             {!loading && filteredLeads.length === 0 && (
               <div style={styles.empty}>Nessun lead trovato con questi filtri.</div>
             )}
-          </div>
+          </details>
 
-          <div style={{ ...styles.tableCard, marginTop: 24 }}>
-            <div style={styles.tableHeader}>
+          <details style={{ ...styles.tableCard, marginTop: 24 }}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Lead caldi</h2>
                 <p style={styles.sectionHint}>
@@ -778,7 +779,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredHotLeads.length} / {hotLeads.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -822,10 +823,10 @@ return (
                 probabilmente quei click non hanno ancora email associata.
               </div>
             )}
-          </div>
+          </details>
 
-          <div style={{ ...styles.tableCard, marginTop: 24 }}>
-            <div style={styles.tableHeader}>
+          <details style={{ ...styles.tableCard, marginTop: 24 }}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Funnel events</h2>
                 <p style={styles.sectionHint}>
@@ -836,7 +837,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredFunnelEvents.length} / {funnelEvents.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -877,7 +878,7 @@ return (
             {!loading && filteredFunnelEvents.length === 0 && (
               <div style={styles.empty}>Nessun evento funnel trovato con questi filtri.</div>
             )}
-          </div>
+          </details>
           </>
         )}
         </section>
@@ -1495,6 +1496,12 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     borderBottom: "1px solid #e2e8f0",
     flexWrap: "wrap",
+  },
+
+  collapsibleTableHeader: {
+    padding: 18,
+    cursor: "pointer",
+    borderBottom: "1px solid #e2e8f0",
   },
 
   sectionTitle: {

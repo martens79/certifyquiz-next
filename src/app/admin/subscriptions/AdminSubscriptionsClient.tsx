@@ -93,8 +93,12 @@ export default function AdminSubscriptionsClient() {
         </button>
       </div>
 
-      <div style={styles.tableWrap}>
-        <table style={styles.table}>
+      <details style={styles.collapsibleTable}>
+        <summary style={styles.collapsibleSummary}>
+          Abbonamenti <span style={styles.summaryCount}>{filtered.length}</span>
+        </summary>
+        <div style={styles.tableWrap}>
+          <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}>Email</th>
@@ -123,12 +127,13 @@ export default function AdminSubscriptionsClient() {
               </tr>
             ))}
           </tbody>
-        </table>
-      </div>
+          </table>
+        </div>
 
-      {!loading && filtered.length === 0 && (
-        <div style={styles.empty}>Nessun abbonamento trovato.</div>
-      )}
+        {!loading && filtered.length === 0 && (
+          <div style={styles.empty}>Nessun abbonamento trovato.</div>
+        )}
+      </details>
     </div>
   );
 }
@@ -212,6 +217,9 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 800,
     cursor: "pointer",
   },
+  collapsibleTable: { border: "1px solid #e2e8f0", borderRadius: 14, overflow: "hidden" },
+  collapsibleSummary: { cursor: "pointer", padding: 16, fontWeight: 900, background: "#f8fafc" },
+  summaryCount: { marginLeft: 8, color: "#64748b", fontSize: 13 },
   tableWrap: { overflowX: "auto" },
   table: { width: "100%", borderCollapse: "collapse", fontSize: 14 },
   th: {

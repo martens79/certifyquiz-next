@@ -384,7 +384,10 @@ export default function AdminOrganizationsClient() {
         </div>
       )}
 
-      <div style={S.tableCard}>
+      <details style={S.tableCard}>
+        <summary style={S.collapsibleSummary}>
+          Aziende <span style={S.summaryCount}>{filteredOrgs.length}</span>
+        </summary>
         <table style={S.table}>
           <thead>
             <tr>
@@ -435,7 +438,7 @@ export default function AdminOrganizationsClient() {
             )}
           </tbody>
         </table>
-      </div>
+      </details>
 
       {selectedId != null && (
         <div style={S.detailCard}>
@@ -532,7 +535,10 @@ export default function AdminOrganizationsClient() {
                   {detailOrg.seats ? ` / ${detailOrg.seats} seat` : ""})
                 </h4>
 
-                <div style={S.tableCard}>
+                <details style={S.tableCard}>
+                  <summary style={S.collapsibleSummary}>
+                    Elenco membri <span style={S.summaryCount}>{members.length}</span>
+                  </summary>
                   <table style={S.table}>
                     <thead>
                       <tr>
@@ -574,7 +580,7 @@ export default function AdminOrganizationsClient() {
                       )}
                     </tbody>
                   </table>
-                </div>
+                </details>
 
                 <div style={S.addMemberRow}>
                   <input
@@ -737,6 +743,14 @@ const S: Record<string, React.CSSProperties> = {
     overflow: "hidden",
     boxShadow: "0 10px 25px rgba(15, 23, 42, 0.04)",
   },
+  collapsibleSummary: {
+    cursor: "pointer",
+    padding: 16,
+    fontWeight: 900,
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
+  },
+  summaryCount: { marginLeft: 8, color: "#64748b", fontSize: 13 },
 
   table: { width: "100%", borderCollapse: "collapse", fontSize: 14 },
 
