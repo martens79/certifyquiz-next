@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { downloadCsv } from "@/lib/download-csv";
 
 type Subscription = {
   id: string;
@@ -90,6 +91,12 @@ export default function AdminSubscriptionsClient() {
 
         <button onClick={load} disabled={loading} style={styles.refreshButton}>
           {loading ? "Carico..." : "Ricarica"}
+        </button>
+        <button
+          onClick={() => downloadCsv("certifyquiz-subscriptions.csv", subs.map((s) => ({ ...s })))}
+          style={styles.exportButton}
+        >
+          Scarica tutti CSV
         </button>
       </div>
 
@@ -212,6 +219,15 @@ const styles: Record<string, CSSProperties> = {
     border: "1px solid #bfdbfe",
     background: "#eff6ff",
     color: "#1d4ed8",
+    padding: "10px 14px",
+    borderRadius: 999,
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+  exportButton: {
+    border: "1px solid #bbf7d0",
+    background: "#f0fdf4",
+    color: "#166534",
     padding: "10px 14px",
     borderRadius: 999,
     fontWeight: 800,
