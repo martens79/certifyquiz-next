@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { downloadCsv } from "@/lib/download-csv";
 
 type Organization = {
   id: number;
@@ -314,6 +315,9 @@ export default function AdminOrganizationsClient() {
           <button onClick={loadOrgs} disabled={loading} style={S.secondaryButton}>
             {loading ? "Carico..." : "Ricarica"}
           </button>
+          <button onClick={() => downloadCsv("certifyquiz-organizations.csv", orgs.map((o) => ({ ...o })))} style={S.exportButton}>
+            Scarica tutte CSV
+          </button>
           <button onClick={() => setShowNewForm((v) => !v)} style={S.primaryButton}>
             {showNewForm ? "Annulla" : "+ Nuova azienda"}
           </button>
@@ -384,7 +388,10 @@ export default function AdminOrganizationsClient() {
         </div>
       )}
 
-      <div style={S.tableCard}>
+      <details style={S.tableCard}>
+        <summary style={S.collapsibleSummary}>
+          Aziende <span style={S.summaryCount}>{filteredOrgs.length}</span>
+        </summary>
         <table style={S.table}>
           <thead>
             <tr>
@@ -435,7 +442,7 @@ export default function AdminOrganizationsClient() {
             )}
           </tbody>
         </table>
-      </div>
+      </details>
 
       {selectedId != null && (
         <div style={S.detailCard}>
@@ -532,7 +539,17 @@ export default function AdminOrganizationsClient() {
                   {detailOrg.seats ? ` / ${detailOrg.seats} seat` : ""})
                 </h4>
 
-                <div style={S.tableCard}>
+                <button
+                  onClick={() => downloadCsv(`certifyquiz-organization-${detailOrg.id}-members.csv`, members.map((m) => ({ ...m })))}
+                  style={{ ...S.exportButton, marginBottom: 10 }}
+                >
+                  Scarica tutti i membri CSV
+                </button>
+
+                <details style={S.tableCard}>
+                  <summary style={S.collapsibleSummary}>
+                    Elenco membri <span style={S.summaryCount}>{members.length}</span>
+                  </summary>
                   <table style={S.table}>
                     <thead>
                       <tr>
@@ -574,7 +591,7 @@ export default function AdminOrganizationsClient() {
                       )}
                     </tbody>
                   </table>
-                </div>
+                </details>
 
                 <div style={S.addMemberRow}>
                   <input
@@ -736,6 +753,23 @@ const S: Record<string, React.CSSProperties> = {
     background: "#fff",
     overflow: "hidden",
     boxShadow: "0 10px 25px rgba(15, 23, 42, 0.04)",
+  },
+  collapsibleSummary: {
+    cursor: "pointer",
+    padding: 16,
+    fontWeight: 900,
+    background: "#f8fafc",
+    borderBottom: "1px solid #e2e8f0",
+  },
+  summaryCount: { marginLeft: 8, color: "#64748b", fontSize: 13 },
+  exportButton: {
+    border: "1px solid #bbf7d0",
+    background: "#f0fdf4",
+    color: "#166534",
+    padding: "10px 14px",
+    borderRadius: 12,
+    fontWeight: 800,
+    cursor: "pointer",
   },
 
   table: { width: "100%", borderCollapse: "collapse", fontSize: 14 },

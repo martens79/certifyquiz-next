@@ -7,6 +7,7 @@ import AdminFeedbackClient from "./feedback/AdminFeedbackClient";
 import AdminSubscriptionsClient from "./subscriptions/AdminSubscriptionsClient";
 import AdminOrganizationsClient from "./organizations/AdminOrganizationsClient";
 import AdminPushClient from "./push/AdminPushClient";
+import { downloadCsv } from "@/lib/download-csv";
 import {
   BUSINESS_STEPS,
   businessStepCounts,
@@ -218,17 +219,13 @@ export default function AdminClient() {
   }, [normalizedEvents]);
 
   const certificationPerformance = useMemo(() => {
-    const rows = new Map<string, Record<string, number>>();
-    normalizedEvents.forEach((event) => {
-      if (!event.cert_slug) return;
-      const row = rows.get(event.cert_slug) ?? {};
-      row[event.step] = (row[event.step] ?? 0) + 1;
-      rows.set(event.cert_slug, row);
-    });
-    return Array.from(rows.entries())
-      .map(([certification, counts]) => ({ certification, counts }))
-      .sort((a, b) => (b.counts.assessment_started ?? 0) - (a.counts.assessment_started ?? 0));
+    return aggregateCertificationPerformance(normalizedEvents);
   }, [normalizedEvents]);
+
+  const allCertificationPerformance = useMemo(
+    () => aggregateCertificationPerformance(normalizedBusinessEvents(funnelEvents)),
+    [funnelEvents],
+  );
 
   const paywallStats = useMemo(() => {
   const gateShown = filteredFunnelEvents.filter(
@@ -375,7 +372,7 @@ export default function AdminClient() {
   }
 
   function exportLeadsCsv() {
-    const rows = filteredLeads.map((lead) => ({
+    const rows = leads.map((lead) => ({
       email: lead.email,
       cert_slug: lead.cert_slug ?? "",
       topic_slug: lead.topic_slug ?? "",
@@ -391,7 +388,7 @@ export default function AdminClient() {
   }
 
   function exportEventsCsv() {
-    const rows = filteredFunnelEvents.map((event) => ({
+    const rows = funnelEvents.map((event) => ({
       email: event.email ?? "",
       event: event.event,
       cert_slug: event.cert_slug ?? "",
@@ -402,6 +399,29 @@ export default function AdminClient() {
     }));
 
     downloadCsv("certifyquiz-funnel-events.csv", rows);
+  }
+
+  function exportHotLeadsCsv() {
+    downloadCsv("certifyquiz-hot-leads.csv", hotLeads.map((lead) => ({
+      email: lead.email,
+      cert_slug: lead.cert_slug ?? "",
+      lang: lead.lang ?? "",
+      best_score: lead.best_score ?? "",
+      premium_clicks: lead.premium_clicks,
+      total_events: lead.total_events,
+      last_event_at: lead.last_event_at,
+    })));
+  }
+
+  function exportCertificationPerformanceCsv() {
+    downloadCsv("certifyquiz-certification-performance.csv", allCertificationPerformance.map(({ certification, counts }) => ({
+      certification,
+      assessment_started: counts.assessment_started ?? 0,
+      email_captured: counts.email_captured ?? 0,
+      study_started: counts.study_started ?? 0,
+      purchase_completed: counts.purchase_completed ?? 0,
+      assessment_to_lead: formatRate(counts.email_captured ?? 0, counts.assessment_started ?? 0),
+    })));
   }
 
   useEffect(() => {
@@ -557,6 +577,13 @@ return (
           </div>
         </div>
 
+        <div style={styles.actionBar}>
+          <button onClick={exportCertificationPerformanceCsv} style={styles.exportButton}>Scarica performance CSV</button>
+          <button onClick={exportLeadsCsv} style={styles.exportButton}>Scarica tutti i lead CSV</button>
+          <button onClick={exportHotLeadsCsv} style={styles.exportButton}>Scarica tutti i lead caldi CSV</button>
+          <button onClick={exportEventsCsv} style={styles.exportButton}>Scarica tutti gli eventi CSV</button>
+        </div>
+
         {overview && (
           <>
             <div style={styles.reliabilityNote}>
@@ -604,13 +631,14 @@ return (
               </div>
             </div>
 
-            <div style={{ ...styles.tableCard, marginTop: 24 }}>
-              <div style={styles.tableHeader}>
+            <details style={{ ...styles.tableCard, marginTop: 24 }}>
+              <summary style={styles.collapsibleTableHeader}>
                 <div>
                   <h2 style={styles.sectionTitle}>Performance certificazioni</h2>
                   <p style={styles.sectionHint}>Attribution parziale basata sul `cert_slug` presente nel singolo evento.</p>
                 </div>
-              </div>
+                <div style={styles.tableCount}>{certificationPerformance.length} certificazioni</div>
+              </summary>
               <div style={styles.tableWrap}>
                 <table style={styles.table}>
                   <thead><tr><Th>Certification</Th><Th>Views</Th><Th>Assessments</Th><Th>Leads</Th><Th>Study starts</Th><Th>Purchases</Th><Th>Revenue</Th><Th>Assessment → lead</Th></tr></thead>
@@ -627,7 +655,7 @@ return (
                 </table>
               </div>
               {!loading && certificationPerformance.length === 0 && <div style={styles.empty}>Nessun evento correlabile a una certificazione.</div>}
-            </div>
+            </details>
           </>
         )}
 
@@ -698,18 +726,8 @@ return (
               </div>
             </div>
 
-        <div style={styles.actionBar}>
-          <button onClick={exportLeadsCsv} style={styles.exportButton}>
-            Esporta lead CSV
-          </button>
-
-          <button onClick={exportEventsCsv} style={styles.exportButton}>
-            Esporta eventi CSV
-          </button>
-        </div>
-
-          <div style={styles.tableCard}>
-            <div style={styles.tableHeader}>
+          <details style={styles.tableCard}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Ultimi lead</h2>
                 <p style={styles.sectionHint}>
@@ -720,7 +738,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredLeads.length} / {leads.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -764,10 +782,10 @@ return (
             {!loading && filteredLeads.length === 0 && (
               <div style={styles.empty}>Nessun lead trovato con questi filtri.</div>
             )}
-          </div>
+          </details>
 
-          <div style={{ ...styles.tableCard, marginTop: 24 }}>
-            <div style={styles.tableHeader}>
+          <details style={{ ...styles.tableCard, marginTop: 24 }}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Lead caldi</h2>
                 <p style={styles.sectionHint}>
@@ -778,7 +796,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredHotLeads.length} / {hotLeads.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -822,10 +840,10 @@ return (
                 probabilmente quei click non hanno ancora email associata.
               </div>
             )}
-          </div>
+          </details>
 
-          <div style={{ ...styles.tableCard, marginTop: 24 }}>
-            <div style={styles.tableHeader}>
+          <details style={{ ...styles.tableCard, marginTop: 24 }}>
+            <summary style={styles.collapsibleTableHeader}>
               <div>
                 <h2 style={styles.sectionTitle}>Funnel events</h2>
                 <p style={styles.sectionHint}>
@@ -836,7 +854,7 @@ return (
               <div style={styles.tableCount}>
                 {filteredFunnelEvents.length} / {funnelEvents.length}
               </div>
-            </div>
+            </summary>
 
             <div style={styles.tableWrap}>
               <table style={styles.table}>
@@ -877,7 +895,7 @@ return (
             {!loading && filteredFunnelEvents.length === 0 && (
               <div style={styles.empty}>Nessun evento funnel trovato con questi filtri.</div>
             )}
-          </div>
+          </details>
           </>
         )}
         </section>
@@ -1087,36 +1105,17 @@ function getTopItems(values: string[]) {
     .slice(0, 8);
 }
 
-function downloadCsv(filename: string, rows: Record<string, string | number>[]) {
-  if (rows.length === 0) {
-    alert("Nessun dato da esportare con questi filtri.");
-    return;
-  }
-
-  const headers = Object.keys(rows[0]);
-
-  const csv = [
-    headers.join(","),
-    ...rows.map((row) =>
-      headers
-        .map((header) => {
-          const value = row[header] ?? "";
-          const escaped = String(value).replace(/"/g, '""');
-          return `"${escaped}"`;
-        })
-        .join(",")
-    ),
-  ].join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-
-  URL.revokeObjectURL(url);
+function aggregateCertificationPerformance(events: ReturnType<typeof normalizedBusinessEvents>) {
+  const rows = new Map<string, Record<string, number>>();
+  events.forEach((event) => {
+    if (!event.cert_slug) return;
+    const row = rows.get(event.cert_slug) ?? {};
+    row[event.step] = (row[event.step] ?? 0) + 1;
+    rows.set(event.cert_slug, row);
+  });
+  return Array.from(rows.entries())
+    .map(([certification, counts]) => ({ certification, counts }))
+    .sort((a, b) => (b.counts.assessment_started ?? 0) - (a.counts.assessment_started ?? 0));
 }
 
 const styles: Record<string, CSSProperties> = {
@@ -1495,6 +1494,12 @@ const styles: Record<string, CSSProperties> = {
     alignItems: "center",
     borderBottom: "1px solid #e2e8f0",
     flexWrap: "wrap",
+  },
+
+  collapsibleTableHeader: {
+    padding: 18,
+    cursor: "pointer",
+    borderBottom: "1px solid #e2e8f0",
   },
 
   sectionTitle: {
