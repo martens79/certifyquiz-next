@@ -12,8 +12,11 @@ type TrackParams = Record<string, string | number | boolean | null | undefined>;
 export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
 
 const SESSION_KEY = "cq_analytics_session";
+const SEQUENCE_KEY = "cq_analytics_sequence";
 const onceKeys = new Set<string>();
 const pendingEvents: Array<{ eventName: string; params: TrackParams }> = [];
+let currentPageView: { pathname: string; id: string } | null = null;
+let fallbackSequence = 0;
 
 export function getAnonymousSessionId(): string | undefined {
   if (typeof window === "undefined") return undefined;
@@ -110,7 +113,53 @@ type FunnelEventBody = {
   lang?: string | null;
   score?: number | null;
   plan?: string | null;
+  paywall_type?: string | null;
+  gate_instance_id?: string | null;
+  metadata?: Record<string, JsonValue> | null;
 };
+
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
+function currentPathname(): string {
+  return window.location?.pathname || "/";
+}
+
+export function getPageViewId(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const pathname = currentPathname();
+  if (!currentPageView || currentPageView.pathname !== pathname) {
+    currentPageView = { pathname, id: crypto.randomUUID() };
+  }
+  return currentPageView.id;
+}
+
+function nextClientSequence(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const previous = Number.parseInt(sessionStorage.getItem(SEQUENCE_KEY) || "0", 10);
+    const next = Number.isSafeInteger(previous) && previous >= 0 ? previous + 1 : 1;
+    sessionStorage.setItem(SEQUENCE_KEY, String(next));
+    return next;
+  } catch {
+    fallbackSequence += 1;
+    return fallbackSequence;
+  }
+}
+
+function safeReferrer(): { referrer_origin: string | null; referrer_path: string | null } {
+  if (typeof document === "undefined" || !document.referrer) {
+    return { referrer_origin: null, referrer_path: null };
+  }
+  try {
+    const referrer = new URL(document.referrer);
+    return {
+      referrer_origin: referrer.origin,
+      referrer_path: referrer.pathname,
+    };
+  } catch {
+    return { referrer_origin: null, referrer_path: null };
+  }
+}
 
 /**
  * Scrive un evento in funnel_events (DB), pensato per i click seguiti
@@ -126,12 +175,20 @@ export function trackFunnelEvent(
 ) {
   if (typeof window === "undefined") return;
 
-  // ✅ Stesso anonymous_session_id già inviato a GA4: permette di leggere
-  // funnel_events per sessione invece che per riga (es. 105 paywall_viewed
-  // potrebbero essere 3 sessioni molto attive, non 105 persone).
+  const referrer = safeReferrer();
+  const metadata = body.metadata || (body.plan ? { plan: body.plan } : null);
   const payload = JSON.stringify({
-    session_id: getAnonymousSessionId() ?? null,
     ...body,
+    metadata,
+    event_id: crypto.randomUUID(),
+    session_id: getAnonymousSessionId() ?? null,
+    pathname: currentPathname(),
+    page_view_id: getPageViewId() ?? null,
+    client_sequence: nextClientSequence(),
+    source_type: "web_client",
+    schema_version: 2,
+    client_created_at: new Date().toISOString(),
+    ...referrer,
   });
 
   if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
