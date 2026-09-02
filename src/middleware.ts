@@ -373,6 +373,14 @@ if (
     "/it/certificazioni/google-cloud-digital-leader/sicurezza-e-operazioni-con-google-cloud"
   );
 }
+
+// CEH — topic 353 rinominato/split: sniffing-session-hijacking -> sniffing
+if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking") {
+  return redirect301(req, "/it/certificazioni/ceh/sniffing");
+}
+if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking/ripasso") {
+  return redirect301(req, "/it/certificazioni/ceh/sniffing/ripasso");
+}
     // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION SLUGS
   // Vecchi slug singoli ancora indicizzati da Google
