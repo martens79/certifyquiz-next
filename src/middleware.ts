@@ -381,6 +381,14 @@ if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking") {
 if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking/ripasso") {
   return redirect301(req, "/it/certificazioni/ceh/sniffing/ripasso");
 }
+
+// CEH — topic 80 rinominato/split: scansione-delle-vulnerabilita-e-exploit -> scansione-delle-reti
+if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit") {
+  return redirect301(req, "/it/certificazioni/ceh/scansione-delle-reti");
+}
+if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit/ripasso") {
+  return redirect301(req, "/it/certificazioni/ceh/scansione-delle-reti/ripasso");
+}
     // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION SLUGS
   // Vecchi slug singoli ancora indicizzati da Google
