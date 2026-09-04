@@ -8,7 +8,7 @@ import {
   Network, Play, Search, Server, ShieldCheck, Sparkles, Table2, Terminal, Trophy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Locale } from "@/lib/paths";
+import { interactiveLabsJobTrackPath, type Locale } from "@/lib/paths";
 import { apiFetch, isLoggedIn } from "@/lib/auth";
 import type { LabsCatalogEntry, LabsCatalogCertificationFilter } from "@/lib/server/labs";
 
@@ -438,15 +438,7 @@ export default function InteractiveLabsLanding({
           </div>
 
           {viewMode === "tracks" ? (
-            <TrackListView
-              tracks={tracks} lang={lang}
-              // Placeholder Fase B1 (nessuna pagina di dettaglio ancora): apre la
-              // vista skill filtrata sulla categoria "networking", che oggi
-              // contiene esattamente i lab CCST Networking + CCNA di cui e'
-              // composto l'unico track esistente (DB_CERTIFICATION_CATEGORY sopra).
-              // Da sostituire con un link alla pagina di dettaglio in B2.
-              onOpenTrack={() => selectCategory("networking")}
-            />
+            <TrackListView tracks={tracks} lang={lang} />
           ) : (
             <>
               {/* La barra ha senso solo con una scelta reale: con 0 o 1 certificazione
@@ -568,10 +560,8 @@ function LabRow({ lab, lang, base }: { lab: Lab; lang: Locale; base: string }) {
   </article>;
 }
 
-/** Vista lista dei Job Track (Fase B1). Sola lista: nessuna pagina di dettaglio
- *  ancora (arriva in B2) -- onOpenTrack e' il placeholder che rimanda alla vista
- *  skill filtrata, non un link diretto a una route di dettaglio. */
-function TrackListView({ tracks, lang, onOpenTrack }: { tracks: JobTrackListItem[]; lang: Locale; onOpenTrack: (track: JobTrackListItem) => void }) {
+/** Vista lista dei Job Track (Fase B1, CTA reale dalla Fase B2). */
+function TrackListView({ tracks, lang }: { tracks: JobTrackListItem[]; lang: Locale }) {
   const t = copy[lang];
   return (
     <section>
@@ -586,20 +576,20 @@ function TrackListView({ tracks, lang, onOpenTrack }: { tracks: JobTrackListItem
       {tracks.length === 0
         ? <p className="mt-7 rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{t.noTracks}</p>
         : <section className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label={t.tracksHeading}>
-            {tracks.map(track => <TrackCard key={track.slug} track={track} lang={lang} onOpen={() => onOpenTrack(track)} />)}
+            {tracks.map(track => <TrackCard key={track.slug} track={track} lang={lang} />)}
           </section>}
     </section>
   );
 }
 
-function TrackCard({ track, lang, onOpen }: { track: JobTrackListItem; lang: Locale; onOpen: () => void }) {
+function TrackCard({ track, lang }: { track: JobTrackListItem; lang: Locale }) {
   const t = copy[lang];
   const progress = track.labCount ? Math.round((track.completedLabs / track.labCount) * 100) : 0;
   const levelLabel = (value: JobTrackListItem["minDifficulty"]) => value ? { base: t.beginner, intermediate: t.intermediate, final: t.advanced }[value] : null;
   const minLabel = levelLabel(track.minDifficulty);
   const maxLabel = levelLabel(track.maxDifficulty);
   return (
-    <button onClick={onOpen} className="group flex min-h-56 flex-col rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-5 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+    <Link href={interactiveLabsJobTrackPath(lang, track.slug)} className="group flex min-h-56 flex-col rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-5 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
       <div className="flex w-full items-start justify-between gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-100 text-indigo-700"><Milestone size={22} aria-hidden /></span>
         <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold text-indigo-700">⭐ {track.labCount} {t.labs}</span>
@@ -614,6 +604,6 @@ function TrackCard({ track, lang, onOpen }: { track: JobTrackListItem; lang: Loc
         <div className="h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div>
         <span className="mt-3 flex items-center justify-between text-sm font-bold text-indigo-700">{t.open}<ChevronRight size={17} className="transition-transform group-hover:translate-x-1" /></span>
       </div>
-    </button>
+    </Link>
   );
 }

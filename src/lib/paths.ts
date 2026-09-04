@@ -481,6 +481,16 @@ export const gamesPath = (lang: Locale): string => {
 export const interactiveLabsPath = (lang: Locale): string =>
   lang === "en" ? "/interactive-labs" : `/${lang}/interactive-labs`;
 
+/**
+ * Job Track detail page, nested under Interactive Labs (no top-level nav
+ * entry). Same "same segment in every locale" choice as interactiveLabsPath
+ * above, for the same two reasons: it is the direct parent's own documented
+ * convention, and translating "job track" would collide with the words the
+ * unrelated Paths section already owns (percorsi/parcours/rutas).
+ */
+export const interactiveLabsJobTrackPath = (lang: Locale, slug: string): string =>
+  `${interactiveLabsPath(lang)}/job-tracks/${slug}`;
+
 export const binaryRushPath = (lang: Locale): string =>
   `${gamesPath(lang)}/binary-rush`;
 
