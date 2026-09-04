@@ -46,6 +46,10 @@ export const labSlugs = [
   "ccna-port-security-wireless",
   "ccna-network-programmability",
   "ccna-branch-outage-capstone",
+  "ccna-ipv6-static-routing",
+  "ccna-routing-table-troubleshooting",
+  "ccna-wlc-wlan-gui",
+  "ccna-dhcp-snooping-dai-port-security",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];

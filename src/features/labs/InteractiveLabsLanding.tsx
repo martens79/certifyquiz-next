@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft, ArrowRight, Bot, Boxes, Check, CheckCircle2, ChevronRight,
-  Clock3, Cloud, Code2, Database, FileText, Gauge, LockKeyhole, Network, Play,
-  Search, Server, ShieldCheck, Sparkles, Table2, Terminal, Trophy,
+  Clock3, Cloud, Code2, Database, FileText, Gauge, LockKeyhole, Milestone,
+  Network, Play, Search, Server, ShieldCheck, Sparkles, Table2, Terminal, Trophy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Locale } from "@/lib/paths";
-import { apiFetch } from "@/lib/auth";
+import { interactiveLabsJobTrackPath, type Locale } from "@/lib/paths";
+import { apiFetch, isLoggedIn } from "@/lib/auth";
 import type { LabsCatalogEntry, LabsCatalogCertificationFilter } from "@/lib/server/labs";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
@@ -74,6 +74,19 @@ const DB_DIFFICULTY_MAP: Record<"base" | "intermediate" | "final", Difficulty> =
 // title/description/ecc. -- quelli restano la versione risolta server-side, mai
 // sovrascritti da questo fetch.
 type LabAccessApiItem = { id: number; locked: boolean; accessReason: string };
+// Risposta di GET /labs/completed/me (Fase A): slug incluso ma non usato qui,
+// il merge con dbLabs avviene per id come per LabAccessApiItem sopra.
+type LabCompletedApiItem = { labId: number; slug: string };
+
+type ViewMode = "skills" | "tracks";
+// Riga di GET /job-tracks (Fase B1): metadata di lista, mai il dettaglio (quello
+// arriva in B2). minDifficulty/maxDifficulty sono 'base'|'intermediate'|'final'
+// come interactive_labs.difficulty -- null solo se il track non ha lab attivi.
+type JobTrackListItem = {
+  id: number; slug: string; title: string; description: string;
+  labCount: number; minDifficulty: "base" | "intermediate" | "final" | null;
+  maxDifficulty: "base" | "intermediate" | "final" | null; completedLabs: number;
+};
 
 const categories: Category[] = [
   { id: "excel", name: "Excel", icon: Table2, color: "from-emerald-50 to-teal-50", iconColor: "bg-emerald-100 text-emerald-700", description: localized("Formule, grafici e tabelle pivot", "Formulas, charts and pivot tables", "Formules, graphiques et tableaux croisés", "Fórmulas, gráficos y tablas dinámicas"), labs: [
@@ -117,10 +130,10 @@ const categories: Category[] = [
 ];
 
 const copy = {
-  it: { subtitle: "Impara facendo con simulazioni pratiche da 3 a 10 minuti.", available: "Disponibili ora", categories: "Categorie", completed: "Completati", choose: "Scegli la tua prossima sfida", chooseBody: "Allenati in ambienti simulati, guadagna badge e trasforma la teoria in competenze reali.", labs: "Lab", open: "Apri", soon: "In arrivo", new: "Nuovi", badges: "Badge disponibili", back: "Tutte le categorie", search: "Cerca un laboratorio...", noResults: "Nessun laboratorio corrisponde ai filtri.", start: "Avvia", all: "Tutti", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzato", done: "Completati", todo: "Da completare", progress: "Il tuo progresso", level: "Livello", empty: "I primi laboratori sono in preparazione. Torna presto per iniziare questa skill.", minute: "min", allLabsPill: "Tutti i laboratori", certificationFilterLabel: "Filtra per certificazione", premiumBadge: "Premium", viewPreview: "Vedi anteprima" },
-  en: { subtitle: "Learn by doing with practical 3 to 10 minute simulations.", available: "Available now", categories: "Categories", completed: "Completed", choose: "Choose your next challenge", chooseBody: "Practice in simulated environments, earn badges and turn theory into real skills.", labs: "Labs", open: "Open", soon: "Coming soon", new: "New", badges: "Badges available", back: "All categories", search: "Search labs...", noResults: "No labs match these filters.", start: "Start", all: "All", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", done: "Completed", todo: "To complete", progress: "Your progress", level: "Level", empty: "The first labs are being prepared. Come back soon to start this skill.", minute: "min", allLabsPill: "All Labs", certificationFilterLabel: "Filter by certification", premiumBadge: "Premium", viewPreview: "View preview" },
-  fr: { subtitle: "Apprenez par la pratique avec des simulations de 3 à 10 minutes.", available: "Disponibles", categories: "Catégories", completed: "Terminés", choose: "Choisissez votre prochain défi", chooseBody: "Entraînez-vous dans des environnements simulés, gagnez des badges et transformez la théorie en compétences.", labs: "Labs", open: "Ouvrir", soon: "Bientôt", new: "Nouveaux", badges: "Badges disponibles", back: "Toutes les catégories", search: "Rechercher un lab...", noResults: "Aucun lab ne correspond aux filtres.", start: "Démarrer", all: "Tous", beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé", done: "Terminés", todo: "À terminer", progress: "Votre progression", level: "Niveau", empty: "Les premiers labs sont en préparation. Revenez bientôt.", minute: "min", allLabsPill: "Tous les labs", certificationFilterLabel: "Filtrer par certification", premiumBadge: "Premium", viewPreview: "Voir l'aperçu" },
-  es: { subtitle: "Aprende haciendo con simulaciones prácticas de 3 a 10 minutos.", available: "Disponibles", categories: "Categorías", completed: "Completados", choose: "Elige tu próximo reto", chooseBody: "Practica en entornos simulados, gana insignias y convierte la teoría en habilidades reales.", labs: "Labs", open: "Abrir", soon: "Próximamente", new: "Nuevos", badges: "Insignias disponibles", back: "Todas las categorías", search: "Buscar un lab...", noResults: "Ningún lab coincide con los filtros.", start: "Iniciar", all: "Todos", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzado", done: "Completados", todo: "Por completar", progress: "Tu progreso", level: "Nivel", empty: "Los primeros labs están en preparación. Vuelve pronto.", minute: "min", allLabsPill: "Todos los labs", certificationFilterLabel: "Filtrar por certificación", premiumBadge: "Premium", viewPreview: "Ver vista previa" },
+  it: { subtitle: "Impara facendo con simulazioni pratiche da 3 a 10 minuti.", available: "Disponibili ora", categories: "Categorie", completed: "Completati", choose: "Scegli la tua prossima sfida", chooseBody: "Allenati in ambienti simulati, guadagna badge e trasforma la teoria in competenze reali.", labs: "Lab", open: "Apri", soon: "In arrivo", new: "Nuovi", badges: "Badge disponibili", back: "Tutte le categorie", search: "Cerca un laboratorio...", noResults: "Nessun laboratorio corrisponde ai filtri.", start: "Avvia", all: "Tutti", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzato", done: "Completati", todo: "Da completare", progress: "Il tuo progresso", level: "Livello", empty: "I primi laboratori sono in preparazione. Torna presto per iniziare questa skill.", minute: "min", allLabsPill: "Tutti i laboratori", certificationFilterLabel: "Filtra per certificazione", premiumBadge: "Premium", viewPreview: "Vedi anteprima", browseSkills: "Sfoglia per skill", browseTracks: "Sfoglia per percorso di ruolo", tracksHeading: "Percorsi di ruolo", tracksBody: "Sequenze curate di laboratori gia' esistenti, ordinate per costruire una competenza professionale specifica.", noTracks: "Nessun percorso di ruolo disponibile al momento." },
+  en: { subtitle: "Learn by doing with practical 3 to 10 minute simulations.", available: "Available now", categories: "Categories", completed: "Completed", choose: "Choose your next challenge", chooseBody: "Practice in simulated environments, earn badges and turn theory into real skills.", labs: "Labs", open: "Open", soon: "Coming soon", new: "New", badges: "Badges available", back: "All categories", search: "Search labs...", noResults: "No labs match these filters.", start: "Start", all: "All", beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced", done: "Completed", todo: "To complete", progress: "Your progress", level: "Level", empty: "The first labs are being prepared. Come back soon to start this skill.", minute: "min", allLabsPill: "All Labs", certificationFilterLabel: "Filter by certification", premiumBadge: "Premium", viewPreview: "View preview", browseSkills: "Browse by skill", browseTracks: "Browse by job track", tracksHeading: "Job tracks", tracksBody: "Curated sequences of existing labs, ordered to build one specific job-ready skill set.", noTracks: "No job track available right now." },
+  fr: { subtitle: "Apprenez par la pratique avec des simulations de 3 à 10 minutes.", available: "Disponibles", categories: "Catégories", completed: "Terminés", choose: "Choisissez votre prochain défi", chooseBody: "Entraînez-vous dans des environnements simulés, gagnez des badges et transformez la théorie en compétences.", labs: "Labs", open: "Ouvrir", soon: "Bientôt", new: "Nouveaux", badges: "Badges disponibles", back: "Toutes les catégories", search: "Rechercher un lab...", noResults: "Aucun lab ne correspond aux filtres.", start: "Démarrer", all: "Tous", beginner: "Débutant", intermediate: "Intermédiaire", advanced: "Avancé", done: "Terminés", todo: "À terminer", progress: "Votre progression", level: "Niveau", empty: "Les premiers labs sont en préparation. Revenez bientôt.", minute: "min", allLabsPill: "Tous les labs", certificationFilterLabel: "Filtrer par certification", premiumBadge: "Premium", viewPreview: "Voir l'aperçu", browseSkills: "Parcourir par compétence", browseTracks: "Parcourir par parcours métier", tracksHeading: "Parcours métier", tracksBody: "Des séquences organisées de labs déjà existants, ordonnées pour construire une compétence professionnelle précise.", noTracks: "Aucun parcours métier disponible pour le moment." },
+  es: { subtitle: "Aprende haciendo con simulaciones prácticas de 3 a 10 minutos.", available: "Disponibles", categories: "Categorías", completed: "Completados", choose: "Elige tu próximo reto", chooseBody: "Practica en entornos simulados, gana insignias y convierte la teoría en habilidades reales.", labs: "Labs", open: "Abrir", soon: "Próximamente", new: "Nuevos", badges: "Insignias disponibles", back: "Todas las categorías", search: "Buscar un lab...", noResults: "Ningún lab coincide con los filtros.", start: "Iniciar", all: "Todos", beginner: "Principiante", intermediate: "Intermedio", advanced: "Avanzado", done: "Completados", todo: "Por completar", progress: "Tu progreso", level: "Nivel", empty: "Los primeros labs están en preparación. Vuelve pronto.", minute: "min", allLabsPill: "Todos los labs", certificationFilterLabel: "Filtrar por certificación", premiumBadge: "Premium", viewPreview: "Ver vista previa", browseSkills: "Explorar por habilidad", browseTracks: "Explorar por ruta profesional", tracksHeading: "Rutas profesionales", tracksBody: "Secuencias organizadas de labs ya existentes, ordenadas para construir una competencia profesional concreta.", noTracks: "No hay ninguna ruta profesional disponible por ahora." },
 } as const;
 
 type Filter = "all" | Difficulty | "completed" | "incomplete";
@@ -136,6 +149,12 @@ export default function InteractiveLabsLanding({
   initialCertificationSlug?: string | null;
 }) {
   const t = copy[lang];
+  // Fase B1: 'skills' e' il comportamento di sempre (default, invariato).
+  // 'tracks' e' mutuamente esclusiva con selectedId/certFilter -- vedi
+  // selectViewMode/selectCategory/selectCertFilter sotto, unici punti che la
+  // toccano insieme a quegli stati.
+  const [viewMode, setViewMode] = useState<ViewMode>("skills");
+  const [tracks, setTracks] = useState<JobTrackListItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -164,6 +183,11 @@ export default function InteractiveLabsLanding({
   // "Premium" qui e' che questa vista riusava l'overlay "all", mai perche' un
   // anonimo non potesse vedere un lab FREE come tale.
   const [certAccessById, setCertAccessById] = useState<Map<number, { locked: boolean; accessReason: string }>>(new Map());
+  // Set dei lab_id completati dall'utente (GET /labs/completed/me, Fase A). Popola
+  // SOLO dbLabs (vista "All Labs"/categorie): la vista certFilterLabs non viene
+  // toccata in questo step. Anonimo: isLoggedIn() evita del tutto la chiamata,
+  // niente 401 in console, comportamento identico a prima di questo cambio.
+  const [completedById, setCompletedById] = useState<Set<number>>(new Set());
   const base = lang === "en" ? "/interactive-labs" : `/${lang}/interactive-labs`;
 
   // Se questa chiamata fallisce, i lab restano visibili e cliccabili senza
@@ -189,6 +213,47 @@ export default function InteractiveLabsLanding({
     return () => { active = false; };
   }, [lang, dbLabsProp]);
 
+  // Fase A: lista dei lab completati dall'utente (GET /labs/completed/me, auth
+  // richiesta). isLoggedIn() salta del tutto la chiamata per l'anonimo: nessun
+  // fetch, nessun 401, nessuna riga in console -- comportamento identico a prima
+  // di questo cambio. Stesso fail-soft delle altre due useEffect: un errore
+  // lascia semplicemente ogni lab senza badge "completato", mai un crash.
+  useEffect(() => {
+    if (!isLoggedIn()) return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/labs/completed/me`);
+        if (!active || !res.ok) return;
+        const json = await res.json();
+        const items: LabCompletedApiItem[] = Array.isArray(json.items) ? json.items : [];
+        setCompletedById(new Set(items.map((item) => item.labId)));
+      } catch {
+        // silenzioso: fail-soft, vedi commento sopra
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
+  // Fase B1: catalogo Job Tracks (GET /job-tracks, pubblico -- stesso trattamento
+  // di GET /labs/certifications). completedLabs viene gia' risolto lato server
+  // per l'utente corrente quando c'e' un token; per l'anonimo l'API stessa
+  // restituisce sempre 0, mai una chiamata separata qui.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await apiFetch(`/job-tracks?lang=${lang}`);
+        if (!active || !res.ok) return;
+        const json = await res.json();
+        setTracks(Array.isArray(json.items) ? json.items : []);
+      } catch {
+        // silenzioso: fail-soft, vedi commento sopra
+      }
+    })();
+    return () => { active = false; };
+  }, [lang]);
+
   // Stessa logica fail-soft di sopra, ma per il contesto di UNA certificazione
   // specifica: attiva solo quando certFilter e' effettivamente selezionato.
   useEffect(() => {
@@ -208,7 +273,8 @@ export default function InteractiveLabsLanding({
     return () => { active = false; };
   }, [certFilter, lang]);
 
-  // Merge metadata (prop, SSR) + overlay di accesso (stato, client-side).
+  // Merge metadata (prop, SSR) + overlay di accesso (stato, client-side) + overlay
+  // di completamento (Fase A, stesso trattamento "assente finche' non risolto").
   const dbLabs = useMemo<Lab[]>(() => dbLabsProp.map((item) => {
     const access = accessById.get(item.id);
     return {
@@ -217,12 +283,13 @@ export default function InteractiveLabsLanding({
       description: item.description,
       difficulty: DB_DIFFICULTY_MAP[item.difficulty] ?? "intermediate",
       duration: item.estimatedMinutes,
+      completed: completedById.has(item.id),
       locked: access?.locked,
       accessReason: access?.accessReason,
       isDbBacked: true,
       certificationSlug: item.certificationSlug ?? "",
     };
-  }), [dbLabsProp, accessById]);
+  }), [dbLabsProp, accessById, completedById]);
 
   // Deduplica per slug: i 6 slug ccst-networking-* NON esistono piu' come entry
   // statiche in `categories` (rimossi apposta) -- il DB e' l'unica fonte per loro,
@@ -286,13 +353,18 @@ export default function InteractiveLabsLanding({
           description: item.description,
           difficulty: DB_DIFFICULTY_MAP[item.difficulty] ?? "intermediate",
           duration: item.estimatedMinutes,
+          // Stesso set completedById usato per dbLabs: la Fase A non ha una nozione
+          // di certificazione (interactive_lab_attempts.lab_id basta), quindi il
+          // flag e' identico in ogni vista. Access-resolution invariata: resta
+          // certAccessById, mai accessById.
+          completed: completedById.has(item.id),
           locked: access?.locked,
           accessReason: access?.accessReason,
           isDbBacked: true,
           certificationSlug: item.certificationSlug ?? "",
         };
       });
-  }, [dbLabsProp, certAccessById, certFilter]);
+  }, [dbLabsProp, certAccessById, certFilter, completedById]);
   const certFilterLabel = certFilter === "all" ? "" : (dbCertifications.find((c) => c.slug === certFilter)?.label ?? certFilter);
 
   const filteredLabs = useMemo(() => {
@@ -308,6 +380,7 @@ export default function InteractiveLabsLanding({
   }, [filter, lang, query, selected]);
 
   const selectCategory = (categoryId: string) => {
+    setViewMode("skills");
     setSelectedId(categoryId);
     setFilter("all");
     setQuery("");
@@ -315,8 +388,22 @@ export default function InteractiveLabsLanding({
   };
 
   const selectCertFilter = (slug: string) => {
+    setViewMode("skills");
     setCertFilter(slug);
     setSelectedId(null);
+  };
+
+  // Mutua esclusivita' richiesta con selectedId/certFilter: passare a 'tracks'
+  // li resetta entrambi (selectCategory/selectCertFilter sopra fanno il percorso
+  // inverso, tornando sempre a 'skills'). 'skills' stesso non ha bisogno di reset
+  // qui: e' lo stato di partenza e ci si torna sempre tramite una delle due
+  // funzioni sopra, mai direttamente da questo handler.
+  const selectViewMode = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === "tracks") {
+      setSelectedId(null);
+      setCertFilter("all");
+    }
   };
 
   return (
@@ -340,33 +427,49 @@ export default function InteractiveLabsLanding({
 
       <div id="labs-content" className="scroll-mt-4 px-4 py-10 sm:py-12">
         <div className="mx-auto max-w-6xl">
-          {/* La barra ha senso solo con una scelta reale: con 0 o 1 certificazione
-              con contenuto, "All Labs" e il filtro mostrerebbero la stessa identica
-              lista, quindi la barra resta nascosta (vincolo dello Step 4, non
-              rinegoziato). La logica di fetch/merge/filtro sotto e' invariata: cambia
-              solo questa condizione di rendering. */}
-          {dbCertifications.length >= 2 && (
-            <div className="mb-7 flex flex-wrap gap-2" role="group" aria-label={t.certificationFilterLabel}>
-              <button onClick={() => selectCertFilter("all")} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${certFilter === "all" ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{t.allLabsPill}</button>
-              {dbCertifications.map(c => (
-                <button key={c.slug} onClick={() => selectCertFilter(c.slug)} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${certFilter === c.slug ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{c.label} · {c.count}</button>
-              ))}
-            </div>
-          )}
+          {/* Toggle Fase B1, sempre visibile: 'skills' e' il default e il
+              comportamento sotto (barra certificazione, categorie, filtri) resta
+              identico a prima quando e' selezionato. Mutua esclusivita' con
+              selectedId/certFilter gestita in selectViewMode/selectCategory/
+              selectCertFilter, mai qui nel render. */}
+          <div className="mb-7 flex flex-wrap gap-2" role="group" aria-label="View mode">
+            <button onClick={() => selectViewMode("skills")} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${viewMode === "skills" ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{t.browseSkills}</button>
+            <button onClick={() => selectViewMode("tracks")} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${viewMode === "tracks" ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{t.browseTracks}</button>
+          </div>
 
-          {certFilter !== "all" ? (
-            <CertificationLabsView label={certFilterLabel} lang={lang} base={base} labs={certFilterLabs} />
-          ) : !selected ? (
+          {viewMode === "tracks" ? (
+            <TrackListView tracks={tracks} lang={lang} />
+          ) : (
             <>
-              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-                <div><p className="text-sm font-bold uppercase tracking-widest text-indigo-700">{t.categories}</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">{t.choose}</h2><p className="mt-2 max-w-2xl text-slate-600">{t.chooseBody}</p></div>
-                <span className="shrink-0 text-sm font-semibold text-slate-500">{mergedCategories.length} {t.categories.toLocaleLowerCase(lang)}</span>
-              </div>
-              <section className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label={t.categories}>
-                {mergedCategories.map(category => <CategoryCard key={category.id} category={category} lang={lang} onOpen={() => selectCategory(category.id)} />)}
-              </section>
+              {/* La barra ha senso solo con una scelta reale: con 0 o 1 certificazione
+                  con contenuto, "All Labs" e il filtro mostrerebbero la stessa identica
+                  lista, quindi la barra resta nascosta (vincolo dello Step 4, non
+                  rinegoziato). La logica di fetch/merge/filtro sotto e' invariata: cambia
+                  solo questa condizione di rendering. */}
+              {dbCertifications.length >= 2 && (
+                <div className="mb-7 flex flex-wrap gap-2" role="group" aria-label={t.certificationFilterLabel}>
+                  <button onClick={() => selectCertFilter("all")} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${certFilter === "all" ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{t.allLabsPill}</button>
+                  {dbCertifications.map(c => (
+                    <button key={c.slug} onClick={() => selectCertFilter(c.slug)} className={`min-h-10 shrink-0 rounded-xl px-3.5 text-sm font-bold transition ${certFilter === c.slug ? "bg-indigo-600 text-white shadow-sm" : "border border-slate-200 bg-white text-slate-600 hover:border-indigo-300"}`}>{c.label} · {c.count}</button>
+                  ))}
+                </div>
+              )}
+
+              {certFilter !== "all" ? (
+                <CertificationLabsView label={certFilterLabel} lang={lang} base={base} labs={certFilterLabs} />
+              ) : !selected ? (
+                <>
+                  <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+                    <div><p className="text-sm font-bold uppercase tracking-widest text-indigo-700">{t.categories}</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">{t.choose}</h2><p className="mt-2 max-w-2xl text-slate-600">{t.chooseBody}</p></div>
+                    <span className="shrink-0 text-sm font-semibold text-slate-500">{mergedCategories.length} {t.categories.toLocaleLowerCase(lang)}</span>
+                  </div>
+                  <section className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label={t.categories}>
+                    {mergedCategories.map(category => <CategoryCard key={category.id} category={category} lang={lang} onOpen={() => selectCategory(category.id)} />)}
+                  </section>
+                </>
+              ) : <CategoryView category={selected} lang={lang} base={base} filter={filter} query={query} labs={filteredLabs} onBack={() => setSelectedId(null)} onFilter={setFilter} onQuery={setQuery} />}
             </>
-          ) : <CategoryView category={selected} lang={lang} base={base} filter={filter} query={query} labs={filteredLabs} onBack={() => setSelectedId(null)} onFilter={setFilter} onQuery={setQuery} />}
+          )}
         </div>
       </div>
     </main>
@@ -376,6 +479,13 @@ export default function InteractiveLabsLanding({
 function CategoryCard({ category, lang, onOpen }: { category: Category; lang: Locale; onOpen: () => void }) {
   const t = copy[lang];
   const Icon = category.icon;
+  // Il completamento (Fase A) esiste solo per i lab DB-backed: una categoria
+  // fatta solo di legacy non ha nessun dato reale da mostrare, quindi niente
+  // progress bar/badge invece di un fisso "0 / N" fuorviante. Derivato a runtime
+  // da isDbBacked (mai da un elenco di nomi categoria hardcoded), cosi' regge
+  // automaticamente il giorno in cui una di queste categorie ricevesse un primo
+  // lab DB-backed.
+  const hasTrackableProgress = category.labs.some(lab => lab.isDbBacked);
   const completed = category.labs.filter(lab => lab.completed).length;
   const progress = category.labs.length ? Math.round(completed / category.labs.length * 100) : 0;
   return (
@@ -384,7 +494,7 @@ function CategoryCard({ category, lang, onOpen }: { category: Category; lang: Lo
       <h3 className="mt-4 text-lg font-extrabold">{category.name}</h3>
       <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600">{category.description[lang]}</p>
       <div className="mt-auto w-full pt-4">
-        {!category.comingSoon && <><div className="mb-1.5 flex justify-between text-[11px] font-semibold text-slate-500"><span>✅ {completed} / {category.labs.length}</span><span>🏆 {t.badges}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div></>}
+        {!category.comingSoon && hasTrackableProgress && <><div className="mb-1.5 flex justify-between text-[11px] font-semibold text-slate-500"><span>✅ {completed} / {category.labs.length}</span><span>🏆 {t.badges}</span></div><div className="h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div></>}
         <span className="mt-3 flex items-center justify-between text-sm font-bold text-indigo-700">{category.comingSoon ? t.soon : t.open}<ChevronRight size={17} className="transition-transform group-hover:translate-x-1" /></span>
       </div>
     </button>
@@ -394,6 +504,8 @@ function CategoryCard({ category, lang, onOpen }: { category: Category; lang: Lo
 function CategoryView({ category, lang, base, filter, query, labs, onBack, onFilter, onQuery }: { category: Category; lang: Locale; base: string; filter: Filter; query: string; labs: Lab[]; onBack: () => void; onFilter: (filter: Filter) => void; onQuery: (query: string) => void }) {
   const t = copy[lang];
   const Icon = category.icon;
+  // Stessa derivazione runtime di CategoryCard sopra: niente elenco di nomi.
+  const hasTrackableProgress = category.labs.some(lab => lab.isDbBacked);
   const completed = category.labs.filter(lab => lab.completed).length;
   const progress = category.labs.length ? Math.round(completed / category.labs.length * 100) : 0;
   const filters: { id: Filter; label: string }[] = [{ id: "all", label: t.all }, { id: "beginner", label: t.beginner }, { id: "intermediate", label: t.intermediate }, { id: "advanced", label: t.advanced }, { id: "completed", label: t.done }, { id: "incomplete", label: t.todo }];
@@ -403,7 +515,7 @@ function CategoryView({ category, lang, base, filter, query, labs, onBack, onFil
     <div className={`mt-3 overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br ${category.color} p-5 shadow-sm sm:p-7`}>
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-4"><span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${category.iconColor}`}><Icon size={28} /></span><div><p className="text-xs font-bold uppercase tracking-widest text-indigo-700">Interactive Labs</p><h2 className="mt-1 text-3xl font-black">{category.name}</h2><p className="mt-1 text-slate-600">{category.description[lang]}</p></div></div>
-        <div className="w-full rounded-2xl border border-white bg-white/75 p-4 sm:max-w-xs"><div className="flex items-center justify-between"><span className="text-sm font-bold text-slate-600">{t.progress}</span><strong>{completed} / {category.labs.length}</strong></div><div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all" style={{ width: `${progress}%` }} /></div><div className="mt-3 flex items-center justify-between text-xs"><span className="font-bold text-indigo-700"><Trophy size={14} className="mr-1 inline" />{badgeLevel}</span><span className="text-slate-500">Bronze · Silver · Gold · Master</span></div></div>
+        {hasTrackableProgress && <div className="w-full rounded-2xl border border-white bg-white/75 p-4 sm:max-w-xs"><div className="flex items-center justify-between"><span className="text-sm font-bold text-slate-600">{t.progress}</span><strong>{completed} / {category.labs.length}</strong></div><div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200"><div className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-violet-500 transition-all" style={{ width: `${progress}%` }} /></div><div className="mt-3 flex items-center justify-between text-xs"><span className="font-bold text-indigo-700"><Trophy size={14} className="mr-1 inline" />{badgeLevel}</span><span className="text-slate-500">Bronze · Silver · Gold · Master</span></div></div>}
       </div>
     </div>
 
@@ -446,4 +558,52 @@ function LabRow({ lab, lang, base }: { lab: Lab; lang: Locale; base: string }) {
         stringa piu' lunga tra le 4 lingue ("Ver vista previa"). */}
     <Link href={`${base}/${lab.slug}`} className="inline-flex min-h-10 min-w-[10rem] items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-bold text-white transition hover:bg-indigo-700 sm:shrink-0">{lab.locked ? <LockKeyhole size={15} /> : <Play size={15} fill="currentColor" />}{lab.locked ? t.viewPreview : t.start}<ArrowRight size={15} /></Link>
   </article>;
+}
+
+/** Vista lista dei Job Track (Fase B1, CTA reale dalla Fase B2). */
+function TrackListView({ tracks, lang }: { tracks: JobTrackListItem[]; lang: Locale }) {
+  const t = copy[lang];
+  return (
+    <section>
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-widest text-indigo-700">{t.tracksHeading}</p>
+          <h2 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">{t.tracksHeading}</h2>
+          <p className="mt-2 max-w-2xl text-slate-600">{t.tracksBody}</p>
+        </div>
+        <span className="shrink-0 text-sm font-semibold text-slate-500">{tracks.length} {t.tracksHeading.toLocaleLowerCase(lang)}</span>
+      </div>
+      {tracks.length === 0
+        ? <p className="mt-7 rounded-2xl border border-slate-200 bg-white p-8 text-center text-slate-500">{t.noTracks}</p>
+        : <section className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label={t.tracksHeading}>
+            {tracks.map(track => <TrackCard key={track.slug} track={track} lang={lang} />)}
+          </section>}
+    </section>
+  );
+}
+
+function TrackCard({ track, lang }: { track: JobTrackListItem; lang: Locale }) {
+  const t = copy[lang];
+  const progress = track.labCount ? Math.round((track.completedLabs / track.labCount) * 100) : 0;
+  const levelLabel = (value: JobTrackListItem["minDifficulty"]) => value ? { base: t.beginner, intermediate: t.intermediate, final: t.advanced }[value] : null;
+  const minLabel = levelLabel(track.minDifficulty);
+  const maxLabel = levelLabel(track.maxDifficulty);
+  return (
+    <Link href={interactiveLabsJobTrackPath(lang, track.slug)} className="group flex min-h-56 flex-col rounded-2xl border border-slate-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-5 text-left shadow-sm transition duration-200 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+      <div className="flex w-full items-start justify-between gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-indigo-100 text-indigo-700"><Milestone size={22} aria-hidden /></span>
+        <span className="rounded-full bg-white/80 px-2.5 py-1 text-[11px] font-bold text-indigo-700">⭐ {track.labCount} {t.labs}</span>
+      </div>
+      <h3 className="mt-4 text-lg font-extrabold">{track.title}</h3>
+      <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-600">{track.description}</p>
+      {minLabel && maxLabel && (
+        <p className="mt-2 text-xs font-semibold text-slate-500">{t.level}: {minLabel === maxLabel ? minLabel : `${minLabel} → ${maxLabel}`}</p>
+      )}
+      <div className="mt-auto w-full pt-4">
+        <div className="mb-1.5 flex justify-between text-[11px] font-semibold text-slate-500"><span>✅ {track.completedLabs} / {track.labCount}</span><span>{t.progress}</span></div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-indigo-600" style={{ width: `${progress}%` }} /></div>
+        <span className="mt-3 flex items-center justify-between text-sm font-bold text-indigo-700">{t.open}<ChevronRight size={17} className="transition-transform group-hover:translate-x-1" /></span>
+      </div>
+    </Link>
+  );
 }
