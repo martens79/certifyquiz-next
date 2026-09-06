@@ -8,24 +8,24 @@ const F5Certification = {
   officialUrl: "https://www.f5.com/learn/certification",
 
   title: {
-    it: "F5 Certified Technology Specialist (F5-CTS)",
-    en: "F5 Certified Technology Specialist (F5-CTS)",
-    fr: "Spécialiste certifié F5 (F5-CTS)",
-    es: "Especialista certificado F5 (F5-CTS)",
+    it: "F5 Certified Administrator, BIG-IP (F5-CA)",
+    en: "F5 Certified Administrator, BIG-IP (F5-CA)",
+    fr: "Administrateur certifié F5, BIG-IP (F5-CA)",
+    es: "Administrador certificado F5, BIG-IP (F5-CA)",
   },
 
   level: {
-    it: "Avanzato",
-    en: "Advanced",
-    fr: "Avancé",
-    es: "Avanzado",
+    it: "Intermedio",
+    en: "Intermediate",
+    fr: "Intermédiaire",
+    es: "Intermedio",
   },
 
   description: {
-    it: "Competenze avanzate su bilanciamento del carico, sicurezza e ottimizzazione con F5 BIG-IP.",
-    en: "Advanced skills in load balancing, security, and optimization with F5 BIG-IP.",
-    fr: "Compétences avancées en équilibrage de charge, sécurité et optimisation avec F5 BIG-IP.",
-    es: "Habilidades avanzadas en balanceo de carga, seguridad y optimización con F5 BIG-IP.",
+    it: "La certificazione F5 Certified Administrator, BIG-IP (F5-CA) convalida le competenze di base per la gestione operativa quotidiana di BIG-IP: installazione, configurazione, gestione del traffico, sicurezza e troubleshooting.",
+    en: "The F5 Certified Administrator, BIG-IP (F5-CA) certification validates the foundational skills for day-to-day BIG-IP operations: installation, configuration, traffic management, security, and troubleshooting.",
+    fr: "La certification F5 Certified Administrator, BIG-IP (F5-CA) valide les compétences de base pour la gestion opérationnelle quotidienne de BIG-IP : installation, configuration, gestion du trafic, sécurité et dépannage.",
+    es: "La certificación F5 Certified Administrator, BIG-IP (F5-CA) valida las habilidades básicas para la gestión operativa diaria de BIG-IP: instalación, configuración, gestión del tráfico, seguridad y solución de problemas.",
   },
 
   topics: [
@@ -175,51 +175,47 @@ const F5Certification = {
     // 🔗 SOLO pagine ufficiali degli ESAMI (niente guide/study non ufficiali)
     examReference: {
       it: [
-        { text: "301a – BIG-IP LTM Specialist: Architect, Setup, and Deploy", url: "https://education.f5.com/certification/big-ip-ltm-specialist-architect-setup-and-deploy-301a" },
-        { text: "301b – BIG-IP LTM Specialist: Maintain and Troubleshoot", url: "https://education.f5.com/certification/big-ip-ltm-specialist-maintain-and-troubleshoot-301b" },
-        { text: "302 – BIG-IP DNS Specialist", url: "https://support.education.f5.com/hc/en-us/articles/4404003418523-BIG-IP-DNS-Specialist-302" },
-        { text: "303 – BIG-IP ASM Specialist (Advanced WAF)", url: "https://support.education.f5.com/hc/en-us/articles/4404020083499-BIG-IP-ASM-Specialist-303" },
-        { text: "304 – BIG-IP APM Specialist", url: "https://support.education.f5.com/hc/en-us/articles/4404024393115-BIG-IP-APM-Specialist-304" },
-        { text: "401 – Security Solutions Expert (opzionale)", url: "https://education.f5.com/certification/security-solutions-expert-401" },
+        { text: "F5CAB1 – BIG-IP Administration: installazione, configurazione iniziale e aggiornamento", url: "https://support.education.f5.com/hc/en-us/articles/35052524386075-BIG-IP-Administration-Install-Initial-Configuration-and-Upgrade-F5CAB1-exam" },
+        { text: "F5CAB2 – BIG-IP Administration: concetti del data plane", url: "https://support.education.f5.com/hc/en-us/articles/35052643024027-BIG-IP-Administration-Data-Plane-Concepts-F5CAB2-exam" },
+        { text: "F5CAB3 – BIG-IP Administration: configurazione del data plane", url: "https://support.education.f5.com/hc/en-us/articles/35053786283675-BIG-IP-Administration-Data-Plane-Configuration-F5CAB3-exam" },
+        { text: "F5CAB4 – BIG-IP Administration: amministrazione del control plane", url: "https://support.education.f5.com/hc/en-us/articles/35053918642843-BIG-IP-Administration-Control-Plane-Administration-F5CAB4-exam" },
+        { text: "F5CAB5 – BIG-IP Administration: supporto e troubleshooting", url: "https://support.education.f5.com/hc/en-us/articles/35053988598939-BIG-IP-Administration-Support-and-Troubleshooting-F5CAB5-exam" },
       ],
       en: [
-        { text: "301a – BIG-IP LTM Specialist: Architect, Setup, and Deploy", url: "https://education.f5.com/certification/big-ip-ltm-specialist-architect-setup-and-deploy-301a" },
-        { text: "301b – BIG-IP LTM Specialist: Maintain and Troubleshoot", url: "https://education.f5.com/certification/big-ip-ltm-specialist-maintain-and-troubleshoot-301b" },
-        { text: "302 – BIG-IP DNS Specialist", url: "https://support.education.f5.com/hc/en-us/articles/4404003418523-BIG-IP-DNS-Specialist-302" },
-        { text: "303 – BIG-IP ASM Specialist (Advanced WAF)", url: "https://support.education.f5.com/hc/en-us/articles/4404020083499-BIG-IP-ASM-Specialist-303" },
-        { text: "304 – BIG-IP APM Specialist", url: "https://support.education.f5.com/hc/en-us/articles/4404024393115-BIG-IP-APM-Specialist-304" },
-        { text: "401 – Security Solutions Expert (optional)", url: "https://education.f5.com/certification/security-solutions-expert-401" },
+        { text: "F5CAB1 – BIG-IP Administration: Install, Initial Configuration, and Upgrade", url: "https://support.education.f5.com/hc/en-us/articles/35052524386075-BIG-IP-Administration-Install-Initial-Configuration-and-Upgrade-F5CAB1-exam" },
+        { text: "F5CAB2 – BIG-IP Administration: Data Plane Concepts", url: "https://support.education.f5.com/hc/en-us/articles/35052643024027-BIG-IP-Administration-Data-Plane-Concepts-F5CAB2-exam" },
+        { text: "F5CAB3 – BIG-IP Administration: Data Plane Configuration", url: "https://support.education.f5.com/hc/en-us/articles/35053786283675-BIG-IP-Administration-Data-Plane-Configuration-F5CAB3-exam" },
+        { text: "F5CAB4 – BIG-IP Administration: Control Plane Administration", url: "https://support.education.f5.com/hc/en-us/articles/35053918642843-BIG-IP-Administration-Control-Plane-Administration-F5CAB4-exam" },
+        { text: "F5CAB5 – BIG-IP Administration: Support and Troubleshooting", url: "https://support.education.f5.com/hc/en-us/articles/35053988598939-BIG-IP-Administration-Support-and-Troubleshooting-F5CAB5-exam" },
       ],
       fr: [
-        { text: "301a – BIG-IP LTM : Architecture, mise en place et déploiement", url: "https://education.f5.com/certification/big-ip-ltm-specialist-architect-setup-and-deploy-301a" },
-        { text: "301b – BIG-IP LTM : Maintenance et dépannage", url: "https://education.f5.com/certification/big-ip-ltm-specialist-maintain-and-troubleshoot-301b" },
-        { text: "302 – Spécialiste BIG-IP DNS", url: "https://support.education.f5.com/hc/en-us/articles/4404003418523-BIG-IP-DNS-Specialist-302" },
-        { text: "303 – Spécialiste BIG-IP ASM (WAF avancé)", url: "https://support.education.f5.com/hc/en-us/articles/4404020083499-BIG-IP-ASM-Specialist-303" },
-        { text: "304 – Spécialiste BIG-IP APM", url: "https://support.education.f5.com/hc/en-us/articles/4404024393115-BIG-IP-APM-Specialist-304" },
-        { text: "401 – Security Solutions Expert (optionnel)", url: "https://education.f5.com/certification/security-solutions-expert-401" },
+        { text: "F5CAB1 – BIG-IP Administration : installation, configuration initiale et mise à jour", url: "https://support.education.f5.com/hc/en-us/articles/35052524386075-BIG-IP-Administration-Install-Initial-Configuration-and-Upgrade-F5CAB1-exam" },
+        { text: "F5CAB2 – BIG-IP Administration : concepts du plan de données", url: "https://support.education.f5.com/hc/en-us/articles/35052643024027-BIG-IP-Administration-Data-Plane-Concepts-F5CAB2-exam" },
+        { text: "F5CAB3 – BIG-IP Administration : configuration du plan de données", url: "https://support.education.f5.com/hc/en-us/articles/35053786283675-BIG-IP-Administration-Data-Plane-Configuration-F5CAB3-exam" },
+        { text: "F5CAB4 – BIG-IP Administration : administration du plan de contrôle", url: "https://support.education.f5.com/hc/en-us/articles/35053918642843-BIG-IP-Administration-Control-Plane-Administration-F5CAB4-exam" },
+        { text: "F5CAB5 – BIG-IP Administration : support et dépannage", url: "https://support.education.f5.com/hc/en-us/articles/35053988598939-BIG-IP-Administration-Support-and-Troubleshooting-F5CAB5-exam" },
       ],
       es: [
-        { text: "301a – BIG-IP LTM: Arquitectura, configuración y despliegue", url: "https://education.f5.com/certification/big-ip-ltm-specialist-architect-setup-and-deploy-301a" },
-        { text: "301b – BIG-IP LTM: Mantenimiento y troubleshooting", url: "https://education.f5.com/certification/big-ip-ltm-specialist-maintain-and-troubleshoot-301b" },
-        { text: "302 – Especialista BIG-IP DNS", url: "https://support.education.f5.com/hc/en-us/articles/4404003418523-BIG-IP-DNS-Specialist-302" },
-        { text: "303 – Especialista BIG-IP ASM (WAF avanzado)", url: "https://support.education.f5.com/hc/en-us/articles/4404020083499-BIG-IP-ASM-Specialist-303" },
-        { text: "304 – Especialista BIG-IP APM", url: "https://support.education.f5.com/hc/en-us/articles/4404024393115-BIG-IP-APM-Specialist-304" },
-        { text: "401 – Security Solutions Expert (opcional)", url: "https://education.f5.com/certification/security-solutions-expert-401" },
+        { text: "F5CAB1 – BIG-IP Administration: instalación, configuración inicial y actualización", url: "https://support.education.f5.com/hc/en-us/articles/35052524386075-BIG-IP-Administration-Install-Initial-Configuration-and-Upgrade-F5CAB1-exam" },
+        { text: "F5CAB2 – BIG-IP Administration: conceptos del plano de datos", url: "https://support.education.f5.com/hc/en-us/articles/35052643024027-BIG-IP-Administration-Data-Plane-Concepts-F5CAB2-exam" },
+        { text: "F5CAB3 – BIG-IP Administration: configuración del plano de datos", url: "https://support.education.f5.com/hc/en-us/articles/35053786283675-BIG-IP-Administration-Data-Plane-Configuration-F5CAB3-exam" },
+        { text: "F5CAB4 – BIG-IP Administration: administración del plano de control", url: "https://support.education.f5.com/hc/en-us/articles/35053918642843-BIG-IP-Administration-Control-Plane-Administration-F5CAB4-exam" },
+        { text: "F5CAB5 – BIG-IP Administration: soporte y resolución de problemas", url: "https://support.education.f5.com/hc/en-us/articles/35053988598939-BIG-IP-Administration-Support-and-Troubleshooting-F5CAB5-exam" },
       ],
     },
 
     learn: {
       it: [
-        "La certificazione F5-CTS ti consente di dimostrare competenze pratiche su BIG-IP, sicurezza applicativa e bilanciamento avanzato in ambienti ad alta disponibilità.",
+        "La certificazione F5-CA valida le competenze pratiche per l'amministrazione quotidiana di BIG-IP: installazione, configurazione, gestione del traffico e supporto, in ambienti aziendali reali.",
       ],
       en: [
-        "F5-CTS validates practical expertise on BIG-IP, application security, and advanced load balancing in high-availability environments.",
+        "F5-CA validates practical skills for day-to-day BIG-IP administration: installation, configuration, traffic management, and support in real enterprise environments.",
       ],
       fr: [
-        "F5-CTS valide des compétences pratiques sur BIG-IP, la sécurité applicative et l’équilibrage avancé en environnements à haute disponibilité.",
+        "F5-CA valide des compétences pratiques pour l'administration quotidienne de BIG-IP : installation, configuration, gestion du trafic et support, dans des environnements d'entreprise réels.",
       ],
       es: [
-        "F5-CTS valida experiencia práctica en BIG-IP, seguridad de aplicaciones y balanceo avanzado en entornos de alta disponibilidad.",
+        "F5-CA valida habilidades prácticas para la administración diaria de BIG-IP: instalación, configuración, gestión del tráfico y soporte, en entornos empresariales reales.",
       ],
     },
 
@@ -240,20 +236,20 @@ const F5Certification = {
 
     faq: {
       it: [
-        { q: "Chi può sostenere la certificazione F5-CTS?", a: "Professionisti del networking e della sicurezza con esperienza su BIG-IP." },
-        { q: "Come si svolge l’esame?", a: "Gli esami sono erogati ufficialmente da F5 tramite Pearson VUE." },
+        { q: "Chi può sostenere la certificazione F5 Certified Administrator, BIG-IP?", a: "Chiunque lavori con BIG-IP in ruoli di amministrazione, networking o sicurezza: non sono richiesti prerequisiti formali, ma è utile una conoscenza pratica di base della piattaforma." },
+        { q: "Come si svolge l'esame?", a: "Il percorso richiede il superamento di 5 esami (F5CAB1-F5CAB5), erogati ufficialmente da F5 tramite Pearson VUE o il proctor online Certiverse." },
       ],
       en: [
-        { q: "Who can take F5-CTS?", a: "Networking/security professionals with BIG-IP experience." },
-        { q: "How are exams delivered?", a: "Officially via F5 and Pearson VUE." },
+        { q: "Who can take the F5 Certified Administrator, BIG-IP certification?", a: "Anyone working with BIG-IP in administration, networking, or security roles: there are no formal prerequisites, though basic hands-on familiarity with the platform helps." },
+        { q: "How are the exams delivered?", a: "The path requires passing 5 exams (F5CAB1-F5CAB5), officially delivered by F5 via Pearson VUE or the Certiverse online proctor." },
       ],
       fr: [
-        { q: "Qui peut passer F5-CTS ?", a: "Professionnels réseau/sécurité avec expérience BIG-IP." },
-        { q: "Comment passer les examens ?", a: "Officiellement via F5 et Pearson VUE." },
+        { q: "Qui peut passer la certification F5 Certified Administrator, BIG-IP ?", a: "Toute personne travaillant avec BIG-IP dans des rôles d'administration, de réseau ou de sécurité : aucun prérequis formel n'est exigé, mais une familiarité pratique de base avec la plateforme est utile." },
+        { q: "Comment se déroulent les examens ?", a: "Le parcours nécessite de réussir 5 examens (F5CAB1-F5CAB5), délivrés officiellement par F5 via Pearson VUE ou le proctor en ligne Certiverse." },
       ],
       es: [
-        { q: "¿Quién puede obtener F5-CTS?", a: "Profesionales de redes/seguridad con experiencia en BIG-IP." },
-        { q: "¿Cómo se realiza el examen?", a: "Oficialmente a través de F5 y Pearson VUE." },
+        { q: "¿Quién puede obtener la certificación F5 Certified Administrator, BIG-IP?", a: "Cualquier persona que trabaje con BIG-IP en roles de administración, redes o seguridad: no se exigen requisitos formales, aunque ayuda tener familiaridad práctica básica con la plataforma." },
+        { q: "¿Cómo se realizan los exámenes?", a: "El itinerario requiere superar 5 exámenes (F5CAB1-F5CAB5), impartidos oficialmente por F5 a través de Pearson VUE o el proctor en línea Certiverse." },
       ],
     },
   },
