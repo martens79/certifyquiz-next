@@ -318,6 +318,13 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
       fr: "Foundations by CertifyQuiz",
       es: "Foundations by CertifyQuiz",
     },
+
+    "sistemi-operativi": {
+      it: "Sistemi Operativi",
+      en: "Operating Systems",
+      fr: "Systèmes d'exploitation",
+      es: "Sistemas Operativos",
+    },
   };
 
   const o = map[key] ?? map.default;
