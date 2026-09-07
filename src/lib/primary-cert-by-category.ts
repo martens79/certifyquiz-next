@@ -26,4 +26,6 @@ export const PRIMARY_CERT_SLUG_BY_CATEGORY: Record<CategoryKey, string> = {
   "business-applications": "sap-s4hana-financial-accounting",
 
   foundations: "foundations",
+
+  "sistemi-operativi": "az-802",
 };

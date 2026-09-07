@@ -97,6 +97,11 @@ const CATEGORY_UI: Record<
     border: "border-emerald-200",
     ring: "hover:ring-2 hover:ring-emerald-200/60",
   },
+  "sistemi-operativi": {
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    ring: "hover:ring-2 hover:ring-amber-200/60",
+  },
   foundations: {
     bg: "bg-indigo-50",
     border: "border-indigo-200",

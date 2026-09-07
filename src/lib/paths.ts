@@ -153,7 +153,8 @@ export type CategoryKey =
   | "ai"
   | "data-analytics"
   | "business-applications"
-  | "foundations";
+  | "foundations"
+  | "sistemi-operativi";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
@@ -170,6 +171,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     "data-analytics": "analisi-dei-dati",
     "business-applications": "business-applications",
     foundations: "fondamenti",
+    "sistemi-operativi": "sistemi-operativi",
   },
 
   en: {
@@ -186,6 +188,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     "data-analytics": "data-analytics",
     "business-applications": "business-applications",
     foundations: "foundations",
+    "sistemi-operativi": "operating-systems",
   },
 
   fr: {
@@ -202,6 +205,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   "data-analytics": "analyse-des-donnees",
   "business-applications": "business-applications",
     foundations: "foundations",
+    "sistemi-operativi": "systemes-exploitation",
   },
 
   es: {
@@ -218,6 +222,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   "data-analytics": "analisis-de-datos",
   "business-applications": "business-applications",
     foundations: "foundations",
+    "sistemi-operativi": "sistemas-operativos",
   },
 };
 
@@ -235,6 +240,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "analisi-dei-dati": "data-analytics",
     "business-applications": "business-applications",
     fondamenti: "foundations",
+    "sistemi-operativi": "sistemi-operativi",
   },
 
   en: {
@@ -250,6 +256,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "data-analytics": "data-analytics",
     "business-applications": "business-applications",
     foundations: "foundations",
+    "operating-systems": "sistemi-operativi",
   },
 
  fr: {
@@ -265,6 +272,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   "analyse-des-donnees": "data-analytics",
   "business-applications": "business-applications",
   foundations: "foundations",
+  "systemes-exploitation": "sistemi-operativi",
 },
 
 es: {
@@ -280,6 +288,7 @@ es: {
   "analisis-de-datos": "data-analytics",
   "business-applications": "business-applications",
   foundations: "foundations",
+  "sistemas-operativos": "sistemi-operativi",
 },
 };
 

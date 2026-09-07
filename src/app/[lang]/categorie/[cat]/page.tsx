@@ -227,6 +227,23 @@ const CATEGORY_META: Record<
     es: "Certificaciones gratuitas creadas por CertifyQuiz para construir bases sólidas de IT.",
   },
 },
+
+"sistemi-operativi": {
+  key: "sistemi-operativi",
+  emoji: "🖥️",
+  title: {
+    it: "Sistemi Operativi",
+    en: "Operating Systems",
+    fr: "Systèmes d'exploitation",
+    es: "Sistemas Operativos",
+  },
+  subtitle: {
+    it: "Certificazioni su amministrazione di sistemi operativi server: Windows Server e Linux, on-premises e in ambienti ibridi.",
+    en: "Certifications covering server operating system administration: Windows Server and Linux, on-premises and in hybrid environments.",
+    fr: "Certifications d'administration de systèmes d'exploitation serveur : Windows Server et Linux, sur site et en environnement hybride.",
+    es: "Certificaciones de administración de sistemas operativos de servidor: Windows Server y Linux, on-premises y en entornos híbridos.",
+  },
+},
 };
 
 

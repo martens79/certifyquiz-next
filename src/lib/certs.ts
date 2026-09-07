@@ -49,6 +49,7 @@ export type CategoryKey =
   | "data-analytics"
   | "business-applications"
   | "foundations"
+  | "sistemi-operativi"
   | "default";
 
 export type CatStyle = {
@@ -109,6 +110,10 @@ foundations: {
     "bg-indigo-50 border border-indigo-200 hover:ring-2 hover:ring-indigo-200/70",
   header: "bg-indigo-50 border border-indigo-200",
 },
+  "sistemi-operativi": {
+    wrapper: "bg-amber-50 border border-amber-200 hover:ring-2 hover:ring-amber-200/70",
+    header: "bg-amber-50 border border-amber-200",
+  },
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
     header: "bg-gray-50 border border-gray-200",
@@ -252,6 +257,8 @@ openai: "ai",
 // Virtualizzazione
 "virtualization-foundations": "virtualizzazione",
 
+// Sistemi Operativi
+"az-802": "sistemi-operativi",
 
 };
 

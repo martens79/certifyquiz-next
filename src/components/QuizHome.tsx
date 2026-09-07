@@ -300,6 +300,9 @@ foundations: [
   { name: "Project Management Foundations", link: certPath(lang, "project-management-foundations") },
   { name: "Data Analytics Foundations", link: certPath(lang, "data-analytics-foundations") },
 ],
+// Nessun link finché AZ-802 resta publicationStatus:"planned" (pagina 404) —
+// vedi project_az802_sistemi_operativi_buildout in memoria.
+"sistemi-operativi": [],
 };
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();
