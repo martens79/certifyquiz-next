@@ -389,6 +389,139 @@ if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit
 if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit/ripasso") {
   return redirect301(req, "/it/certificazioni/ceh/scansione-delle-reti/ripasso");
 }
+
+// Microsoft AI-901: 5 topic legacy soft-ritirati nel cutover 2026-09-07
+// (0 domande attive nel DB) -> redirect alla pagina certificazione.
+// NOTA: messi qui e non in next.config.ts redirects() perché quel blocco,
+// probabilmente per un limite di dimensione del routes-manifest di Vercel,
+// smette di essere applicato oltre un certo numero di regole (verificato
+// empiricamente il 2026-09-07: le regole aggiunte in coda, e alcune regole
+// preesistenti subito prima, non scattavano più dopo il deploy).
+if (pathname === "/it/certificazioni/microsoft-ai/concetti-di-ai") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/it/certificazioni/microsoft-ai/concetti-di-ai/ripasso") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/ai-concepts") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/ai-concepts/review") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/concepts-de-lia") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/concepts-de-lia/revision") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/conceptos-de-ia") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/conceptos-de-ia/repaso") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
+if (pathname === "/it/certificazioni/microsoft-ai/machine-learning-su-azure") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/it/certificazioni/microsoft-ai/machine-learning-su-azure/ripasso") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/machine-learning-on-azure") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/machine-learning-on-azure/review") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/apprentissage-automatique-sur-azure") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/apprentissage-automatique-sur-azure/revision") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/aprendizaje-automatico-en-azure") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/aprendizaje-automatico-en-azure/repaso") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
+if (pathname === "/it/certificazioni/microsoft-ai/visione-artificiale") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/it/certificazioni/microsoft-ai/visione-artificiale/ripasso") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/computer-vision") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/computer-vision/review") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/vision-par-ordinateur") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/vision-par-ordinateur/revision") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/vision-por-computadora") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/vision-por-computadora/repaso") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
+if (pathname === "/it/certificazioni/microsoft-ai/elaborazione-del-linguaggio-naturale") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/it/certificazioni/microsoft-ai/elaborazione-del-linguaggio-naturale/ripasso") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/natural-language-processing") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/natural-language-processing/review") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/traitement-du-langage-naturel") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/traitement-du-langage-naturel/revision") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/procesamiento-de-lenguaje-natural") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/procesamiento-de-lenguaje-natural/repaso") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
+if (pathname === "/it/certificazioni/microsoft-ai/ai-generativa") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/it/certificazioni/microsoft-ai/ai-generativa/ripasso") {
+  return redirect301(req, "/it/certificazioni/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/generative-ai") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/certifications/microsoft-ai/generative-ai/review") {
+  return redirect301(req, "/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/ia-generative") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/fr/certifications/microsoft-ai/ia-generative/revision") {
+  return redirect301(req, "/fr/certifications/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa/repaso") {
+  return redirect301(req, "/es/certificaciones/microsoft-ai");
+}
+
     // ---------------------------------------------------------------------
   // LEGACY CERTIFICATION SLUGS
   // Vecchi slug singoli ancora indicizzati da Google
