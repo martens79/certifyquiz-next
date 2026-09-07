@@ -59,75 +59,36 @@ const MicrosoftAIFundamentals = {
     es: "Prepárate para el examen Microsoft AI-901 (antes AI-900) con preguntas sobre conceptos de IA, machine learning, visión por computadora, NLP e IA generativa. Empieza gratis.",
   },
 
+  // ⚠️ Aggiornato 2026-09-07 col cutover al nuovo blueprint AI-901 (360 domande,
+  // 2 domini D1/D2). I 5 topic legacy (138-142) sono stati soft-ritirati nel DB
+  // e le loro pagine reindirizzate in next.config.ts — non vanno reintrodotti qui.
   topics: [
   {
     title: {
-      it: "Concetti di AI",
-      en: "AI Concepts",
-      fr: "Concepts de l’IA",
-      es: "Conceptos de IA",
+      it: "Concetti e capacità di AI",
+      en: "AI concepts and capabilities",
+      fr: "Concepts et capacités de l'IA",
+      es: "Conceptos y capacidades de la IA",
     },
     slug: {
-      it: "concetti-di-ai",
-      en: "ai-concepts",
-      fr: "concepts-de-lia",
-      es: "conceptos-de-ia",
+      it: "concetti-e-capacita-di-ai",
+      en: "ai-concepts-and-capabilities",
+      fr: "concepts-et-capacites-de-lia",
+      es: "conceptos-y-capacidades-de-la-ia",
     },
   },
   {
     title: {
-      it: "Machine learning su Azure",
-      en: "Machine Learning on Azure",
-      fr: "Apprentissage automatique sur Azure",
-      es: "Aprendizaje automático en Azure",
+      it: "Implementare soluzioni AI con Microsoft Foundry",
+      en: "Implement AI solutions by using Microsoft Foundry",
+      fr: "Implémenter des solutions IA avec Microsoft Foundry",
+      es: "Implementar soluciones de IA con Microsoft Foundry",
     },
     slug: {
-      it: "machine-learning-su-azure",
-      en: "machine-learning-on-azure",
-      fr: "apprentissage-automatique-sur-azure",
-      es: "aprendizaje-automatico-en-azure",
-    },
-  },
-  {
-    title: {
-      it: "Visione artificiale",
-      en: "Computer Vision",
-      fr: "Vision par ordinateur",
-      es: "Visión por computadora",
-    },
-    slug: {
-      it: "visione-artificiale",
-      en: "computer-vision",
-      fr: "vision-par-ordinateur",
-      es: "vision-por-computadora",
-    },
-  },
-  {
-    title: {
-      it: "Elaborazione del linguaggio naturale",
-      en: "Natural Language Processing",
-      fr: "Traitement du langage naturel",
-      es: "Procesamiento de lenguaje natural",
-    },
-    slug: {
-      it: "elaborazione-del-linguaggio-naturale",
-      en: "natural-language-processing",
-      fr: "traitement-du-langage-naturel",
-      es: "procesamiento-de-lenguaje-natural",
-    },
-  },
-  {
-    title: {
-      it: "AI generativa",
-      en: "Generative AI",
-      fr: "IA générative",
-      es: "IA generativa",
-    },
-    slug: {
-      it: "ai-generativa",
-      en: "generative-ai",
-      fr: "ia-generative",
-      es: "ia-generativa",
+      it: "implementare-soluzioni-ai-con-microsoft-foundry",
+      en: "implement-ai-solutions-by-using-microsoft-foundry",
+      fr: "implementer-des-solutions-ia-avec-microsoft-foundry",
+      es: "implementar-soluciones-de-ia-con-microsoft-foundry",
     },
   },
 ],
