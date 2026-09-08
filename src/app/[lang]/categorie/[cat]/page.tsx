@@ -238,10 +238,10 @@ const CATEGORY_META: Record<
     es: "Sistemas Operativos",
   },
   subtitle: {
-    it: "Certificazioni su amministrazione di sistemi operativi server: Windows Server e Linux, on-premises e in ambienti ibridi.",
-    en: "Certifications covering server operating system administration: Windows Server and Linux, on-premises and in hybrid environments.",
-    fr: "Certifications d'administration de systèmes d'exploitation serveur : Windows Server et Linux, sur site et en environnement hybride.",
-    es: "Certificaciones de administración de sistemas operativos de servidor: Windows Server y Linux, on-premises y en entornos híbridos.",
+    it: "Certificazioni su sistemi operativi e supporto tecnico: amministrazione server con Windows Server e Linux, assistenza dispositivi con Apple Device Support.",
+    en: "Certifications covering operating systems and technical support: server administration with Windows Server and Linux, device support with Apple Device Support.",
+    fr: "Certifications sur les systèmes d'exploitation et le support technique : administration serveur avec Windows Server et Linux, assistance aux appareils avec Apple Device Support.",
+    es: "Certificaciones sobre sistemas operativos y soporte técnico: administración de servidores con Windows Server y Linux, asistencia de dispositivos con Apple Device Support.",
   },
 },
 };
