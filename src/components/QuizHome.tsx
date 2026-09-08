@@ -641,7 +641,7 @@ name: getLabel(
             gap-3 mt-3
           "
         >
-          <section id="management" className="h-55">
+          <section id="management" className="h-64">
             <CategoryBox
               title={getLabel(
                 {
@@ -671,7 +671,7 @@ name: getLabel(
             />
           </section>
 
-          <section id="business-applications" className="h-55">
+          <section id="business-applications" className="h-64">
             <CategoryBox
               title="Business Applications"
               icon={<Building2 size={30} />}
@@ -693,7 +693,7 @@ name: getLabel(
             />
           </section>
 
-          <section id="data-analytics" className="h-55">
+          <section id="data-analytics" className="h-64">
             <CategoryBox
               title="Data Analytics"
               icon={<BarChart3 size={30} />}
@@ -715,7 +715,7 @@ name: getLabel(
             />
           </section>
 
-          <section id="sistemi-operativi" className="h-55">
+          <section id="sistemi-operativi" className="h-64">
             <CategoryBox
               title={getLabel(
                 {
