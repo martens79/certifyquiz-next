@@ -66,6 +66,8 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "dp-900-azure-data-fundamentals": 52,
   "aws-developer-associate": 71,
   "az-802": 72,
+  "lfs101": 73,
+  "apple-device-support": 74,
 };
 
 /* ---------------------------------------------------------------------
@@ -130,6 +132,8 @@ import DP900AzureDataFundamentals from "./DP900AzureDataFundamentals";
 import AWSDeveloperAssociate from "./aws-developer-associate";
 import SalesforcePlatformAdministrator from "./salesforce-platform-administrator";
 import AZ802 from "./az-802";
+import LFS101 from "./lfs101";
+import AppleDeviceSupport from "./apple-device-support";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -195,6 +199,8 @@ const RAW_CERTS = [
   AWSDeveloperAssociate,      // slug: "aws-developer-associate"
   SalesforcePlatformAdministrator,
   AZ802,                      // slug: "az-802" — publicationStatus: "planned"
+  LFS101,                     // slug: "lfs101" — publicationStatus: "planned"
+  AppleDeviceSupport,         // slug: "apple-device-support" — publicationStatus: "planned"
 ] as const;
 
 /**

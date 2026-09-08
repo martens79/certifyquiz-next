@@ -259,6 +259,8 @@ openai: "ai",
 
 // Sistemi Operativi
 "az-802": "sistemi-operativi",
+"lfs101": "sistemi-operativi",
+"apple-device-support": "sistemi-operativi",
 
 };
 
