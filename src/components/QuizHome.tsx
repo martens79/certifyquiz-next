@@ -13,9 +13,9 @@ import {
   Server,
   Cpu,
   BriefcaseBusiness,
-  Layers,
   Building2,
   BarChart3,
+  MonitorCog,
 } from "lucide-react";
 
 import QuizTitle from "@/components/QuizTitle";
@@ -25,7 +25,7 @@ import BottomNavbar from "@/components/BottomNavbar";
 
 // Locale + builder dei path certificazioni (client-safe)
 import type { Locale, CategoryKey } from "@/lib/paths";
-import { certPath } from "@/lib/paths";
+import { categoryPath, certPath } from "@/lib/paths";
 
 /* ---------- i18n helpers ---------- */
 type I18nText = Partial<Record<Locale, string>>;
@@ -300,9 +300,11 @@ foundations: [
   { name: "Project Management Foundations", link: certPath(lang, "project-management-foundations") },
   { name: "Data Analytics Foundations", link: certPath(lang, "data-analytics-foundations") },
 ],
-// Nessun link finché AZ-802 resta publicationStatus:"planned" (pagina 404) —
-// vedi project_az802_sistemi_operativi_buildout in memoria.
-"sistemi-operativi": [],
+"sistemi-operativi": [
+  { name: "AZ-802", link: certPath(lang, "az-802") },
+  { name: "LFS101", link: certPath(lang, "lfs101") },
+  { name: "Apple Device Support", link: certPath(lang, "apple-device-support") },
+],
 };
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();
@@ -538,6 +540,53 @@ name: getLabel(
           </div>
         )}
 
+        {/* Percorsi gratuiti in evidenza prima delle categorie */}
+        <Link
+          href={categoryPath(lang, "foundations")}
+          className="mx-auto max-w-345 mb-4 block rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-4 shadow-sm transition hover:ring-2 hover:ring-indigo-200/60"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wide text-indigo-700">
+                {getLabel(
+                  {
+                    it: "GRATIS • CERTIFYQUIZ",
+                    en: "FREE • CERTIFYQUIZ",
+                    fr: "GRATUIT • CERTIFYQUIZ",
+                    es: "GRATIS • CERTIFYQUIZ",
+                  },
+                  lang
+                )}
+              </div>
+              <h2 className="mt-1 text-lg font-extrabold text-slate-800">
+                🚀 Foundations by CertifyQuiz
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {getLabel(
+                  {
+                    it: "Parti dalle basi con le certificazioni gratuite create da CertifyQuiz.",
+                    en: "Start with free beginner certifications created by CertifyQuiz.",
+                    fr: "Commencez par les bases avec les certifications gratuites de CertifyQuiz.",
+                    es: "Empieza desde lo básico con certificaciones gratuitas de CertifyQuiz.",
+                  },
+                  lang
+                )}
+              </p>
+            </div>
+            <span className="shrink-0 self-start rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white sm:self-auto">
+              {getLabel(
+                {
+                  it: "Esplora Fondamenti →",
+                  en: "Explore Foundations →",
+                  fr: "Explorer Foundations →",
+                  es: "Explorar Foundations →",
+                },
+                lang
+              )}
+            </span>
+          </div>
+        </Link>
+
                {/* Griglia categorie: box compatti + id per anchor (#base, #sicurezza, ...) */}
         <div
           className="
@@ -584,7 +633,7 @@ name: getLabel(
   </a>
 </div>
 
-        {/* Management / Foundations / Business Applications / Data Analytics: riga unica di 4 box */}
+        {/* Management / Business Applications / Data Analytics / Sistemi Operativi */}
         <div
           className="
             mx-auto max-w-345
@@ -617,31 +666,6 @@ name: getLabel(
               lang={lang}
               color="blue"
               certifications={certificationNames.management}
-              compact
-              className="h-full"
-            />
-          </section>
-
-          <section id="foundations" className="h-55">
-            <CategoryBox
-              title={getLabel(
-                { it: "Fondamenti", en: "Foundations", es: "Fundamentos", fr: "Fondamentaux" },
-                lang
-              )}
-              icon={<Layers size={30} />}
-              description={getLabel(
-                {
-                  it: "Percorsi introduttivi per chi parte da zero.",
-                  en: "Beginner-friendly intro paths.",
-                  es: "Rutas introductorias para empezar desde cero.",
-                  fr: "Parcours d’introduction pour débutants.",
-                },
-                lang
-              )}
-              categoryKey="foundations"
-              lang={lang}
-              color="indigo"
-              certifications={certificationNames.foundations}
               compact
               className="h-full"
             />
@@ -686,6 +710,36 @@ name: getLabel(
               lang={lang}
               color="purple"
               certifications={certificationNames["data-analytics"]}
+              compact
+              className="h-full"
+            />
+          </section>
+
+          <section id="sistemi-operativi" className="h-55">
+            <CategoryBox
+              title={getLabel(
+                {
+                  it: "Sistemi Operativi",
+                  en: "Operating Systems",
+                  es: "Sistemas Operativos",
+                  fr: "Systèmes d’exploitation",
+                },
+                lang
+              )}
+              icon={<MonitorCog size={30} />}
+              description={getLabel(
+                {
+                  it: "Windows Server, Linux e supporto dei dispositivi Apple.",
+                  en: "Windows Server, Linux and Apple device support.",
+                  es: "Windows Server, Linux y soporte para dispositivos Apple.",
+                  fr: "Windows Server, Linux et assistance des appareils Apple.",
+                },
+                lang
+              )}
+              categoryKey="sistemi-operativi"
+              lang={lang}
+              color="indigo"
+              certifications={certificationNames["sistemi-operativi"]}
               compact
               className="h-full"
             />

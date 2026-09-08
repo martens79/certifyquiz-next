@@ -29,6 +29,7 @@ import {
   BriefcaseBusiness,
   BarChart3,
   Boxes,
+  MonitorCog,
 } from "lucide-react";
 
 /* Helpers */
@@ -333,6 +334,28 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
     safeLang
   ),
 },
+    {
+      key: "sistemi-operativi",
+      icon: <MonitorCog size={20} aria-hidden="true" />,
+      title: L(
+        {
+          it: "Sistemi Operativi",
+          en: "Operating Systems",
+          fr: "Systèmes d’exploitation",
+          es: "Sistemas Operativos",
+        },
+        safeLang
+      ),
+      desc: L(
+        {
+          it: "Windows Server, Linux e supporto dei dispositivi Apple.",
+          en: "Windows Server, Linux and Apple device support.",
+          fr: "Windows Server, Linux et assistance des appareils Apple.",
+          es: "Windows Server, Linux y soporte para dispositivos Apple.",
+        },
+        safeLang
+      ),
+    },
   ];
 
   return (
@@ -552,7 +575,8 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   (cat) =>
     cat.key !== "management" &&
     cat.key !== "business-applications" &&
-    cat.key !== "data-analytics"
+    cat.key !== "data-analytics" &&
+    cat.key !== "sistemi-operativi"
 )
       .map((cat) => {
         const ui = CATEGORY_UI[cat.key];
@@ -576,13 +600,14 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       })}
   </div>
 
-  <div className="grid md:grid-cols-3 gap-3 mt-3">
+  <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
   {allCategories
     .filter(
       (cat) =>
         cat.key === "management" ||
         cat.key === "business-applications" ||
-        cat.key === "data-analytics"
+        cat.key === "data-analytics" ||
+        cat.key === "sistemi-operativi"
     )
     .map((cat) => {
       const ui = CATEGORY_UI[cat.key];
@@ -628,12 +653,22 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             },
             safeLang
           )
-        : L(
+        : cat.key === "data-analytics"
+        ? L(
             {
               it: "Power BI, SQL, KPI, dashboard →",
               en: "Power BI, SQL, KPI, dashboards →",
               fr: "Power BI, SQL, KPI, dashboards →",
               es: "Power BI, SQL, KPI, dashboards →",
+            },
+            safeLang
+          )
+        : L(
+            {
+              it: "Windows Server, Linux, Apple →",
+              en: "Windows Server, Linux, Apple →",
+              fr: "Windows Server, Linux, Apple →",
+              es: "Windows Server, Linux, Apple →",
             },
             safeLang
           )}
