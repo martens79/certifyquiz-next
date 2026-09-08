@@ -91,6 +91,7 @@ const ICON_BY_SLUG: Record<string, string> = {
   // canonici
   "aws-cloud-practitioner": "/images/certifications/aws-cloud-practitioner.png",
   "aws-solutions-architect": "/images/certifications/aws-solutions-architect.png",
+  "aws-developer-associate": "/images/certifications/aws-developer-associate.svg",
   "google-cloud": "/images/certifications/google_cloud_icon.png",
   tensorflow: "/images/certifications/tensorflow-icon.png",
 
@@ -163,6 +164,11 @@ const ICON_BY_SLUG: Record<string, string> = {
 
 "pl-300-power-bi-data-analyst": "/images/certifications/pl-300-power-bi-data-analyst.png",
 "dp-900-azure-data-fundamentals": "/images/certifications/dp-900-azure-data-fundamentals.png",
+
+// Sistemi Operativi
+"az-802": "/images/certifications/az-802.svg",
+"lfs101": "/images/certifications/lfs101.svg",
+"apple-device-support": "/images/certifications/apple-device-support.svg",
 };
 
 /* ---------------------------- SEO TEXT ---------------------------- */
