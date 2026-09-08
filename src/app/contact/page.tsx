@@ -8,3 +8,11 @@ export default function Page() {
     />
   );
 }
+import type { Metadata } from "next";
+
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
+export const metadata: Metadata = {
+  title: "Contact CertifyQuiz",
+  description: "Contact CertifyQuiz for support, corrections, privacy requests or general questions.",
+  alternates: { canonical: `${SITE}/contact` },
+};

@@ -16,6 +16,7 @@ import {
   certificationsPath,
   quizHomePath,
 } from "@/lib/paths";
+import { isArticleIndexable } from "@/lib/seo/article-indexability";
 
 /* ------------------------------------------------------------ */
 
@@ -118,6 +119,8 @@ export async function generateMetadata({
   return {
     title,
     description,
+    robots: { index: isArticleIndexable(article), follow: true },
+    alternates: { canonical: pageUrl },
     openGraph: {
       title,
       description,
@@ -164,9 +167,26 @@ export default async function BlogArticlePage({
   const blogBase = blogIndexPath(lang);
   const hrefQuizHome = quizHomePath(lang);
   const hrefCerts = certificationsPath(lang);
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
+  const pageUrl = lang === "en" ? `${siteUrl}/blog/${slug}` : `${siteUrl}/${lang}/blog/${slug}`;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt || undefined,
+    datePublished: article.publishedAt ?? article.date ?? undefined,
+    mainEntityOfPage: pageUrl,
+    author: { "@type": "Person", name: "Lorenzo", url: `${siteUrl}/about` },
+    publisher: { "@type": "Organization", name: "CertifyQuiz", url: siteUrl },
+    image: coverUrl ? [coverUrl] : undefined,
+  };
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }}
+      />
       {/* Breadcrumb */}
       <div className="mb-4 text-sm text-zinc-500">
         <Link className="hover:underline" href={blogBase}>

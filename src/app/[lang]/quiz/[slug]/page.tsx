@@ -366,7 +366,9 @@ const { title, description } = priorityQuizSeo(L, resolvedSlug, certName);
   return {
     title,
     description,
-    robots: { index: true, follow: true },
+    // Navigation/tool page: preserve discovery links, but keep the search index
+    // focused on certification guides and substantial educational reviews.
+    robots: { index: false, follow: true },
     alternates: { canonical, languages },
     openGraph: {
       title,

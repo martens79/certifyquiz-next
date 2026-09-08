@@ -5,6 +5,7 @@ import { getTopicPageData } from "@/lib/server/topic-page";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
 import TopicIntro from "@/components/TopicIntro";
+import { isTopicIndexable } from "@/lib/seo/topic-indexability";
 
 type Lang = "en";
 
@@ -72,6 +73,7 @@ export async function generateMetadata({
     return {
       title: "Topic | CertifyQuiz",
       description: "Practice certification topics on CertifyQuiz.",
+      robots: { index: false, follow: true },
     };
   }
 
@@ -112,6 +114,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    robots: { index: isTopicIndexable(data.topic), follow: true },
     alternates: {
       canonical: pageUrl,
     },
