@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   for (const candidate of locales) languages[toHreflang(candidate)] = `${SITE}/${candidate}/quiz/${slug}/mock-exam`;
   languages["x-default"] = `${SITE}/en/quiz/${slug}/mock-exam`;
 
-  return { ...copy, robots: { index: true, follow: true }, alternates: { canonical, languages }, openGraph: { ...copy, url: canonical, type: "website", siteName: "CertifyQuiz" } };
+  return { ...copy, robots: { index: false, follow: true }, alternates: { canonical, languages }, openGraph: { ...copy, url: canonical, type: "website", siteName: "CertifyQuiz" } };
 }
 
 export default function MockExamLayout({ children }: { children: React.ReactNode }) {

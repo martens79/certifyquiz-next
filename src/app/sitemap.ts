@@ -2,6 +2,7 @@
 import type { MetadataRoute } from "next";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
+import { isArticleIndexable } from "@/lib/seo/article-indexability";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -46,11 +47,6 @@ type RemoteCert = {
   slug: string;
 };
 
-type RemoteTopic = {
-  slug: string;
-  certification_slug: string;
-};
-
 type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
 
 export async function getIndexableRemoteReviews(timeoutMs=15000):Promise<Record<Lang,string[]>> {
@@ -76,6 +72,9 @@ type SanityArticle = {
   slug: string;
   lang: string;
   publishedAt: string | null;
+  title?: string | null;
+  excerpt?: string | null;
+  body?: unknown;
 };
 
 const blogSitemapQuery = `
@@ -83,6 +82,9 @@ const blogSitemapQuery = `
   "slug": slug.current,
   "lang": lang,
   "publishedAt": coalesce(publishedAt, date)
+  ,title
+  ,excerpt
+  ,"body": coalesce(body, content)
 }`;
 
 async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[]> {
@@ -118,43 +120,6 @@ async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[
   }
 }
 
-async function getRemoteTopics(
-  lang: Lang,
-  timeoutMs = 5000
-): Promise<RemoteTopic[]> {
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), timeoutMs);
-
-  const url = `${API_BASE}/sitemap/topics?lang=${encodeURIComponent(lang)}`;
-
-  try {
-    const res = await fetch(url, {
-      headers: { accept: "application/json" },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const arr = (await res.json()) as Array<{
-      slug?: string | null;
-      certification_slug?: string | null;
-    }>;
-
-    return arr.filter(
-      (t): t is RemoteTopic =>
-        typeof t.slug === "string" &&
-        t.slug.trim().length > 0 &&
-        typeof t.certification_slug === "string" &&
-        t.certification_slug.trim().length > 0
-    );
-  } catch {
-    return [];
-  } finally {
-    clearTimeout(t);
-  }
-}
-
 async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
   try {
     const articles = await sanityServerClient.fetch<SanityArticle[]>(
@@ -162,7 +127,7 @@ async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
     );
 
     return articles
-      .filter((a) => a.slug && a.lang)
+      .filter((a) => a.slug && a.lang && isArticleIndexable(a))
       .map((a) => {
         const lang = a.lang as Lang;
         const base = lang === "en" ? SITE : `${SITE}/${lang}`;
@@ -187,7 +152,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [perLang, blogEntries] = await Promise.all([
     Promise.all(
       langs.map(async (lang) => {
-        const [certs,topics] = await Promise.all([getRemoteCerts(lang),getRemoteTopics(lang)]);
+        const certs = await getRemoteCerts(lang);
 
         const base = lang === "en" ? SITE : `${SITE}/${lang}`;
         const listSegment = CERT_SEGMENT_BY_LANG[lang];
@@ -316,13 +281,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             lastModified: now,
           })),
 
-          // Topic pages lingua
-          ...topics.map((t) => ({
-            url: `${base}/${listSegment}/${t.certification_slug}/${t.slug}`,
-            changeFrequency: "weekly" as const,
-            priority: 0.7,
-            lastModified: now,
-          })),
+          // Topic URLs are intentionally omitted until the backend sitemap feed
+          // exposes the same editorial-quality signal used by topic metadata.
+          // Publishing every active DB row previously added ~1,700 mostly
+          // templated URLs without proving that localized guide content exists.
           ...indexableReviews[lang].map((href)=>({
             url: `${SITE}${href}`,
             changeFrequency: "monthly" as const,

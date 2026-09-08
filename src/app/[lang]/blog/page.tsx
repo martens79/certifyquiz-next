@@ -2,6 +2,18 @@ import { sanityClient } from "@/lib/sanity.client";
 import { articlesListByLang } from "@/lib/sanity.queries";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
+import type { Metadata } from "next";
+
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
+export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const canonical = lang === "en" ? `${SITE}/blog` : `${SITE}/${lang}/blog`;
+  return {
+    title: "IT Certification Study Guides and Articles | CertifyQuiz",
+    description: "Practical certification study guides, exam-preparation strategies and learning resources.",
+    alternates: { canonical },
+  };
+}
 
 export default async function BlogPage({
   params,

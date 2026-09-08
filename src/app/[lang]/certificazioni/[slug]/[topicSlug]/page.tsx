@@ -8,6 +8,7 @@ import { getLocalizedText } from "@/lib/i18n";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
 import TopicIntro from "@/components/TopicIntro";
+import { isTopicIndexable } from "@/lib/seo/topic-indexability";
 
 type Lang = Locale;
 
@@ -181,6 +182,7 @@ if (normalizedSlug !== slug) {
     return {
       title: "Topic | CertifyQuiz",
       description: "Practice certification topics on CertifyQuiz.",
+      robots: { index: false, follow: true },
     };
   }
 
@@ -215,6 +217,7 @@ const ogImage = `${siteUrl}/api/og?type=topic&title=${encodeURIComponent(
 return {
   title,
   description,
+  robots: { index: isTopicIndexable(data.topic), follow: true },
   alternates: {
     canonical: pageUrl,
   },
