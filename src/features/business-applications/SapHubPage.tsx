@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/paths";
 import { certPath, categoryPath } from "@/lib/paths";
+import { getCertCardDesc } from "@/lib/cert-descriptions";
 import { SAP_CERTIFICATIONS } from "./data";
 
 const copy = {
@@ -28,6 +29,7 @@ export default function SapHubPage({ lang }: { lang: Locale }) {
               {"available" in cert && cert.available ? t.ready : t.soon}
             </span>
             <h2 className="mt-4 text-lg font-semibold leading-snug text-slate-900">{cert.title}</h2>
+            <p className="mt-2 text-sm leading-snug text-slate-600">{getCertCardDesc(cert.slug, lang)}</p>
             <p className="mt-5 text-sm font-semibold text-emerald-700">{t.open}</p>
           </Link>
         ))}

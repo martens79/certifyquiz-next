@@ -258,6 +258,98 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
   fr: "Google Cloud Digital Leader : transformation numérique, cloud business, data, IA et services Google Cloud.",
   es: "Google Cloud Digital Leader: transformación digital, cloud business, datos, IA y servicios Google Cloud.",
 },
+
+/* ------------------------------ Management ---------------------------- */
+"itil-4-foundation": {
+  it: "IT service management: valore, pratiche ITIL, service value system e miglioramento continuo.",
+  en: "IT service management: value, ITIL practices, the service value system and continual improvement.",
+  fr: "Gestion des services IT : valeur, pratiques ITIL, système de valeur et amélioration continue.",
+  es: "Gestión de servicios TI: valor, prácticas ITIL, sistema de valor y mejora continua.",
+},
+"pmp": {
+  it: "Project management professionale: persone, processi, business environment e approcci Agile e ibridi.",
+  en: "Professional project management: people, processes, business environment, and Agile and hybrid approaches.",
+  fr: "Gestion de projet professionnelle : personnes, processus, environnement métier et approches Agile et hybrides.",
+  es: "Gestión profesional de proyectos: personas, procesos, entorno empresarial y enfoques Agile e híbridos.",
+},
+"psm-i": {
+  it: "Scrum: ruoli, eventi, artefatti, empirismo e responsabilità dello Scrum Master.",
+  en: "Scrum: roles, events, artifacts, empiricism and Scrum Master responsibilities.",
+  fr: "Scrum : rôles, événements, artefacts, empirisme et responsabilités du Scrum Master.",
+  es: "Scrum: roles, eventos, artefactos, empirismo y responsabilidades del Scrum Master.",
+},
+"project-management-foundations": {
+  it: "Fondamenti di project management: obiettivi, scope, tempi, rischi, stakeholder e comunicazione.",
+  en: "Project management foundations: goals, scope, schedules, risks, stakeholders and communication.",
+  fr: "Fondamentaux de la gestion de projet : objectifs, périmètre, délais, risques et parties prenantes.",
+  es: "Fundamentos de gestión de proyectos: objetivos, alcance, plazos, riesgos y stakeholders.",
+},
+
+/* --------------------------- Data & Analytics -------------------------- */
+"data-analytics-foundations": {
+  it: "Fondamenti di analisi dati: qualità, metriche, visualizzazione e interpretazione dei risultati.",
+  en: "Data analytics foundations: quality, metrics, visualization and interpretation of results.",
+  fr: "Fondamentaux de l’analyse de données : qualité, métriques, visualisation et interprétation.",
+  es: "Fundamentos de análisis de datos: calidad, métricas, visualización e interpretación.",
+},
+"pl-300-power-bi-data-analyst": {
+  it: "Power BI: preparazione e modellazione dati, DAX, visualizzazioni, analisi e distribuzione dei report.",
+  en: "Power BI: data preparation and modeling, DAX, visualization, analysis and report deployment.",
+  fr: "Power BI : préparation et modélisation des données, DAX, visualisation, analyse et diffusion.",
+  es: "Power BI: preparación y modelado de datos, DAX, visualización, análisis y publicación de informes.",
+},
+"dp-900-azure-data-fundamentals": {
+  it: "Azure Data: dati relazionali e non relazionali, analytics workload e servizi dati principali.",
+  en: "Azure Data: relational and non-relational data, analytics workloads and core data services.",
+  fr: "Azure Data : données relationnelles et non relationnelles, analytique et services de données clés.",
+  es: "Azure Data: datos relacionales y no relacionales, cargas analíticas y servicios de datos principales.",
+},
+
+/* -------------------------- Operating Systems -------------------------- */
+"az-802": {
+  it: "Windows Server ibrido: Active Directory, networking, storage, sicurezza, migrazione e disaster recovery.",
+  en: "Hybrid Windows Server: Active Directory, networking, storage, security, migration and disaster recovery.",
+  fr: "Windows Server hybride : Active Directory, réseau, stockage, sécurité, migration et reprise après sinistre.",
+  es: "Windows Server híbrido: Active Directory, redes, almacenamiento, seguridad, migración y recuperación.",
+},
+"lfs101": {
+  it: "Linux essenziale: shell, file system, processi, utenti, rete, sicurezza e amministrazione di base.",
+  en: "Linux essentials: shell, file systems, processes, users, networking, security and basic administration.",
+  fr: "Linux essentiel : shell, systèmes de fichiers, processus, utilisateurs, réseau et administration de base.",
+  es: "Linux esencial: shell, sistemas de archivos, procesos, usuarios, redes y administración básica.",
+},
+"apple-device-support": {
+  it: "Supporto Apple: configurazione, gestione, sicurezza e troubleshooting di dispositivi macOS, iPhone e iPad.",
+  en: "Apple support: configuration, management, security and troubleshooting for Macs, iPhones and iPads.",
+  fr: "Support Apple : configuration, gestion, sécurité et dépannage des Mac, iPhone et iPad.",
+  es: "Soporte Apple: configuración, gestión, seguridad y solución de problemas en Mac, iPhone y iPad.",
+},
+
+/* ------------------------- Business Applications ----------------------- */
+"sap-s4hana-financial-accounting": {
+  it: "SAP S/4HANA Finance: contabilità generale, crediti, debiti, cespiti e chiusura finanziaria.",
+  en: "SAP S/4HANA Finance: general ledger, receivables, payables, assets and financial closing.",
+  fr: "SAP S/4HANA Finance : comptabilité générale, clients, fournisseurs, actifs et clôture financière.",
+  es: "SAP S/4HANA Finance: libro mayor, cuentas por cobrar y pagar, activos y cierre financiero.",
+},
+"sap-s4hana-sourcing-procurement": {
+  it: "SAP S/4HANA Procurement: acquisti, fornitori, richieste, ordini, ricevimento e fatturazione.",
+  en: "SAP S/4HANA Procurement: purchasing, suppliers, requisitions, orders, goods receipt and invoicing.",
+  fr: "SAP S/4HANA Procurement : achats, fournisseurs, demandes, commandes, réception et facturation.",
+  es: "SAP S/4HANA Procurement: compras, proveedores, solicitudes, pedidos, recepción y facturación.",
+},
+"sap-s4hana-sales": {
+  it: "SAP S/4HANA Sales: processo order-to-cash, pricing, consegne, fatturazione e dati anagrafici.",
+  en: "SAP S/4HANA Sales: order-to-cash, pricing, deliveries, billing and master data.",
+  fr: "SAP S/4HANA Sales : order-to-cash, tarification, livraisons, facturation et données de base.",
+  es: "SAP S/4HANA Sales: order-to-cash, precios, entregas, facturación y datos maestros.",
+},
+"sap-s4hana-production-planning": {
+  it: "SAP S/4HANA Manufacturing: pianificazione, MRP, ordini di produzione, capacità ed esecuzione.",
+  en: "SAP S/4HANA Manufacturing: planning, MRP, production orders, capacity and execution.",
+  fr: "SAP S/4HANA Manufacturing : planification, MRP, ordres de fabrication, capacité et exécution.",
+  es: "SAP S/4HANA Manufacturing: planificación, MRP, órdenes de producción, capacidad y ejecución.",
+},
 };
 
 /* --------------------------------------------------------------------- */
