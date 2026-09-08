@@ -6,6 +6,9 @@ import type { Locale } from "@/lib/i18n";
 type Props = {
   lang: Locale;
 
+  /** Motivo per cui il quiz non è disponibile. */
+  reason?: "translation" | "content";
+
   /** lingua fallback per studiare subito (di solito "en") */
   fallbackLang?: Locale;
 
@@ -82,8 +85,55 @@ const COPY: Record<
   },
 };
 
+const CONTENT_COPY: Record<
+  Locale,
+  { title: string; desc: string; bullets: string[]; ctaSecondary: string }
+> = {
+  it: {
+    title: "🚧 Quiz in preparazione",
+    desc: "Le domande per questa certificazione sono in preparazione e saranno pubblicate prossimamente.",
+    bullets: [
+      "Le pagine degli argomenti sono già disponibili per consultare il programma.",
+      "Stiamo preparando domande e spiegazioni in stile esame.",
+      "Torna presto per iniziare ad allenarti.",
+    ],
+    ctaSecondary: "Sfoglia altre certificazioni",
+  },
+  en: {
+    title: "🚧 Quiz in preparation",
+    desc: "Questions for this certification are being prepared and will be published soon.",
+    bullets: [
+      "The topic pages are already available for reviewing the syllabus.",
+      "We are preparing exam-style questions and explanations.",
+      "Check back soon to start practicing.",
+    ],
+    ctaSecondary: "Browse other certifications",
+  },
+  fr: {
+    title: "🚧 Quiz en préparation",
+    desc: "Les questions pour cette certification sont en cours de préparation et seront bientôt publiées.",
+    bullets: [
+      "Les pages des sujets sont déjà disponibles pour consulter le programme.",
+      "Nous préparons des questions et des explications de type examen.",
+      "Revenez bientôt pour commencer à vous entraîner.",
+    ],
+    ctaSecondary: "Voir d'autres certifications",
+  },
+  es: {
+    title: "🚧 Cuestionario en preparación",
+    desc: "Las preguntas para esta certificación se están preparando y se publicarán próximamente.",
+    bullets: [
+      "Las páginas de los temas ya están disponibles para consultar el programa.",
+      "Estamos preparando preguntas y explicaciones de estilo examen.",
+      "Vuelve pronto para empezar a practicar.",
+    ],
+    ctaSecondary: "Ver otras certificaciones",
+  },
+};
+
 export default function ComingSoonBox({
   lang,
+  reason = "translation",
   fallbackLang = "en",
   fallbackHref,
   browseHref,
@@ -91,6 +141,8 @@ export default function ComingSoonBox({
   description,
 }: Props) {
   const t = COPY[lang] ?? COPY.en;
+  const content = CONTENT_COPY[lang] ?? CONTENT_COPY.en;
+  const isContentPending = reason === "content";
 
   // ✅ IMPORTANTE: nei quiz TUTTE le lingue hanno prefisso (/en, /fr, /es, /it)
   // Quindi il default sensato è mandare all’homepage quiz della lingua fallback (se non passi fallbackHref).
@@ -107,13 +159,15 @@ export default function ComingSoonBox({
 
           <div className="flex-1">
             <h2 className="text-xl font-semibold text-slate-900">
-              {title ?? t.title}
+              {title ?? (isContentPending ? content.title : t.title)}
             </h2>
 
-            <p className="mt-2 text-slate-600">{description ?? t.desc}</p>
+            <p className="mt-2 text-slate-600">
+              {description ?? (isContentPending ? content.desc : t.desc)}
+            </p>
 
             <ul className="mt-4 space-y-2 text-sm text-slate-700">
-              {t.bullets.map((b, i) => (
+              {(isContentPending ? content.bullets : t.bullets).map((b, i) => (
                 <li key={i} className="flex gap-2">
                   <span className="mt-0.5 text-slate-400">•</span>
                   <span>{b}</span>
@@ -122,23 +176,25 @@ export default function ComingSoonBox({
             </ul>
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <Link
-                href={primaryHref}
-                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              >
-                {t.ctaPrimary}
-              </Link>
+              {!isContentPending && (
+                <Link
+                  href={primaryHref}
+                  className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                >
+                  {t.ctaPrimary}
+                </Link>
+              )}
 
               <Link
                 href={secondaryHref}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50"
               >
-                {t.ctaSecondary}
+                {isContentPending ? content.ctaSecondary : t.ctaSecondary}
               </Link>
             </div>
 
             <div className="mt-3 text-xs text-slate-500">
-              {lang !== fallbackLang ? (
+              {!isContentPending && lang !== fallbackLang ? (
                 <>
                   {lang.toUpperCase()} → {fallbackLang.toUpperCase()}
                 </>

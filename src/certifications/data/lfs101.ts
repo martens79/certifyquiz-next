@@ -1,18 +1,18 @@
 // src/certifications/data/lfs101.ts
-// LFS101: Introduction to Linux (Linux Foundation). Registry contract only —
-// publicationStatus:"planned" keeps the page 404'd (CertificationDetailView)
-// and out of the category listing until there is real quiz content.
-// DB: certification id 73, category "Sistemi Operativi" id 12, 18 topics
-// (id 481-498) inserted with is_active=0. See
-// migrations/2026-09-08-add-lfs101-apple-device-support.up.sql.
-// Topics follow the official Linux Foundation LFS101 syllabus (18 chapters,
-// final exam excluded).
+// LFS101: Introduction to Linux (Linux Foundation). DB: certification id 73,
+// category "Sistemi Operativi" id 12, 18 topics (id 481-498), is_active=1 as
+// of migrations/2026-09-08-activate-sistemi-operativi-topics.up.sql — the
+// cert page, topic nav, and topic pages are indexable for SEO even though
+// there are no quiz questions yet. The quiz-start flow falls back to
+// ComingSoonBox when the question pool is empty (see mixed/page.tsx and
+// QuizTopicClient.tsx). Topics follow the official Linux Foundation LFS101
+// syllabus (18 chapters, final exam excluded).
 
 import type { CertificationData } from "../types";
 
 const LFS101: CertificationData = {
   slug: "lfs101",
-  publicationStatus: "planned",
+  publicationStatus: "published",
   imageUrl: "/images/certifications/lfs101.svg",
   officialUrl: "https://training.linuxfoundation.org/training/introduction-to-linux/",
   lifecycleStatus: "active",

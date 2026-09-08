@@ -176,6 +176,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   isAssessmentMode ? 'assessment' : 'training'
 );
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
+  const [globalPoolTotal, setGlobalPoolTotal] = useState<number | null>(null);
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
@@ -209,19 +210,35 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   useEffect(() => {
     if (!certId) return;
     let cancelled = false;
+    setPoolTotal(null);
+    setGlobalPoolTotal(null);
 
     (async () => {
       try {
-        const res = await getMixedQuestions(certId, currentLang, {
-          limit: 1,
-          shuffle: false,
-          strict: currentLang !== 'it',
-        });
+        const request = (strict: boolean) =>
+          getMixedQuestions(certId, currentLang, {
+            limit: 1,
+            shuffle: false,
+            strict,
+          });
+        const [res, globalRes] = await Promise.all([
+          request(currentLang !== 'it'),
+          currentLang === 'it' ? Promise.resolve(null) : request(false),
+        ]);
 
         const total = (res as any)?.poolTotal;
-        if (!cancelled) setPoolTotal(typeof total === 'number' ? total : null);
+        const globalTotal = currentLang === 'it'
+          ? total
+          : (globalRes as any)?.poolTotal;
+        if (!cancelled) {
+          setPoolTotal(typeof total === 'number' ? total : null);
+          setGlobalPoolTotal(typeof globalTotal === 'number' ? globalTotal : null);
+        }
       } catch {
-        if (!cancelled) setPoolTotal(null);
+        if (!cancelled) {
+          setPoolTotal(null);
+          setGlobalPoolTotal(null);
+        }
       }
     })();
 
@@ -241,7 +258,8 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     return Math.min(TRAINING_CAP, poolSize);
   }, [poolSize]);
 
-  const isComingSoon = poolTotal === 0 && currentLang !== 'it';
+  const isComingSoon = poolTotal === 0;
+  const comingSoonReason = globalPoolTotal === 0 ? 'content' : 'translation';
 
   const examSpec = useMemo(() => {
     return getExamSpecForCert(certId ?? 0, poolSize);
@@ -341,6 +359,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
         <div className="mx-auto max-w-5xl px-4 mt-6">
           <ComingSoonBox
             lang={currentLang}
+            reason={comingSoonReason}
             fallbackLang="en"
             fallbackHref={`/en/quiz/${currentSlug}/mixed`}
             browseHref={`/${currentLang}/certificazioni`}

@@ -1,12 +1,15 @@
 // src/certifications/data/az-802.ts
 // AZ-802: Administering Windows Server (Microsoft Certified: Windows Server
-// Administrator Associate). Registry contract only — publicationStatus:"planned"
-// keeps the page 404'd (CertificationDetailView) and out of the category
-// listing (categorie/[cat]/page.tsx) until there is real quiz content.
-// DB: certification id 72, category "Sistemi Operativi" id 12, 12 topics
-// (id 469-480) inserted with is_active=0. See migrations/2026-09-07-add-os-category-az802.up.sql.
+// Administrator Associate). DB: certification id 72, category "Sistemi
+// Operativi" id 12, 12 topics (id 469-480), is_active=1 as of
+// migrations/2026-09-08-activate-sistemi-operativi-topics.up.sql — the
+// cert page, topic nav, and topic pages are indexable for SEO even though
+// there are no quiz questions yet. The quiz-start flow (mixed and
+// per-topic) falls back to ComingSoonBox when the question pool is empty,
+// see app/[lang]/quiz/[slug]/mixed/page.tsx and
+// app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx.
 //
-// TODO before flipping publicationStatus to "published":
+// TODO before writing quiz content:
 // - verify officialUrl against the live Microsoft Learn credential page
 // - verify exam duration / question count / availability per language
 //   (Microsoft localizes ~8 weeks after English GA)
@@ -15,7 +18,7 @@ import type { CertificationData } from "../types";
 
 const AZ802: CertificationData = {
   slug: "az-802",
-  publicationStatus: "planned",
+  publicationStatus: "published",
   imageUrl: "/images/certifications/az-802.svg",
   officialUrl:
     "https://learn.microsoft.com/en-us/credentials/certifications/windows-server-administrator-associate/",

@@ -71,6 +71,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   // light check “coming soon” (solo lingue non-IT)
   const [topicTotal, setTopicTotal] = useState<number | null>(null);
+  const [globalTopicTotal, setGlobalTopicTotal] = useState<number | null>(null);
 
   /* ─────────────────────────────────────────────────────────────
      VALIDAZIONE PARAMETRI BASE
@@ -146,25 +147,43 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
     if (Number.isNaN(numericId)) return;
 
     let cancelled = false;
+    setTopicTotal(null);
+    setGlobalTopicTotal(null);
 
     (async () => {
       try {
-        const res = await getQuestionsByTopic(numericId, L, {
-  limit: 1,
-  shuffle: false,
-  strict: L !== "it",
-});
+        const request = (strict: boolean) =>
+          getQuestionsByTopic(numericId, L, {
+            limit: 1,
+            shuffle: false,
+            strict,
+          });
+        const [res, globalRes] = await Promise.all([
+          request(L !== "it"),
+          L === "it" ? Promise.resolve(null) : request(false),
+        ]);
 
-        const poolTotalFromApi = (res as any)?.poolTotal;
+        const extractTotal = (value: unknown): number | null => {
+          const poolTotalFromApi = (value as any)?.poolTotal;
+          if (typeof poolTotalFromApi === "number") return poolTotalFromApi;
+          if (Array.isArray(value)) return value.length > 0 ? 1 : 0;
+          if (Array.isArray((value as any)?.questions)) {
+            return (value as any).questions.length > 0 ? 1 : 0;
+          }
+          return null;
+        };
+        const total = extractTotal(res);
+        const globalTotal = L === "it" ? total : extractTotal(globalRes);
 
-        let total: number | null = null;
-        if (typeof poolTotalFromApi === "number") total = poolTotalFromApi;
-        else if (Array.isArray(res)) total = res.length > 0 ? 1 : 0;
-        else if (Array.isArray((res as any)?.questions)) total = (res as any).questions.length > 0 ? 1 : 0;
-
-        if (!cancelled) setTopicTotal(total);
+        if (!cancelled) {
+          setTopicTotal(total);
+          setGlobalTopicTotal(globalTotal);
+        }
       } catch {
-        if (!cancelled) setTopicTotal(null);
+        if (!cancelled) {
+          setTopicTotal(null);
+          setGlobalTopicTotal(null);
+        }
       }
     })();
 
@@ -209,14 +228,23 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   }
 
   /* ─────────────────────────────────────────────────────────────
-     COMING SOON (solo non-IT)
+     COMING SOON
+     topicTotal per "it" viene da una fetch non-strict (vedi strict: L !== "it"
+     sopra), cioè conta le righe domanda senza filtrare per testo/risposte in
+     lingua — quindi topicTotal === 0 in IT vuol dire zero domande in
+     qualunque lingua per questo topic, non solo IT mancante. Va mostrato il
+     coming-soon anche in IT in quel caso (prima restava escluso e i topic
+     nuovi senza nessuna domanda montavano un QuizEngine vuoto per gli utenti
+     italiani).
   ───────────────────────────────────────────────────────────── */
-  const isComingSoon = topicTotal === 0 && L !== "it";
+  const isComingSoon = topicTotal === 0;
+  const comingSoonReason = globalTopicTotal === 0 ? "content" : "translation";
   if (isComingSoon) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-10">
         <ComingSoonBox
           lang={L}
+          reason={comingSoonReason}
           fallbackLang="en"
           fallbackHref={`/en/quiz/topic/${numericId}`}
           browseHref={backToHref}

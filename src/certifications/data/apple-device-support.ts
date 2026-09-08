@@ -1,21 +1,22 @@
 // src/certifications/data/apple-device-support.ts
 // Apple Device Support exam (9L0-3023) -> Apple Certified Support Professional
-// (ACSP) badge. Registry contract only — publicationStatus:"planned" keeps the
-// page 404'd (CertificationDetailView) and out of the category listing until
-// there is real quiz content.
-// DB: certification id 74, category "Sistemi Operativi" id 12, 9 topics
-// (id 499-507) inserted with is_active=0. See
-// migrations/2026-09-08-add-lfs101-apple-device-support.up.sql.
-// Topics follow the official Apple course (it-training.apple.com/tutorials/apt-support/),
-// chapters 1-9; chapter 10 "Next Steps" is a recap, not content, so it's excluded.
-// Note: the current official cert covers iPhone/iPad/Mac together, not macOS alone —
-// there is no "macOS-only" Apple support certification anymore.
+// (ACSP) badge. DB: certification id 74, category "Sistemi Operativi" id 12,
+// 9 topics (id 499-507), is_active=1 as of
+// migrations/2026-09-08-activate-sistemi-operativi-topics.up.sql — the cert
+// page, topic nav, and topic pages are indexable for SEO even though there
+// are no quiz questions yet. The quiz-start flow falls back to ComingSoonBox
+// when the question pool is empty (see mixed/page.tsx and
+// QuizTopicClient.tsx). Topics follow the official Apple course
+// (it-training.apple.com/tutorials/apt-support/), chapters 1-9; chapter 10
+// "Next Steps" is a recap, not content, so it's excluded.
+// Note: the current official cert covers iPhone/iPad/Mac together, not macOS
+// alone — there is no "macOS-only" Apple support certification anymore.
 
 import type { CertificationData } from "../types";
 
 const AppleDeviceSupport: CertificationData = {
   slug: "apple-device-support",
-  publicationStatus: "planned",
+  publicationStatus: "published",
   imageUrl: "/images/certifications/apple-device-support.svg",
   officialUrl: "https://it-training.apple.com/tutorials/apt-support/",
   lifecycleStatus: "active",
