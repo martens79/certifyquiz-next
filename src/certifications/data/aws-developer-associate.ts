@@ -9,19 +9,13 @@
 // finché non si eseguono le UPDATE di traduzione — gap noto e accettato
 // (decisione 2026-08-20), da chiudere appena possibile.
 //
-// Logo: /public/images/certifications/aws-developer-associate.png non esiste
-// ancora — imageUrl è volutamente "" (vedi commento sotto) per mostrare il
-// placeholder generico invece di un'icona rotta. Aggiornare quando pronto.
+// Icona locale dedicata: /public/images/certifications/aws-developer-associate.svg.
 //
 // Blueprint verificato il 2026-08-19 sull'exam guide ufficiale AWS.
 
 const AWSDeveloperAssociate = {
   slug: "aws-developer-associate",
-  // Logo non ancora caricato in /public/images/certifications/. Stringa
-  // vuota invece del path atteso: i componenti (hub card, ecc.) trattano
-  // imageUrl falsy come "nessun logo" e mostrano il placeholder generico,
-  // invece di un'icona rotta. Aggiornare non appena il file è disponibile.
-  imageUrl: "",
+  imageUrl: "/images/certifications/aws-developer-associate.svg",
   officialUrl: "https://aws.amazon.com/certification/certified-developer-associate/",
 
   examBlueprint: {

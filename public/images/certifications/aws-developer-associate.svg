@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">AWS Certified Developer Associate DVA-C02</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#17233d"/>
+      <stop offset="1" stop-color="#304b75"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <g fill="#fff" font-family="Arial,sans-serif" text-anchor="middle">
+    <text x="256" y="205" font-size="100" font-weight="700">AWS</text>
+    <text x="256" y="292" font-size="46" font-weight="700">DEVELOPER</text>
+    <text x="256" y="354" font-size="34">ASSOCIATE</text>
+  </g>
+  <path d="M151 228c66 48 151 51 222 6" fill="none" stroke="#ff9900" stroke-width="18" stroke-linecap="round"/>
+  <text x="256" y="430" fill="#ffb548" font-family="Arial,sans-serif" font-size="42" font-weight="700" text-anchor="middle">DVA-C02</text>
+</svg>
