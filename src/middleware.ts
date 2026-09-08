@@ -2,6 +2,29 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const LOCALES = new Set(["it", "en", "fr", "es"]);
 
+const BLOG_EDITORIAL_REDIRECTS: Record<string, string> = {
+  "/fr/blog/comment-fonctionnent-les-attaques-d-acces-non-autorise-ceh-guide-pratique":
+    "/fr/blog/acces-non-autorise-ceh-techniques-reelles-attaques-et-comment-s-en-defendre",
+  "/it/blog/esempi-pratici-della-triade-cia-come-applicarla-nella-sicurezza-informatica-security":
+    "/it/blog/triade-cia-spiegata-semplice-riservatezza-integrita-e-disponibilita-security",
+  "/es/blog/vlan-separar-para-proteger":
+    "/es/blog/switching-y-vlan-la-base-real-de-cualquier-red-moderna-ccnp-enterprise",
+  "/blog/cia-triad-vs-real-attacks-how-hackers-break-confidentiality-integrity-and-availability-security":
+    "/blog/cia-triad-explained-with-real-examples-confidentiality-integrity-and-availability-security",
+  "/en/blog/cia-triad-vs-real-attacks-how-hackers-break-confidentiality-integrity-and-availability-security":
+    "/blog/cia-triad-explained-with-real-examples-confidentiality-integrity-and-availability-security",
+  "/blog/security-controls-and-the-cia-triad-how-to-protect-data-effectively-security":
+    "/blog/cia-triad-explained-with-real-examples-confidentiality-integrity-and-availability-security",
+  "/en/blog/security-controls-and-the-cia-triad-how-to-protect-data-effectively-security":
+    "/blog/cia-triad-explained-with-real-examples-confidentiality-integrity-and-availability-security",
+  "/es/blog/como-funcionan-los-ataques-de-acceso-no-autorizado-ceh-guia-practica":
+    "/es/blog/acceso-no-autorizado-ceh-ataques-reales-y-como-defenderte",
+  "/fr/blog/controles-de-securite-et-triade-cia-comment-proteger-les-donnees-efficacement-security":
+    "/fr/blog/triade-cia-expliquee-avec-des-exemples-concrets-confidentialite-integrite-et-disponibilite",
+  "/fr/blog/triade-cia-et-cyberattaques-comment-les-attaquants-ciblent-la-confidentialite-l-integrite-et-la":
+    "/fr/blog/triade-cia-expliquee-avec-des-exemples-concrets-confidentialite-integrite-et-disponibilite",
+};
+
 function isLocale(s?: string) {
   return !!s && LOCALES.has(s);
 }
@@ -810,6 +833,11 @@ if (pathname.startsWith("/es/certificaciones/google-cloud/")) {
   // BLOG
   // EN root optional: /en/blog -> /blog
   // ---------------------------------------------------------------------
+
+  const editorialBlogTarget = BLOG_EDITORIAL_REDIRECTS[pathname];
+  if (editorialBlogTarget) {
+    return redirect301(req, editorialBlogTarget);
+  }
 
   if (pathname.startsWith("/en/blog")) {
     return redirect301(req, pathname.replace(/^\/en/, ""));
