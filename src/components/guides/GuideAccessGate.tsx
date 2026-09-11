@@ -8,7 +8,12 @@ import { pricingPath } from "@/lib/paths";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { analyticsUserStateFrom, trackEvent, trackFunnelEvent } from "@/lib/analytics";
+import {
+  analyticsUserStateFrom,
+  trackEvent,
+  trackFunnelEvent,
+  trackFunnelEventOnce,
+} from "@/lib/analytics";
 
 type Props = {
   lang: Locale;
@@ -107,7 +112,17 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       guide_slug: slug,
       source_page: "guide_preview",
     });
-    trackFunnelEvent({ event: "paywall_viewed", cert_slug: null, topic_slug: null, lang });
+    trackFunnelEventOnce(
+      `paywall_viewed:guide:${lang}:${slug}`,
+      {
+        event: "paywall_viewed",
+        cert_slug: null,
+        topic_slug: null,
+        lang,
+        paywall_type: "guide",
+        metadata: { guide_slug: slug },
+      }
+    );
   }, [authLoading, lang, slug, user]);
 
   const loggedIn = !!user;

@@ -6,7 +6,7 @@ import { CheckCircle2, Clock3, Loader2, LockKeyhole, RotateCcw, ShieldCheck } fr
 import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import type { GuidedLabPayload, GuidedLabStep } from "./types";
-import { trackEvent, trackFunnelEvent } from "@/lib/analytics";
+import { trackEvent, trackFunnelEventOnce } from "@/lib/analytics";
 
 type Preview = { title:string; description:string; difficulty:string; estimatedMinutes:number; locked:boolean; accessReason:string };
 // Etichetta della certificazione mostrata nell'header del lab sbloccato: punto di
@@ -48,8 +48,8 @@ export default function GuidedCertificationLab({lang,slug}:{lang:Locale;slug:str
 
   useEffect(()=>{
     if(busy||fatal||lifecycleTrackedRef.current)return;
-    if(lab){lifecycleTrackedRef.current="study";trackEvent("study_started",{language:lang,study_type:"interactive_lab",lab_slug:slug,certification_slug:lab.certificationSlug});trackFunnelEvent({event:"study_started",cert_slug:lab.certificationSlug,topic_slug:null,lang});return;}
-    if(preview){lifecycleTrackedRef.current="paywall";trackEvent("paywall_viewed",{language:lang,paywall_type:"interactive_lab",lab_slug:slug});trackFunnelEvent({event:"paywall_viewed",cert_slug:null,topic_slug:null,lang});}
+    if(lab){lifecycleTrackedRef.current="study";trackEvent("study_started",{language:lang,study_type:"interactive_lab",lab_slug:slug,certification_slug:lab.certificationSlug});trackFunnelEventOnce(`study_started:interactive_lab:${lang}:${slug}`,{event:"study_started",cert_slug:lab.certificationSlug,topic_slug:null,lang,metadata:{study_type:"interactive_lab",lab_slug:slug}});return;}
+    if(preview){lifecycleTrackedRef.current="paywall";trackEvent("paywall_viewed",{language:lang,paywall_type:"interactive_lab",lab_slug:slug});trackFunnelEventOnce(`paywall_viewed:interactive_lab:${lang}:${slug}`,{event:"paywall_viewed",cert_slug:null,topic_slug:null,lang,paywall_type:"interactive_lab",metadata:{lab_slug:slug}});}
   },[busy,fatal,lab,preview,lang,slug]);
 
   async function ensureAttempt(){if(attempt)return attempt;const r=await apiFetch(`/labs/${slug}/attempts?lang=${lang}`,{method:"POST",body:"{}"});if(!r.ok)throw new Error();const j=await r.json();setAttempt(j.attemptId);return Number(j.attemptId);}
