@@ -14,6 +14,7 @@ export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
 const SESSION_KEY = "cq_analytics_session";
 const SEQUENCE_KEY = "cq_analytics_sequence";
 const onceKeys = new Set<string>();
+const funnelOnceKeys = new Set<string>();
 const pendingEvents: Array<{ eventName: string; params: TrackParams }> = [];
 let currentPageView: { pathname: string; id: string } | null = null;
 let fallbackSequence = 0;
@@ -202,4 +203,39 @@ export function trackFunnelEvent(
     keepalive: true,
     body: payload,
   }).catch(() => {});
+}
+
+/**
+ * Variante one-shot di trackFunnelEvent.
+ *
+ * Evita che rerender, remount o hydration generino più eventi DB
+ * per la stessa azione logica nella stessa sessione del browser.
+ *
+ * Il Set protegge durante la vita del modulo.
+ * sessionStorage protegge anche da remount/reinizializzazioni client-side.
+ */
+export function trackFunnelEventOnce(
+  dedupeKey: string,
+  body: FunnelEventBody,
+  endpoint = "/api/backend/funnel-event"
+) {
+  if (typeof window === "undefined") return;
+
+  const storageKey = `cq_funnel_once:${dedupeKey}`;
+
+  if (funnelOnceKeys.has(dedupeKey)) return;
+
+  try {
+    if (sessionStorage.getItem(storageKey) === "1") {
+      funnelOnceKeys.add(dedupeKey);
+      return;
+    }
+
+    sessionStorage.setItem(storageKey, "1");
+  } catch {
+    // Se sessionStorage non è disponibile, resta comunque il guard in memoria.
+  }
+
+  funnelOnceKeys.add(dedupeKey);
+  trackFunnelEvent(body, endpoint);
 }

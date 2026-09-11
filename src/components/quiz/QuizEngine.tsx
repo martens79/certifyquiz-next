@@ -26,7 +26,12 @@ import {
 import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
-import { trackEvent as trackAnalyticsEvent, trackFunnelEvent } from "@/lib/analytics";
+import {
+  getPageViewId,
+  trackEvent as trackAnalyticsEvent,
+  trackFunnelEvent,
+  trackFunnelEventOnce,
+} from "@/lib/analytics";
 import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -885,12 +890,15 @@ const openFeedback = () => {
     };
     trackQuizEvent('assessment_started', assessmentStartProperties);
     trackQuizEvent('diagnostic_quiz_started', assessmentStartProperties);
-    trackFunnelEvent({
-      event: 'assessment_started',
-      cert_slug: context?.certificationSlug ?? null,
-      topic_slug: context?.topicSlug ?? null,
-      lang,
-    });
+    trackFunnelEventOnce(
+      `assessment_started:${storageScope}`,
+      {
+        event: 'assessment_started',
+        cert_slug: context?.certificationSlug ?? null,
+        topic_slug: context?.topicSlug ?? null,
+        lang,
+      }
+    );
   }, [
     effectiveMode,
     loading,
@@ -919,12 +927,15 @@ const openFeedback = () => {
       conversion_source: conversionContext.source,
       assessment_score: conversionContext.score,
     });
-    trackFunnelEvent({
-      event: 'study_started',
-      cert_slug: context?.certificationSlug ?? null,
-      topic_slug: context?.topicSlug ?? null,
-      lang,
-    });
+    trackFunnelEventOnce(
+      `study_started:${storageScope}:${effectiveMode}`,
+      {
+        event: 'study_started',
+        cert_slug: context?.certificationSlug ?? null,
+        topic_slug: context?.topicSlug ?? null,
+        lang,
+      }
+    );
   }, [
     effectiveMode,
     loading,
@@ -2984,12 +2995,23 @@ function GateShownTracker({
       paywall_type: 'wrong_explanation',
       source: source ?? 'quiz',
     });
-    trackFunnelEvent({
-      event: 'paywall_viewed',
-      cert_slug: certificationSlug,
-      topic_slug: topicSlug,
-      lang,
-    });
+    const pageViewId = getPageViewId() ?? 'unknown';
+
+    trackFunnelEventOnce(
+      `paywall_viewed:wrong_explanation:${pageViewId}:${questionId}:${source ?? 'quiz'}`,
+      {
+        event: 'paywall_viewed',
+        cert_slug: certificationSlug,
+        topic_slug: topicSlug,
+        lang,
+        paywall_type: 'wrong_explanation',
+        metadata: {
+          question_id: Number(questionId),
+          quiz_mode: mode,
+          source: source ?? 'quiz',
+        },
+      }
+    );
     onBlockReviewGateViewed?.();
     trackMetaPixel("Lead");
   }, [questionId, lang, mode, certificationSlug, topicSlug, source, onBlockReviewGateViewed]);
