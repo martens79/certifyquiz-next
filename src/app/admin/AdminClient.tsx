@@ -10,10 +10,13 @@ import AdminPushClient from "./push/AdminPushClient";
 import { downloadCsv } from "@/lib/download-csv";
 import {
   BUSINESS_STEPS,
-  businessStepCounts,
   eventCategory,
   normalizedBusinessEvents,
-  type AdminFunnelEvent,
+} from "@/lib/admin-analytics";
+
+import type {
+  AdminFunnelEvent,
+  BusinessStep,
 } from "@/lib/admin-analytics";
 type Lead = {
   id: number;
@@ -39,9 +42,35 @@ type Overview = {
   topTopics: { topic_slug: string; total: number }[];
 };
 
+type FunnelPagination = {
+  page: number;
+  limit: number;
+  total: number;
+  pages: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+};
+
+type CertificationPerformanceSummary = {
+  certification: string;
+  counts: Partial<Record<BusinessStep, number>>;
+};
+
 type FunnelSummary = {
   events: { event: string; total: number }[];
   topCerts: { cert_slug: string; event: string; total: number }[];
+
+  business: {
+    counts: Record<BusinessStep, number>;
+    assessmentAverageScore: number | null;
+    certificationPerformance: CertificationPerformanceSummary[];
+    normalizedEventCount: number;
+  };
+
+  options: {
+    events: string[];
+    certifications: string[];
+  };
 };
 
 type HotLead = {
@@ -85,6 +114,15 @@ export default function AdminClient() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [funnelSummary, setFunnelSummary] = useState<FunnelSummary | null>(null);
   const [funnelEvents, setFunnelEvents] = useState<AdminFunnelEvent[]>([]);
+  const [funnelPagination, setFunnelPagination] =
+  useState<FunnelPagination>({
+    page: 1,
+    limit: 100,
+    total: 0,
+    pages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  });
   const [hotLeads, setHotLeads] = useState<HotLead[]>([]);
 
   const [loading, setLoading] = useState(false);
@@ -101,32 +139,26 @@ export default function AdminClient() {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const availableCerts = useMemo(() => {
-    const set = new Set<string>();
+  const set = new Set<string>();
 
-    leads.forEach((lead) => {
-      if (lead.cert_slug) set.add(lead.cert_slug);
-    });
+  leads.forEach((lead) => {
+    if (lead.cert_slug) set.add(lead.cert_slug);
+  });
 
-    funnelEvents.forEach((event) => {
-      if (event.cert_slug) set.add(event.cert_slug);
-    });
+  funnelSummary?.options.certifications.forEach((cert) => {
+    if (cert) set.add(cert);
+  });
 
-    hotLeads.forEach((lead) => {
-      if (lead.cert_slug) set.add(lead.cert_slug);
-    });
+  hotLeads.forEach((lead) => {
+    if (lead.cert_slug) set.add(lead.cert_slug);
+  });
 
-    return Array.from(set).sort();
-  }, [leads, funnelEvents, hotLeads]);
+  return Array.from(set).sort();
+}, [leads, funnelSummary, hotLeads]);
 
   const availableEvents = useMemo(() => {
-    const set = new Set<string>();
-
-    funnelEvents.forEach((event) => {
-      if (event.event) set.add(event.event);
-    });
-
-    return Array.from(set).sort();
-  }, [funnelEvents]);
+  return [...(funnelSummary?.options.events ?? [])].sort();
+}, [funnelSummary]);
 
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -149,37 +181,8 @@ export default function AdminClient() {
     });
   }, [leads, search, modeFilter, langFilter, certFilter, dateFilter]);
 
-  const filteredFunnelEvents = useMemo(() => {
-    const q = search.trim().toLowerCase();
+ const filteredFunnelEvents = funnelEvents;
 
-    return funnelEvents.filter((event) => {
-      const matchesSearch =
-        !q ||
-        event.email?.toLowerCase().includes(q) ||
-        event.cert_slug?.toLowerCase().includes(q) ||
-        event.topic_slug?.toLowerCase().includes(q) ||
-        event.event?.toLowerCase().includes(q) ||
-        event.lang?.toLowerCase().includes(q);
-
-      const matchesEvent = eventFilter === "all" || event.event === eventFilter;
-      const matchesLang = langFilter === "all" || event.lang === langFilter;
-      const matchesCert = certFilter === "all" || event.cert_slug === certFilter;
-      const matchesDate = matchesDateFilter(event.created_at, dateFilter);
-
-      return matchesSearch && matchesEvent && matchesLang && matchesCert && matchesDate;
-    });
-  }, [funnelEvents, search, eventFilter, langFilter, certFilter, dateFilter]);
-
-  const businessFilteredEvents = useMemo(
-    () =>
-      funnelEvents.filter((event) => {
-        const matchesLang = langFilter === "all" || event.lang === langFilter;
-        const matchesCert = certFilter === "all" || event.cert_slug === certFilter;
-        const matchesDate = matchesDateFilter(event.created_at, dateFilter);
-        return matchesLang && matchesCert && matchesDate;
-      }),
-    [funnelEvents, langFilter, certFilter, dateFilter],
-  );
 
   const filteredHotLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -199,45 +202,34 @@ export default function AdminClient() {
     });
   }, [hotLeads, search, langFilter, certFilter, dateFilter]);
 
-  const businessCounts = useMemo(
-    () => businessStepCounts(businessFilteredEvents),
-    [businessFilteredEvents],
-  );
+ const businessCounts =
+  funnelSummary?.business.counts ??
+  Object.fromEntries(
+    BUSINESS_STEPS.map((step) => [step, 0]),
+  ) as Record<BusinessStep, number>;
 
-  const normalizedEvents = useMemo(
-    () => normalizedBusinessEvents(businessFilteredEvents),
-    [businessFilteredEvents],
-  );
+const assessmentAverageScore =
+  funnelSummary?.business.assessmentAverageScore ?? null;
 
-  const assessmentAverageScore = useMemo(() => {
-    const scores = normalizedEvents
-      .filter((event) => event.step === "assessment_completed" && event.score !== null)
-      .map((event) => Number(event.score))
-      .filter(Number.isFinite);
-    if (!scores.length) return null;
-    return Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 10) / 10;
-  }, [normalizedEvents]);
+const certificationPerformance =
+  funnelSummary?.business.certificationPerformance ?? [];
 
-  const certificationPerformance = useMemo(() => {
-    return aggregateCertificationPerformance(normalizedEvents);
-  }, [normalizedEvents]);
-
-  const allCertificationPerformance = useMemo(
-    () => aggregateCertificationPerformance(normalizedBusinessEvents(funnelEvents)),
-    [funnelEvents],
-  );
+const allCertificationPerformance =
+  funnelSummary?.business.certificationPerformance ?? [];
 
   const paywallStats = useMemo(() => {
-  const gateShown = filteredFunnelEvents.filter(
-    (event) => event.event === "wrong_explanation_gate_shown"
-  ).length;
+  const getEventTotal = (name: string) =>
+    Number(
+      funnelSummary?.events.find((event) => event.event === name)?.total ?? 0
+    );
 
-  const ctaClicked = filteredFunnelEvents.filter(
-    (event) => event.event === "premium_cta_clicked"
-  ).length;
+  const gateShown = getEventTotal("wrong_explanation_gate_shown");
+  const ctaClicked = getEventTotal("premium_cta_clicked");
 
   const conversion =
-    gateShown > 0 ? Math.round((ctaClicked / gateShown) * 1000) / 10 : 0;
+    gateShown > 0
+      ? Math.round((ctaClicked / gateShown) * 1000) / 10
+      : 0;
 
   return {
     gateShown,
@@ -247,8 +239,7 @@ export default function AdminClient() {
     usersAtLimitFree: paywall20?.totals.users_at_limit_free ?? 0,
     usersAtLimitPremium: paywall20?.totals.users_at_limit_premium ?? 0,
   };
-}, [filteredFunnelEvents, paywall20]);
-
+}, [funnelSummary, paywall20]);
   const pwaStats = useMemo(() => {
   const getEventTotal = (name: string) =>
     funnelSummary?.events.find((e) => e.event === name)?.total ?? 0;
@@ -289,12 +280,13 @@ export default function AdminClient() {
   }, [filteredLeads]);
 
   const filteredEventCounts = useMemo(() => {
-    return getTopItems(
-      filteredFunnelEvents
-        .map((event) => event.event)
-        .filter((value): value is string => Boolean(value))
-    );
-  }, [filteredFunnelEvents]);
+  return (funnelSummary?.events ?? [])
+    .map((event) => ({
+      name: event.event,
+      count: Number(event.total),
+    }))
+    .sort((a, b) => b.count - a.count);
+}, [funnelSummary]);
 
   async function loadDashboard() {
     if (!token) return;
@@ -302,34 +294,55 @@ export default function AdminClient() {
     setLoading(true);
     setError("");
 
-    try {
-      const [
-        overviewRes,
-        leadsRes,
-        funnelSummaryRes,
-        funnelEventsRes,
-        hotLeadsRes,
-        paywall20Res,
-      ] = await Promise.all([
-        fetch("/api/backend/admin/leads-overview", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/leads", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/funnel-summary", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/funnel-events", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/hot-leads", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/backend/admin/paywall-20", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
+   try {
+  const funnelParams = new URLSearchParams({
+    page: String(funnelPagination.page),
+    limit: String(funnelPagination.limit),
+    q: search.trim(),
+    event: eventFilter,
+    lang: langFilter,
+    cert: certFilter,
+    date: dateFilter,
+  });
+
+  const [
+    overviewRes,
+    leadsRes,
+    funnelSummaryRes,
+    funnelEventsRes,
+    hotLeadsRes,
+    paywall20Res,
+  ] = await Promise.all([
+    fetch("/api/backend/admin/leads-overview", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+    fetch("/api/backend/admin/leads", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+    fetch(
+      `/api/backend/admin/funnel-summary?${funnelParams.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ),
+
+    fetch(
+      `/api/backend/admin/funnel-events?${funnelParams.toString()}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    ),
+
+    fetch("/api/backend/admin/hot-leads", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+
+    fetch("/api/backend/admin/paywall-20", {
+      headers: { Authorization: `Bearer ${token}` },
+    }),
+  ]);
 
       if (!overviewRes.ok) throw new Error(`Overview HTTP ${overviewRes.status}`);
       if (!leadsRes.ok) throw new Error(`Leads HTTP ${leadsRes.status}`);
@@ -353,6 +366,16 @@ export default function AdminClient() {
       setLeads(leadsJson.leads ?? []);
       setFunnelSummary(funnelSummaryJson);
       setFunnelEvents(funnelEventsJson.events ?? []);
+      setFunnelPagination(
+  funnelEventsJson.pagination ?? {
+    page: 1,
+    limit: 100,
+    total: 0,
+    pages: 1,
+    hasPrevious: false,
+    hasNext: false,
+  }
+);
       setHotLeads(hotLeadsJson.hotLeads ?? []);
       setPaywall20(paywall20Json);
     } catch (e: unknown) {
@@ -387,8 +410,48 @@ export default function AdminClient() {
     downloadCsv("certifyquiz-leads.csv", rows);
   }
 
-  function exportEventsCsv() {
-    const rows = funnelEvents.map((event) => ({
+  async function exportEventsCsv() {
+  if (!token) return;
+
+  try {
+    const limit = 200;
+    let page = 1;
+    let pages = 1;
+    const allEvents: AdminFunnelEvent[] = [];
+
+    do {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        q: search.trim(),
+        event: eventFilter,
+        lang: langFilter,
+        cert: certFilter,
+        date: dateFilter,
+      });
+
+      const response = await fetch(
+        `/api/backend/admin/funnel-events?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Export funnel HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      allEvents.push(...(data.events ?? []));
+
+      pages = data.pagination?.pages ?? 1;
+      page += 1;
+    } while (page <= pages);
+
+    const rows = allEvents.map((event) => ({
       email: event.email ?? "",
       event: event.event,
       cert_slug: event.cert_slug ?? "",
@@ -399,7 +462,15 @@ export default function AdminClient() {
     }));
 
     downloadCsv("certifyquiz-funnel-events.csv", rows);
+  } catch (error) {
+    console.error("Errore export funnel events:", error);
+    setError(
+      error instanceof Error
+        ? error.message
+        : "Errore durante esportazione eventi"
+    );
   }
+}
 
   function exportHotLeadsCsv() {
     downloadCsv("certifyquiz-hot-leads.csv", hotLeads.map((lead) => ({
@@ -424,12 +495,30 @@ export default function AdminClient() {
     })));
   }
 
-  useEffect(() => {
-    if (token && tab === "dashboard") {
-      loadDashboard();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, tab]);
+useEffect(() => {
+  if (!token || tab !== "dashboard") return;
+
+  loadDashboard();
+}, [
+  token,
+  tab,
+  funnelPagination.page,
+  search,
+  eventFilter,
+  langFilter,
+  certFilter,
+  dateFilter,
+]);
+useEffect(() => {
+  setFunnelPagination((prev) => {
+    if (prev.page === 1) return prev;
+
+    return {
+      ...prev,
+      page: 1,
+    };
+  });
+}, [search, eventFilter, langFilter, certFilter, dateFilter]);
 
   if (!user) {
     return <StateBox title="Accesso richiesto" text="Devi essere loggato." />;
@@ -891,7 +980,48 @@ return (
                 </tbody>
               </table>
             </div>
+                  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 16,
+  }}
+>
+  <button
+    type="button"
+    disabled={!funnelPagination.hasPrevious || loading}
+    onClick={() =>
+      setFunnelPagination((prev) => ({
+        ...prev,
+        page: Math.max(1, prev.page - 1),
+      }))
+    }
+    style={styles.exportButton}
+  >
+    ← Precedente
+  </button>
 
+  <div style={{ fontSize: 13, opacity: 0.75 }}>
+    Pagina {funnelPagination.page} di {funnelPagination.pages} ·{" "}
+    {funnelPagination.total} eventi
+  </div>
+
+  <button
+    type="button"
+    disabled={!funnelPagination.hasNext || loading}
+    onClick={() =>
+      setFunnelPagination((prev) => ({
+        ...prev,
+        page: Math.min(prev.pages, prev.page + 1),
+      }))
+    }
+    style={styles.exportButton}
+  >
+    Successiva →
+  </button>
+</div>
             {!loading && filteredFunnelEvents.length === 0 && (
               <div style={styles.empty}>Nessun evento funnel trovato con questi filtri.</div>
             )}
