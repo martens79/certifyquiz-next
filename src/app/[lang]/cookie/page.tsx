@@ -90,10 +90,10 @@ const T = {
     es: "Contactos",
   },
   contactsTxt: {
-    it: "Per domande sulla Cookie Policy: privacy@certifyquiz.com.",
-    en: "For questions about the Cookie Policy: privacy@certifyquiz.com.",
-    fr: "Pour toute question concernant la politique de cookies : privacy@certifyquiz.com.",
-    es: "Para consultas sobre la Política de Cookies: privacy@certifyquiz.com.",
+    it: "Per domande sulla Cookie Policy: certifyquiz@gmail.com.",
+    en: "For questions about the Cookie Policy: certifyquiz@gmail.com.",
+    fr: "Pour toute question concernant la politique de cookies : certifyquiz@gmail.com.",
+    es: "Para consultas sobre la Política de Cookies: certifyquiz@gmail.com.",
   },
 } as const;
 
