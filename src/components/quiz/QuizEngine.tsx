@@ -2998,7 +2998,7 @@ function GateShownTracker({
     const pageViewId = getPageViewId() ?? 'unknown';
 
     trackFunnelEventOnce(
-      `paywall_viewed:wrong_explanation:${pageViewId}:${questionId}:${source ?? 'quiz'}`,
+      `paywall_viewed:wrong_explanation:${pageViewId}:${source ?? 'quiz'}`,
       {
         event: 'paywall_viewed',
         cert_slug: certificationSlug,
@@ -3006,7 +3006,7 @@ function GateShownTracker({
         lang,
         paywall_type: 'wrong_explanation',
         metadata: {
-          question_id: Number(questionId),
+          first_question_id: Number(questionId),
           quiz_mode: mode,
           source: source ?? 'quiz',
         },
