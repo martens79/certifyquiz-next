@@ -1,7 +1,7 @@
 // src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import QuizEngine from "@/components/quiz/QuizEngine";
@@ -29,11 +29,6 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
     id: Number(q.id),
     question: q.question ?? "",
     explanation: q.explanation ?? undefined,
-    questionType: q.question_type,
-    blueprintDomain: q.blueprint_domain,
-    blueprintObjectiveId: q.blueprint_objective_id,
-    skillType: q.skill_type,
-    exhibit: q.exhibit,
     answers: (q.answers ?? []).map((a: any) => ({
       id: Number(a.id),
       text: a.text ?? "",
@@ -71,7 +66,6 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   // light check “coming soon” (solo lingue non-IT)
   const [topicTotal, setTopicTotal] = useState<number | null>(null);
-  const [globalTopicTotal, setGlobalTopicTotal] = useState<number | null>(null);
 
   /* ─────────────────────────────────────────────────────────────
      VALIDAZIONE PARAMETRI BASE
@@ -147,43 +141,25 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
     if (Number.isNaN(numericId)) return;
 
     let cancelled = false;
-    setTopicTotal(null);
-    setGlobalTopicTotal(null);
 
     (async () => {
       try {
-        const request = (strict: boolean) =>
-          getQuestionsByTopic(numericId, L, {
-            limit: 1,
-            shuffle: false,
-            strict,
-          });
-        const [res, globalRes] = await Promise.all([
-          request(L !== "it"),
-          L === "it" ? Promise.resolve(null) : request(false),
-        ]);
+        const res = await getQuestionsByTopic(numericId, L, {
+  limit: 1,
+  shuffle: false,
+  strict: L !== "it",
+});
 
-        const extractTotal = (value: unknown): number | null => {
-          const poolTotalFromApi = (value as any)?.poolTotal;
-          if (typeof poolTotalFromApi === "number") return poolTotalFromApi;
-          if (Array.isArray(value)) return value.length > 0 ? 1 : 0;
-          if (Array.isArray((value as any)?.questions)) {
-            return (value as any).questions.length > 0 ? 1 : 0;
-          }
-          return null;
-        };
-        const total = extractTotal(res);
-        const globalTotal = L === "it" ? total : extractTotal(globalRes);
+        const poolTotalFromApi = (res as any)?.poolTotal;
 
-        if (!cancelled) {
-          setTopicTotal(total);
-          setGlobalTopicTotal(globalTotal);
-        }
+        let total: number | null = null;
+        if (typeof poolTotalFromApi === "number") total = poolTotalFromApi;
+        else if (Array.isArray(res)) total = res.length > 0 ? 1 : 0;
+        else if (Array.isArray((res as any)?.questions)) total = (res as any).questions.length > 0 ? 1 : 0;
+
+        if (!cancelled) setTopicTotal(total);
       } catch {
-        if (!cancelled) {
-          setTopicTotal(null);
-          setGlobalTopicTotal(null);
-        }
+        if (!cancelled) setTopicTotal(null);
       }
     })();
 
@@ -196,6 +172,27 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
      EXAM SPEC UFFICIALE
   ───────────────────────────────────────────────────────────── */
   const examSpec = useMemo(() => getExamSpecForCert(certificationId, 90), [certificationId]);
+
+  const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      const res = await getQuestionsByTopic(numericId, L, {
+        limit: 500,
+        shuffle: false,
+        strict: L !== "it",
+      });
+
+      const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
+      return (raw ?? []).map(normalizeQuestion);
+    } catch (e: any) {
+      if (e?.status === 401) {
+        setNeedsLoginForQuestions(true);
+        return [];
+      }
+
+      console.error("🟥 getQuestionsByTopic FAILED", e);
+      return [];
+    }
+  }, [numericId, L]);
 
   if (blocked || Number.isNaN(numericId)) return null;
 
@@ -228,23 +225,14 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   }
 
   /* ─────────────────────────────────────────────────────────────
-     COMING SOON
-     topicTotal per "it" viene da una fetch non-strict (vedi strict: L !== "it"
-     sopra), cioè conta le righe domanda senza filtrare per testo/risposte in
-     lingua — quindi topicTotal === 0 in IT vuol dire zero domande in
-     qualunque lingua per questo topic, non solo IT mancante. Va mostrato il
-     coming-soon anche in IT in quel caso (prima restava escluso e i topic
-     nuovi senza nessuna domanda montavano un QuizEngine vuoto per gli utenti
-     italiani).
+     COMING SOON (solo non-IT)
   ───────────────────────────────────────────────────────────── */
-  const isComingSoon = topicTotal === 0;
-  const comingSoonReason = globalTopicTotal === 0 ? "content" : "translation";
+  const isComingSoon = topicTotal === 0 && L !== "it";
   if (isComingSoon) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-10">
         <ComingSoonBox
           lang={L}
-          reason={comingSoonReason}
           fallbackLang="en"
           fallbackHref={`/en/quiz/topic/${numericId}`}
           browseHref={backToHref}
@@ -316,25 +304,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
           console.error("🟥 feedback failed", e);
         }
       }}
-      fetchQuestions={async (): Promise<UiQuestion[]> => {
-        try {
-          const res = await getQuestionsByTopic(numericId, L, {
-  limit: 500,
-  shuffle: false,
-  strict: L !== "it",
-});
-
-          const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
-          return (raw ?? []).map(normalizeQuestion);
-        } catch (e: any) {
-          if (e?.status === 401) {
-            setNeedsLoginForQuestions(true);
-            return [];
-          }
-          console.error("🟥 getQuestionsByTopic FAILED", e);
-          return [];
-        }
-      }}
+      fetchQuestions={fetchTopicQuestions}
       durationsByMode={{
   training: null,
   exam: examSpec.durationSec,
