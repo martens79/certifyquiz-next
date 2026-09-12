@@ -46,7 +46,7 @@ export default function TrackedResourceLink({
           certification_slug: certificationSlug,
           language: lang,
           user_status: userStatusFrom(loading ? null : user),
-          source: "certification_page",
+          source_page: "certification_page",
           resource_type: resourceType,
         })
       }

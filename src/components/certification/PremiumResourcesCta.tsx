@@ -108,7 +108,7 @@ export default function PremiumResourcesCta({
               certification_slug: certificationSlug,
               language: lang,
               user_status: userStatusFrom(user),
-              source: "certification_page",
+              source_page: "certification_page",
               resource_type: "premium_card",
             });
 

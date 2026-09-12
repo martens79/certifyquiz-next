@@ -19,6 +19,21 @@ const pendingEvents: Array<{ eventName: string; params: TrackParams }> = [];
 let currentPageView: { pathname: string; id: string } | null = null;
 let fallbackSequence = 0;
 
+/**
+ * `source` is an acquisition concept in GA4. Product events historically used
+ * it to describe the UI page that emitted the event (for example
+ * `certification_page`), which makes source/medium reports ambiguous. Keep the
+ * product context under the explicit `source_page` dimension instead.
+ *
+ * The compatibility mapping also protects new/older callers while the direct
+ * call sites are migrated. An explicitly supplied source_page always wins.
+ */
+function normalizeGa4Params(params: TrackParams): TrackParams {
+  const { source, ...rest } = params;
+  if (source === undefined || rest.source_page !== undefined) return rest;
+  return { ...rest, source_page: source };
+}
+
 export function getAnonymousSessionId(): string | undefined {
   if (typeof window === "undefined") return undefined;
   try {
@@ -44,7 +59,7 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
 
   w.gtag("event", eventName, {
     anonymous_session_id: getAnonymousSessionId(),
-    ...params,
+    ...normalizeGa4Params(params),
   });
 }
 
