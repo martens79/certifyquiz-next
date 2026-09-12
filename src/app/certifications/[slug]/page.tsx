@@ -47,9 +47,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
   },
   "ccna": {
-    title: "CCNA Practice Test 2026 – 600 Exam Questions 200-301 | CertifyQuiz",
+    title: "CCNA Practice Test 2026 – 1300+ Questions & 18 Labs | CertifyQuiz",
     description:
-      "Practice for Cisco CCNA 200-301 with 600 exam-style questions. Covers routing, switching, subnetting, VLANs, OSPF and security. Start free.",
+      "Practice for Cisco CCNA 200-301 with 1300+ questions and 18 labs. Covers routing, switching, subnetting, VLANs, OSPF and security. Start free.",
   },
   "cissp": {
     title: "CISSP Practice Test 2026 – Exam-Style Questions | CertifyQuiz",
