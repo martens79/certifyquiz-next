@@ -79,10 +79,10 @@ const T = {
   },
   contacts: { it: "Contatti", en: "Contacts", fr: "Contacts", es: "Contactos" },
   contactsTxt: {
-    it: "Per domande sui Termini e Condizioni: privacy@certifyquiz.com.",
-    en: "For questions about the Terms and Conditions: privacy@certifyquiz.com.",
-    fr: "Pour toute question sur les Conditions générales : privacy@certifyquiz.com.",
-    es: "Para consultas sobre los Términos y Condiciones: privacy@certifyquiz.com.",
+    it: "Per domande sui Termini e Condizioni: certifyquiz@gmail.com.",
+    en: "For questions about the Terms and Conditions: certifyquiz@gmail.com.",
+    fr: "Pour toute question sur les Conditions générales : certifyquiz@gmail.com.",
+    es: "Para consultas sobre los Términos y Condiciones: certifyquiz@gmail.com.",
   },
 } as const;
 

@@ -29,10 +29,10 @@ const T = {
 
   controller: { it: "Titolare del trattamento", en: "Data Controller", fr: "Responsable du traitement", es: "Responsable del tratamiento" },
   controllerTxt: {
-    it: "CertifyQuiz – Email: privacy@certifyquiz.com. (Aggiungi indirizzo postale e P.IVA se disponibili).",
-    en: "CertifyQuiz – Email: privacy@certifyquiz.com. (Add postal address and VAT if available).",
-    fr: "CertifyQuiz – Email : privacy@certifyquiz.com. (Ajoutez l’adresse postale et le numéro de TVA si disponibles).",
-    es: "CertifyQuiz – Email: privacy@certifyquiz.com. (Añade dirección postal y NIF si están disponibles).",
+    it: "Il titolare del trattamento è Lorenzo Beux, creatore e gestore di CertifyQuiz. Email: certifyquiz@gmail.com.",
+    en: "The data controller is Lorenzo Beux, creator and operator of CertifyQuiz. Email: certifyquiz@gmail.com.",
+    fr: "Le responsable du traitement est Lorenzo Beux, créateur et gestionnaire de CertifyQuiz. E-mail : certifyquiz@gmail.com.",
+    es: "El responsable del tratamiento es Lorenzo Beux, creador y gestor de CertifyQuiz. Correo electrónico: certifyquiz@gmail.com.",
   },
 
   dataTypes: { it: "Categorie di dati trattati", en: "Categories of data processed", fr: "Catégories de données traitées", es: "Categorías de datos tratados" },
@@ -173,10 +173,10 @@ const T = {
 
   contacts: { it: "Contatti", en: "Contacts", fr: "Contacts", es: "Contactos" },
   contactsTxt: {
-    it: "Per richieste privacy o esercizio dei diritti: privacy@certifyquiz.com. (Se disponibile, indica DPO e indirizzo postale).",
-    en: "For privacy requests or to exercise your rights: privacy@certifyquiz.com. (If available, add DPO and postal address).",
-    fr: "Pour toute demande relative à la confidentialité ou l’exercice de vos droits : privacy@certifyquiz.com. (Ajoutez le DPO et l’adresse postale si disponibles).",
-    es: "Para solicitudes de privacidad o ejercicio de derechos: privacy@certifyquiz.com. (Si está disponible, añade DPO y dirección postal).",
+    it: "Per richieste privacy o per esercitare i tuoi diritti, contatta Lorenzo Beux all’indirizzo certifyquiz@gmail.com.",
+    en: "For privacy requests or to exercise your rights, contact Lorenzo Beux at certifyquiz@gmail.com.",
+    fr: "Pour toute demande relative à la confidentialité ou pour exercer vos droits, contactez Lorenzo Beux à l’adresse certifyquiz@gmail.com.",
+    es: "Para solicitudes de privacidad o para ejercer tus derechos, contacta con Lorenzo Beux en certifyquiz@gmail.com.",
   },
 } as const;
 
