@@ -1606,7 +1606,7 @@ const submitAssessmentReport = async () => {
 
    trackQuizEvent("assessment_email_submitted", {
   lang,
-  source: "assessment_result",
+  source_page: "assessment_result",
   certification: context?.certificationSlug ?? null,
   topic: context?.topicSlug ?? null,
   score_pct: lastSummary.scorePct,
@@ -2062,7 +2062,7 @@ const assessmentCopy =
   trackQuizEvent('premium_cta_clicked', {
     lang,
     mode: effectiveMode,
-    source: 'assessment_result',
+    source_page: 'assessment_result',
     storage_scope: storageScope,
     certification: context?.certificationName ?? null,
     topic: context?.topicTitle ?? null,
@@ -2735,7 +2735,7 @@ return (
                 trackQuizEvent('premium_cta_clicked', {
                   lang,
                   mode: effectiveMode,
-                  source: 'locked_wrong_explanation',
+                  source_page: 'locked_wrong_explanation',
                   question_id: Number(q.id),
                   experiment_variant: experimentVariant,
                 });
@@ -2993,7 +2993,7 @@ function GateShownTracker({
       certification_slug: certificationSlug,
       topic_slug: topicSlug,
       paywall_type: 'wrong_explanation',
-      source: source ?? 'quiz',
+      source_page: source ?? 'quiz',
     });
     const pageViewId = getPageViewId() ?? 'unknown';
 

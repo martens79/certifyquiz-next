@@ -59,6 +59,40 @@ test("getAnonymousSessionId: generates and persists a UUID in sessionStorage", a
   assert.equal(sessionStore.get("cq_analytics_session"), id);
 });
 
+test("trackEvent: keeps product context out of GA4 acquisition source", async () => {
+  const { trackEvent } = await analyticsModule;
+  const calls: unknown[][] = [];
+  (globalThis as any).window.gtag = (...args: unknown[]) => calls.push(args);
+
+  trackEvent("study_resource_clicked", {
+    source: "certification_page",
+    resource_type: "quiz",
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0], "event");
+  assert.equal(calls[0][1], "study_resource_clicked");
+  const params = calls[0][2] as Record<string, unknown>;
+  assert.equal(params.source, undefined);
+  assert.equal(params.source_page, "certification_page");
+  assert.equal(params.resource_type, "quiz");
+});
+
+test("trackEvent: an explicit source_page wins over the legacy source alias", async () => {
+  const { trackEvent } = await analyticsModule;
+  const calls: unknown[][] = [];
+  (globalThis as any).window.gtag = (...args: unknown[]) => calls.push(args);
+
+  trackEvent("premium_cta_clicked", {
+    source: "legacy_value",
+    source_page: "quiz_result",
+  });
+
+  const params = calls[0][2] as Record<string, unknown>;
+  assert.equal(params.source, undefined);
+  assert.equal(params.source_page, "quiz_result");
+});
+
 test("trackFunnelEvent: includes the anonymous session id in the payload sent to the backend", async () => {
   const { trackFunnelEvent } = await analyticsModule;
   beaconCalls.length = 0;

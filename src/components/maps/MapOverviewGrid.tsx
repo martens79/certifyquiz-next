@@ -130,7 +130,7 @@ function MapCard({
       map_slug: item.slug,
       language: lang,
       user_status: userStatus,
-      source: "maps_page",
+      source_page: "maps_page",
       resource_type: "map",
     });
 
@@ -325,7 +325,7 @@ export default function MapOverviewGrid({ lang, items }: Props) {
     trackEvent("study_map_list_viewed", {
       language: lang,
       user_status: userStatusFrom(user),
-      source: "maps_page",
+      source_page: "maps_page",
       resource_type: "map",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
