@@ -11,7 +11,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com")
 // Slug per lingua
 const PATH_BY_LANG: Record<Lang, string> = {
   it: "/it/terms",
-  en: "/en/terms",
+  en: "/terms",
   fr: "/fr/terms",
   es: "/es/terms",
 };
