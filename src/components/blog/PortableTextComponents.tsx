@@ -54,7 +54,7 @@ if (href && href !== "#" && !/^https?:\/\//.test(href) && !href.startsWith("/"))
             href={href}
             target={openInNewTab ? "_blank" : undefined}
             rel={openInNewTab ? "noopener noreferrer" : undefined}
-            className="text-blue-600 underline hover:text-blue-800"
+            className="break-words text-blue-600 underline hover:text-blue-800"
           >
             {children}
           </a>
@@ -64,7 +64,7 @@ if (href && href !== "#" && !/^https?:\/\//.test(href) && !href.startsWith("/"))
       return (
         <Link
           href={href}
-          className="text-blue-600 underline hover:text-blue-800"
+          className="break-words text-blue-600 underline hover:text-blue-800"
         >
           {children}
         </Link>

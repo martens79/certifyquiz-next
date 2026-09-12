@@ -265,8 +265,6 @@ export default async function BlogArticlePage({
   </div>
 </section>
 
-<LeadMagnetBox lang={lang} />
-
 {/* ✅ Author box */}
 <AuthorBox lang={lang} />
 
