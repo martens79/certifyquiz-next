@@ -173,6 +173,27 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   ───────────────────────────────────────────────────────────── */
   const examSpec = useMemo(() => getExamSpecForCert(certificationId, 90), [certificationId]);
 
+  const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      const res = await getQuestionsByTopic(numericId, L, {
+        limit: 500,
+        shuffle: false,
+        strict: L !== "it",
+      });
+
+      const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
+      return (raw ?? []).map(normalizeQuestion);
+    } catch (e: any) {
+      if (e?.status === 401) {
+        setNeedsLoginForQuestions(true);
+        return [];
+      }
+
+      console.error("🟥 getQuestionsByTopic FAILED", e);
+      return [];
+    }
+  }, [numericId, L]);
+
   if (blocked || Number.isNaN(numericId)) return null;
 
   /* ─────────────────────────────────────────────────────────────
@@ -219,27 +240,6 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       </div>
     );
   }
-
-  const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
-    try {
-      const res = await getQuestionsByTopic(numericId, L, {
-        limit: 500,
-        shuffle: false,
-        strict: L !== "it",
-      });
-
-      const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
-      return (raw ?? []).map(normalizeQuestion);
-    } catch (e: any) {
-      if (e?.status === 401) {
-        setNeedsLoginForQuestions(true);
-        return [];
-      }
-
-      console.error("🟥 getQuestionsByTopic FAILED", e);
-      return [];
-    }
-  }, [numericId, L]);
 
   /* ─────────────────────────────────────────────────────────────
      QUIZ ENGINE
