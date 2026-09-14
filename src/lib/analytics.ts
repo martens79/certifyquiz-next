@@ -7,6 +7,8 @@
 // "use client" non serve qui: il file non ha side effect a livello di
 // modulo, il guard su typeof window basta a renderlo innocuo in SSR.
 
+import { getToken } from "@/lib/auth";
+
 type TrackParams = Record<string, string | number | boolean | null | undefined>;
 
 export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
@@ -134,6 +136,22 @@ type FunnelEventBody = {
   metadata?: Record<string, JsonValue> | null;
 };
 
+const VISITOR_KEY = "cq_analytics_visitor";
+
+export function getAnonymousVisitorId(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    let value = localStorage.getItem(VISITOR_KEY);
+    if (!value) {
+      value = crypto.randomUUID();
+      localStorage.setItem(VISITOR_KEY, value);
+    }
+    return value;
+  } catch {
+    return undefined;
+  }
+}
+
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 function currentPathname(): string {
@@ -198,6 +216,7 @@ export function trackFunnelEvent(
     metadata,
     event_id: crypto.randomUUID(),
     session_id: getAnonymousSessionId() ?? null,
+    visitor_id: getAnonymousVisitorId() ?? null,
     pathname: currentPathname(),
     page_view_id: getPageViewId() ?? null,
     client_sequence: nextClientSequence(),
@@ -207,14 +226,21 @@ export function trackFunnelEvent(
     ...referrer,
   });
 
-  if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+  const token = getToken();
+
+  // Authenticated events use fetch so the backend can resolve user_id from
+  // the bearer token. Anonymous events keep the unload-safe beacon path.
+  if (!token && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([payload], { type: "application/json" });
     if (navigator.sendBeacon(endpoint, blob)) return;
   }
 
   fetch(endpoint, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     keepalive: true,
     body: payload,
   }).catch(() => {});

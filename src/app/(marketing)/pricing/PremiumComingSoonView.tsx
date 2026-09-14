@@ -670,7 +670,12 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
         purchase_type: "subscription",
         source_page: "pricing",
       });
-      trackFunnelEvent({ event: "premium_clicked", lang, plan: selectedPlan });
+      trackFunnelEvent({
+        event: "checkout_started",
+        lang,
+        plan: selectedPlan,
+        metadata: { plan: selectedPlan, purchase_type: "subscription", source_page: "pricing" },
+      });
 
       trackMetaPixel("InitiateCheckout", {
         value: PREMIUM_PLAN_VALUES[selectedPlan],
