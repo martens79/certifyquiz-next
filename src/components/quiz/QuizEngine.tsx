@@ -2765,6 +2765,9 @@ return (
             <Link
               href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {
+                const cohort = user?.id != null
+                  ? getOrCreatePostGateCohort(user.id, q.id)
+                  : null;
                 trackQuizEvent('premium_cta_clicked', {
                   lang,
                   mode: effectiveMode,
@@ -2780,6 +2783,7 @@ return (
                   cert_slug: context?.certificationSlug ?? null,
                   topic_slug: context?.topicSlug ?? null,
                   lang,
+                  gate_instance_id: cohort?.gateInstanceId ?? null,
                 });
               }}
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"

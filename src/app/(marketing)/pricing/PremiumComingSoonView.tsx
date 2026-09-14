@@ -7,6 +7,7 @@ import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 import { analyticsUserStateFrom, trackEvent, trackEventOnce, trackFunnelEvent } from "@/lib/analytics";
+import { readPostGateCohort } from "@/lib/post-gate-tracking";
 import PackagesUpsell from "./PackagesUpsell";
 
 type Lang = "it" | "es" | "en" | "fr";
@@ -663,17 +664,20 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     if (isLoading) return;
     try {
       setIsLoading(true);
+      const postGateCohort = user?.id != null ? readPostGateCohort(user.id) : null;
       trackEvent("checkout_started", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
         plan_type: selectedPlan,
         purchase_type: "subscription",
         source_page: "pricing",
+        gate_instance_id: postGateCohort?.gateInstanceId ?? null,
       });
       trackFunnelEvent({
         event: "checkout_started",
         lang,
         plan: selectedPlan,
+        gate_instance_id: postGateCohort?.gateInstanceId ?? null,
         metadata: { plan: selectedPlan, purchase_type: "subscription", source_page: "pricing" },
       });
 
