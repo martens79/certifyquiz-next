@@ -46,3 +46,21 @@ test("continued free is claimed once per gate instance", async () => {
   assert.equal(claimContinuedFree(cohort), true);
   assert.equal(claimContinuedFree(cohort), false);
 });
+
+test("deduplication survives unavailable localStorage within the page lifetime", async () => {
+  const { claimContinuedFree, getOrCreatePostGateCohort } = await mod;
+  const stableStorage = (globalThis as any).localStorage;
+  (globalThis as any).localStorage = {
+    getItem: () => { throw new Error("blocked"); },
+    setItem: () => { throw new Error("blocked"); },
+  };
+  try {
+    const first = getOrCreatePostGateCohort(12, 10);
+    const second = getOrCreatePostGateCohort(12, 10);
+    assert.equal(first.gateInstanceId, second.gateInstanceId);
+    assert.equal(claimContinuedFree(first), true);
+    assert.equal(claimContinuedFree(second), false);
+  } finally {
+    (globalThis as any).localStorage = stableStorage;
+  }
+});
