@@ -23,15 +23,13 @@ export function getOrCreatePostGateCohort(
     const raw = localStorage.getItem(key);
     if (raw) {
       const existing = JSON.parse(raw) as PostGateCohort;
-      if (existing.gateQuestionId === gateQuestionId) {
-        memoryCohorts.set(key, existing);
-        return existing;
-      }
+      memoryCohorts.set(key, existing);
+      return existing;
     }
   } catch {}
 
   const memoryCohort = memoryCohorts.get(key);
-  if (memoryCohort?.gateQuestionId === gateQuestionId) return memoryCohort;
+  if (memoryCohort) return memoryCohort;
 
   const cohort = {
     gateInstanceId: crypto.randomUUID(),
