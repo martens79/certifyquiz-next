@@ -140,6 +140,10 @@ export type ExtraContent = {
 
   // ✅ NEW: blocco SEO (risponde a "current certification", "2021", "2023")
   currentCertification?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
+  /** Override opzionale dell'H2 del blocco sopra (il default storico menziona
+   *  "SQL" e non è pertinente per ogni certificazione). Lingue non valorizzate
+   *  qui restano sul default esistente. */
+  currentCertificationHeading?: Readonly<Partial<Record<keyof LocalizedText, string>>>;
 };
 
 export type CertificationData = {
