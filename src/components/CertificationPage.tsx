@@ -398,12 +398,14 @@ const pageTopics =
         {currentCertification.length > 0 && (
           <section className="mt-4 mb-4 bg-blue-100 p-4 rounded-xl shadow">
             <h2 className="text-lg font-semibold text-blue-800 mb-2">
-              {({
-                it: 'Qual è la certificazione SQL "attuale"?',
-en: "What is the current SQL certification?",
-fr: 'Quelle est la certification SQL "actuelle" ?',
-es: '¿Cuál es la certificación SQL "actual"?',
-              } as const)[lang] ?? "Current certification"}
+              {extraContent?.currentCertificationHeading?.[lang] ??
+                ({
+                  it: 'Qual è la certificazione SQL "attuale"?',
+                  en: "What is the current SQL certification?",
+                  fr: 'Quelle est la certification SQL "actuelle" ?',
+                  es: '¿Cuál es la certificación SQL "actual"?',
+                } as const)[lang] ??
+                "Current certification"}
             </h2>
 
             <div className="text-sm text-gray-800 space-y-2">
