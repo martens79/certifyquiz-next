@@ -15,6 +15,7 @@ const COPY = {
     examPage: "Pagina ufficiale dell’esame",
     verified: "Ultimo controllo",
     external: "link esterno",
+    article: "Approfondimento",
     noWeights:
       "L’ente certificatore pubblica gli argomenti ufficiali dell’esame, ma non indica un peso percentuale per ciascun dominio.",
     note: "I quiz di CertifyQuiz sono organizzati seguendo i domini e gli obiettivi ufficiali dell’esame.",
@@ -31,6 +32,7 @@ const COPY = {
     examPage: "Official exam page",
     verified: "Last verified",
     external: "external link",
+    article: "Related article",
     noWeights:
       "The certification provider publishes the official exam topics but does not specify a percentage weight for each domain.",
     note: "CertifyQuiz quizzes are organized around the official exam domains and objectives.",
@@ -47,6 +49,7 @@ const COPY = {
     examPage: "Page officielle de l’examen",
     verified: "Dernière vérification",
     external: "lien externe",
+    article: "Article associé",
     noWeights:
       "L’organisme certificateur publie les sujets officiels de l’examen, mais n’indique pas de pondération pour chaque domaine.",
     note: "Les quiz CertifyQuiz sont organisés selon les domaines et objectifs officiels de l’examen.",
@@ -63,6 +66,7 @@ const COPY = {
     examPage: "Página oficial del examen",
     verified: "Última comprobación",
     external: "enlace externo",
+    article: "Artículo relacionado",
     noWeights:
       "La entidad certificadora publica los temas oficiales del examen, pero no indica un peso porcentual para cada dominio.",
     note: "Los cuestionarios de CertifyQuiz se organizan según los dominios y objetivos oficiales del examen.",
@@ -183,6 +187,20 @@ export default function ExamBlueprintCard({
           </dl>
         </div>
       </div>
+
+      {blueprint.relatedArticleUrl && (
+        <p className="mt-3 text-sm">
+          <a
+            href={blueprint.relatedArticleUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
+          >
+            📘 {t.article}: {blueprint.relatedArticleTitle ?? blueprint.relatedArticleUrl} <span aria-hidden="true">↗</span>
+            <span className="sr-only"> ({t.external})</span>
+          </a>
+        </p>
+      )}
 
       <h3 className="mt-4 text-sm font-semibold text-slate-800">{t.topics}</h3>
 
