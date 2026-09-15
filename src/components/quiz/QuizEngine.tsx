@@ -27,13 +27,14 @@ import { pricingPath } from "@/lib/paths";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
-  getPageViewId,
+  getAnonymousSessionId,
   trackEvent as trackAnalyticsEvent,
   trackFunnelEvent,
   trackFunnelEventOnce,
 } from "@/lib/analytics";
 import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { claimContinuedFree, getOrCreatePostGateCohort, readPostGateCohort, type PostGateCohort } from "@/lib/post-gate-tracking";
 
 // ✅ (opzionale) box upsell solo in punti consentiti (fine quiz)
 // Se non ce l’hai ancora, commenta import + uso.
@@ -546,6 +547,7 @@ const openFeedback = () => {
   const abandonedTrackedRef = useRef(false);
   const latestProgressRef = useRef({ idx: 0, finished: false, answered: 0 });
   const premiumClickedRef = useRef(false);
+  const postGateCohortRef = useRef<PostGateCohort | null>(null);
   const [premiumClicked, setPremiumClicked] = useState(false);
 
   // Seed dello shuffle deterministico della sessione corrente (per scopedKey).
@@ -1350,6 +1352,24 @@ clearProgress(`${storageScope}:assessment`);
   if (blockReview) return;
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
+  const cohort = user?.id != null ? (postGateCohortRef.current ?? readPostGateCohort(user.id)) : null;
+  if (isLoggedIn && !isPremiumUser && cohort && String(q.id) !== cohort.gateQuestionId) {
+    postGateCohortRef.current = cohort;
+    const correctAnswerId = q.answers.find((answer) => !!answer.isCorrect)?.id;
+    const isCorrect = correctAnswerId != null && String(correctAnswerId) === String(a.id);
+    if (claimContinuedFree(cohort)) {
+      trackFunnelEvent({
+        event: 'continued_free_after_gate', cert_slug: context?.certificationSlug ?? null,
+        topic_slug: context?.topicSlug ?? null, lang, gate_instance_id: cohort.gateInstanceId,
+        metadata: { gate_type: 'wrong_explanation', first_post_gate_question_id: Number(q.id), quiz_mode: effectiveMode },
+      });
+    }
+    trackFunnelEventOnce(`post_gate_question:${cohort.gateInstanceId}:${getAnonymousSessionId()}:${q.id}`, {
+      event: 'post_gate_question_answered', cert_slug: context?.certificationSlug ?? null,
+      topic_slug: context?.topicSlug ?? null, lang, gate_instance_id: cohort.gateInstanceId,
+      metadata: { question_id: Number(q.id), correct: isCorrect, quiz_mode: effectiveMode },
+    });
+  }
 };
 
   const next = () => {
@@ -2664,6 +2684,7 @@ return (
         mode={effectiveMode}
         certificationSlug={context?.certificationSlug ?? null}
         topicSlug={context?.topicSlug ?? null}
+        userId={Number(user?.id)}
         source={blockReview ? 'block-review' : undefined}
         onBlockReviewGateViewed={blockReview ? () => {
           if (!claimBlockReviewGateOpening(
@@ -2965,6 +2986,7 @@ function GateShownTracker({
   topicSlug,
   source,
   onBlockReviewGateViewed,
+  userId,
 }: {
   questionId: number | string;
   lang: string;
@@ -2973,12 +2995,14 @@ function GateShownTracker({
   topicSlug: string | null;
   source?: 'block-review';
   onBlockReviewGateViewed?: () => void;
+  userId: number;
 }) {
   const firedRef = useRef(false);
 
   useEffect(() => {
     if (firedRef.current) return;
     firedRef.current = true;
+    const cohort = getOrCreatePostGateCohort(userId, questionId);
 
     trackQuizEvent("explanation_paywall_viewed", explanationPaywallParams({
       language: lang,
@@ -2995,16 +3019,15 @@ function GateShownTracker({
       paywall_type: 'wrong_explanation',
       source_page: source ?? 'quiz',
     });
-    const pageViewId = getPageViewId() ?? 'unknown';
-
     trackFunnelEventOnce(
-      `paywall_viewed:wrong_explanation:${pageViewId}:${source ?? 'quiz'}`,
+      `paywall_viewed:wrong_explanation:${cohort.gateInstanceId}:${getAnonymousSessionId()}:${source ?? 'quiz'}`,
       {
         event: 'paywall_viewed',
         cert_slug: certificationSlug,
         topic_slug: topicSlug,
         lang,
         paywall_type: 'wrong_explanation',
+        gate_instance_id: cohort.gateInstanceId,
         metadata: {
           first_question_id: Number(questionId),
           quiz_mode: mode,
