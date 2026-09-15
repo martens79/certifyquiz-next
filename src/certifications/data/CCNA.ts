@@ -21,6 +21,9 @@ const CCNA = {
     officialExamPageUrl:
       "https://www.cisco.com/site/us/en/learn/training-certifications/exams/ccna.html",
     lastVerifiedAt: "2026-08-23",
+    relatedArticleUrl:
+      "https://www.certifyquiz.com/blog/ccna-practice-questions-200-301",
+    relatedArticleTitle: "CCNA Practice Questions (200-301)",
     domains: [
       { name: "Network Fundamentals", percentage: 20 },
       { name: "Network Access", percentage: 20 },

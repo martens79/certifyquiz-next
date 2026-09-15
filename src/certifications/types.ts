@@ -55,6 +55,9 @@ export type ExamBlueprint = Readonly<{
   /** Nota informativa breve (es. requisito di un secondo esame a scelta,
    *  o un cambio di programma già annunciato dall'ente). */
   note?: string | null;
+  /** Articolo del blog CertifyQuiz collegato a questa certificazione (es. guida alle domande d'esame). */
+  relatedArticleUrl?: string | null;
+  relatedArticleTitle?: string | null;
   domains: ReadonlyArray<ExamDomain>;
   /** Sotto-esami quando la certificazione richiede più esami separati
    *  (es. CompTIA A+ Core 1 + Core 2, Cisco CCNP core + concentrazione).
