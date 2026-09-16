@@ -243,7 +243,16 @@ export function trackFunnelEvent(
     },
     keepalive: true,
     body: payload,
-  }).catch(() => {});
+  })
+    .then((res) => {
+      // Non bloccante: solo visibilità in console se il backend rifiuta il
+      // payload (es. validazione V2), altrimenti questi eventi si perdono
+      // senza lasciare traccia (vedi audit funnel post-gate 2026-09-16).
+      if (!res.ok) {
+        console.warn(`trackFunnelEvent: ${body.event} rejected (${res.status})`);
+      }
+    })
+    .catch(() => {});
 }
 
 /**
