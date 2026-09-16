@@ -6,7 +6,14 @@ import { useEffect, useMemo, useState } from "react";
 import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
-import { analyticsUserStateFrom, trackEvent, trackEventOnce, trackFunnelEvent } from "@/lib/analytics";
+import {
+  analyticsUserStateFrom,
+  trackEvent,
+  trackEventOnce,
+  trackFunnelEvent,
+  getAnonymousSessionId,
+  getAnonymousVisitorId,
+} from "@/lib/analytics";
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
 import PackagesUpsell from "./PackagesUpsell";
 
@@ -689,7 +696,18 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": lang },
-        body: JSON.stringify({ lang, plan: selectedPlan, skipTrial: isPromoLink }),
+        body: JSON.stringify({
+          lang,
+          plan: selectedPlan,
+          skipTrial: isPromoLink,
+          // Identificatori analytics (non usati per autenticazione/entitlement):
+          // permettono al webhook Stripe di riportare session_id/visitor_id/
+          // gate_instance_id sui funnel_events di conversione. user_id resta
+          // risolto server-side da authMiddleware, non da qui.
+          session_id: getAnonymousSessionId() ?? null,
+          visitor_id: getAnonymousVisitorId() ?? null,
+          gate_instance_id: postGateCohort?.gateInstanceId ?? null,
+        }),
       });
 
       if (res.status === 401) {
