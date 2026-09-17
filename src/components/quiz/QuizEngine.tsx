@@ -16,7 +16,9 @@ import {
 } from '@/lib/quiz-blocks';
 import { withLang, getDict } from '@/lib/i18n';
 import {
+  claimPostGateQuestionConsumption,
   claimWrongExplanationConsumption,
+  isPostGateHardLocked,
   isWrongExplanationLocked,
 } from '@/lib/quiz-explanation-access';
 import {
@@ -390,6 +392,17 @@ export default function QuizEngine({
   const blockReviewGateTrackedOpeningsRef = useRef(new Set<number>());
   const blockReviewOpeningCounterRef = useRef(0);
 
+  // ── NUOVO: hard paywall post explanation-gate ─────────────
+  // Stato sincronizzato dalla stessa /me/explanation-status (nessuna
+  // richiesta di rete aggiuntiva). Il server è sempre la fonte autorevole:
+  // questo stato locale serve solo per un render immediato, mai per decidere
+  // da solo se sbloccare qualcosa.
+  const [postGateApplicable, setPostGateApplicable] = useState(false);
+  const [postGateHardLocked, setPostGateHardLocked] = useState(false);
+  const [postGateUsed, setPostGateUsed] = useState<number>(0);
+  const [postGateLimit, setPostGateLimit] = useState<number>(5);
+  const consumedPostGateQuestionIdsRef = useRef(new Set<string>());
+
   // Carica lo stato dal backend al mount (solo utenti loggati non premium)
 useEffect(() => {
   if (!isLoggedIn || isPremiumUser) return;
@@ -404,11 +417,53 @@ useEffect(() => {
       else setWrongExpLeft(data.remaining ?? 0);
       if (typeof data.limit === "number") setWrongExpLimit(data.limit);
       if (data.experimentVariant) setExperimentVariant(data.experimentVariant);
+      if (data.postGate) {
+        setPostGateApplicable(!!data.postGate.applicable);
+        setPostGateHardLocked(!!data.postGate.hardLocked);
+        if (typeof data.postGate.used === "number") setPostGateUsed(data.postGate.used);
+        if (typeof data.postGate.limit === "number") setPostGateLimit(data.postGate.limit);
+      }
     })
     .catch((err) => {
       console.error("Errore explanation-status:", err);
     });
 }, [isLoggedIn, isPremiumUser, context?.certificationId]);
+
+  // Chiamato quando l'utente free (già oltre l'explanation gate) risponde a
+  // una domanda, corretta o sbagliata che sia — vedi isPostGateHardLocked.
+  const recordPostGateQuestion = async (questionId: number | string) => {
+    if (isPremiumUser || !isLoggedIn) return;
+    if (!postGateApplicable) return; // non ancora oltre l'explanation gate
+    if (!claimPostGateQuestionConsumption(
+      consumedPostGateQuestionIdsRef.current,
+      questionId
+    )) return;
+
+    try {
+      const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
+      const res = await apiFetch("/me/post-gate-question-seen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question_id: Number(questionId),
+          certification_id: context?.certificationId ?? null,
+          cert_slug: context?.certificationSlug ?? null,
+          topic_slug: context?.topicSlug ?? null,
+          lang,
+          mode: effectiveMode,
+          gate_instance_id: cohort?.gateInstanceId ?? null,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.applicable === false) return;
+      if (typeof data.used === "number") setPostGateUsed(data.used);
+      if (typeof data.limit === "number") setPostGateLimit(data.limit);
+      setPostGateHardLocked(!!data.hardLocked);
+    } catch (err) {
+      console.error("Errore post-gate-question-seen:", err);
+    }
+  };
 
   // Chiamato quando l'utente free vede la spiegazione di un errore
 const consumeWrongExplanation = async (questionId: number | string): Promise<boolean> => {
@@ -1381,6 +1436,13 @@ clearProgress(`${storageScope}:assessment`);
       gate_instance_id: cohort.gateInstanceId,
       metadata: { question_id: Number(q.id), correct: isCorrect, quiz_mode: effectiveMode },
     });
+
+    // Hard paywall post-gate: registra il consumo server-side (idempotente,
+    // vedi claimPostGateQuestionConsumption + UNIQUE lato DB). Stessa
+    // definizione di "domanda post-gate" del tracking sopra: qualunque
+    // domanda diversa da quella che ha originato il gate, corretta o
+    // sbagliata che sia.
+    void recordPostGateQuestion(q.id);
   }
 };
 
@@ -2281,7 +2343,7 @@ const canGoNext =
   idx < questions.length - 1 ||
   (effectiveMode === 'training' && reviewPositions.length > 0);
    /* ============================================================
-   GATING QUIZ — 3 livelli
+   GATING QUIZ
 
    1. REGISTRATION GATE (guest, dopo 5 domande)
       - utente non loggato che ha risposto >= 5 domande
@@ -2289,11 +2351,26 @@ const canGoNext =
       - escape hatch: "Continua senza account" (onBack vuoto)
       - NON scatta in modalità assessment
 
-   2. PREMIUM GATE (free loggato, dopo 20 domande)
-      - utente loggato ma non premium
-      - mostra PremiumQuestionLimitGate con score reale
-      - "Continua gratis domani" → torna all'ultima domanda free
-      - NON scatta in modalità assessment
+   2. PREMIUM GATE (free loggato, dopo 20 domande) — MAI IMPLEMENTATO.
+      Descritto qui in passato ("PremiumQuestionLimitGate") ma il
+      componente non esiste ed è irraggiungibile: nessun limite sul
+      totale domande è mai scattato per un utente free loggato prima
+      del gate 2bis sotto. Lasciato come nota storica, non rimuovere
+      questo avviso senza aver verificato che nessuno lo cerchi ancora.
+
+   2bis. HARD PAYWALL POST EXPLANATION-GATE (free loggato, solo training)
+      - scatta quando isPostGateHardLocked(...) === true, cioè quando il
+        server (users.free_post_gate_questions_used, vedi
+        postGateQuestionService.js) segnala che l'utente ha già risposto
+        a FREE_POST_GATE_QUESTION_LIMIT domande dopo aver esaurito le
+        spiegazioni gratuite (punto 3 sotto)
+      - blocca SOLO una domanda non ancora risposta (chosen == null):
+        la domanda che ha fatto scattare il limite resta visibile con il
+        suo feedback, si blocca solo l'avanzamento alla successiva
+      - NON scatta in modalità assessment né exam (scope esplicito di
+        questa prima iterazione, vedi commento sulla funzione pura)
+      - Premium/admin/package: mai bloccati (stesso principio del
+        gate 3)
 
    3. SPIEGAZIONI LOCKED (free loggato, in training)
       - premiumLocked arriva dal context (single source of truth)
@@ -2354,6 +2431,91 @@ if (!isLoggedIn && registerLimitReached && !isAssessment) {
     </div>
   );
 }
+
+// ------------------------------------------------------------------
+// GATE 2bis — Hard paywall post explanation-gate (training, free loggato,
+// non assessment/exam in questa prima iterazione). Blocca SOLO una domanda
+// non ancora risposta (chosen == null): la domanda che ha fatto scattare
+// il limite resta visibile con il suo feedback normale.
+// ------------------------------------------------------------------
+if (
+  !blockReview &&
+  chosen == null &&
+  isPostGateHardLocked({
+    isPremiumUser,
+    isLoggedIn,
+    mode: effectiveMode,
+    hardLocked: postGateHardLocked,
+  })
+) {
+  return (
+    <div className={`min-h-[100dvh] ${gradient}`}>
+      <div className="mobile-safe-top max-w-2xl mx-auto px-4 pt-20 pb-28">
+        <HardQuizPaywallShownTracker
+          lang={lang}
+          mode={effectiveMode}
+          certificationSlug={context?.certificationSlug ?? null}
+          topicSlug={context?.topicSlug ?? null}
+          userId={Number(user?.id)}
+          postGateQuestionsUsed={postGateUsed}
+          postGateQuestionLimit={postGateLimit}
+        />
+        <div className="bg-white/10 rounded-2xl p-6 text-center text-white">
+          <div className="text-3xl mb-2">🔒</div>
+          <h2 className="text-lg font-bold mb-2">
+            {lang === 'it'
+              ? 'Hai raggiunto il limite delle domande gratuite'
+              : lang === 'fr'
+              ? 'Vous avez atteint la limite de questions gratuites'
+              : lang === 'es'
+              ? 'Has alcanzado el límite de preguntas gratuitas'
+              : "You've reached the free questions limit"}
+          </h2>
+          <p className="text-sm text-white/80 mb-4">
+            {lang === 'it'
+              ? 'Hai utilizzato le domande gratuite disponibili dopo il limite delle spiegazioni. Passa a Premium per continuare senza limiti.'
+              : lang === 'fr'
+              ? "Vous avez utilisé les questions gratuites disponibles après la limite d'explications. Passez à Premium pour continuer sans limite."
+              : lang === 'es'
+              ? 'Has usado las preguntas gratuitas disponibles tras el límite de explicaciones. Pasa a Premium para continuar sin límites.'
+              : "You've used up the free questions available after the explanation limit. Go Premium to keep going without limits."}
+          </p>
+          <Link
+            href={`${pricingPath(lang)}?source=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+            onClick={() => {
+              const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
+              trackQuizEvent('premium_cta_clicked', {
+                lang,
+                mode: effectiveMode,
+                source_page: 'post_gate_quiz_limit',
+                post_gate_questions_used: postGateUsed,
+              });
+              trackFunnelEvent({
+                event: "premium_clicked_post_gate_quiz_limit",
+                email: user?.email || null,
+                cert_slug: context?.certificationSlug ?? null,
+                topic_slug: context?.topicSlug ?? null,
+                lang,
+                paywall_type: "post_explanation_quiz_limit",
+                gate_instance_id: cohort?.gateInstanceId ?? null,
+              });
+            }}
+            className="inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+          >
+            {lang === 'it'
+              ? 'Passa a Premium'
+              : lang === 'fr'
+              ? 'Passer à Premium'
+              : lang === 'es'
+              ? 'Pasar a Premium'
+              : 'Go Premium'}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 return (
   <div className={`min-h-[100dvh] ${gradient} flex flex-col`}>
     {/* ===================== TOP (non scrolla) ===================== */}
@@ -3054,6 +3216,69 @@ function GateShownTracker({
     onBlockReviewGateViewed?.();
     trackMetaPixel("Lead");
   }, [questionId, lang, mode, certificationSlug, topicSlug, source, onBlockReviewGateViewed, userId]);
+
+  return null;
+}
+
+/**
+ * Sorella di GateShownTracker per il nuovo hard paywall post-gate. Stesso
+ * gate_instance_id del cohort dell'explanation gate originale (letto, non
+ * creato: a questo punto il cohort esiste già, l'utente lo ha attraversato
+ * per arrivare qui) — questo è ciò che tiene la catena di attribuzione
+ * checkout_started → checkout_created → premium_converted joinabile alla
+ * stessa "storia" utente, senza toccare billingRoutes.js/billingWebhook.js.
+ */
+function HardQuizPaywallShownTracker({
+  lang,
+  mode,
+  certificationSlug,
+  topicSlug,
+  userId,
+  postGateQuestionsUsed,
+  postGateQuestionLimit,
+}: {
+  lang: string;
+  mode: string;
+  certificationSlug: string | null;
+  topicSlug: string | null;
+  userId: number;
+  postGateQuestionsUsed: number;
+  postGateQuestionLimit: number;
+}) {
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    if (firedRef.current) return;
+    firedRef.current = true;
+    const cohort = userId != null ? readPostGateCohort(userId) : null;
+
+    trackQuizEvent('paywall_viewed', {
+      language: lang,
+      quiz_mode: mode,
+      certification_slug: certificationSlug,
+      topic_slug: topicSlug,
+      paywall_type: 'post_explanation_quiz_limit',
+      post_gate_questions_used: postGateQuestionsUsed,
+      post_gate_question_limit: postGateQuestionLimit,
+    });
+    trackFunnelEventOnce(
+      `paywall_viewed:post_explanation_quiz_limit:${cohort?.gateInstanceId ?? 'no-cohort'}:${getAnonymousSessionId()}`,
+      {
+        event: 'paywall_viewed',
+        cert_slug: certificationSlug,
+        topic_slug: topicSlug,
+        lang,
+        paywall_type: 'post_explanation_quiz_limit',
+        gate_instance_id: cohort?.gateInstanceId ?? null,
+        metadata: {
+          post_gate_questions_used: postGateQuestionsUsed,
+          post_gate_question_limit: postGateQuestionLimit,
+          quiz_mode: mode,
+        },
+      }
+    );
+    trackMetaPixel("Lead");
+  }, [lang, mode, certificationSlug, topicSlug, userId, postGateQuestionsUsed, postGateQuestionLimit]);
 
   return null;
 }
