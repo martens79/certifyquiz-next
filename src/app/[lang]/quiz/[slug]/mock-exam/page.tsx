@@ -164,6 +164,7 @@ export default function MockExamPage() {
       shuffle: true,
       strict: currentLang !== "it",
       exam: true,
+      mode: "exam",
     });
 
     const raw: ApiQuestion[] = Array.isArray(res)

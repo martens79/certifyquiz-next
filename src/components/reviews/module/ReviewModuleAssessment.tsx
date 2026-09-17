@@ -76,7 +76,7 @@ export default function ReviewModuleAssessment({
       }}
       fetchQuestions={async (): Promise<UiQuestion[]> => {
         try {
-          const res = await getQuestionsByTopic(topicId, lang, { limit: 500, shuffle: true, strict: lang !== "it" });
+          const res = await getQuestionsByTopic(topicId, lang, { limit: 500, shuffle: true, strict: lang !== "it", mode: "assessment" });
           const raw: ApiQuestion[] = Array.isArray(res) ? res : res.questions;
           return (raw ?? []).map(normalizeQuestion);
         } catch {

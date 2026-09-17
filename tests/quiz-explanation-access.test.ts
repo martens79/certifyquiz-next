@@ -5,6 +5,7 @@ import {
   claimPostGateQuestionConsumption,
   claimWrongExplanationConsumption,
   isPostGateHardLocked,
+  isPostGateLimitError,
   isWrongExplanationLocked,
 } from '../src/lib/quiz-explanation-access.ts';
 
@@ -83,4 +84,28 @@ test('claimPostGateQuestionConsumption: same question claimed only once (client-
   assert.equal(claimPostGateQuestionConsumption(consumed, 7), false);
   assert.equal(claimPostGateQuestionConsumption(consumed, '7'), false);
   assert.equal(claimPostGateQuestionConsumption(consumed, 8), true);
+});
+
+// ---- isPostGateLimitError (Fase A: server enforcement on the bulk endpoints) ----
+
+test('15) recognizes the exact POST_GATE_QUIZ_LIMIT_REACHED shape thrown by apiClient', () => {
+  assert.equal(isPostGateLimitError({
+    status: 403, detail: { error: 'POST_GATE_QUIZ_LIMIT_REACHED', hardLocked: true, limit: 5, used: 5, remaining: 0 },
+  }), true);
+});
+
+test('a plain 403 with a different application code is NOT treated as the post-gate paywall', () => {
+  assert.equal(isPostGateLimitError({ status: 403, detail: { error: 'PREMIUM_REQUIRED' } }), false);
+});
+
+test('a 401 (unrelated auth error) is never mistaken for the post-gate paywall', () => {
+  assert.equal(isPostGateLimitError({ status: 401, detail: { error: 'POST_GATE_QUIZ_LIMIT_REACHED' } }), false);
+});
+
+test('malformed/missing error shapes are handled without throwing', () => {
+  assert.equal(isPostGateLimitError(null), false);
+  assert.equal(isPostGateLimitError(undefined), false);
+  assert.equal(isPostGateLimitError({}), false);
+  assert.equal(isPostGateLimitError({ status: 403 }), false);
+  assert.equal(isPostGateLimitError(new Error('network down')), false);
 });
