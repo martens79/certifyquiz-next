@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  claimPostGateQuestionConsumption,
   claimWrongExplanationConsumption,
+  isPostGateHardLocked,
   isWrongExplanationLocked,
 } from '../src/lib/quiz-explanation-access.ts';
 
@@ -33,4 +35,52 @@ test('the same question is consumed only once across re-render and back navigati
   assert.equal(claimWrongExplanationConsumption(consumed, 42), false);
   assert.equal(claimWrongExplanationConsumption(consumed, '42'), false);
   assert.equal(claimWrongExplanationConsumption(consumed, 43), true);
+});
+
+// ---- isPostGateHardLocked ---------------------------------------------
+
+test('free logged-in user in training is blocked once the server reports hardLocked', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: false, isLoggedIn: true, mode: 'training', hardLocked: true,
+  }), true);
+});
+
+test('free logged-in user in training is NOT blocked while hardLocked is still false', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: false, isLoggedIn: true, mode: 'training', hardLocked: false,
+  }), false);
+});
+
+test('premium/admin/package users are never hard-locked, even if the server flag is stale/true', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: true, isLoggedIn: true, mode: 'training', hardLocked: true,
+  }), false);
+});
+
+test('guests (not logged in) are not affected by this gate', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: false, isLoggedIn: false, mode: 'training', hardLocked: true,
+  }), false);
+});
+
+test('assessment is explicitly excluded, even when hardLocked is true', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: false, isLoggedIn: true, mode: 'assessment', hardLocked: true,
+  }), false);
+});
+
+test('exam is explicitly excluded in this first iteration, even when hardLocked is true', () => {
+  assert.equal(isPostGateHardLocked({
+    isPremiumUser: false, isLoggedIn: true, mode: 'exam', hardLocked: true,
+  }), false);
+});
+
+// ---- claimPostGateQuestionConsumption ----------------------------------
+
+test('claimPostGateQuestionConsumption: same question claimed only once (client-side optimization only)', () => {
+  const consumed = new Set<string>();
+  assert.equal(claimPostGateQuestionConsumption(consumed, 7), true);
+  assert.equal(claimPostGateQuestionConsumption(consumed, 7), false);
+  assert.equal(claimPostGateQuestionConsumption(consumed, '7'), false);
+  assert.equal(claimPostGateQuestionConsumption(consumed, 8), true);
 });
