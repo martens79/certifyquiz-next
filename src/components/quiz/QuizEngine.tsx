@@ -19,6 +19,7 @@ import {
   claimPostGateQuestionConsumption,
   claimWrongExplanationConsumption,
   isPostGateHardLocked,
+  isPostGateLimitError,
   isWrongExplanationLocked,
 } from '@/lib/quiz-explanation-access';
 import {
@@ -909,6 +910,20 @@ const openFeedback = () => {
           return;
         }
 
+        // Server enforcement del hard paywall post-gate (Fase A): il batch
+        // Training è stato rifiutato perché l'utente è già hardLocked. NON è
+        // un errore generico — niente setErr, questions resta [] e il
+        // fallback in STATO BASE mostra lo stesso paywall di GATE 2bis.
+        // Applichiamo subito i valori dal body del 403 (già autorevoli, non
+        // serve aspettare la fetch separata di /me/explanation-status).
+        if (isPostGateLimitError(err)) {
+          setPostGateApplicable(true);
+          setPostGateHardLocked(true);
+          if (typeof err.detail.used === 'number') setPostGateUsed(err.detail.used);
+          if (typeof err.detail.limit === 'number') setPostGateLimit(err.detail.limit);
+          return;
+        }
+
         setErr(
           typeof err?.message === 'string' && err.message.trim()
             ? err.message
@@ -1760,10 +1775,97 @@ const submitAssessmentReport = async () => {
   setRemaining(total);
 };
 
+  // Hard paywall post-gate: unica definizione JSX, riusata sia qui (STATO
+  // BASE, quando il batch Training è stato rifiutato server-side e
+  // `questions` è vuoto) sia da GATE 2bis più sotto (quando un batch era
+  // già stato consegnato prima del lock e si blocca solo la domanda
+  // successiva). Non creare una seconda versione: stesso componente,
+  // stessa copy, stesso tracking in entrambi i casi.
+  const renderPostGateHardPaywall = () => (
+    <div className={`min-h-[100dvh] bg-gradient-to-b ${categoryColor} text-white`}>
+      <div className="mobile-safe-top max-w-2xl mx-auto px-4 pt-20 pb-28">
+        <HardQuizPaywallShownTracker
+          lang={lang}
+          mode={effectiveMode}
+          certificationSlug={context?.certificationSlug ?? null}
+          topicSlug={context?.topicSlug ?? null}
+          userId={Number(user?.id)}
+          postGateQuestionsUsed={postGateUsed}
+          postGateQuestionLimit={postGateLimit}
+        />
+        <div className="bg-white/10 rounded-2xl p-6 text-center text-white">
+          <div className="text-3xl mb-2">🔒</div>
+          <h2 className="text-lg font-bold mb-2">
+            {lang === 'it'
+              ? 'Hai raggiunto il limite delle domande gratuite'
+              : lang === 'fr'
+              ? 'Vous avez atteint la limite de questions gratuites'
+              : lang === 'es'
+              ? 'Has alcanzado el límite de preguntas gratuitas'
+              : "You've reached the free questions limit"}
+          </h2>
+          <p className="text-sm text-white/80 mb-4">
+            {lang === 'it'
+              ? 'Hai utilizzato le domande gratuite disponibili dopo il limite delle spiegazioni. Passa a Premium per continuare senza limiti.'
+              : lang === 'fr'
+              ? "Vous avez utilisé les questions gratuites disponibles après la limite d'explications. Passez à Premium pour continuer sans limite."
+              : lang === 'es'
+              ? 'Has usado las preguntas gratuitas disponibles tras el límite de explicaciones. Pasa a Premium para continuar sin límites.'
+              : "You've used up the free questions available after the explanation limit. Go Premium to keep going without limits."}
+          </p>
+          <Link
+            href={`${pricingPath(lang)}?source=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+            onClick={() => {
+              const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
+              trackQuizEvent('premium_cta_clicked', {
+                lang,
+                mode: effectiveMode,
+                source_page: 'post_gate_quiz_limit',
+                post_gate_questions_used: postGateUsed,
+              });
+              trackFunnelEvent({
+                event: "premium_clicked_post_gate_quiz_limit",
+                email: user?.email || null,
+                cert_slug: context?.certificationSlug ?? null,
+                topic_slug: context?.topicSlug ?? null,
+                lang,
+                paywall_type: "post_explanation_quiz_limit",
+                gate_instance_id: cohort?.gateInstanceId ?? null,
+              });
+            }}
+            className="inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
+          >
+            {lang === 'it'
+              ? 'Passa a Premium'
+              : lang === 'fr'
+              ? 'Passer à Premium'
+              : lang === 'es'
+              ? 'Pasar a Premium'
+              : 'Go Premium'}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
   if (err) return <div className="min-h-screen grid place-items-center text-red-600">{err}</div>;
-  if (!questions.length) return <div className="min-h-screen grid place-items-center">No questions.</div>;
+  if (!questions.length) {
+    // Il batch Training può essere vuoto perché il backend l'ha rifiutato
+    // (Fase A, enforcement server-side su /questions* con mode=training)
+    // invece che per un reale vuoto di contenuti: in quel caso mostra lo
+    // stesso hard paywall, non "No questions."
+    if (isPostGateHardLocked({
+      isPremiumUser,
+      isLoggedIn,
+      mode: effectiveMode,
+      hardLocked: postGateHardLocked,
+    })) {
+      return renderPostGateHardPaywall();
+    }
+    return <div className="min-h-screen grid place-items-center">No questions.</div>;
+  }
 
   const gradient = `bg-gradient-to-b ${categoryColor} text-white`;
 
@@ -2448,72 +2550,7 @@ if (
     hardLocked: postGateHardLocked,
   })
 ) {
-  return (
-    <div className={`min-h-[100dvh] ${gradient}`}>
-      <div className="mobile-safe-top max-w-2xl mx-auto px-4 pt-20 pb-28">
-        <HardQuizPaywallShownTracker
-          lang={lang}
-          mode={effectiveMode}
-          certificationSlug={context?.certificationSlug ?? null}
-          topicSlug={context?.topicSlug ?? null}
-          userId={Number(user?.id)}
-          postGateQuestionsUsed={postGateUsed}
-          postGateQuestionLimit={postGateLimit}
-        />
-        <div className="bg-white/10 rounded-2xl p-6 text-center text-white">
-          <div className="text-3xl mb-2">🔒</div>
-          <h2 className="text-lg font-bold mb-2">
-            {lang === 'it'
-              ? 'Hai raggiunto il limite delle domande gratuite'
-              : lang === 'fr'
-              ? 'Vous avez atteint la limite de questions gratuites'
-              : lang === 'es'
-              ? 'Has alcanzado el límite de preguntas gratuitas'
-              : "You've reached the free questions limit"}
-          </h2>
-          <p className="text-sm text-white/80 mb-4">
-            {lang === 'it'
-              ? 'Hai utilizzato le domande gratuite disponibili dopo il limite delle spiegazioni. Passa a Premium per continuare senza limiti.'
-              : lang === 'fr'
-              ? "Vous avez utilisé les questions gratuites disponibles après la limite d'explications. Passez à Premium pour continuer sans limite."
-              : lang === 'es'
-              ? 'Has usado las preguntas gratuitas disponibles tras el límite de explicaciones. Pasa a Premium para continuar sin límites.'
-              : "You've used up the free questions available after the explanation limit. Go Premium to keep going without limits."}
-          </p>
-          <Link
-            href={`${pricingPath(lang)}?source=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
-            onClick={() => {
-              const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
-              trackQuizEvent('premium_cta_clicked', {
-                lang,
-                mode: effectiveMode,
-                source_page: 'post_gate_quiz_limit',
-                post_gate_questions_used: postGateUsed,
-              });
-              trackFunnelEvent({
-                event: "premium_clicked_post_gate_quiz_limit",
-                email: user?.email || null,
-                cert_slug: context?.certificationSlug ?? null,
-                topic_slug: context?.topicSlug ?? null,
-                lang,
-                paywall_type: "post_explanation_quiz_limit",
-                gate_instance_id: cohort?.gateInstanceId ?? null,
-              });
-            }}
-            className="inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
-          >
-            {lang === 'it'
-              ? 'Passa a Premium'
-              : lang === 'fr'
-              ? 'Passer à Premium'
-              : lang === 'es'
-              ? 'Pasar a Premium'
-              : 'Go Premium'}
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  return renderPostGateHardPaywall();
 }
 
 return (

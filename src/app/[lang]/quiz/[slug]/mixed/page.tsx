@@ -279,6 +279,12 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
       limit: effectiveLimit,
       shuffle: true,
       strict: currentLang !== 'it',
+      // `mode` qui è già sincronizzato col toggle Training/Exam di
+      // QuizEngine via onModeChange (vedi sotto), quindi riflette sempre
+      // l'intento reale al momento del fetch — a differenza della pagina
+      // topic, qui ogni cambio di mode rifà il fetch (fetchPool dipende
+      // da `mode`), non c'e' un pool condiviso ambiguo.
+      mode,
     });
 
     const raw: ApiQuestion[] = Array.isArray(res)

@@ -463,10 +463,18 @@ export const getTopicMetaById = (topicId: number | string) =>
   apiGet<TopicMeta>(`/topics/meta/by-topic/${topicId}`);
 
 /*─────────────────────────────── QUESTIONS ───────────────────────────────*/
+// "mode" comunica esplicitamente al backend l'intento della richiesta
+// (training/exam/assessment), cosa che prima non esisteva su questi due
+// endpoint. Opzionale e retrocompatibile: un chiamante che non lo passa
+// (es. i widget di review standalone che non usano QuizEngine) si comporta
+// esattamente come prima — il backend applica l'hard-lock SOLO quando
+// mode==="training" è passato esplicitamente, mai per assenza del parametro.
+export type QuestionsRequestMode = "training" | "exam" | "assessment";
+
 export const getQuestionsByTopic = (
   topicId: number | string,
   lang: Locale = "it",
-  opts?: { limit?: number; shuffle?: boolean; strict?: boolean }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; mode?: QuestionsRequestMode }
 ) => {
   const params = new URLSearchParams({ lang });
 
@@ -478,19 +486,22 @@ export const getQuestionsByTopic = (
  const strict = opts?.strict ?? (lang !== "it");
   if (strict) params.set("strict", "1");
 
+  if (opts?.mode) params.set("mode", opts.mode);
+
   return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false);
 };
 
 export const getMixedQuestions = (
   id: number | string,
   lang: Locale = "it",
-  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; exam?: boolean }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; exam?: boolean; mode?: QuestionsRequestMode }
 ) => {
   const params = new URLSearchParams({ lang });
   if (opts?.limit != null) params.set("limit", String(opts.limit));
   if (opts?.shuffle != null) params.set("shuffle", opts.shuffle ? "1" : "0");
   if (opts?.strict != null) params.set("strict", opts.strict ? "1" : "0");
   if (opts?.exam != null) params.set("exam", opts.exam ? "1" : "0");
+  if (opts?.mode) params.set("mode", opts.mode);
 
   return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,

@@ -18,6 +18,7 @@ import {
 } from "@/lib/apiClient";
 
 import { getCertSlugById } from "@/lib/certs";
+import { isPostGateLimitError } from "@/lib/quiz-explanation-access";
 import { getExamSpecForCert } from "@/lib/exam-specs";
 
 /* ─────────────────────────────────────────────────────────────
@@ -175,10 +176,18 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
     try {
+      // Questa pagina serve training/exam/assessment da UN SOLO fetch
+      // condiviso (il toggle Training<->Exam risuddivide client-side lo
+      // stesso pool, vedi buildActiveQuestions in QuizEngine): "assessment"
+      // è l'unico intento che conosciamo con certezza qui, altrimenti il
+      // default di ingresso pagina è sempre training (initialMode di
+      // QuizEngine). Tagga solo questi due casi noti — mai un valore
+      // indovinato per un chiamante che potesse davvero essere exam.
       const res = await getQuestionsByTopic(numericId, L, {
         limit: 500,
         shuffle: false,
         strict: L !== "it",
+        mode: isAssessmentMode ? "assessment" : "training",
       });
 
       const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
@@ -189,10 +198,19 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         return [];
       }
 
+      // Hard paywall post-gate (Fase A, enforcement server-side): non è un
+      // errore di caricamento, è il backend che rifiuta un nuovo batch
+      // Training. Rilancia cosi' che l'effetto interno di QuizEngine lo
+      // riconosca e mostri lo stesso paywall di GATE 2bis invece di un
+      // errore generico — vedi il catch dedicato in QuizEngine.tsx.
+      if (isPostGateLimitError(e)) {
+        throw e;
+      }
+
       console.error("🟥 getQuestionsByTopic FAILED", e);
       return [];
     }
-  }, [numericId, L]);
+  }, [numericId, L, isAssessmentMode]);
 
   if (blocked || Number.isNaN(numericId)) return null;
 

@@ -68,3 +68,18 @@ export function claimPostGateQuestionConsumption(
   consumedQuestionIds.add(key);
   return true;
 }
+
+/**
+ * Riconosce il 403 POST_GATE_QUIZ_LIMIT_REACHED (Fase A, enforcement
+ * server-side su GET /questions/:topicId e /questions-mixed/:id) da un
+ * errore lanciato da apiClient.ts (vedi toApiError: status + detail sono
+ * sempre allegati all'Error). Usata sia da QuizEngine.tsx (per non mostrare
+ * un errore generico e riusare invece renderPostGateHardPaywall) sia da
+ * QuizTopicClient.tsx (per decidere se rilanciare l'errore invece di
+ * ingoiarlo in []). Un'unica definizione: le due copie non devono mai
+ * divergere su quale forma di errore riconoscono.
+ */
+export function isPostGateLimitError(err: unknown): boolean {
+  const e = err as { status?: unknown; detail?: { error?: unknown } } | null | undefined;
+  return e?.status === 403 && e?.detail?.error === "POST_GATE_QUIZ_LIMIT_REACHED";
+}
