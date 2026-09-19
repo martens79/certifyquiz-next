@@ -405,13 +405,15 @@ if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking/ripasso") {
   return redirect301(req, "/it/certificazioni/ceh/sniffing/ripasso");
 }
 
-// CEH — topic 80 rinominato/split: scansione-delle-vulnerabilita-e-exploit -> scansione-delle-reti
-if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit") {
-  return redirect301(req, "/it/certificazioni/ceh/scansione-delle-reti");
-}
-if (pathname === "/it/certificazioni/ceh/scansione-delle-vulnerabilita-e-exploit/ripasso") {
-  return redirect301(req, "/it/certificazioni/ceh/scansione-delle-reti/ripasso");
-}
+// NOTA: il redirect "topic 80 -> scansione-delle-reti" introdotto in c3975ab4
+// (2026-09-02) anticipava uno split del topic 80 (Scansione delle reti +
+// Vulnerability Analysis + Exploitation Techniques) mai eseguito sul DB.
+// "scansione-delle-reti" non corrisponde a nessun topic reale: la regola
+// mandava in 404 l'unico slug realmente esistente del topic 80
+// (scansione-delle-vulnerabilita-e-exploit). Rimossa il 2026-09-17 — nessun
+// nuovo slug creato, nessuno split effettuato: il topic 80 resta un unico
+// topic con lo slug canonico originale finché lo split non verrà deciso ed
+// eseguito separatamente (vedi audit blueprint CEH).
 
 // Microsoft AI-901: 5 topic legacy soft-ritirati nel cutover 2026-09-07
 // (0 domande attive nel DB) -> redirect alla pagina certificazione.

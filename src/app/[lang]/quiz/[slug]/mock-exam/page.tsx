@@ -18,6 +18,7 @@ import {
 } from "@/lib/apiClient";
 
 import { getExamSpecForCert } from "@/lib/exam-specs";
+import { getMockExamLoadError } from "@/lib/mock-exam-errors";
 
 /* --------------------------- normalize API → UI -------------------------- */
 function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
@@ -256,7 +257,9 @@ export default function MockExamPage() {
         fetchQuestions={async () => {
           try {
             return await fetchExamQuestions();
-          } catch {
+          } catch (error) {
+            const message = getMockExamLoadError(error, currentLang);
+            if (message) throw new Error(message);
             return [];
           }
         }}
