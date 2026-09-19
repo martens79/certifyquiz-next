@@ -69,48 +69,6 @@ const CEH = {
   topics: [
     {
       title: {
-        it: "Accesso non autorizzato",
-        en: "Gaining Unauthorized Access",
-        fr: "Accès non autorisé",
-        es: "Acceso no autorizado",
-      },
-      slug: {
-        it: "accesso-non-autorizzato",
-        en: "gaining-unauthorized-access",
-        fr: "acces-non-autorise",
-        es: "acceso-no-autorizado",
-      },
-    },
-    {
-      title: {
-        it: "Mantenimento dell’accesso",
-        en: "Maintaining Access",
-        fr: "Maintien de l’accès",
-        es: "Mantenimiento del acceso",
-      },
-      slug: {
-        it: "mantenimento-dellaccesso",
-        en: "maintaining-access",
-        fr: "maintien-de-lacces",
-        es: "mantenimiento-del-acceso",
-      },
-    },
-    {
-      title: {
-        it: "Copertura delle tracce e forense",
-        en: "Covering Tracks and Forensics",
-        fr: "Masquage des traces et criminalistique",
-        es: "Ocultación de huellas y análisis forense",
-      },
-      slug: {
-        it: "copertura-delle-tracce-e-forense",
-        en: "covering-tracks-and-forensics",
-        fr: "masquage-des-traces-et-criminalistique",
-        es: "ocultacion-de-huellas-y-analisis-forense",
-      },
-    },
-    {
-      title: {
         it: "Fondamenti di ethical hacking",
         en: "Ethical Hacking Fundamentals",
         fr: "Fondamentaux du hacking éthique",
@@ -153,16 +111,170 @@ const CEH = {
     },
     {
       title: {
+        it: "Enumerazione",
+        en: "Enumeration",
+        fr: "Énumération",
+        es: "Enumeración",
+      },
+      slug: {
+        it: "enumeration",
+        en: "enumeration",
+        fr: "enumeration",
+        es: "enumeration",
+      },
+    },
+    {
+      title: {
         it: "Scansione delle vulnerabilità e exploit",
-        en: "Vulnerability Scanning and Exploitation",
-        fr: "Analyse des vulnérabilités et exploitation",
-        es: "Análisis de vulnerabilidades y explotación",
+        en: "Scanning Networks",
+        fr: "Analyse des réseaux",
+        es: "Escaneo de redes",
       },
       slug: {
         it: "scansione-delle-vulnerabilita-e-exploit",
         en: "vulnerability-scanning-and-exploitation",
         fr: "analyse-des-vulnerabilites-et-exploitation",
         es: "analisis-de-vulnerabilidades-y-explotacion",
+      },
+    },
+    {
+      title: {
+        it: "Accesso non autorizzato",
+        en: "Gaining Unauthorized Access",
+        fr: "Accès non autorisé",
+        es: "Acceso no autorizado",
+      },
+      slug: {
+        it: "accesso-non-autorizzato",
+        en: "gaining-unauthorized-access",
+        fr: "acces-non-autorise",
+        es: "acceso-no-autorizado",
+      },
+    },
+    {
+      title: {
+        it: "Mantenimento dell’accesso",
+        en: "Maintaining Access",
+        fr: "Maintien de l’accès",
+        es: "Mantenimiento del acceso",
+      },
+      slug: {
+        it: "mantenimento-dellaccesso",
+        en: "maintaining-access",
+        fr: "maintien-de-lacces",
+        es: "mantenimiento-del-acceso",
+      },
+    },
+    {
+      title: {
+        it: "Copertura delle tracce e forense",
+        en: "Covering Tracks and Forensics",
+        fr: "Masquage des traces et criminalistique",
+        es: "Ocultación de huellas y análisis forense",
+      },
+      slug: {
+        it: "copertura-delle-tracce-e-forense",
+        en: "covering-tracks-and-forensics",
+        fr: "masquage-des-traces-et-criminalistique",
+        es: "ocultacion-de-huellas-y-analisis-forense",
+      },
+    },
+    {
+      title: {
+        it: "Minacce malware",
+        en: "Malware Threats",
+        fr: "Menaces liées aux malwares",
+        es: "Amenazas de malware",
+      },
+      slug: {
+        it: "malware-threats",
+        en: "malware-threats",
+        fr: "malware-threats",
+        es: "malware-threats",
+      },
+    },
+    {
+      title: {
+        it: "Sniffing",
+        en: "Sniffing",
+        fr: "Écoute réseau",
+        es: "Captura de tráfico y secuestro de sesión",
+      },
+      slug: {
+        it: "sniffing",
+        en: "network-sniffing-session-hijacking",
+        fr: "sniffing-reseau-session-hijacking",
+        es: "sniffing-red-session-hijacking",
+      },
+    },
+    {
+      title: {
+        it: "Ingegneria sociale",
+        en: "Social Engineering",
+        fr: "Ingénierie sociale",
+        es: "Ingeniería social",
+      },
+      slug: {
+        it: "social-engineering",
+        en: "social-engineering",
+        fr: "ingenierie-sociale",
+        es: "ingenieria-social",
+      },
+    },
+    {
+      title: {
+        it: "Denial-of-Service",
+        en: "Denial-of-Service",
+        fr: "Déni de service",
+        es: "Denial-of-Service",
+      },
+      slug: {
+        it: "denial-of-service",
+        en: "denial-of-service",
+        fr: "denial-of-service",
+        es: "denial-of-service",
+      },
+    },
+    {
+      title: {
+        it: "Hijacking di sessione",
+        en: "Session Hijacking",
+        fr: "Détournement de session",
+        es: "Secuestro de sesión",
+      },
+      slug: {
+        it: "session-hijacking",
+        en: "session-hijacking",
+        fr: "session-hijacking",
+        es: "session-hijacking",
+      },
+    },
+    {
+      title: {
+        it: "Evasione IDS, Firewall e Honeypot",
+        en: "Evading IDS/Firewalls/Honeypots",
+        fr: "Évasion IDS, pare-feu et honeypots",
+        es: "Evasión IDS, firewalls y honeypots",
+      },
+      slug: {
+        it: "evasione-ids-firewall-honeypot",
+        en: "evading-ids-firewalls-honeypots",
+        fr: "evasion-ids-firewalls-honeypots",
+        es: "evasion-ids-firewalls-honeypots",
+      },
+    },
+    {
+      title: {
+        it: "Hacking dei Web Server",
+        en: "Hacking Web Servers",
+        fr: "Piratage des serveurs web",
+        es: "Hacking de Servidores Web",
+      },
+      slug: {
+        it: "hacking-web-server",
+        en: "hacking-web-server",
+        fr: "hacking-web-server",
+        es: "hacking-web-server",
       },
     },
     {
@@ -177,6 +289,90 @@ const CEH = {
         en: "web-application-attacks",
         fr: "attaques-sur-les-applications-web",
         es: "ataques-a-aplicaciones-web",
+      },
+    },
+    {
+      title: {
+        it: "SQL Injection",
+        en: "SQL Injection",
+        fr: "Injection SQL",
+        es: "SQL Injection",
+      },
+      slug: {
+        it: "sql-injection",
+        en: "sql-injection",
+        fr: "sql-injection",
+        es: "sql-injection",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza e test delle reti wireless",
+        en: "Wireless Security Testing",
+        fr: "Piratage Wi-Fi",
+        es: "Seguridad y pruebas de redes inalámbricas",
+      },
+      slug: {
+        it: "wireless-hacking",
+        en: "wireless-hacking",
+        fr: "wireless-hacking",
+        es: "wireless-hacking",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza e test delle piattaforme mobili",
+        en: "Mobile Platform Security Testing",
+        fr: "Piratage mobile",
+        es: "Seguridad y pruebas de plataformas móviles",
+      },
+      slug: {
+        it: "mobile-hacking",
+        en: "mobile-hacking",
+        fr: "mobile-hacking",
+        es: "mobile-hacking",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza e test di IoT e OT",
+        en: "IoT & OT Hacking",
+        fr: "Sécurité et tests IoT/OT",
+        es: "Seguridad y pruebas de IoT/OT",
+      },
+      slug: {
+        it: "iot-ot-hacking",
+        en: "iot-ot-hacking",
+        fr: "iot-ot-hacking",
+        es: "iot-ot-hacking",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza e test del cloud",
+        en: "Cloud Hacking",
+        fr: "Sécurité et tests du cloud",
+        es: "Seguridad y pruebas del cloud",
+      },
+      slug: {
+        it: "cloud-hacking",
+        en: "cloud-hacking",
+        fr: "cloud-hacking",
+        es: "cloud-hacking",
+      },
+    },
+    {
+      title: {
+        it: "Crittografia",
+        en: "Cryptography",
+        fr: "Cryptographie",
+        es: "Criptografía",
+      },
+      slug: {
+        it: "crittografia",
+        en: "cryptography",
+        fr: "cryptographie",
+        es: "criptografia",
       },
     },
   ],
