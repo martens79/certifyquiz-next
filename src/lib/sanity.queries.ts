@@ -1,7 +1,14 @@
 import { groq } from "next-sanity";
 
 export const articlesListByLang = groq`
-*[_type == "article" && lang == $lang] | order(coalesce(publishedAt, date) desc)[0...20]{
+*[
+  _type == "article" &&
+  !(_id in path("drafts.**")) &&
+  lang == $lang &&
+  seo.noindex != true &&
+  defined(coalesce(publishedAt, date)) &&
+  dateTime(coalesce(publishedAt, date)) <= dateTime(now())
+] | order(coalesce(publishedAt, date) desc)[0...20]{
   "id": _id,
   "slug": slug.current,
   title,
@@ -13,7 +20,14 @@ export const articlesListByLang = groq`
 }`;
 
 export const articleBySlugLang = groq`
-*[_type == "article" && slug.current == $slug && lang == $lang][0]{
+*[
+  _type == "article" &&
+  !(_id in path("drafts.**")) &&
+  slug.current == $slug &&
+  lang == $lang &&
+  defined(coalesce(publishedAt, date)) &&
+  dateTime(coalesce(publishedAt, date)) <= dateTime(now())
+][0]{
   "id": _id,
   "slug": slug.current,
   title,

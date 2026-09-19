@@ -78,7 +78,13 @@ type SanityArticle = {
 };
 
 const blogSitemapQuery = `
-*[_type == "article" && !(_id in path("drafts.**")) && seo.noindex != true]{
+*[
+  _type == "article" &&
+  !(_id in path("drafts.**")) &&
+  seo.noindex != true &&
+  defined(coalesce(publishedAt, date)) &&
+  dateTime(coalesce(publishedAt, date)) <= dateTime(now())
+]{
   "slug": slug.current,
   "lang": lang,
   "publishedAt": coalesce(publishedAt, date)
@@ -146,7 +152,6 @@ async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
   const indexableReviews=await getIndexableRemoteReviews();
 
   const [perLang, blogEntries] = await Promise.all([
@@ -163,7 +168,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: base,
             changeFrequency: "weekly",
             priority: 0.9,
-            lastModified: now,
           },
 
           // Lista certificazioni lingua
@@ -171,7 +175,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${base}/${listSegment}`,
             changeFrequency: "weekly",
             priority: 0.8,
-            lastModified: now,
           },
           // Lista ripassi
 {
@@ -185,7 +188,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : `${SITE}/es/repasos`,
   changeFrequency: "weekly",
   priority: 0.75,
-  lastModified: now,
 },
 
 // Lista scenari
@@ -200,32 +202,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       : `${SITE}/es/escenarios`,
   changeFrequency: "weekly",
   priority: 0.75,
-  lastModified: now,
 },
           // Statiche lingua
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}`,
             changeFrequency: "weekly" as const,
             priority: 0.75,
-            lastModified: now,
           },
           {
             url: lang === "en" ? `${SITE}/interactive-labs` : `${SITE}/${lang}/interactive-labs`,
             changeFrequency: "monthly" as const,
             priority: 0.75,
-            lastModified: now,
           },
           {
             url: lang === "en" ? `${SITE}/roadmap-networking` : `${SITE}/${lang}/roadmap-networking`,
             changeFrequency: "monthly" as const,
             priority: 0.8,
-            lastModified: now,
           },
           {
             url: lang === "en" ? `${SITE}/roadmap-cybersecurity` : `${SITE}/${lang}/roadmap-cybersecurity`,
             changeFrequency: "monthly" as const,
             priority: 0.8,
-            lastModified: now,
           },
           // NB: /materiale-consigliato (e varianti EN/FR/ES) sono noindex finché
           // il catalogo risorse resta vuoto: escluse di proposito dalla sitemap.
@@ -240,37 +237,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 : `${SITE}/fr/categories/business-applications/sap`,
             changeFrequency: "monthly" as const,
             priority: 0.7,
-            lastModified: now,
           },
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/binary-rush`,
             changeFrequency: "monthly" as const,
             priority: 0.8,
-            lastModified: now,
           },
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/port-hunter`,
             changeFrequency: "monthly" as const,
             priority: 0.8,
-            lastModified: now,
           },
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/packet-defender`,
             changeFrequency: "monthly" as const,
             priority: 0.85,
-            lastModified: now,
           },
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}/hex-blitz`,
             changeFrequency: "monthly" as const,
             priority: 0.8,
-            lastModified: now,
           },
           ...staticPages[lang].map((p) => ({
             url: `${base}/${p}`,
             changeFrequency: "monthly" as const,
             priority: 0.6,
-            lastModified: now,
           })),
 
           // Dettagli certificazioni lingua
@@ -278,7 +269,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${base}/${listSegment}/${c.slug}`,
             changeFrequency: "weekly" as const,
             priority: 0.8,
-            lastModified: now,
           })),
 
           // Topic URLs are intentionally omitted until the backend sitemap feed
@@ -289,7 +279,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${SITE}${href}`,
             changeFrequency: "monthly" as const,
             priority: 0.65,
-            lastModified: now,
           })),
         ];
 
