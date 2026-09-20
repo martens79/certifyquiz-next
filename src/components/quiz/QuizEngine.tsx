@@ -31,6 +31,7 @@ import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
   getAnonymousSessionId,
+  getAnonymousVisitorId,
   trackEvent as trackAnalyticsEvent,
   trackFunnelEvent,
   trackFunnelEventOnce,
@@ -453,6 +454,10 @@ useEffect(() => {
           lang,
           mode: effectiveMode,
           gate_instance_id: cohort?.gateInstanceId ?? null,
+          // Identificatori di funnel per l'evento server-side post_gate_quiz_limit_reached
+          // (mai usati per il conteggio o per decidere l'hard lock: quello e' server-side).
+          session_id: getAnonymousSessionId() ?? null,
+          visitor_id: getAnonymousVisitorId() ?? null,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -488,6 +493,8 @@ const consumeWrongExplanation = async (questionId: number | string): Promise<boo
     cert_slug: context?.certificationSlug ?? null,
     topic_slug: context?.topicSlug ?? null,
     lang,
+    session_id: getAnonymousSessionId() ?? null,
+    visitor_id: getAnonymousVisitorId() ?? null,
   }),
 });
 
@@ -2910,6 +2917,8 @@ return (
               cert_slug: context?.certificationSlug ?? null,
               topic_slug: context?.topicSlug ?? null,
               lang,
+              session_id: getAnonymousSessionId() ?? null,
+              visitor_id: getAnonymousVisitorId() ?? null,
             }),
           });
         } : undefined}
