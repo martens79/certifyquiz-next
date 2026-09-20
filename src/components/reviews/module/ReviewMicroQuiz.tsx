@@ -3,20 +3,23 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { getQuestionsByTopic, type Question as ApiQuestion } from "@/lib/apiClient";
-import type { Locale } from "@/lib/quiz-types";
+import type { Locale, Question as UiQuestion } from "@/lib/quiz-types";
+import QuestionExhibit from "@/components/quiz/QuestionExhibit";
 
 type MicroQuestion = {
   id: number | string;
   question: string;
   explanation: string | null;
+  exhibit?: UiQuestion["exhibit"];
   answers: { id: number | string; text: string; isCorrect: boolean }[];
 };
 
-function normalize(q: ApiQuestion): MicroQuestion {
+export function normalize(q: ApiQuestion): MicroQuestion {
   return {
     id: q.id,
     question: q.question ?? "",
     explanation: q.explanation ?? null,
+    exhibit: q.exhibit ?? null,
     answers: (q.answers ?? []).map((a) => ({
       id: a.id,
       text: a.text ?? "",
@@ -82,10 +85,25 @@ export default function ReviewMicroQuiz({ topicId, lang }: { topicId: number; la
     return <p className="mt-4 text-sm text-slate-500">{t.empty}</p>;
   }
 
+  return <MicroQuizCard question={question} selectedId={selectedId} onSelect={setSelectedId} t={t} />;
+}
+
+export function MicroQuizCard({
+  question,
+  selectedId,
+  onSelect,
+  t,
+}: {
+  question: MicroQuestion;
+  selectedId: number | string | null;
+  onSelect: (id: number | string) => void;
+  t: (typeof copy)[Locale];
+}) {
   const selected = question.answers.find((a) => a.id === selectedId) ?? null;
 
   return (
     <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5">
+      <QuestionExhibit exhibit={question.exhibit} />
       <p className="text-sm font-semibold text-slate-900">{question.question}</p>
 
       <div className="mt-3 flex flex-col gap-2">
@@ -99,7 +117,7 @@ export default function ReviewMicroQuiz({ topicId, lang }: { topicId: number; la
               key={answer.id}
               type="button"
               disabled={selectedId != null}
-              onClick={() => setSelectedId(answer.id)}
+              onClick={() => onSelect(answer.id)}
               aria-pressed={isSelected}
               className={[
                 "flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2.5 text-left text-sm transition",
