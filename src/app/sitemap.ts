@@ -48,6 +48,14 @@ type RemoteCert = {
   questionCountByLang: Partial<Record<Lang, number>>;
 };
 
+const SITEMAP_CERTIFICATION_ALIASES: Record<string, string> = {
+  "google-tensorflow": "tensorflow",
+  "microsoft-csharp": "csharp",
+};
+
+const canonicalCertificationSlug = (slug: string) =>
+  SITEMAP_CERTIFICATION_ALIASES[slug] ?? slug;
+
 type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
 
 export async function getIndexableRemoteReviews(timeoutMs=15000):Promise<Record<Lang,string[]>> {
@@ -189,6 +197,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getBlogEntries(),
   ]);
 
+  // The API still exposes two legacy registry slugs. Publish only their final
+  // public destinations so every certification URL in the sitemap is a 200.
+  const canonicalCerts = Array.from(
+    new Map(
+      certs.map((cert) => {
+        const slug = canonicalCertificationSlug(cert.slug);
+        return [slug, { ...cert, slug }] as const;
+      })
+    ).values()
+  );
+
   const perLang = langs.map((lang) => {
 
         const base = lang === "en" ? SITE : `${SITE}/${lang}`;
@@ -297,7 +316,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           })),
 
           // Dettagli certificazioni lingua
-          ...certs.filter((c) => isCertificationIndexable({
+          ...canonicalCerts.filter((c) => isCertificationIndexable({
             slug: c.slug,
             questionCount: c.questionCountByLang[lang] ?? null,
           })).map((c) => ({

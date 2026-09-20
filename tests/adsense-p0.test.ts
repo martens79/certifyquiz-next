@@ -34,6 +34,9 @@ test("topic indexability requires positive real inventory", () => {
 test("sitemap applies the same certification inventory policy", () => {
   const sitemap = readFileSync(path.join(ROOT, "src/app/sitemap.ts"), "utf8");
   assert.match(sitemap, /questionCount: c\.questionCountByLang\[lang\] \?\? null/);
+  assert.match(sitemap, /"google-tensorflow": "tensorflow"/);
+  assert.match(sitemap, /"microsoft-csharp": "csharp"/);
+  assert.match(sitemap, /canonicalCerts\.filter/);
   assert.doesNotMatch(sitemap, /\$\{base\}\/\$\{listSegment\}\/\$\{c\.slug\}[\s\S]*filter/);
 });
 
