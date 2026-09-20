@@ -30,6 +30,7 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
     id: Number(q.id),
     question: q.question ?? "",
     explanation: q.explanation ?? undefined,
+    exhibit: q.exhibit ?? null,
     answers: (q.answers ?? []).map((a: any) => ({
       id: Number(a.id),
       text: a.text ?? "",
