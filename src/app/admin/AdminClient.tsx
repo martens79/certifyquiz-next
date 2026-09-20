@@ -7,7 +7,9 @@ import AdminFeedbackClient from "./feedback/AdminFeedbackClient";
 import AdminSubscriptionsClient from "./subscriptions/AdminSubscriptionsClient";
 import AdminOrganizationsClient from "./organizations/AdminOrganizationsClient";
 import AdminPushClient from "./push/AdminPushClient";
-import { downloadCsv } from "@/lib/download-csv";
+import { downloadCsv, downloadCsvText } from "@/lib/download-csv";
+import { fetchFunnelExportCsv } from "@/lib/funnel-export";
+import type { FetchLike, FunnelExportIdentity } from "@/lib/funnel-export";
 import {
   BUSINESS_STEPS,
   eventCategory,
@@ -410,67 +412,46 @@ const allCertificationPerformance =
     downloadCsv("certifyquiz-leads.csv", rows);
   }
 
-  async function exportEventsCsv() {
-  if (!token) return;
+  // Export del funnel con identita' pseudonima (user_key, visitor_id, session_id,
+  // gate_instance_id, origin_cert_slug...). `full` aggiunge email e user_id interno
+  // ed e' un'azione esplicita separata: il file di default non contiene dati personali.
+  async function exportEventsCsv(identity: FunnelExportIdentity = "pseudonymous") {
+    if (!token) return;
 
-  try {
-    const limit = 200;
-    let page = 1;
-    let pages = 1;
-    const allEvents: AdminFunnelEvent[] = [];
-
-    do {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        q: search.trim(),
-        event: eventFilter,
-        lang: langFilter,
-        cert: certFilter,
-        date: dateFilter,
+    try {
+      const { csv, rows } = await fetchFunnelExportCsv({
+        fetchFn: fetch as unknown as FetchLike,
+        token,
+        identity,
+        filters: {
+          q: search.trim(),
+          event: eventFilter,
+          lang: langFilter,
+          cert: certFilter,
+          date: dateFilter,
+        },
       });
 
-      const response = await fetch(
-        `/api/backend/admin/funnel-events?${params.toString()}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Export funnel HTTP ${response.status}`);
+      if (rows === 0) {
+        window.alert("Nessun dato disponibile da esportare.");
+        return;
       }
 
-      const data = await response.json();
-
-      allEvents.push(...(data.events ?? []));
-
-      pages = data.pagination?.pages ?? 1;
-      page += 1;
-    } while (page <= pages);
-
-    const rows = allEvents.map((event) => ({
-      email: event.email ?? "",
-      event: event.event,
-      cert_slug: event.cert_slug ?? "",
-      topic_slug: event.topic_slug ?? "",
-      score: event.score ?? "",
-      lang: event.lang ?? "",
-      created_at: event.created_at,
-    }));
-
-    downloadCsv("certifyquiz-funnel-events.csv", rows);
-  } catch (error) {
-    console.error("Errore export funnel events:", error);
-    setError(
-      error instanceof Error
-        ? error.message
-        : "Errore durante esportazione eventi"
-    );
+      downloadCsvText(
+        identity === "full"
+          ? "certifyquiz-funnel-events-with-email.csv"
+          : "certifyquiz-funnel-events.csv",
+        csv
+      );
+    } catch (error) {
+      console.error("Errore export funnel events:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Errore durante esportazione eventi"
+      );
+    }
   }
-}
 
   function exportHotLeadsCsv() {
     downloadCsv("certifyquiz-hot-leads.csv", hotLeads.map((lead) => ({
@@ -670,7 +651,8 @@ return (
           <button onClick={exportCertificationPerformanceCsv} style={styles.exportButton}>Scarica performance CSV</button>
           <button onClick={exportLeadsCsv} style={styles.exportButton}>Scarica tutti i lead CSV</button>
           <button onClick={exportHotLeadsCsv} style={styles.exportButton}>Scarica tutti i lead caldi CSV</button>
-          <button onClick={exportEventsCsv} style={styles.exportButton}>Scarica tutti gli eventi CSV</button>
+          <button onClick={() => exportEventsCsv("pseudonymous")} style={styles.exportButton}>Scarica tutti gli eventi CSV</button>
+          <button onClick={() => exportEventsCsv("full")} style={styles.secondaryButton} title="Include email e user_id interno: dati personali, non condividere il file">Eventi CSV con email</button>
         </div>
 
         {overview && (

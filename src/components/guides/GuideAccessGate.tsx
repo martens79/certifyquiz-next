@@ -10,6 +10,8 @@ import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   analyticsUserStateFrom,
+  getAnonymousSessionId,
+  getAnonymousVisitorId,
   trackEvent,
   trackFunnelEvent,
   trackFunnelEventOnce,
@@ -173,9 +175,24 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
         guide_slug: slug,
         purchase_type: "single_guide",
       });
+      // Percorso commerciale dell'acquisto singolo: stesso filo di identita'
+      // del checkout Premium. La certificazione la risolve il backend dalla guida.
+      trackFunnelEvent({
+        event: "checkout_started",
+        cert_slug: slug,
+        topic_slug: null,
+        lang,
+        paywall_type: "guide",
+        metadata: { product_type: "guide", purchase_type: "single_guide", origin_cert_slug: slug },
+      });
       const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/checkout`, {
         method: "POST",
-        body: JSON.stringify({ lang }),
+        body: JSON.stringify({
+          lang,
+          session_id: getAnonymousSessionId() ?? null,
+          visitor_id: getAnonymousVisitorId() ?? null,
+          paywall_type: "guide",
+        }),
       });
 
       const data = await res.json().catch(() => null);

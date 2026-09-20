@@ -15,6 +15,7 @@ import {
   getAnonymousVisitorId,
 } from "@/lib/analytics";
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
+import { resolveCommercialOrigin } from "@/lib/commercial-origin";
 import PackagesUpsell from "./PackagesUpsell";
 
 type Lang = "it" | "es" | "en" | "fr";
@@ -672,6 +673,9 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
     try {
       setIsLoading(true);
       const postGateCohort = user?.id != null ? readPostGateCohort(user.id) : null;
+      // Certificazione e paywall da cui e' partito il percorso: restano separati
+      // dal prodotto (il piano) lungo checkout_started -> checkout_created -> acquisto.
+      const origin = resolveCommercialOrigin(window.location.search);
       trackEvent("checkout_started", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
@@ -682,10 +686,18 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       });
       trackFunnelEvent({
         event: "checkout_started",
+        cert_slug: origin.originCertSlug,
         lang,
         plan: selectedPlan,
+        paywall_type: origin.paywallType,
         gate_instance_id: postGateCohort?.gateInstanceId ?? null,
-        metadata: { plan: selectedPlan, purchase_type: "subscription", source_page: "pricing" },
+        metadata: {
+          plan: selectedPlan,
+          product_type: selectedPlan,
+          purchase_type: "subscription",
+          source_page: "pricing",
+          ...(origin.originCertSlug ? { origin_cert_slug: origin.originCertSlug } : {}),
+        },
       });
 
       trackMetaPixel("InitiateCheckout", {
@@ -707,6 +719,8 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: postGateCohort?.gateInstanceId ?? null,
+          origin_cert_slug: origin.originCertSlug,
+          paywall_type: origin.paywallType,
         }),
       });
 
