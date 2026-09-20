@@ -8,6 +8,7 @@
 // modulo, il guard su typeof window basta a renderlo innocuo in SSR.
 
 import { getToken } from "@/lib/auth";
+import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
 
 type TrackParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -211,8 +212,18 @@ export function trackFunnelEvent(
 
   const referrer = safeReferrer();
   const metadata = body.metadata || (body.plan ? { plan: body.plan } : null);
+
+  // I click Premium sono il punto in cui nasce il percorso commerciale: qui si
+  // ricordano certificazione e paywall d'origine (letti poi da pricing/checkout,
+  // vedi commercial-origin.ts) e si valorizza paywall_type quando il chiamante
+  // non lo passa, cosi' ogni variante premium_clicked_* e' classificabile.
+  const isPremiumClick = body.event.startsWith("premium_clicked");
+  const paywallType = body.paywall_type ?? (isPremiumClick ? paywallTypeForEvent(body.event) : null);
+  if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType });
+
   const payload = JSON.stringify({
     ...body,
+    ...(paywallType ? { paywall_type: paywallType } : {}),
     metadata,
     event_id: crypto.randomUUID(),
     session_id: getAnonymousSessionId() ?? null,
