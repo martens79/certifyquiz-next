@@ -198,7 +198,7 @@ export async function generateMetadata(
     ALL.map((l) => [hreflang(l), `${SITE}${PATH_BY_LANG[l]}`])
   );
   if (!("x-default" in languages)) {
-    (languages as Record<string, string>)["x-default"] = `${SITE}${PATH_BY_LANG.it}`;
+    (languages as Record<string, string>)["x-default"] = `${SITE}${PATH_BY_LANG.en}`;
   }
 
   return {

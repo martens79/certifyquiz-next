@@ -34,7 +34,7 @@ export const seoPrefix = (lang: Locale): string =>
  */
 export const quizPrefix = (lang: Locale): string => `/${lang}`;
 
-/** Pagina editoriale dei materiali consigliati (sempre con prefisso lingua). */
+/** Pagina editoriale dei materiali consigliati (EN canonico alla root). */
 export const RECOMMENDED_RESOURCES_SLUG_BY_LANG: Record<Locale, string> = {
   it: "materiale-consigliato",
   en: "recommended-resources",
@@ -43,7 +43,7 @@ export const RECOMMENDED_RESOURCES_SLUG_BY_LANG: Record<Locale, string> = {
 };
 
 export const recommendedResourcesPath = (lang: Locale): string =>
-  `/${lang}/${RECOMMENDED_RESOURCES_SLUG_BY_LANG[lang]}`;
+  `${seoPrefix(lang)}/${RECOMMENDED_RESOURCES_SLUG_BY_LANG[lang]}`;
 
 /* ------------------------------------------------------------------ */
 /* CERTIFICATIONS (SEO)                                                 */

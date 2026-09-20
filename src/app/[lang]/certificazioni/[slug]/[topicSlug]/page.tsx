@@ -217,7 +217,10 @@ const ogImage = `${siteUrl}/api/og?type=topic&title=${encodeURIComponent(
 return {
   title,
   description,
-  robots: { index: isTopicIndexable(data.topic), follow: true },
+  robots: {
+    index: isTopicIndexable({ ...data.topic, questionCount: data.questionCount }),
+    follow: true,
+  },
   alternates: {
     canonical: pageUrl,
   },

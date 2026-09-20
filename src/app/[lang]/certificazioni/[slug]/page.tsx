@@ -9,6 +9,7 @@ import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/registry";
 import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
+import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -69,6 +70,17 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
 
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
 
+  const cert = await getCertBySlug(registryKey, L);
+
+  if (
+    !isCertificationIndexable({
+      slug,
+      questionCount: cert?.questionCountByLang?.[L] ?? cert?.questionCount ?? null,
+    })
+  ) {
+    return { robots: { index: false, follow: true } };
+  }
+
   const suffix =
     L === "it"
       ? "Quiz ed esame"
@@ -93,7 +105,6 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
     ogImage = reg.imageUrl;
   } else {
     // 2) Fallback data layer
-    const cert = await getCertBySlug(registryKey, L);
     if (cert) {
       titleBase = cert.title || cert.h1;
       description = cert.seoDescription || cert.intro;
@@ -101,7 +112,7 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
     }
   }
 
-  if (!titleBase) return {};
+  if (!titleBase) return { robots: { index: false, follow: true } };
 
   const title = reg?.metaTitle?.[L] ?? reg?.metaTitle?.it
     ? titleBase

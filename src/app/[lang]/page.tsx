@@ -2,6 +2,8 @@
 import StructuredData from "@/components/StructuredData";
 import type { Locale, Localized } from "@/lib/i18n";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isLocale } from "@/lib/i18n";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
   /\/+$/,
@@ -85,6 +87,7 @@ export async function generateMetadata(
   props: { params: Promise<{ lang: Locale }> }
 ): Promise<Metadata> {
   const { lang } = await props.params;
+  if (!isLocale(lang)) notFound();
 
   const title = getLabel(
     {
@@ -154,6 +157,7 @@ export default async function LangHome(
   props: { params: Promise<{ lang: Locale }> }
 ) {
   const { lang } = await props.params;
+  if (!isLocale(lang)) notFound();
 
   // JSON-LD: Breadcrumbs
   const breadcrumbLd = {

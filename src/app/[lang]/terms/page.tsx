@@ -10,7 +10,7 @@ const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com")
 
 // Slug per lingua
 const PATH_BY_LANG: Record<Lang, string> = {
-  it: "/it/terms",
+  it: "/it/termini",
   en: "/terms",
   fr: "/fr/terms",
   es: "/es/terms",
@@ -104,7 +104,7 @@ export async function generateMetadata(
     ALL.map((l) => [hreflang(l), `${SITE}${PATH_BY_LANG[l]}`])
   );
   if (!("x-default" in languages)) {
-    (languages as Record<string, string>)["x-default"] = `${SITE}${PATH_BY_LANG.it}`;
+    (languages as Record<string, string>)["x-default"] = `${SITE}${PATH_BY_LANG.en}`;
   }
 
   return {

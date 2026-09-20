@@ -189,7 +189,7 @@ export default function HeaderAuthSlot({
       </Link>
 
       <Link
-        href={withLang(lang, "/inizia")}
+        href={withLang(lang, "/quiz-home")}
         className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
         onClick={onNavigate}
       >
@@ -208,7 +208,7 @@ export default function HeaderAuthSlot({
         {ui.login}
       </Link>
       <Link
-        href={withLang(lang, "/inizia")}
+        href={withLang(lang, "/quiz-home")}
         className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white hover:opacity-90"
         onClick={onNavigate}
       >

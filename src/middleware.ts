@@ -173,12 +173,32 @@ if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
   // Redirect stabili
   // ---------------------------------------------------------------------
 
+  if (pathname === "/inizia") {
+    return redirect301(req, "/quiz-home");
+  }
+  if (pathname === "/it/inizia") {
+    return redirect301(req, "/it/quiz-home");
+  }
+  if (pathname === "/fr/inizia") {
+    return redirect301(req, "/fr/quiz-home");
+  }
+  if (pathname === "/es/inizia") {
+    return redirect301(req, "/es/quiz-home");
+  }
+  if (pathname === "/quiz-suggeriti") {
+    return redirect301(req, "/suggested");
+  }
+
   // IT: C# alias
   if (pathname === "/it/certificazioni/microsoft-csharp") {
     return redirect301(req, "/it/certificazioni/csharp");
   }
 
   // IT: Terms slug EN dentro IT
+  if (pathname === "/it/terms") {
+    return redirect301(req, "/it/termini");
+  }
+
   if (pathname === "/it/terms-conditions") {
     return redirect301(req, "/it/termini");
   }
@@ -624,14 +644,6 @@ if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa/repaso") {
   }
 
   if (pathname === "/es/contactos") {
-    return redirect301(req, "/es");
-  }
-
-  if (pathname === "/fr/inizia") {
-    return redirect301(req, "/fr");
-  }
-
-  if (pathname === "/es/inizia") {
     return redirect301(req, "/es");
   }
 
