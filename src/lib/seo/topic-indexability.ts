@@ -4,6 +4,7 @@ type TopicForIndexability = {
   intro?: string | null;
   content?: string | null;
   faq?: Array<{ q?: string | null; a?: string | null }> | null;
+  questionCount?: number | null;
 };
 
 /**
@@ -11,6 +12,8 @@ type TopicForIndexability = {
  * localized publisher content. Quiz inventory and template chrome do not count.
  */
 export function isTopicIndexable(topic: TopicForIndexability): boolean {
+  if (topic.questionCount == null || topic.questionCount <= 0) return false;
+
   const prose = [
     topic.description,
     topic.intro,

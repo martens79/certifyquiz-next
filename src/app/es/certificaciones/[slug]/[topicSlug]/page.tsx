@@ -5,6 +5,7 @@ import { getTopicPageData } from "@/lib/server/topic-page";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import TopicContent from "@/components/TopicContent";
 import TopicIntro from "@/components/TopicIntro";
+import { isTopicIndexable } from "@/lib/seo/topic-indexability";
 
 function getLabels() {
   return {
@@ -41,6 +42,7 @@ export async function generateMetadata({
     return {
       title: "Tema | CertifyQuiz",
       description: "Practica temas de certificación en CertifyQuiz.",
+      robots: { index: false, follow: true },
     };
   }
 
@@ -81,6 +83,10 @@ export async function generateMetadata({
   return {
     title,
     description,
+    robots: {
+      index: isTopicIndexable({ ...data.topic, questionCount: data.questionCount }),
+      follow: true,
+    },
     alternates: {
       canonical: pageUrl,
     },

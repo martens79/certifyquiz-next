@@ -36,6 +36,7 @@ export interface CertListItem {
 
 export interface CertDetail extends CertListItem {
   official_url?: string | null;
+  questionCountByLang?: Partial<Record<"it" | "en" | "fr" | "es", number>>;
   topics?: Array<{
     id: number;
     certification_id: number;

@@ -1,6 +1,21 @@
 //src/components/PortableTextComponents.tsx
 import Link from "next/link";
 import type { PortableTextComponents } from "@portabletext/react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  containsRawMarkdown,
+  portableTextBlockText,
+} from "@/lib/seo/markdown-rendering";
+
+function MarkdownBlock({ value }: { value: { children?: unknown[] } }) {
+  const markdown = portableTextBlockText(value);
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {markdown}
+    </ReactMarkdown>
+  );
+}
 
 export const portableTextComponents: PortableTextComponents = {
   block: {
@@ -14,11 +29,14 @@ export const portableTextComponents: PortableTextComponents = {
         {children}
       </h3>
     ),
-    normal: ({ children }) => (
-      <p className="mb-4 leading-relaxed text-gray-800">
-        {children}
-      </p>
-    ),
+    normal: ({ children, value }) => {
+      const raw = portableTextBlockText(value);
+      return containsRawMarkdown(raw) ? (
+        <MarkdownBlock value={value} />
+      ) : (
+        <p className="mb-4 leading-relaxed text-gray-800">{children}</p>
+      );
+    },
   },
 
   list: {

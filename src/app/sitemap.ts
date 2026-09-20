@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
+import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 3600;
 
 const RAW = process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.certifyquiz.com";
 const SITE = RAW.replace(/\/+$/, "");
@@ -26,9 +26,9 @@ const CERT_SEGMENT_BY_LANG: Record<Lang, string> = {
 
 const staticPages: Record<Lang, string[]> = {
   it: ["privacy", "termini", "cookie"],
-  es: ["privacy", "cookies"],
+  es: ["privacy", "terms", "cookies"],
   en: ["privacy", "terms", "cookies"],
-  fr: ["privacy", "cookies"],
+  fr: ["privacy", "terms", "cookies"],
 };
 
 const BLOG_SEGMENT_BY_LANG: Record<Lang, string> = {
@@ -45,6 +45,7 @@ const GAMES_SEGMENT_BY_LANG: Record<Lang, string> = {
 type RemoteCert = {
   id: number;
   slug: string;
+  questionCountByLang: Partial<Record<Lang, number>>;
 };
 
 type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
@@ -93,16 +94,16 @@ const blogSitemapQuery = `
   ,"body": coalesce(body, content)
 }`;
 
-async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[]> {
+async function getRemoteCerts(timeoutMs = 15000): Promise<RemoteCert[]> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
 
-  const url = `${API_BASE}/certifications?lang=${encodeURIComponent(lang)}`;
+  const url = `${API_BASE}/certifications?lang=en`;
 
   try {
     const res = await fetch(url, {
       headers: { accept: "application/json" },
-      cache: "no-store",
+      next: { revalidate: 3600 },
       signal: controller.signal,
     });
 
@@ -113,12 +114,42 @@ async function getRemoteCerts(lang: Lang, timeoutMs = 5000): Promise<RemoteCert[
       slug: string | null;
     }>;
 
-    return arr.filter(
-      (c): c is RemoteCert =>
+    const base = arr.filter(
+      (c): c is { id: number; slug: string } =>
         typeof c.id === "number" &&
         typeof c.slug === "string" &&
         c.slug.trim().length > 0
     );
+
+    const enriched: RemoteCert[] = [];
+    const concurrency = 8;
+    for (let start = 0; start < base.length; start += concurrency) {
+      const batch = base.slice(start, start + concurrency);
+      const details = await Promise.all(
+        batch.map(async (cert) => {
+          try {
+            const detail = await fetch(
+              `${API_BASE}/certifications/by-slug/${encodeURIComponent(cert.slug)}`,
+              {
+                headers: { accept: "application/json" },
+                next: { revalidate: 3600 },
+                signal: controller.signal,
+              }
+            );
+            if (!detail.ok) return null;
+            const payload = (await detail.json()) as {
+              questionCountByLang?: Partial<Record<Lang, number>>;
+            };
+            if (!payload.questionCountByLang) return null;
+            return { ...cert, questionCountByLang: payload.questionCountByLang };
+          } catch {
+            return null;
+          }
+        })
+      );
+      enriched.push(...details.filter((item): item is RemoteCert => item !== null));
+    }
+    return enriched;
   } catch {
     return [];
   } finally {
@@ -152,12 +183,13 @@ async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const indexableReviews=await getIndexableRemoteReviews();
+  const [indexableReviews, certs, blogEntries] = await Promise.all([
+    getIndexableRemoteReviews(),
+    getRemoteCerts(),
+    getBlogEntries(),
+  ]);
 
-  const [perLang, blogEntries] = await Promise.all([
-    Promise.all(
-      langs.map(async (lang) => {
-        const certs = await getRemoteCerts(lang);
+  const perLang = langs.map((lang) => {
 
         const base = lang === "en" ? SITE : `${SITE}/${lang}`;
         const listSegment = CERT_SEGMENT_BY_LANG[lang];
@@ -265,7 +297,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           })),
 
           // Dettagli certificazioni lingua
-          ...certs.map((c) => ({
+          ...certs.filter((c) => isCertificationIndexable({
+            slug: c.slug,
+            questionCount: c.questionCountByLang[lang] ?? null,
+          })).map((c) => ({
             url: `${base}/${listSegment}/${c.slug}`,
             changeFrequency: "weekly" as const,
             priority: 0.8,
@@ -283,10 +318,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ];
 
         return entries;
-      })
-    ),
-    getBlogEntries(),
-  ]);
+      });
 
   return [...perLang.flat(), ...blogEntries];
 }

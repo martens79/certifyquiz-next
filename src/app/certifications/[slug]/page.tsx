@@ -5,6 +5,7 @@ import { getCertificationDetailRSC } from "@/lib/server/certs";
 import { locales } from "@/lib/i18n";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
+import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -131,6 +132,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalSlug = normalizeCertSlug(slug);
   const registryCert = getRegistryCertBySlug(toRegistryKey(canonicalSlug));
 
+  if (!isCertificationIndexable(canonicalSlug)) {
+    return { robots: { index: false, follow: true } };
+  }
+
   if (registryCert?.publicationStatus === "planned") {
     return { robots: { index: false, follow: false } };
   }
@@ -142,7 +147,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: "IT Certification | CertifyQuiz",
       description:
         "Prepare for IT certifications with realistic quizzes and clear explanations.",
+      robots: { index: false, follow: true },
     };
+  }
+
+  if (
+    !isCertificationIndexable({
+      slug: canonicalSlug,
+      questionCount: data.questionCountByLang?.en ?? null,
+    })
+  ) {
+    return { robots: { index: false, follow: true } };
   }
 
   const siteUrl =
