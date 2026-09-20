@@ -14,6 +14,10 @@ export const NON_INDEXABLE_CERTIFICATION_SLUGS = new Set([
   "sap-business-technology-platform",
   "sap-successfactors",
   "sap-analytics-cloud",
+  // LFS101: editorial build-out in progress (see editorial/lfs101 in the backend repo).
+  // Keep noindex even once the first questions exist; remove only when every
+  // syllabus chapter has topic content, questions and reviews in all four languages.
+  "lfs101",
 ]);
 
 export type CertificationIndexabilityInput = {
