@@ -36,6 +36,9 @@ type ApiQuestion = {
   explanation_fr?: string | null;
   explanation_es?: string | null;
 
+  // evidenza tecnica: gia' normalizzata dal backend per `lang`
+  exhibit?: Question["exhibit"];
+
   answers: ApiAnswer[];
 };
 
@@ -87,8 +90,9 @@ export default function ReviewErrorsClient({
     if (certificationId) p.set("certificationId", certificationId);
     if (topicId) p.set("topicId", topicId);
     p.set("limit", limit || "20");
+    p.set("lang", lang);
     return p.toString();
-  }, [certificationId, topicId, limit]);
+  }, [certificationId, topicId, limit, lang]);
 
   const fetchQuestions = async (): Promise<Question[]> => {
     const token = typeof window !== "undefined" ? getAccessToken() : "";
@@ -147,6 +151,7 @@ export default function ReviewErrorsClient({
         id: q.id,
         question: questionText,
         explanation: explanationText ? explanationText : null,
+        exhibit: q.exhibit ?? null,
         answers,
       } as unknown as Question;
     });
