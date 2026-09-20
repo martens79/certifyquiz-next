@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { getQuestionsByTopic, type Question as ApiQuestion } from "@/lib/apiClient";
 import type { Locale, Question as UiQuestion } from "@/lib/quiz-types";

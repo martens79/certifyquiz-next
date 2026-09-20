@@ -1,3 +1,4 @@
+import React from "react";
 import type { Question } from "@/lib/quiz-types";
 
 type Exhibit = NonNullable<Question["exhibit"]>;
