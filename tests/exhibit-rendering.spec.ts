@@ -134,3 +134,83 @@ test.describe("question exhibit rendering", () => {
     expect(pageOverflows).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Quiz per-topic (QuizTopicClient): training e assessment.
+// Stesso contratto piatto, stessa pagina reale, API intercettata.
+// ---------------------------------------------------------------------------
+const TOPIC_PATH = "/en/quiz/topic/85";
+const TOPIC_QUESTION = "Based on the output shown, which statement is correct?";
+
+async function openTopicQuizWith(
+  page: Page,
+  payload: unknown,
+  path: string = TOPIC_PATH,
+  seenUrls: string[] = []
+) {
+  await page.route("**/api/backend/me", (route) =>
+    route.fulfill({ status: 401, contentType: "application/json", body: "{}" })
+  );
+  await page.route("**/api/backend/questions/**", (route) => {
+    seenUrls.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(payload) });
+  });
+  await page.goto(path);
+  await expect(page.getByText(TOPIC_QUESTION)).toBeVisible({ timeout: 25_000 });
+}
+
+test.describe("question exhibit rendering — topic quiz", () => {
+  test("topic training: flat exhibit is visible with exact content", async ({ page }) => {
+    await openTopicQuizWith(page, questionPayload({ title: "Exhibit", kind: "cli", content: CLI_OUTPUT }));
+
+    const figure = page.locator("figure").filter({ has: page.locator("pre") });
+    await expect(figure).toHaveCount(1);
+    await expect(figure.locator("figcaption")).toHaveText("Exhibit");
+    expect(await figure.locator("pre").evaluate((el) => el.textContent)).toBe(CLI_OUTPUT);
+  });
+
+  test("topic assessment: flat exhibit is visible", async ({ page }) => {
+    const seen: string[] = [];
+    await openTopicQuizWith(
+      page,
+      questionPayload({ title: "Exhibit", kind: "cli", content: CLI_OUTPUT }),
+      `${TOPIC_PATH}?mode=assessment`,
+      seen
+    );
+    // la pagina e' davvero in assessment: la richiesta domande lo dichiara
+    expect(seen.some((u) => new URL(u).searchParams.get("mode") === "assessment")).toBe(true);
+
+    await expect(page.locator("figure pre")).toHaveCount(1);
+    expect(await page.locator("figure pre").evaluate((el) => el.textContent)).toBe(CLI_OUTPUT);
+  });
+
+  test("exhibit is shown regardless of question_type", async ({ page }) => {
+    const payload = questionPayload({ title: "Exhibit", kind: "cli", content: CLI_OUTPUT });
+    payload.questions[0].question_type = "standard";
+    await openTopicQuizWith(page, payload);
+    await expect(page.locator("figure pre")).toHaveCount(1);
+  });
+
+  test("topic quiz with null exhibit: no figure, question and answers render (no regression)", async ({ page }) => {
+    await openTopicQuizWith(page, questionPayload(null));
+    await expect(page.locator("figure")).toHaveCount(0);
+    await expect(page.getByText("Both routers are Master")).toBeVisible();
+  });
+
+  test("topic quiz mobile: long output scrolls inside the exhibit, no page overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    const wide = `${"A".repeat(30)}\n${"0123456789".repeat(20)}`;
+    await openTopicQuizWith(page, questionPayload({ title: "Exhibit", kind: "cli", content: wide }));
+
+    const pre = page.locator("figure pre");
+    await expect(pre).toBeVisible();
+    const { scrollWidth, clientWidth } = await pre.evaluate((el) => ({
+      scrollWidth: el.scrollWidth,
+      clientWidth: el.clientWidth,
+    }));
+    expect(scrollWidth).toBeGreaterThan(clientWidth);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)
+    ).toBe(false);
+  });
+});
