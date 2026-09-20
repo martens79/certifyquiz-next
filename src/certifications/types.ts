@@ -124,7 +124,22 @@ export type CertificationTaxonomy = Readonly<{
   }>;
 }>;
 
+/**
+ * Sezione editoriale libera della landing (es. "Come prepararsi", "Errori comuni").
+ * Ogni sezione ha un titolo e almeno uno tra paragrafi ed elenco puntato.
+ */
+export type GuideSection = Readonly<{
+  title: string;
+  paragraphs?: ReadonlyArray<string>;
+  items?: ReadonlyArray<string>;
+}>;
+
 export type ExtraContent = {
+  /** Sezioni editoriali aggiuntive mostrate dopo "Cosa impari" e prima delle FAQ. */
+  guideSections?: Readonly<Record<keyof LocalizedText, ReadonlyArray<GuideSection>>>;
+  /** Override opzionali dei titoli dei riquadri "argomenti" e "riferimenti", per programmi che non sono esami (es. corsi). */
+  topicsHeading?: Readonly<Partial<Record<keyof LocalizedText, string>>>;
+  examReferenceHeading?: Readonly<Partial<Record<keyof LocalizedText, string>>>;
   // liste immutabili per ogni lingua
   learn?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
   whyChoose?: Readonly<Record<keyof LocalizedText, ReadonlyArray<string>>>;
