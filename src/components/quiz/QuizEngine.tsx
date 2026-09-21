@@ -19,6 +19,7 @@ import {
   claimPostGateQuestionConsumption,
   claimWrongExplanationConsumption,
   isPostGateHardLocked,
+  shouldReportPostGateAnswer,
   isPostGateLimitError,
   isWrongExplanationLocked,
 } from '@/lib/quiz-explanation-access';
@@ -399,7 +400,6 @@ export default function QuizEngine({
   // richiesta di rete aggiuntiva). Il server è sempre la fonte autorevole:
   // questo stato locale serve solo per un render immediato, mai per decidere
   // da solo se sbloccare qualcosa.
-  const [postGateApplicable, setPostGateApplicable] = useState(false);
   const [postGateHardLocked, setPostGateHardLocked] = useState(false);
   const [postGateUsed, setPostGateUsed] = useState<number>(0);
   const [postGateLimit, setPostGateLimit] = useState<number>(5);
@@ -420,7 +420,6 @@ useEffect(() => {
       if (typeof data.limit === "number") setWrongExpLimit(data.limit);
       if (data.experimentVariant) setExperimentVariant(data.experimentVariant);
       if (data.postGate) {
-        setPostGateApplicable(!!data.postGate.applicable);
         setPostGateHardLocked(!!data.postGate.hardLocked);
         if (typeof data.postGate.used === "number") setPostGateUsed(data.postGate.used);
         if (typeof data.postGate.limit === "number") setPostGateLimit(data.postGate.limit);
@@ -434,8 +433,10 @@ useEffect(() => {
   // Chiamato quando l'utente free (già oltre l'explanation gate) risponde a
   // una domanda, corretta o sbagliata che sia — vedi isPostGateHardLocked.
   const recordPostGateQuestion = async (questionId: number | string) => {
-    if (isPremiumUser || !isLoggedIn) return;
-    if (!postGateApplicable) return; // non ancora oltre l'explanation gate
+    // Nessun filtro su stato letto al mount: se il gate viene superato in questa
+    // stessa sessione (o in un'altra scheda) quello stato sarebbe stale e la
+    // risposta non verrebbe mai contata. Decide il server (applicable:false).
+    if (!shouldReportPostGateAnswer({ isPremiumUser, isLoggedIn })) return;
     if (!claimPostGateQuestionConsumption(
       consumedPostGateQuestionIdsRef.current,
       questionId
@@ -924,7 +925,6 @@ const openFeedback = () => {
         // Applichiamo subito i valori dal body del 403 (già autorevoli, non
         // serve aspettare la fetch separata di /me/explanation-status).
         if (isPostGateLimitError(err)) {
-          setPostGateApplicable(true);
           setPostGateHardLocked(true);
           if (typeof err.detail.used === 'number') setPostGateUsed(err.detail.used);
           if (typeof err.detail.limit === 'number') setPostGateLimit(err.detail.limit);
