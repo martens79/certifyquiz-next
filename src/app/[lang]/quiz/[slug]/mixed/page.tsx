@@ -16,6 +16,9 @@ import ComingSoonBox from '@/components/ui/ComingSoonBox';
 
 import {
   getMixedQuestions,
+  getAssessmentQuestions,
+  getMockExamQuestions,
+  getCertificationPoolTotal,
   getCertificationBySlug,
   saveExam,
   type Question as ApiQuestion,
@@ -215,24 +218,16 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
     (async () => {
       try {
-        const request = (strict: boolean) =>
-          getMixedQuestions(certId, currentLang, {
-            limit: 1,
-            shuffle: false,
-            strict,
-          });
-        const [res, globalRes] = await Promise.all([
-          request(currentLang !== 'it'),
-          currentLang === 'it' ? Promise.resolve(null) : request(false),
+        // Solo conteggi (nessuna "sonda" sulla route del question bank).
+        const [total, globalTotal] = await Promise.all([
+          getCertificationPoolTotal(certId, currentLang, currentLang !== 'it'),
+          currentLang === 'it'
+            ? Promise.resolve<number | null>(null)
+            : getCertificationPoolTotal(certId, currentLang, false),
         ]);
-
-        const total = (res as any)?.poolTotal;
-        const globalTotal = currentLang === 'it'
-          ? total
-          : (globalRes as any)?.poolTotal;
         if (!cancelled) {
-          setPoolTotal(typeof total === 'number' ? total : null);
-          setGlobalPoolTotal(typeof globalTotal === 'number' ? globalTotal : null);
+          setPoolTotal(total);
+          setGlobalPoolTotal(currentLang === 'it' ? total : globalTotal);
         }
       } catch {
         if (!cancelled) {
@@ -268,31 +263,32 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   /* ------------------------- fetch pool for engine ------------------------- */
   const fetchPool = useCallback(async (): Promise<UiQuestion[]> => {
    if (!certId) return [];
-   const effectiveLimit =
-  isAssessmentMode
-    ? 10
-    : mode === 'exam'
-    ? Math.max(1, examSpec.questions)
-    : trainingCap;
 
-    const res = await getMixedQuestions(certId, currentLang, {
-      limit: effectiveLimit,
-      shuffle: true,
-      strict: currentLang !== 'it',
-      // `mode` qui è già sincronizzato col toggle Training/Exam di
-      // QuizEngine via onModeChange (vedi sotto), quindi riflette sempre
-      // l'intento reale al momento del fetch — a differenza della pagina
-      // topic, qui ogni cambio di mode rifà il fetch (fetchPool dipende
-      // da `mode`), non c'e' un pool condiviso ambiguo.
-      mode,
-    });
+    // Lo scopo lo decide la ROUTE (Paywall Phase 1, Opzione A), non un
+    // parametro: `mode` qui e' sincronizzato col toggle Training/Exam di
+    // QuizEngine via onModeChange (vedi sotto) e ogni cambio rifa' il fetch.
+    //  - assessment -> route di assessment (10 domande decise dal server);
+    //  - exam       -> route del mock exam (spec/blueprint/conteggio dal server);
+    //  - training   -> route di training, soggetta al gate 10+5 (`mode:
+    //    "training"` resta esplicito finche' il backend non ignora il
+    //    parametro, step C).
+    const res = isAssessmentMode
+      ? await getAssessmentQuestions(certId, currentLang)
+      : mode === 'exam'
+      ? await getMockExamQuestions(certId, currentLang)
+      : await getMixedQuestions(certId, currentLang, {
+          limit: trainingCap,
+          shuffle: true,
+          strict: currentLang !== 'it',
+          mode: 'training',
+        });
 
     const raw: ApiQuestion[] = Array.isArray(res)
       ? (res as any)
       : (res as any).questions ?? [];
 
     return raw.map(normalizeMixedQuestion);
-  }, [certId, currentLang, trainingCap, mode, examSpec.questions, isAssessmentMode]);
+  }, [certId, currentLang, trainingCap, mode, isAssessmentMode]);
 
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;

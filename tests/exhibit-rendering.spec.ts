@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, type Route } from "@playwright/test";
 
 // Il backend normalizza questions.exhibit_json in { title, kind, content }
 // (utils/exhibit.js). Questa spec dimostra che il renderer esistente di
@@ -45,8 +45,13 @@ async function openMockExamWith(page: Page, payload: unknown) {
   await page.route("**/api/backend/me", (route) =>
     route.fulfill({ status: 401, contentType: "application/json", body: "{}" })
   );
-  await page.route("**/api/backend/questions-mixed/**", (route) =>
+  // Il mock exam usa la route dedicata (lo scopo lo decide la route) e i
+  // conteggi arrivano da question-pool, non piu' da una "sonda" limit=1.
+  await page.route("**/api/backend/mock-exam/questions/**", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(payload) })
+  );
+  await page.route("**/api/backend/question-pool/**", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ poolTotal: 100 }) })
   );
   await page.goto(MOCK_EXAM_PATH);
   await expect(page.getByText("Based on the output shown, which statement is correct?")).toBeVisible({
@@ -151,10 +156,16 @@ async function openTopicQuizWith(
   await page.route("**/api/backend/me", (route) =>
     route.fulfill({ status: 401, contentType: "application/json", body: "{}" })
   );
-  await page.route("**/api/backend/questions/**", (route) => {
+  // training -> /questions/:id ; assessment di topic -> /assessment/topics/:id/questions
+  const serveQuestions = (route: Route) => {
     seenUrls.push(route.request().url());
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(payload) });
-  });
+  };
+  await page.route("**/api/backend/questions/**", serveQuestions);
+  await page.route("**/api/backend/assessment/topics/**", serveQuestions);
+  await page.route("**/api/backend/question-pool/**", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ poolTotal: 10 }) })
+  );
   await page.goto(path);
   await expect(page.getByText(TOPIC_QUESTION)).toBeVisible({ timeout: 25_000 });
 }
@@ -177,8 +188,10 @@ test.describe("question exhibit rendering — topic quiz", () => {
       `${TOPIC_PATH}?mode=assessment`,
       seen
     );
-    // la pagina e' davvero in assessment: la richiesta domande lo dichiara
-    expect(seen.some((u) => new URL(u).searchParams.get("mode") === "assessment")).toBe(true);
+    // la pagina e' davvero in assessment: lo dichiara la ROUTE (non un
+    // parametro), e la fetch di training non viene usata.
+    expect(seen.some((u) => new URL(u).pathname.endsWith("/assessment/topics/85/questions"))).toBe(true);
+    expect(seen.some((u) => new URL(u).pathname.includes("/api/backend/questions/"))).toBe(false);
 
     await expect(page.locator("figure pre")).toHaveCount(1);
     expect(await page.locator("figure pre").evaluate((el) => el.textContent)).toBe(CLI_OUTPUT);

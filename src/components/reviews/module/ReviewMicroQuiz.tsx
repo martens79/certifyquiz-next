@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { getQuestionsByTopic, type Question as ApiQuestion } from "@/lib/apiClient";
+import { getTopicAssessmentQuestions, type Question as ApiQuestion } from "@/lib/apiClient";
 import type { Locale, Question as UiQuestion } from "@/lib/quiz-types";
 import QuestionExhibit from "@/components/quiz/QuestionExhibit";
 
@@ -54,8 +54,11 @@ export default function ReviewMicroQuiz({ topicId, lang }: { topicId: number; la
     setLoading(true);
     setFailedToLoad(false);
     try {
-      const res = await getQuestionsByTopic(topicId, lang, { limit: 1, shuffle: true, strict: lang !== "it" });
-      const raw: ApiQuestion[] = Array.isArray(res) ? res : res.questions;
+      // Micro-quiz di una Review = campione di assessment del topic (FREE,
+      // deciso dal server): la route di training e' soggetta al gate 10+5 e
+      // non deve essere usata per pescare una domanda singola.
+      const res = await getTopicAssessmentQuestions(topicId, lang);
+      const raw: ApiQuestion[] = res.questions;
       const first = raw?.[0];
       setQuestion(first ? normalize(first) : null);
     } catch {

@@ -12,6 +12,8 @@ import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-typ
 
 import {
   getQuestionsByTopic,
+  getTopicAssessmentQuestions,
+  getTopicPoolTotal,
   type Question as ApiQuestion,
   getAccessToken,
   getTopicMetaById,
@@ -146,19 +148,8 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
     (async () => {
       try {
-        const res = await getQuestionsByTopic(numericId, L, {
-  limit: 1,
-  shuffle: false,
-  strict: L !== "it",
-});
-
-        const poolTotalFromApi = (res as any)?.poolTotal;
-
-        let total: number | null = null;
-        if (typeof poolTotalFromApi === "number") total = poolTotalFromApi;
-        else if (Array.isArray(res)) total = res.length > 0 ? 1 : 0;
-        else if (Array.isArray((res as any)?.questions)) total = (res as any).questions.length > 0 ? 1 : 0;
-
+        // Solo conteggio: nessuna "sonda" sulla route del question bank.
+        const total = await getTopicPoolTotal(numericId, L);
         if (!cancelled) setTopicTotal(total);
       } catch {
         if (!cancelled) setTopicTotal(null);
@@ -177,19 +168,22 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
     try {
-      // Questa pagina serve training/exam/assessment da UN SOLO fetch
-      // condiviso (il toggle Training<->Exam risuddivide client-side lo
-      // stesso pool, vedi buildActiveQuestions in QuizEngine): "assessment"
-      // è l'unico intento che conosciamo con certezza qui, altrimenti il
-      // default di ingresso pagina è sempre training (initialMode di
-      // QuizEngine). Tagga solo questi due casi noti — mai un valore
-      // indovinato per un chiamante che potesse davvero essere exam.
-      const res = await getQuestionsByTopic(numericId, L, {
-        limit: 500,
-        shuffle: false,
-        strict: L !== "it",
-        mode: isAssessmentMode ? "assessment" : "training",
-      });
+      // Lo scopo lo decide la ROUTE (Paywall Phase 1, Opzione A):
+      //  - ?mode=assessment -> route di ASSESSMENT di topic (10 domande decise
+      //    dal server, FREE, nessun limit/shuffle/strict dal client);
+      //  - altrimenti       -> TRAINING, un solo fetch condiviso (il toggle
+      //    Training<->Exam risuddivide client-side lo stesso pool, vedi
+      //    buildActiveQuestions in QuizEngine), soggetto al gate 10+5.
+      // `mode: "training"` resta esplicito finche' il backend non ignora del
+      // tutto il parametro (step C).
+      const res = isAssessmentMode
+        ? await getTopicAssessmentQuestions(numericId, L)
+        : await getQuestionsByTopic(numericId, L, {
+            limit: 500,
+            shuffle: false,
+            strict: L !== "it",
+            mode: "training",
+          });
 
       const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
       return (raw ?? []).map(normalizeQuestion);
