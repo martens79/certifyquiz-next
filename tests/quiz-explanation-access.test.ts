@@ -7,7 +7,9 @@ import {
   isPostGateHardLocked,
   isPostGateLimitError,
   isWrongExplanationLocked,
+  shouldReportPostGateAnswer,
 } from '../src/lib/quiz-explanation-access.ts';
+import { readFileSync } from 'node:fs';
 
 test('free user with quota can see and consume an explanation', () => {
   assert.equal(isWrongExplanationLocked({
@@ -108,4 +110,28 @@ test('malformed/missing error shapes are handled without throwing', () => {
   assert.equal(isPostGateLimitError({}), false);
   assert.equal(isPostGateLimitError({ status: 403 }), false);
   assert.equal(isPostGateLimitError(new Error('network down')), false);
+});
+
+// Regressione 2026-09-21: `postGateApplicable` veniva letto una volta al mount da
+// /me/explanation-status e usato per FILTRARE le segnalazioni al server. Se il gate
+// delle spiegazioni veniva superato nella stessa sessione di pagina (o in un'altra
+// scheda) restava false: nessuna risposta post-gate veniva contata, il contatore
+// server restava a 0 e utenti FREE rispondevano a 10-40 domande oltre il limite.
+test('every logged-in FREE answer is reported to the server (the server decides applicability)', () => {
+  assert.equal(shouldReportPostGateAnswer({ isPremiumUser: false, isLoggedIn: true }), true);
+});
+
+test('premium and guest answers are never reported', () => {
+  assert.equal(shouldReportPostGateAnswer({ isPremiumUser: true, isLoggedIn: true }), false);
+  assert.equal(shouldReportPostGateAnswer({ isPremiumUser: false, isLoggedIn: false }), false);
+});
+
+test('QuizEngine.recordPostGateQuestion does not filter on client state read at mount', () => {
+  const source = readFileSync(new URL('../src/components/quiz/QuizEngine.tsx', import.meta.url), 'utf8');
+  const start = source.indexOf('const recordPostGateQuestion');
+  assert.ok(start > 0, 'recordPostGateQuestion not found');
+  const body = source.slice(start, source.indexOf('const consumeWrongExplanation', start));
+  assert.ok(!/postGateApplicable/.test(body), 'recordPostGateQuestion must not depend on a mount-time applicable flag');
+  assert.match(body, /shouldReportPostGateAnswer\(/);
+  assert.ok(!/postGateApplicable/.test(source), 'the stale applicable state must not exist anymore');
 });

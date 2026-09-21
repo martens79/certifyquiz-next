@@ -52,6 +52,26 @@ export function isPostGateHardLocked({
 }
 
 /**
+ * Una risposta post-gate va SEMPRE segnalata al server per un utente FREE
+ * loggato: e' il server (POST /me/post-gate-question-seen) a decidere se la
+ * domanda conta, rispondendo `applicable:false` finche' il gate delle
+ * spiegazioni non e' raggiunto. Il client NON deve filtrare con uno stato
+ * letto una sola volta al mount (es. `applicable` da /me/explanation-status):
+ * se il gate viene superato nella stessa sessione di pagina, o in un'altra
+ * scheda, quello stato resta a false, la risposta non viene mai contata e il
+ * limite 10+5 non scatta (regressione osservata in produzione, 2026-09-21).
+ */
+export function shouldReportPostGateAnswer({
+  isPremiumUser,
+  isLoggedIn,
+}: {
+  isPremiumUser: boolean;
+  isLoggedIn: boolean;
+}) {
+  return !isPremiumUser && isLoggedIn;
+}
+
+/**
  * Una domanda risposta consuma UNA sola slot post-gate, indipendentemente
  * dal fatto che la risposta sia corretta o sbagliata: la dedup vive qui solo
  * per evitare chiamate di rete ridondanti (doppio click, re-render). La
