@@ -2,7 +2,7 @@
 
 import QuizEngine from "@/components/quiz/QuizEngine";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { getQuestionsByTopic, type Question as ApiQuestion } from "@/lib/apiClient";
+import { getTopicAssessmentQuestions, type Question as ApiQuestion } from "@/lib/apiClient";
 import type { Question as UiQuestion, QuizSummary, Locale } from "@/lib/quiz-types";
 
 function normalizeQuestion(q: ApiQuestion): UiQuestion {
@@ -76,8 +76,13 @@ export default function ReviewModuleAssessment({
       }}
       fetchQuestions={async (): Promise<UiQuestion[]> => {
         try {
-          const res = await getQuestionsByTopic(topicId, lang, { limit: 500, shuffle: true, strict: lang !== "it", mode: "assessment" });
-          const raw: ApiQuestion[] = Array.isArray(res) ? res : res.questions;
+          // Route di ASSESSMENT di topic: il server decide scopo, conteggio
+          // (10), shuffle e strict-per-lingua. `questionLimit` resta il
+          // taglio editoriale della UI (blockSize/limitsByMode): il server
+          // non ne consegna mai piu' di ASSESSMENT_QUESTION_COUNT (10), che
+          // coincide con il valore usato da tutte le strutture esistenti.
+          const res = await getTopicAssessmentQuestions(topicId, lang);
+          const raw: ApiQuestion[] = res.questions;
           return (raw ?? []).map(normalizeQuestion);
         } catch {
           return [];

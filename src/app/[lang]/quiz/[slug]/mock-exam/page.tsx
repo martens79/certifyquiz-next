@@ -10,7 +10,8 @@ import { withLang } from "@/lib/i18n";
 import { CERT_ID_BY_SLUG } from "@/lib/certs";
 
 import {
-  getMixedQuestions,
+  getMockExamQuestions,
+  getCertificationPoolTotal,
   getCertificationBySlug,
   saveExam,
   type Question as ApiQuestion,
@@ -131,14 +132,9 @@ export default function MockExamPage() {
 
     (async () => {
       try {
-        const res = await getMixedQuestions(certId, currentLang, {
-          limit: 1,
-          shuffle: false,
-          strict: currentLang !== "it",
-        });
-
-        const total = (res as any)?.poolTotal;
-        if (!cancelled) setPoolTotal(typeof total === "number" ? total : null);
+        // Solo conteggio (nessuna "sonda" sulla route del question bank).
+        const total = await getCertificationPoolTotal(certId, currentLang, currentLang !== "it");
+        if (!cancelled) setPoolTotal(total);
       } catch {
         if (!cancelled) setPoolTotal(null);
       }
@@ -160,20 +156,17 @@ export default function MockExamPage() {
 
   const fetchExamQuestions = useCallback(async (): Promise<UiQuestion[]> => {
     if (!certId) return [];
-    const res = await getMixedQuestions(certId, currentLang, {
-      limit: Math.max(1, examSpec.questions),
-      shuffle: true,
-      strict: currentLang !== "it",
-      exam: true,
-      mode: "exam",
-    });
+    // Route dedicata al mock exam: spec, conteggio, blueprint e selezione li
+    // decide il server (Paywall Phase 1, Opzione A). Nessun limit/exam/mode
+    // dal client: `examSpec` (tabella locale) resta solo per timer e UI.
+    const res = await getMockExamQuestions(certId, currentLang);
 
     const raw: ApiQuestion[] = Array.isArray(res)
       ? (res as any)
       : (res as any).questions ?? [];
 
     return raw.map(normalizeMixedQuestion);
-  }, [certId, currentLang, examSpec.questions]);
+  }, [certId, currentLang]);
 
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;

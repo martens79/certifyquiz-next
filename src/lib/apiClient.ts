@@ -463,13 +463,17 @@ export const getTopicMetaById = (topicId: number | string) =>
   apiGet<TopicMeta>(`/topics/meta/by-topic/${topicId}`);
 
 /*─────────────────────────────── QUESTIONS ───────────────────────────────*/
-// "mode" comunica esplicitamente al backend l'intento della richiesta
-// (training/exam/assessment), cosa che prima non esisteva su questi due
-// endpoint. Opzionale e retrocompatibile: un chiamante che non lo passa
-// (es. i widget di review standalone che non usano QuizEngine) si comporta
-// esattamente come prima — il backend applica l'hard-lock SOLO quando
-// mode==="training" è passato esplicitamente, mai per assenza del parametro.
-export type QuestionsRequestMode = "training" | "exam" | "assessment";
+// Paywall Phase 1 / Opzione A: lo SCOPO del fetch lo decide la ROUTE, non un
+// parametro. Ci sono tre percorsi distinti e il backend decide da solo
+// conteggio, forma e accesso di ciascuno:
+//   - TRAINING    getQuestionsByTopic / getMixedQuestions  (gate 10+5)
+//   - ASSESSMENT  getAssessmentQuestions / getTopicAssessmentQuestions (FREE, 10 domande)
+//   - MOCK EXAM   getMockExamQuestions (spec/blueprint/conteggio dal server)
+// Le route di training non accettano piu' assessment/exam: `mode` qui puo'
+// essere solo "training" e i chiamanti lo inviano SEMPRE esplicitamente
+// finche' il backend non ignora del tutto il parametro (step C): un training
+// senza `mode` non verrebbe bloccato dall'hard lock nello step intermedio.
+export type QuestionsRequestMode = "training";
 
 export const getQuestionsByTopic = (
   topicId: number | string,
@@ -494,19 +498,62 @@ export const getQuestionsByTopic = (
 export const getMixedQuestions = (
   id: number | string,
   lang: Locale = "it",
-  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; exam?: boolean; mode?: QuestionsRequestMode }
+  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; mode?: QuestionsRequestMode }
 ) => {
   const params = new URLSearchParams({ lang });
   if (opts?.limit != null) params.set("limit", String(opts.limit));
   if (opts?.shuffle != null) params.set("shuffle", opts.shuffle ? "1" : "0");
   if (opts?.strict != null) params.set("strict", opts.strict ? "1" : "0");
-  if (opts?.exam != null) params.set("exam", opts.exam ? "1" : "0");
   if (opts?.mode) params.set("mode", opts.mode);
 
   return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,
     false
   );
+};
+
+export type PurposeQuestionsResponse = {
+  poolTotal?: number;
+  questions: Question[];
+  purpose?: "assessment" | "mock_exam";
+  /** Solo mock exam: spec decisa dal server (durationSec in secondi). */
+  spec?: { questions: number; served: number; durationSec: number };
+};
+
+// ASSESSMENT ("free test"): sempre FREE, il server decide conteggio (10),
+// shuffle e strict-per-lingua. Nessun limit/shuffle/strict/mode dal client.
+export const getAssessmentQuestions = (certificationId: number | string, lang: Locale = "it") =>
+  apiGet<PurposeQuestionsResponse>(`/assessment/questions/${certificationId}?lang=${lang}`, false);
+
+// ASSESSMENT di topic: topic page in modalita' assessment, Review Module
+// Assessment e micro-quiz delle Review.
+export const getTopicAssessmentQuestions = (topicId: number | string, lang: Locale = "it") =>
+  apiGet<PurposeQuestionsResponse>(`/assessment/topics/${topicId}/questions?lang=${lang}`, false);
+
+// MOCK EXAM: spec, conteggio, blueprint e selezione li decide il server.
+export const getMockExamQuestions = (certificationId: number | string, lang: Locale = "it") =>
+  apiGet<PurposeQuestionsResponse>(`/mock-exam/questions/${certificationId}?lang=${lang}`, false);
+
+// Solo conteggio (nessun contenuto): sostituisce le "sonde" limit=1 sulle
+// route del question bank.
+export const getCertificationPoolTotal = async (
+  certificationId: number | string,
+  lang: Locale = "it",
+  strict = false
+): Promise<number> => {
+  const res = await apiGet<{ poolTotal?: number }>(
+    `/question-pool/certifications/${certificationId}?lang=${lang}&strict=${strict ? "1" : "0"}`,
+    false
+  );
+  return Number(res?.poolTotal ?? 0);
+};
+
+export const getTopicPoolTotal = async (
+  topicId: number | string,
+  lang: Locale = "it"
+): Promise<number> => {
+  const res = await apiGet<{ poolTotal?: number }>(`/question-pool/topics/${topicId}?lang=${lang}`, false);
+  return Number(res?.poolTotal ?? 0);
 };
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
