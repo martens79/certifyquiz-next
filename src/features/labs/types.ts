@@ -23,6 +23,11 @@ export type InteractiveLab = {
 };
 
 export type GuidedLabOption = { id: string; label: string };
+/**
+ * Evidenza tecnica (output Nmap/HTTP/log/CLI multilinea) mostrata sopra la
+ * risposta dello step. Solo lettura: non contiene mai soluzioni.
+ */
+export type GuidedLabEvidence = { title?: string; kind?: string; content: string };
 export type GuidedLabStep = {
   id: string;
   title: string;
@@ -30,6 +35,7 @@ export type GuidedLabStep = {
   type: "single" | "multi" | "text";
   options?: GuidedLabOption[];
   placeholder?: string;
+  evidence?: GuidedLabEvidence[];
 };
 export type GuidedLabContent = {
   scenario: string;

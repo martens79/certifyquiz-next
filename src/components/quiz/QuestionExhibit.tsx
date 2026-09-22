@@ -1,7 +1,9 @@
 import React from "react";
-import type { Question } from "@/lib/quiz-types";
 
-type Exhibit = NonNullable<Question["exhibit"]>;
+// Superinsieme strutturale di Question["exhibit"]: `kind` e' solo un'etichetta
+// (non influenza il rendering), quindi accetta anche stringhe libere come quelle
+// delle evidenze dei lab guidati senza restringere i chiamanti esistenti.
+type Exhibit = { title?: string; kind?: string; content?: string };
 
 /**
  * Evidenza tecnica di una domanda (output CLI, log, tabella…).
