@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import QuizEngine from "@/components/quiz/QuizEngine";
+import { pricingPath } from "@/lib/paths";
 import type { Locale } from "@/lib/i18n";
 import type { Question } from "@/lib/quiz-types";
 
@@ -85,6 +87,11 @@ export default function ReviewErrorsClient({
   topicId?: string;
   limit?: string;
 }) {
+  // Paywall Phase 2: il Ripasso Errori e' Premium e lo decide il SERVER
+  // (401 anonimo, 403 senza Premium). La pagina riflette la risposta del
+  // server invece di mostrare un errore generico; non e' lei la protezione.
+  const [denied, setDenied] = useState<401 | 403 | null>(null);
+
   const qs = useMemo(() => {
     const p = new URLSearchParams();
     if (certificationId) p.set("certificationId", certificationId);
@@ -104,6 +111,11 @@ export default function ReviewErrorsClient({
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
+
+    if (r.status === 401 || r.status === 403) {
+      setDenied(r.status);
+      return [];
+    }
 
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data?.error || "Fetch error-review failed");
@@ -176,6 +188,67 @@ export default function ReviewErrorsClient({
       : lang === "es"
       ? "← Perfil"
       : "← Profile";
+
+  if (denied) {
+    const copy = {
+      it: {
+        title: "Il Ripasso errori è incluso in Premium",
+        body: "Rivedi le domande che hai sbagliato con le spiegazioni complete e concentrati sui tuoi punti deboli.",
+        login: "Accedi per continuare",
+        cta: "Scopri Premium",
+      },
+      en: {
+        title: "Error review is included in Premium",
+        body: "Go back over the questions you got wrong with full explanations and focus on your weak spots.",
+        login: "Log in to continue",
+        cta: "Explore Premium",
+      },
+      fr: {
+        title: "La révision des erreurs est incluse dans Premium",
+        body: "Revois les questions ratées avec les explications complètes et concentre-toi sur tes points faibles.",
+        login: "Connecte-toi pour continuer",
+        cta: "Découvrir Premium",
+      },
+      es: {
+        title: "El repaso de errores está incluido en Premium",
+        body: "Repasa las preguntas que fallaste con las explicaciones completas y céntrate en tus puntos débiles.",
+        login: "Inicia sesión para continuar",
+        cta: "Ver Premium",
+      },
+    }[lang] ?? {
+      title: "Error review is included in Premium",
+      body: "Go back over the questions you got wrong with full explanations and focus on your weak spots.",
+      login: "Log in to continue",
+      cta: "Explore Premium",
+    };
+    const href =
+      denied === 401
+        ? `/${lang}/login?redirect=${encodeURIComponent(`/${lang}/review/errors`)}`
+        : `${pricingPath(lang)}?source=error_review_gate`;
+    return (
+      <main className="mx-auto max-w-xl px-4 py-16">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
+          <p className="mt-3 font-semibold text-slate-900">{copy.title}</p>
+          <p className="mt-2 text-sm text-slate-600">{copy.body}</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href={href}
+              className="inline-flex min-h-11 items-center rounded-lg bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-700"
+            >
+              {denied === 401 ? copy.login : copy.cta}
+            </Link>
+            <Link
+              href={`/${lang}/profile`}
+              className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 px-4 font-semibold text-slate-700"
+            >
+              {backLabel}
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <QuizEngine
