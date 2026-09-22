@@ -50,6 +50,10 @@ export const labSlugs = [
   "ccna-routing-table-troubleshooting",
   "ccna-wlc-wlan-gui",
   "ccna-dhcp-snooping-dai-port-security",
+  "ceh-recon-service-enumeration",
+  "ceh-web-evidence-analysis",
+  "ceh-privilege-escalation-reasoning",
+  "ceh-authorized-assessment-scope-reporting",
 ] as const;
 
 export type LabSlug = (typeof labSlugs)[number];

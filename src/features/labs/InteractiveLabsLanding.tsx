@@ -60,6 +60,7 @@ const DB_CERTIFICATION_CATEGORY: Record<string, string> = {
   "cisco-ccst-networking": "networking",
   "cisco-ccst-cybersecurity": "cybersecurity",
   "ccna": "networking",
+  "ceh": "cybersecurity",
 };
 const FALLBACK_CATEGORY_ID = "certification-labs";
 
