@@ -556,6 +556,47 @@ export const getTopicPoolTotal = async (
   return Number(res?.poolTotal ?? 0);
 };
 
+/*──────────────────────── ANSWER CHECK (Paywall Phase 2) ────────────────────────*/
+// Il payload della domanda non contiene piu' la chiave di risposta ne' la
+// spiegazione: le decide il server DOPO la risposta.
+export type AnswerCheckResult = {
+  question_id: number;
+  correct: boolean;
+  correct_answer_id: number | null;
+  explanation: string | null;
+  explanation_access: {
+    granted: boolean;
+    reason: string;
+    unlimited?: boolean;
+    remaining?: number | null;
+    limit?: number | null;
+    consumed?: boolean;
+  };
+  first_attempt?: { correct: boolean; recorded_now: boolean };
+};
+
+/** Training: correttezza + spiegazione (se l'utente ne ha diritto). */
+export const checkAnswer = (
+  questionId: number | string,
+  answerId: number | string,
+  lang: Locale = "it"
+) =>
+  apiPost<AnswerCheckResult>("/answers/check", {
+    question_id: Number(questionId),
+    answer_id: Number(answerId),
+    lang,
+  });
+
+/** Fine mock/assessment: correttezza in blocco, senza spiegazioni. */
+export const evaluateAnswers = (
+  answers: Array<{ question_id: number; answer_id: number }>,
+  lang: Locale = "it"
+) =>
+  apiPost<{ results: AnswerCheckResult[]; summary: { total: number; correct: number } }>(
+    "/answers/evaluate",
+    { answers, lang }
+  );
+
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
 export const saveExam = (payload: SaveExamRequest) => apiPost<SaveExamResponse>("/save-exam", payload, true);
 export const saveResult = (payload: SaveResultRequest) =>

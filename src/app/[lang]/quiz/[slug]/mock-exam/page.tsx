@@ -26,7 +26,6 @@ function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: q.id,
     question: q.question ?? "",
-    explanation: q.explanation ?? undefined,
     questionType: q.question_type,
     blueprintDomain: q.blueprint_domain,
     blueprintObjectiveId: q.blueprint_objective_id,
@@ -35,7 +34,6 @@ function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
     answers: (q.answers ?? []).map((a) => ({
       id: a.id,
       text: (a as any).text ?? "",
-      isCorrect: a.is_correct === true || a.is_correct === 1,
     })),
   };
 }

@@ -9,7 +9,6 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: Number(q.id),
     question: q.question ?? "",
-    explanation: q.explanation ?? undefined,
     questionType: q.question_type,
     blueprintDomain: q.blueprint_domain,
     blueprintObjectiveId: q.blueprint_objective_id,
@@ -18,7 +17,6 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
     answers: (q.answers ?? []).map((a) => ({
       id: Number(a.id),
       text: a.text ?? "",
-      isCorrect: a.is_correct === true || a.is_correct === 1,
     })),
   };
 }
