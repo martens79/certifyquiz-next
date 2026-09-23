@@ -7,6 +7,11 @@ import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 
+// Robots and canonical metadata depend on live, per-language inventory.
+// Keep the route cached, but never retain an obsolete publication decision
+// for the 24-hour lifetime used by slower-changing certification content.
+export const revalidate = 300;
+
 type Props = { params: Promise<{ slug: string }> };
 
 // Alias → slug PUBBLICO canonico. Coerente con middleware.ts: chi arriva
