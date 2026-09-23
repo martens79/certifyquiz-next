@@ -140,7 +140,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { robots: { index: false, follow: false } };
   }
 
-  const data = await getCertificationDetailRSC(toRegistryKey(canonicalSlug));
+  // Metadata controls robots and sitemap eligibility, so do not retain a stale
+  // per-language inventory for a full day after a backend content release.
+  const data = await getCertificationDetailRSC(toRegistryKey(canonicalSlug), 300);
 
   if (!data) {
     return {

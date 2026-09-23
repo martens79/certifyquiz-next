@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 
 const BASE_BY_LANG = {
   it: "/it/certificazioni",
-  en: "/en/certifications",
+  en: "/certifications",
   fr: "/fr/certifications",
   es: "/es/certificaciones",
 } as const;
