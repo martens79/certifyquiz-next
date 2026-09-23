@@ -5,6 +5,7 @@ import type {
   CertificationData,
   LocalizedText,
   CertificationTopic,
+  GuideSection,
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
@@ -189,8 +190,14 @@ const pageTopics =
     ? getList<string>(extraContent.currentCertification, lang)
     : [];
 
+  const guideSections = isLocalizedArray<GuideSection>(extraContent?.guideSections)
+    ? getList<GuideSection>(extraContent.guideSections, lang).filter(
+        (s) => s?.title && ((s.paragraphs?.length ?? 0) > 0 || (s.items?.length ?? 0) > 0)
+      )
+    : [];
+
   type FaqItem = { q: string; a: string };
-  const faqRaw = isLocalizedArray<FaqItem>(extraContent?.faq)
+  const faqRaw =isLocalizedArray<FaqItem>(extraContent?.faq)
     ? getList<FaqItem>(extraContent.faq, lang)
     : [];
 
@@ -443,12 +450,14 @@ const pageTopics =
           {pageTopics.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {({
-                  it: "Argomenti dell'esame",
-                  en: "Exam Topics",
-                  fr: "Sujets de l'examen",
-                  es: "Temas del examen",
-                } as const)[lang] ?? "Exam Topics"}
+                {extraContent?.topicsHeading?.[lang] ??
+                  ({
+                    it: "Argomenti dell'esame",
+                    en: "Exam Topics",
+                    fr: "Sujets de l'examen",
+                    es: "Temas del examen",
+                  } as const)[lang] ??
+                  "Exam Topics"}
               </h2>
 
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
@@ -472,12 +481,14 @@ const pageTopics =
           {examRefs.length > 0 && (
           <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
-                {({
-                  it: "Esami ufficiali di riferimento",
-                  en: "Official reference exams",
-                  fr: "Examens officiels",
-                  es: "Exámenes oficiales",
-                } as const)[lang] ?? "Official reference exams"}
+                {extraContent?.examReferenceHeading?.[lang] ??
+                  ({
+                    it: "Esami ufficiali di riferimento",
+                    en: "Official reference exams",
+                    fr: "Examens officiels",
+                    es: "Exámenes oficiales",
+                  } as const)[lang] ??
+                  "Official reference exams"}
               </h2>
               <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
                 {examRefs.map((item, idx) => (
@@ -563,11 +574,32 @@ const pageTopics =
             </h2>
             <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
               {learn.map((l, i) => (
-                <li key={i}>• {l}</li>
+                <li key={i}>{l}</li>
               ))}
             </ul>
           </section>
         )}
+
+        {/* Sezioni editoriali (come prepararsi, errori comuni, ...) */}
+        {guideSections.map((section, idx) => (
+          <section key={idx} className="mt-6" aria-labelledby={`guide-section-${idx}`}>
+            <h2 id={`guide-section-${idx}`} className="text-lg font-semibold mb-2">
+              {section.title}
+            </h2>
+            {section.paragraphs?.map((p, i) => (
+              <p key={i} className="text-sm text-gray-800 mb-2">
+                {p}
+              </p>
+            ))}
+            {section.items && section.items.length > 0 && (
+              <ul className="list-disc pl-5 text-sm text-gray-800 space-y-1">
+                {section.items.map((item, i) => (
+                  <li key={i}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
 
         {/* FAQ */}
         {faq.length > 0 && (
