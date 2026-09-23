@@ -17,17 +17,16 @@ import {
 import { withLang, getDict } from '@/lib/i18n';
 import {
   claimPostGateQuestionConsumption,
-  claimWrongExplanationConsumption,
   isPostGateHardLocked,
   shouldReportPostGateAnswer,
   isPostGateLimitError,
-  isWrongExplanationLocked,
 } from '@/lib/quiz-explanation-access';
 import {
   claimBlockReviewGateOpening,
   explanationPaywallParams,
 } from '@/lib/quiz-block-review-tracking';
 import { pricingPath } from "@/lib/paths";
+import { checkAnswer, evaluateAnswers, type AnswerCheckResult } from "@/lib/apiClient";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
@@ -391,7 +390,30 @@ export default function QuizEngine({
   // senza toccare wrongExpLeft (il reward non è credito extra, è mirato a
   // UNA domanda specifica, vedi rewardedAdsService.consumeGrant lato backend).
   const [adUnlockedQuestionIds, setAdUnlockedQuestionIds] = useState<Set<number>>(new Set());
-  const consumedWrongExplanationQuestionIdsRef = useRef(new Set<string>());
+
+  // ── Paywall Phase 2: correttezza e spiegazione vengono dal SERVER ─────────
+  // Il payload della domanda non contiene piu' `answers[].isCorrect` ne'
+  // `explanation`. Dopo ogni risposta (training) o a fine tentativo
+  // (exam/assessment) il server dice cosa era giusto e se l'utente ha diritto
+  // alla spiegazione. Qui teniamo solo il risultato ricevuto: il client non
+  // decide nulla e non conosce la risposta giusta prima di rispondere.
+  const [results, setResults] = useState<Record<string, AnswerCheckResult>>({});
+  const resultOf = (questionId: number | string): AnswerCheckResult | undefined =>
+    results[String(questionId)];
+  const correctIdOf = (questionId: number | string): number | string | null =>
+    resultOf(questionId)?.correct_answer_id ?? null;
+  const isAnswerCorrect = (questionId: number | string, answerId: number | string | null | undefined) => {
+    const correctId = correctIdOf(questionId);
+    return correctId != null && answerId != null && String(correctId) === String(answerId);
+  };
+  const mergeResults = (incoming: AnswerCheckResult[]) => {
+    if (!incoming.length) return;
+    setResults((prev) => {
+      const next = { ...prev };
+      for (const r of incoming) next[String(r.question_id)] = r;
+      return next;
+    });
+  };
   const blockReviewGateTrackedOpeningsRef = useRef(new Set<number>());
   const blockReviewOpeningCounterRef = useRef(0);
 
@@ -473,63 +495,10 @@ useEffect(() => {
   };
 
   // Chiamato quando l'utente free vede la spiegazione di un errore
-const consumeWrongExplanation = async (questionId: number | string): Promise<boolean> => {
-  // premium/admin/non loggato: sempre ok
-  if (isPremiumUser || !isLoggedIn) return true;
-
-  // già a 0: blocca subito senza chiamata
-  if (wrongExpLeft !== null && wrongExpLeft <= 0) return false;
-
-  if (!claimWrongExplanationConsumption(
-    consumedWrongExplanationQuestionIdsRef.current,
-    questionId
-  )) return true;
-
-  try {
-   const res = await apiFetch("/me/explanation-seen", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    certification_id: context?.certificationId ?? null,
-    cert_slug: context?.certificationSlug ?? null,
-    topic_slug: context?.topicSlug ?? null,
-    lang,
-    session_id: getAnonymousSessionId() ?? null,
-    visitor_id: getAnonymousVisitorId() ?? null,
-  }),
-});
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-    if (typeof data.limit === "number") setWrongExpLimit(data.limit);
-    if (data.experimentVariant) setExperimentVariant(data.experimentVariant);
-
-    if (data.locked) {
-      setWrongExpLeft(0);
-      return false;
-    }
-
-    const remaining = data.remaining ?? 0;
-    setWrongExpLeft(remaining);
-    if (remaining === 0) {
-      trackQuizEvent('free_limit_reached', {
-        language: lang,
-        certification_slug: context?.certificationSlug ?? null,
-        limit_type: 'wrong_explanations',
-        limit: data.limit ?? wrongExpLimit,
-      });
-    }
-    return true;
-  } catch (err) {
-    console.error("Errore explanation-seen:", err);
-    return true; // mantieni il comportamento attuale
-  }
-};
-
-
+// Paywall Phase 2: il consumo delle 10 spiegazioni gratuite NON e' piu' una
+// chiamata del client (era POST /me/explanation-seen, saltabile e senza
+// question_id). Ora lo fa il server dentro POST /answers/check, in modo
+// atomico e idempotente per (utente, domanda).
   // ---------------- Sticky timer (UI-only) ----------------
   const examDurationSec = durationsByMode?.exam ?? durationSec ?? null;
 
@@ -883,6 +852,7 @@ const openFeedback = () => {
           revRef.current = row.rev ?? 0;
         } else {
           setMarked({});
+          setResults({});  // i risultati server seguono le risposte
           setReviewLater(new Set());
           setIdx(0);
           setRemaining(total);
@@ -901,7 +871,6 @@ const openFeedback = () => {
         setReviewMode(false);
         setBlockPaused(false);
         setBlockReview(null);
-        consumedWrongExplanationQuestionIdsRef.current.clear();
       } catch (e: unknown) {
         if (!alive) return;
 
@@ -1083,7 +1052,7 @@ const openFeedback = () => {
       chosenId != null
         ? current.answers.find((a) => String(a.id) === String(chosenId))
         : undefined;
-    const correct = current.answers.find((a) => !!a.isCorrect);
+    const correct = current.answers.find((a) => isAnswerCorrect(current.id, a.id));
 
     setQuizTutorData({
       question: current.question ?? null,
@@ -1118,7 +1087,6 @@ clearProgress(`${storageScope}:assessment`);
     setIdx(0);
     setReviewMode(false);
     setBlockReview(null);
-    consumedWrongExplanationQuestionIdsRef.current.clear();
     // Esplicito e non solo dedotto dal guard "marked non vuoto" sopra:
     // se quel guard cambiasse in futuro, blockPaused non deve mai
     // sopravvivere a un cambio di mode (schermata blocco visibile in
@@ -1395,12 +1363,10 @@ clearProgress(`${storageScope}:assessment`);
     if (!questions.length) return 0;
     let ok = 0;
     for (const q of questions) {
-      const chosen = marked[q.id];
-      const right = q.answers.find((a) => !!a.isCorrect)?.id;
-      if (chosen != null && right != null && chosen === right) ok++;
+      if (isAnswerCorrect(q.id, marked[q.id])) ok++;
     }
     return Math.round((ok / questions.length) * 100);
-  }, [marked, questions]);
+  }, [marked, questions, results]);
 
   const blockResult = useMemo(() => {
     if (!blockPaused || effectiveMode !== 'training' || !blockSize) return null;
@@ -1427,15 +1393,46 @@ clearProgress(`${storageScope}:assessment`);
   }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
 
   /* ----------------------------- HANDLER ------------------------------ */
- const choose = (q: Question, a: Answer) => {
+ const choose = async (q: Question, a: Answer) => {
   setActionsOpen(false);
   if (blockReview) return;
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
+
+  // Paywall Phase 2: in training la correttezza (e la spiegazione, se
+  // spettante) arrivano dal server ORA, dopo la risposta. In exam/assessment
+  // NON si chiede nulla durante il tentativo: nessun feedback puo' rivelare la
+  // risposta, la valutazione avviene in blocco alla fine (doFinish).
+  let checked: AnswerCheckResult | null = resultOf(q.id) ?? null;
+  if (!isTestLike && !checked) {
+    try {
+      checked = await checkAnswer(q.id, a.id, lang);
+      mergeResults([checked]);
+      const remaining = checked.explanation_access?.remaining;
+      if (checked.explanation_access?.unlimited) {
+        setWrongExpLeft(null);
+      } else if (typeof remaining === "number") {
+        setWrongExpLeft(remaining);
+        if (remaining === 0 && checked.explanation_access?.consumed) {
+          trackQuizEvent('free_limit_reached', {
+            language: lang,
+            certification_slug: context?.certificationSlug ?? null,
+            limit_type: 'wrong_explanations',
+            limit: checked.explanation_access?.limit ?? wrongExpLimit,
+          });
+        }
+      }
+      if (typeof checked.explanation_access?.limit === "number") {
+        setWrongExpLimit(checked.explanation_access.limit);
+      }
+    } catch (err) {
+      console.error("Errore answers/check:", err);
+    }
+  }
+
   const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
   if (isLoggedIn && !isPremiumUser && cohort && String(q.id) !== cohort.gateQuestionId) {
-    const correctAnswerId = q.answers.find((answer) => !!answer.isCorrect)?.id;
-    const isCorrect = correctAnswerId != null && String(correctAnswerId) === String(a.id);
+    const isCorrect = checked?.correct ?? isAnswerCorrect(q.id, a.id);
     if (claimContinuedFree(cohort)) {
       trackFunnelEvent({
         event: "continued_free_after_gate",
@@ -1559,11 +1556,31 @@ const goToFirstUnanswered = () => {
   const total = questions.length;
 
   // ⚠️ meglio calcolarlo “vero”, non dal % arrotondato
+  // Exam/assessment non valutano durante il tentativo (nessun feedback che
+  // riveli la risposta): la correttezza arriva QUI, in una sola chiamata al
+  // server, invece che da un is_correct ricevuto col payload.
+  let evaluated = results;
+  if (isTestLike) {
+    const pending = questions
+      .filter((q) => marked[q.id] != null && !results[String(q.id)])
+      .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
+    if (pending.length > 0) {
+      try {
+        const res = await evaluateAnswers(pending, lang);
+        mergeResults(res.results || []);
+        evaluated = { ...results };
+        for (const r of res.results || []) evaluated[String(r.question_id)] = r;
+      } catch (err) {
+        console.error("Errore valutazione risposte:", err);
+      }
+    }
+  }
+
   let correctCount = 0;
   for (const q of questions) {
     const chosen = marked[q.id];
-    const right = q.answers.find((a) => !!a.isCorrect)?.id;
-    if (chosen != null && right != null && Number(chosen) === Number(right)) {
+    const correctId = evaluated[String(q.id)]?.correct_answer_id ?? null;
+    if (chosen != null && correctId != null && String(chosen) === String(correctId)) {
       correctCount++;
     }
   }
@@ -1578,23 +1595,24 @@ const goToFirstUnanswered = () => {
   // ✅ attempts COMPLETE: contiene anche isCorrect + usa nomi “camelCase”
   const attempts = questions.map((q) => {
     const chosen = marked[q.id] ?? null;
-    const right = q.answers.find((a) => !!a.isCorrect)?.id ?? null;
+    const correctId = evaluated[String(q.id)]?.correct_answer_id ?? null;
 
     return {
       questionId: Number(q.id),
       chosenAnswerId: chosen != null ? Number(chosen) : null,
       isCorrect:
         chosen != null &&
-        right != null &&
-        Number(chosen) === Number(right),
+        correctId != null &&
+        String(chosen) === String(correctId),
     };
   });
 
   // ✅ tipo pulito (non usare typeof attempts nel type intersection)
+  const serverScorePct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const summary: QuizSummary & { mode: Mode; attempts: typeof attempts } = {
     total,
     correct,
-    scorePct, // puoi anche ricalcolarlo, ma ok lasciarlo
+    scorePct: serverScorePct,
     marked,
     durationSec: elapsedSec,
     mode: effectiveMode,
@@ -1762,6 +1780,7 @@ const submitAssessmentReport = async () => {
 
   setIdx(0);
   setMarked({});
+  setResults({});  // i risultati server seguono le risposte
   setReviewLater(new Set());
   setFinished(false);
   setLastSummary(null);
@@ -1769,7 +1788,6 @@ const submitAssessmentReport = async () => {
   setReviewMode(false);
   setBlockPaused(false);
   setBlockReview(null);
-  consumedWrongExplanationQuestionIdsRef.current.clear();
 
   const newSeed = makeSeed();
   seedRef.current = newSeed;
@@ -2002,10 +2020,11 @@ const assessmentCopy =
     const wrongDetails = questions
       .map((q, index) => {
         const chosenId = markedMap?.[q.id];
-        const rightAns = q.answers.find((a) => !!a.isCorrect);
+        const correctId = resultOf(q.id)?.correct_answer_id ?? null;
+        const rightAns = correctId != null ? q.answers.find((a) => String(a.id) === String(correctId)) : undefined;
         const chosenAns = q.answers.find((a) => a.id === chosenId);
 
-        if (!rightAns || chosenId == null || chosenId === rightAns.id) return null;
+        if (!rightAns || chosenId == null || String(chosenId) === String(rightAns.id)) return null;
 
         return {
           key: `${q.id}-${index}`,
@@ -2512,18 +2531,19 @@ const canGoNext =
 // - FREE_LIMIT: gate Premium dopo 20 domande (free loggato)
 // ------------------------------------------------------------------
 
-const explainText = q.explanation ? stripExplainPrefix(q.explanation) : '';
+// Paywall Phase 2: la spiegazione mostrata e' SOLO quella che il server ha
+// deciso di consegnare dopo la risposta (q.explanation non arriva piu' col
+// payload della domanda).
+const serverResult = resultOf(q.id);
+const serverExplanation = serverResult?.explanation ?? null;
+const explainText = serverExplanation ? stripExplainPrefix(serverExplanation) : '';
 
 // ------------------------------------------------------------------
 // GATE 1 — Registrazione (guest, non assessment)
 // ------------------------------------------------------------------
 if (!isLoggedIn && registerLimitReached && !isAssessment) {
   const answeredValues = Object.values(marked).filter(v => v != null);
-  const correctSoFar = questions.slice(0, 5).filter(q => {
-    const chosen = marked[q.id];
-    const right = q.answers.find(a => !!a.isCorrect)?.id;
-    return chosen != null && right != null && Number(chosen) === Number(right);
-  }).length;
+  const correctSoFar = questions.slice(0, 5).filter(q => isAnswerCorrect(q.id, marked[q.id])).length;
 
   return (
     <div className={`min-h-[100dvh] ${gradient}`}>
@@ -2823,7 +2843,7 @@ return (
         <div className="space-y-3">
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
-            const isRight = !!a.isCorrect;
+            const isRight = isAnswerCorrect(q.id, a.id);
             const showFeedback = !isTestLike && chosen != null;
 
             let btnClasses =
@@ -2871,11 +2891,12 @@ return (
         </div>
 
  {/* spiegazione (training) — gate errori free */}
-  {!isTestLike && chosen != null && q.explanation && (() => {
-    const isWrong = chosen !== q.answers.find((a) => !!a.isCorrect)?.id;
+  {!isTestLike && chosen != null && serverResult && (() => {
+    const isWrong = !serverResult.correct;
 
-    // Spiegazione su risposta CORRETTA: sempre visibile a tutti
-    if (!isWrong) {
+    // Spiegazione consegnata dal server (risposta corretta, quota disponibile,
+    // Premium/pacchetto o sblocco rewarded): si mostra e basta.
+    if (explainText) {
       return (
         <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
           <b>{label('explain', lang)}</b>{' '}
@@ -2884,13 +2905,10 @@ return (
       );
     }
 
-    // Risposta SBAGLIATA — controlla se restano spiegazioni free
-    const isLocked = isWrongExplanationLocked({
-      isPremiumUser,
-      isLoggedIn,
-      wrongExpLeft,
-      adUnlocked: adUnlockedQuestionIds.has(Number(q.id)),
-    });
+    // Nessuna spiegazione nel payload: o non esiste per questa domanda, o il
+    // server l'ha negata (quota finita). Il gate si mostra solo nel secondo
+    // caso, e la decisione e' quella del server, non del client.
+    const isLocked = isWrong && serverResult.explanation_access?.granted === false;
 
    if (isLocked) {
   // Gate mini — mostra solo su risposte sbagliate quando finito il credito
@@ -3009,24 +3027,10 @@ return (
       );
     }
 
-    // Risposta sbagliata + credito disponibile: mostra e consuma
-    // useEffect per consumare il credito (evita chiamate doppie su re-render)
-    // NB: questo blocco viene renderizzato una volta sola per domanda grazie a chosen != null
-    // ma per sicurezza usiamo un ref per non chiamare due volte.
-    // → Vedi nota sotto sul WrongExplanation wrapper component.
-    return (
-      <div className="mt-4 bg-white/10 rounded-xl p-4 text-sm">
-        <b>{label('explain', lang)}</b>{' '}
-        {explainText}
-        <WrongExplanationTracker
-          key={String(q.id)}
-          questionId={q.id}
-          isLoggedIn={isLoggedIn}
-          isPremiumUser={isPremiumUser}
-          onConsume={consumeWrongExplanation}
-        />
-      </div>
-    );
+    // Nessuna spiegazione per questa domanda (campo vuoto a DB) e nessun
+    // gate da mostrare: non si rende nulla. Il consumo della quota non e' piu'
+    // una chiamata del client (lo fa il server in /answers/check).
+    return null;
   })()}
       </div>
 {/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
@@ -3174,33 +3178,6 @@ return (
     </div>
   );
 } 
-
- /**
- * Componente invisibile che chiama consumeWrongExplanation una sola volta
- * per ogni domanda sbagliata. Usa useEffect + ref per evitare doppie chiamate.
- */
-function WrongExplanationTracker({
-  questionId,
-  isLoggedIn,
-  isPremiumUser,
-  onConsume,
-}: {
-  questionId: number | string;
-  isLoggedIn: boolean;
-  isPremiumUser: boolean;
-  onConsume: (questionId: number | string) => Promise<boolean>;
-}) {
-  const calledRef = useRef(false);
-
-  useEffect(() => {
-    if (calledRef.current) return;
-    if (!isLoggedIn || isPremiumUser) return;
-    calledRef.current = true;
-    onConsume(questionId);
-  }, [questionId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return null;
-}
 
 function GateShownTracker({
   questionId,

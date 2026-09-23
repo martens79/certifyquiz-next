@@ -31,12 +31,10 @@ function normalizeQuestion(q: ApiQuestion): UiQuestion {
   return {
     id: Number(q.id),
     question: q.question ?? "",
-    explanation: q.explanation ?? undefined,
     exhibit: q.exhibit ?? null,
     answers: (q.answers ?? []).map((a: any) => ({
       id: Number(a.id),
       text: a.text ?? "",
-      isCorrect: a.is_correct === true || a.is_correct === 1 || a.is_correct === "1",
     })),
   };
 }
