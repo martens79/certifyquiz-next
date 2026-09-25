@@ -90,6 +90,21 @@ test("getMockExamQuestions: dedicated route, only lang (no limit/exam/mode/shuff
   assert.deepEqual([...url.searchParams.keys()], ["lang"]);
 });
 
+test("evaluateMockExam: dedicated evaluation route scoped by certification", async () => {
+  const { evaluateMockExam } = await apiClientModule;
+  fetchCalls.length = 0;
+  await evaluateMockExam(
+    10,
+    [
+      { question_id: 101, answer_id: 201 },
+      { question_id: 102, answer_id: null },
+    ],
+    "fr"
+  );
+  const url = urlOf(fetchCalls[0]);
+  assert.match(url.pathname, /\/mock-exam\/evaluate\/10$/);
+});
+
 test("pool counts use /question-pool/*, return a number and never touch the question bank routes", async () => {
   const { getCertificationPoolTotal, getTopicPoolTotal } = await apiClientModule;
   fetchCalls.length = 0;
