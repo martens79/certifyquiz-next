@@ -26,7 +26,12 @@ import {
   explanationPaywallParams,
 } from '@/lib/quiz-block-review-tracking';
 import { pricingPath } from "@/lib/paths";
-import { checkAnswer, evaluateAnswers, type AnswerCheckResult } from "@/lib/apiClient";
+import {
+  checkAnswer,
+  evaluateAnswers,
+  evaluateMockExam,
+  type AnswerCheckResult,
+} from "@/lib/apiClient";
 import { apiFetch } from "@/lib/auth";
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
@@ -1555,24 +1560,55 @@ const goToFirstUnanswered = () => {
 
   const total = questions.length;
 
-  // ⚠️ meglio calcolarlo “vero”, non dal % arrotondato
   // Exam/assessment non valutano durante il tentativo (nessun feedback che
-  // riveli la risposta): la correttezza arriva QUI, in una sola chiamata al
-  // server, invece che da un is_correct ricevuto col payload.
+  // riveli la risposta). L'assessment mantiene il batch legacy; l'exam usa
+  // invece l'endpoint mock dedicato, che restituisce sempre il summary ma
+  // include i dettagli per-question solo se il server autorizza mock_review.
   let evaluated = results;
+  let serverCorrect: number | null = null;
+
   if (isTestLike) {
-    const pending = questions
-      .filter((q) => marked[q.id] != null && !results[String(q.id)])
-      .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
-    if (pending.length > 0) {
-      try {
-        const res = await evaluateAnswers(pending, lang);
-        mergeResults(res.results || []);
+    try {
+      if (effectiveMode === 'exam' && context?.certificationId) {
+        const submitted = questions.map((q) => ({
+          question_id: Number(q.id),
+          answer_id: marked[q.id] != null ? Number(marked[q.id]) : null,
+        }));
+        const res = await evaluateMockExam(context.certificationId, submitted, lang);
+        serverCorrect = Number(res.summary?.correct ?? 0);
+
+        const mockDetails: AnswerCheckResult[] = (res.details || []).map((r) => ({
+          question_id: Number(r.question_id),
+          correct: r.correct === true,
+          correct_answer_id:
+            r.correct_answer_id == null ? null : Number(r.correct_answer_id),
+          explanation: null,
+          explanation_access: {
+            granted: false,
+            reason: res.reviewAvailable ? 'mock_review' : 'access_required',
+          },
+        }));
+
+        mergeResults(mockDetails);
         evaluated = { ...results };
-        for (const r of res.results || []) evaluated[String(r.question_id)] = r;
-      } catch (err) {
-        console.error("Errore valutazione risposte:", err);
+        for (const r of mockDetails) evaluated[String(r.question_id)] = r;
+      } else {
+        const pending = questions
+          .filter((q) => marked[q.id] != null && !results[String(q.id)])
+          .map((q) => ({
+            question_id: Number(q.id),
+            answer_id: Number(marked[q.id]),
+          }));
+
+        if (pending.length > 0) {
+          const res = await evaluateAnswers(pending, lang);
+          mergeResults(res.results || []);
+          evaluated = { ...results };
+          for (const r of res.results || []) evaluated[String(r.question_id)] = r;
+        }
       }
+    } catch (err) {
+      console.error("Errore valutazione risposte:", err);
     }
   }
 
@@ -1585,14 +1621,15 @@ const goToFirstUnanswered = () => {
     }
   }
 
-  const correct = correctCount;
+  const correct = serverCorrect ?? correctCount;
 
   const elapsedSec =
     startedAtRef.current != null
       ? Math.floor((Date.now() - startedAtRef.current) / 1000)
       : 0;
 
-  // ✅ attempts COMPLETE: contiene anche isCorrect + usa nomi “camelCase”
+  // I dettagli per-question possono mancare volutamente nel Mock FREE:
+  // in quel caso nessuna risposta corretta viene ricostruita sul client.
   const attempts = questions.map((q) => {
     const chosen = marked[q.id] ?? null;
     const correctId = evaluated[String(q.id)]?.correct_answer_id ?? null;
@@ -1607,7 +1644,6 @@ const goToFirstUnanswered = () => {
     };
   });
 
-  // ✅ tipo pulito (non usare typeof attempts nel type intersection)
   const serverScorePct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const summary: QuizSummary & { mode: Mode; attempts: typeof attempts } = {
     total,
@@ -1621,48 +1657,46 @@ const goToFirstUnanswered = () => {
 
   setLastSummary(summary);
 
-
   // ✅ Analytics — completamento quiz / assessment.
-// Serve per capire quanti utenti finiscono davvero il free test.
-if (!completedTrackedRef.current) {
-  completedTrackedRef.current = true;
+  if (!completedTrackedRef.current) {
+    completedTrackedRef.current = true;
 
-  if (effectiveMode === "assessment") {
-    const funnelContext = {
-      cert_slug: context?.certificationSlug ?? null,
-      topic_slug: context?.topicSlug ?? null,
-      lang,
-      score: scorePct,
-    };
-    trackFunnelEvent({ event: "assessment_completed", ...funnelContext });
-    trackFunnelEvent({ event: "quiz_result_viewed", ...funnelContext });
-  }
-
-  trackQuizEvent(
-    effectiveMode === 'assessment'
-      ? 'assessment_completed'
-      : 'quiz_completed',
-    {
-      lang,
-      mode: effectiveMode,
-      storage_scope: storageScope,
-      certification: context?.certificationName ?? null,
-      topic: context?.topicTitle ?? null,
-      kind: context?.kind ?? null,
-      total_questions: total,
-      correct,
-      score_pct: scorePct,
-      duration_sec: elapsedSec,
+    if (effectiveMode === "assessment") {
+      const funnelContext = {
+        cert_slug: context?.certificationSlug ?? null,
+        topic_slug: context?.topicSlug ?? null,
+        lang,
+        score: serverScorePct,
+      };
+      trackFunnelEvent({ event: "assessment_completed", ...funnelContext });
+      trackFunnelEvent({ event: "quiz_result_viewed", ...funnelContext });
     }
-  );
-  trackQuizEvent("quiz_result_viewed", {
-    language: lang,
-    quiz_mode: effectiveMode,
-    certification_slug: context?.certificationSlug ?? null,
-    source_page: "quiz_result",
-    score_pct: scorePct,
-  });
-}
+
+    trackQuizEvent(
+      effectiveMode === 'assessment'
+        ? 'assessment_completed'
+        : 'quiz_completed',
+      {
+        lang,
+        mode: effectiveMode,
+        storage_scope: storageScope,
+        certification: context?.certificationName ?? null,
+        topic: context?.topicTitle ?? null,
+        kind: context?.kind ?? null,
+        total_questions: total,
+        correct,
+        score_pct: serverScorePct,
+        duration_sec: elapsedSec,
+      }
+    );
+    trackQuizEvent("quiz_result_viewed", {
+      language: lang,
+      quiz_mode: effectiveMode,
+      certification_slug: context?.certificationSlug ?? null,
+      source_page: "quiz_result",
+      score_pct: serverScorePct,
+    });
+  }
 
   try {
     await onFinish?.(summary);
@@ -1928,6 +1962,7 @@ const submitAssessmentReport = async () => {
   if (finished) {
     const total = lastSummary?.total ?? questions.length;
     const correct = lastSummary?.correct ?? 0;
+    const scorePct = lastSummary?.scorePct ?? 0;
     const wrong = total - correct;
     const duration =
       lastSummary && lastSummary.durationSec ? fmt(lastSummary.durationSec) : '--:--';

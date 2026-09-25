@@ -587,13 +587,43 @@ export const checkAnswer = (
     lang,
   });
 
-/** Fine mock/assessment: correttezza in blocco, senza spiegazioni. */
+/** Fine assessment: correttezza in blocco, senza spiegazioni. */
 export const evaluateAnswers = (
   answers: Array<{ question_id: number; answer_id: number }>,
   lang: Locale = "it"
 ) =>
   apiPost<{ results: AnswerCheckResult[]; summary: { total: number; correct: number } }>(
     "/answers/evaluate",
+    { answers, lang }
+  );
+
+export type MockExamEvaluationResult = {
+  summary: {
+    total: number;
+    answered: number;
+    correct: number;
+    wrong: number;
+    percentage: number;
+    passed: boolean;
+  };
+  reviewAvailable: boolean;
+  reviewReason: string;
+  details: Array<{
+    question_id: number;
+    selected_answer_id: number | null;
+    correct: boolean;
+    correct_answer_id: number | null;
+  }>;
+};
+
+/** Fine mock exam: summary per tutti, review dettagliata solo se autorizzata dal server. */
+export const evaluateMockExam = (
+  certificationId: number | string,
+  answers: Array<{ question_id: number; answer_id: number | null }>,
+  lang: Locale = "it"
+) =>
+  apiPost<MockExamEvaluationResult>(
+    `/mock-exam/evaluate/${Number(certificationId)}`,
     { answers, lang }
   );
 
