@@ -29,6 +29,15 @@ const roadmapItems = [
     color: "from-rose-50 via-white to-white",
   },
   {
+    title: "Offensive Security",
+    desc: "De los fundamentos a CEH, los Offensive Labs y la preparación práctica para pentesting.",
+    href: "/es/offensive-security",
+    icon: "🎯",
+    badge: "NUEVO",
+    certs: ["CEH", "Offensive Labs", "PenTest+", "Preparación práctica"],
+    color: "from-red-50 via-white to-white",
+  },
+  {
     title: "Redes",
     desc: "Aprende redes, protocolos y troubleshooting en un orden más claro y práctico.",
     href: "/es/roadmap-networking",

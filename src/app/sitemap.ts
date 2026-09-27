@@ -275,6 +275,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "monthly" as const,
             priority: 0.8,
           },
+          {
+            url: lang === "en" ? `${SITE}/offensive-security` : `${SITE}/${lang}/offensive-security`,
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+          },
           // NB: /materiale-consigliato (e varianti EN/FR/ES) sono noindex finché
           // il catalogo risorse resta vuoto: escluse di proposito dalla sitemap.
           {
