@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RoadmapStepCard from "@/components/roadmaps/RoadmapStepCard";
+import { offensiveSecurityPath } from "@/lib/paths";
 
 type Locale = "it" | "en" | "es" | "fr";
 
@@ -37,31 +38,31 @@ const PATH_SUMMARY: Record<Locale, { label: string; steps: Array<{ label: string
   ] },
 };
 
-const SPECIALIZATIONS: Record<Locale, { title: string; intro: string; tracks: Array<{ name: string; focus: string; certs: string[] }> }> = {
-  it: { title: "Scegli una specializzazione", intro: "Dopo le fondamenta il percorso non è unico: scegli il ramo più vicino al lavoro che vuoi imparare.", tracks: [
+const SPECIALIZATIONS: Record<Locale, { title: string; intro: string; offensivePathLabel: string; tracks: Array<{ name: string; focus: string; certs: string[]; offensivePath?: boolean }> }> = {
+  it: { title: "Scegli una specializzazione", intro: "Dopo le fondamenta il percorso non è unico: scegli il ramo più vicino al lavoro che vuoi imparare.", offensivePathLabel: "Segui il percorso Offensive Security", tracks: [
     { name: "SOC e blue team", focus: "Monitoraggio, incident response, endpoint e analisi degli eventi.", certs: ["ISC2 CC", "Security+"] },
-    { name: "Penetration testing", focus: "Metodologia offensiva, vulnerabilità, reti, Linux e pratica in laboratorio.", certs: ["Security+", "CEH"] },
+    { name: "Penetration testing", focus: "Metodologia offensiva, vulnerabilità, reti, Linux e pratica in laboratorio.", certs: ["Security+", "CEH"], offensivePath: true },
     { name: "Cloud security", focus: "Identity, responsabilità condivisa, configurazioni cloud e monitoraggio.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
     { name: "Governance, risk e compliance", focus: "Rischio, policy, controlli, audit e continuità operativa.", certs: ["ISC2 CC", "CISSP (solo con esperienza)"] },
     { name: "Security management", focus: "Architettura, strategia e decisioni di sicurezza aziendale.", certs: ["CISSP (senior)"] },
   ] },
-  en: { title: "Choose a specialization", intro: "After the foundations there is no single path: choose the branch closest to the work you want to learn.", tracks: [
+  en: { title: "Choose a specialization", intro: "After the foundations there is no single path: choose the branch closest to the work you want to learn.", offensivePathLabel: "Follow the Offensive Security Path", tracks: [
     { name: "SOC and blue team", focus: "Monitoring, incident response, endpoints and event analysis.", certs: ["ISC2 CC", "Security+"] },
-    { name: "Penetration testing", focus: "Offensive methodology, vulnerabilities, networks, Linux and hands-on labs.", certs: ["Security+", "CEH"] },
+    { name: "Penetration testing", focus: "Offensive methodology, vulnerabilities, networks, Linux and hands-on labs.", certs: ["Security+", "CEH"], offensivePath: true },
     { name: "Cloud security", focus: "Identity, shared responsibility, cloud configuration and monitoring.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
     { name: "Governance, risk and compliance", focus: "Risk, policies, controls, audit and business continuity.", certs: ["ISC2 CC", "CISSP (with experience)"] },
     { name: "Security management", focus: "Architecture, strategy and enterprise security decisions.", certs: ["CISSP (senior)"] },
   ] },
-  fr: { title: "Choisir une spécialisation", intro: "Après les fondamentaux, il n’existe pas un parcours unique : choisissez la branche la plus proche du métier visé.", tracks: [
+  fr: { title: "Choisir une spécialisation", intro: "Après les fondamentaux, il n’existe pas un parcours unique : choisissez la branche la plus proche du métier visé.", offensivePathLabel: "Suivre le parcours Offensive Security", tracks: [
     { name: "SOC et blue team", focus: "Supervision, réponse aux incidents, endpoints et analyse des événements.", certs: ["ISC2 CC", "Security+"] },
-    { name: "Test d’intrusion", focus: "Méthodologie offensive, vulnérabilités, réseaux, Linux et laboratoires.", certs: ["Security+", "CEH"] },
+    { name: "Test d’intrusion", focus: "Méthodologie offensive, vulnérabilités, réseaux, Linux et laboratoires.", certs: ["Security+", "CEH"], offensivePath: true },
     { name: "Sécurité cloud", focus: "Identité, responsabilité partagée, configuration cloud et supervision.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
     { name: "Gouvernance, risque et conformité", focus: "Risque, politiques, contrôles, audit et continuité.", certs: ["ISC2 CC", "CISSP (avec expérience)"] },
     { name: "Management de la sécurité", focus: "Architecture, stratégie et décisions de sécurité d’entreprise.", certs: ["CISSP (senior)"] },
   ] },
-  es: { title: "Elige una especialización", intro: "Después de los fundamentos no existe una única ruta: elige la rama más cercana al trabajo que quieres aprender.", tracks: [
+  es: { title: "Elige una especialización", intro: "Después de los fundamentos no existe una única ruta: elige la rama más cercana al trabajo que quieres aprender.", offensivePathLabel: "Seguir la ruta Offensive Security", tracks: [
     { name: "SOC y blue team", focus: "Monitorización, respuesta a incidentes, endpoints y análisis de eventos.", certs: ["ISC2 CC", "Security+"] },
-    { name: "Pentesting", focus: "Metodología ofensiva, vulnerabilidades, redes, Linux y laboratorios.", certs: ["Security+", "CEH"] },
+    { name: "Pentesting", focus: "Metodología ofensiva, vulnerabilidades, redes, Linux y laboratorios.", certs: ["Security+", "CEH"], offensivePath: true },
     { name: "Seguridad cloud", focus: "Identidad, responsabilidad compartida, configuración cloud y monitorización.", certs: ["Security+", "AWS Cloud Practitioner", "Azure Fundamentals"] },
     { name: "Gobierno, riesgo y cumplimiento", focus: "Riesgo, políticas, controles, auditoría y continuidad.", certs: ["ISC2 CC", "CISSP (con experiencia)"] },
     { name: "Gestión de seguridad", focus: "Arquitectura, estrategia y decisiones de seguridad empresarial.", certs: ["CISSP (senior)"] },
@@ -162,6 +163,11 @@ export default function CybersecurityRoadmapPage({
               <h3 className="font-extrabold text-slate-950">{track.name}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">{track.focus}</p>
               <p className="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">{track.certs.join(" · ")}</p>
+              {track.offensivePath && (
+                <Link href={offensiveSecurityPath(lang)} className="mt-3 inline-block text-sm font-semibold text-blue-700 hover:underline">
+                  {SPECIALIZATIONS[lang].offensivePathLabel} →
+                </Link>
+              )}
             </article>
           ))}
         </div>

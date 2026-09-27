@@ -500,6 +500,18 @@ export const interactiveLabsPath = (lang: Locale): string =>
 export const interactiveLabsJobTrackPath = (lang: Locale, slug: string): string =>
   `${interactiveLabsPath(lang)}/job-tracks/${slug}`;
 
+/** Single lab detail page under Interactive Labs. */
+export const interactiveLabPath = (lang: Locale, slug: string): string =>
+  `${interactiveLabsPath(lang)}/${slug}`;
+
+/**
+ * Offensive Security Path: same segment in every locale, like
+ * interactiveLabsPath ("offensive security" is used untranslated in IT/FR/ES,
+ * and a shared segment keeps switchLangPathname working without a slug map).
+ */
+export const offensiveSecurityPath = (lang: Locale): string =>
+  lang === "en" ? "/offensive-security" : `/${lang}/offensive-security`;
+
 export const binaryRushPath = (lang: Locale): string =>
   `${gamesPath(lang)}/binary-rush`;
 

@@ -13,7 +13,7 @@ import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta"
 import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
 import type { CertificationResources } from "@/lib/data";
-import { certPath, guidePath, interactiveLabsPath, mapsPath } from "@/lib/paths";
+import { certPath, guidePath, interactiveLabsPath, mapsPath, offensiveSecurityPath } from "@/lib/paths";
 import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagnetBox";
 import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
@@ -262,6 +262,15 @@ const pageTopics =
         links: [
           { label: { it: "Roadmap cybersecurity", en: "Beginner cybersecurity roadmap", fr: "Roadmap cybersécurité débutant", es: "Roadmap de ciberseguridad para principiantes" }[lang], href: lang === "en" ? "/roadmap-cybersecurity" : `/${lang}/roadmap-cybersecurity` },
           { label: { it: "Quiz ISC2 CC", en: "ISC2 CC quiz and practice questions", fr: "Quiz et questions ISC2 CC", es: "Quiz y preguntas ISC2 CC" }[lang], href: `/${lang}/quiz/isc2-cc` },
+        ],
+      };
+    }
+    if (data.slug === "ceh") {
+      return {
+        title: { it: "Continua il percorso offensive security", en: "Continue your offensive security path", fr: "Poursuivre votre parcours offensive security", es: "Continúa tu ruta de offensive security" }[lang],
+        links: [
+          { label: { it: "Percorso Offensive Security: da CEH al pentesting", en: "Offensive Security Path: from CEH to pentesting", fr: "Parcours Offensive Security : du CEH au pentest", es: "Ruta Offensive Security: de CEH al pentesting" }[lang], href: offensiveSecurityPath(lang) },
+          { label: { it: "CEH Offensive Labs", en: "CEH Offensive Labs", fr: "CEH Offensive Labs", es: "CEH Offensive Labs" }[lang], href: `${interactiveLabsPath(lang)}?certification=ceh` },
         ],
       };
     }
