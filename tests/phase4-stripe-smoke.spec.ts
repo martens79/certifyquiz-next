@@ -88,7 +88,7 @@ test("Phase 4 CCNA TEST purchase and renewal", async ({ page }) => {
     { token: auth.token, user: auth.user },
   );
 
-  await page.goto(`${baseUrl}/it/certificazioni/ccna`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/it/certificazioni/ccna`, { waitUntil: "domcontentloaded" });
   const packages = page.locator("#packages");
   await expect(packages).toContainText("CCNA Complete");
   await expect(packages).toContainText("24,90");
@@ -102,7 +102,7 @@ test("Phase 4 CCNA TEST purchase and renewal", async ({ page }) => {
   expect(firstOrder.certification_slug).toBe("ccna");
   expect(firstOrder.expires_at).toBeTruthy();
 
-  await page.goto(`${baseUrl}/it/certificazioni/ccna`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/it/certificazioni/ccna`, { waitUntil: "domcontentloaded" });
   await expect(packages).toContainText("Estendi l'accesso");
   await packages.getByRole("button").click();
 
