@@ -38,6 +38,7 @@ export const PAYWALL_TYPE_BY_SOURCE: Readonly<Record<string, string>> = {
   review_gate: "review",
   guide_preview: "guide",
   map_preview: "map",
+  mock_review: "mock_review",
 };
 
 export function normalizeSlug(value: unknown): string | null {

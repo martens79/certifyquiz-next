@@ -11,6 +11,7 @@ import {
   trackEvent,
   trackEventOnce,
   trackFunnelEvent,
+  trackFunnelEventOnce,
   getAnonymousSessionId,
   getAnonymousVisitorId,
 } from "@/lib/analytics";
@@ -632,6 +633,16 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       user_state: analyticsUserStateFrom(user),
       source_page: params.get("source") || document.referrer || "direct",
       certification_slug: params.get("certification_slug"),
+    });
+    // Stesso evento anche nel funnel V2 (DB), una volta per sessione e pagina:
+    // serve al KPI pricing/package viewed per certificazione.
+    const origin = resolveCommercialOrigin(window.location.search);
+    trackFunnelEventOnce(`pricing_viewed:${window.location.pathname}:${params.get("certification_slug") || ""}`, {
+      event: "pricing_viewed",
+      cert_slug: origin.originCertSlug,
+      lang,
+      paywall_type: origin.paywallType,
+      metadata: { source_page: params.get("source") || "direct" },
     });
     setIsPromoLink((params.get("promo") || "").toLowerCase() === "thanks1month");
   }, [authLoading, lang, user]);

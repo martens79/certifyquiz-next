@@ -590,6 +590,26 @@ const openFeedback = () => {
   const latestProgressRef = useRef({ idx: 0, finished: false, answered: 0 });
   const premiumClickedRef = useRef(false);
   const [premiumClicked, setPremiumClicked] = useState(false);
+  // Mock Exam FREE/guest: id del tentativo in cui il server ha negato mock_review
+  // (solo summary). null = review disponibile o non ancora valutato.
+  const [mockReviewGate, setMockReviewGate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!finished || !mockReviewGate) return;
+    trackFunnelEventOnce(`mock_review_paywall_viewed:${mockReviewGate}`, {
+      event: 'mock_review_paywall_viewed',
+      cert_slug: context?.certificationSlug ?? null,
+      lang,
+      paywall_type: 'mock_review',
+      metadata: { certification_id: context?.certificationId ?? null, source_page: 'mock_exam_result' },
+    });
+    trackAnalyticsEvent('mock_review_paywall_viewed', {
+      language: lang,
+      certification_slug: context?.certificationSlug ?? null,
+      certification_id: context?.certificationId ?? null,
+      source_page: 'mock_exam_result',
+    });
+  }, [finished, mockReviewGate, lang, context?.certificationSlug, context?.certificationId]);
 
   // Seed dello shuffle deterministico della sessione corrente (per scopedKey).
   // Impostato nell'effetto di load/resume e in restart(), letto dall'autosave.
@@ -1557,6 +1577,7 @@ const goToFirstUnanswered = () => {
  async function doFinish(timeExpired = false) {
   void timeExpired;
   setFinished(true);
+  setMockReviewGate(null);
 
   const total = questions.length;
 
@@ -1576,6 +1597,7 @@ const goToFirstUnanswered = () => {
         }));
         const res = await evaluateMockExam(context.certificationId, submitted, lang);
         serverCorrect = Number(res.summary?.correct ?? 0);
+        setMockReviewGate(res.reviewAvailable ? null : crypto.randomUUID());
 
         const mockDetails: AnswerCheckResult[] = (res.details || []).map((r) => ({
           question_id: Number(r.question_id),
@@ -2280,6 +2302,61 @@ const assessmentCopy =
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {effectiveMode === 'exam' && mockReviewGate && !isPremiumUser && (
+              <div className="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+                <h2 className="text-lg font-bold text-gray-950">
+                  🔒 {lang === 'it'
+                    ? 'Mock Review: scopri dove hai sbagliato'
+                    : lang === 'fr'
+                    ? 'Mock Review : découvre où tu t\'es trompé'
+                    : lang === 'es'
+                    ? 'Mock Review: descubre dónde fallaste'
+                    : 'Mock Review: see exactly where you went wrong'}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                  {lang === 'it'
+                    ? 'Rivedi ogni domanda della simulazione con la tua risposta e quella corretta. Incluso nel pass Complete della certificazione e in Premium.'
+                    : lang === 'fr'
+                    ? 'Revois chaque question de la simulation avec ta réponse et la bonne réponse. Inclus dans le pass Complete de la certification et dans Premium.'
+                    : lang === 'es'
+                    ? 'Revisa cada pregunta de la simulación con tu respuesta y la correcta. Incluido en el pase Complete de la certificación y en Premium.'
+                    : 'Review every simulation question with your answer and the correct one. Included in the certification Complete pass and in Premium.'}
+                </p>
+                <a
+                  href={(() => {
+                    const q = new URLSearchParams({ source: 'mock_review' });
+                    if (context?.certificationSlug) q.set('certification_slug', context.certificationSlug);
+                    return `${pricingPath(lang)}?${q.toString()}`;
+                  })()}
+                  onClick={() => {
+                    trackFunnelEvent({
+                      event: 'mock_review_cta_clicked',
+                      cert_slug: context?.certificationSlug ?? null,
+                      lang,
+                      score: scorePct,
+                      paywall_type: 'mock_review',
+                      metadata: { certification_id: context?.certificationId ?? null, source_page: 'mock_exam_result' },
+                    });
+                    trackAnalyticsEvent('mock_review_cta_clicked', {
+                      language: lang,
+                      certification_slug: context?.certificationSlug ?? null,
+                      source_page: 'mock_exam_result',
+                      score_pct: scorePct,
+                    });
+                  }}
+                  className="mt-4 inline-flex rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white hover:bg-indigo-700"
+                >
+                  {lang === 'it'
+                    ? 'Sblocca la Mock Review'
+                    : lang === 'fr'
+                    ? 'Débloquer la Mock Review'
+                    : lang === 'es'
+                    ? 'Desbloquear la Mock Review'
+                    : 'Unlock Mock Review'}
+                </a>
               </div>
             )}
 
