@@ -307,10 +307,10 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
 
 /* -------------------------- Operating Systems -------------------------- */
 "az-802": {
-  it: "Windows Server ibrido: Active Directory, networking, storage, sicurezza, migrazione e disaster recovery.",
-  en: "Hybrid Windows Server: Active Directory, networking, storage, security, migration and disaster recovery.",
-  fr: "Windows Server hybride : Active Directory, réseau, stockage, sécurité, migration et reprise après sinistre.",
-  es: "Windows Server híbrido: Active Directory, redes, almacenamiento, seguridad, migración y recuperación.",
+  it: "Windows Server on-premises e ibrido: AD DS, macchine virtuali, rete, storage, sicurezza, monitoraggio e troubleshooting.",
+  en: "Windows Server on-premises and hybrid: AD DS, virtual machines, networking, storage, security, monitoring and troubleshooting.",
+  fr: "Windows Server local et hybride : AD DS, machines virtuelles, réseau, stockage, sécurité, supervision et dépannage.",
+  es: "Windows Server local e híbrido: AD DS, máquinas virtuales, redes, almacenamiento, seguridad, supervisión y solución de problemas.",
 },
 "lfs101": {
   it: "Linux essenziale: shell, file system, processi, utenti, rete, sicurezza e amministrazione di base.",
