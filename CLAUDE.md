@@ -42,7 +42,7 @@ Flusso: genera in IT a batch di 5 → INSERT con `topic_id` e difficulty corrett
 
 ## Aree di lavoro attive
 
-1. **SEO / 404 remediation**: redirect rules in `next.config.ts`, dati da Google Search Console coverage CSV.
+1. **SEO / 404 remediation**: redirect rules in `src/middleware.ts` (regole legacy exact/prefix in `src/lib/legacyRedirects.ts`), dati da Google Search Console coverage CSV. `next.config.mjs` contiene solo images + rewrite `/api/backend`: non aggiungere un `next.config.ts` (Next carica `.js` → `.mjs` → `.ts` e usa solo il primo trovato).
 2. **Conversione Premium**: gate su `free_wrong_explanations_used` (soglia attuale: 10), verifiche via query SQL su tabella `users`.
 3. **Produzione contenuti multilingua**: traduzioni quiz e generazione nuove domande su AWS, ITF+, e certificazioni AI in arrivo.
 4. **B2B**: landing page `/business`, `/it/aziende`, `/fr/entreprises`, `/es/empresas`; tabella `organizations`, `users.organization_id`/`is_org_admin`.

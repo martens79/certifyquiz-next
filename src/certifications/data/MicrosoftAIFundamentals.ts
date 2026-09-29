@@ -61,7 +61,7 @@ const MicrosoftAIFundamentals = {
 
   // ⚠️ Aggiornato 2026-09-07 col cutover al nuovo blueprint AI-901 (360 domande,
   // 2 domini D1/D2). I 5 topic legacy (138-142) sono stati soft-ritirati nel DB
-  // e le loro pagine reindirizzate in next.config.ts — non vanno reintrodotti qui.
+  // e le loro pagine reindirizzate in src/middleware.ts — non vanno reintrodotti qui.
   topics: [
   {
     title: {
