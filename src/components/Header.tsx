@@ -663,7 +663,7 @@ useEffect(() => {
             </Suspense>
 
             <Link
-              href={`${certsHref}?search=1`}
+              href={certsHref}
               aria-label="Search certifications"
               title="Search certifications"
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 bg-white hover:bg-gray-50"
@@ -682,7 +682,7 @@ useEffect(() => {
             </Suspense>
 
             <Link
-              href={`${certsHref}?search=1`}
+              href={certsHref}
               aria-label="Search certifications"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-50"
               onClick={() => setOpenDrawer(false)}
