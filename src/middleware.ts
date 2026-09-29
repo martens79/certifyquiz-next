@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { resolveLegacyRedirect } from "./lib/legacyRedirects";
 
 const LOCALES = new Set(["it", "en", "fr", "es"]);
 
@@ -147,7 +148,7 @@ if (pathname.startsWith("/favicon.ico/undefined")) {
 }
 
 if (pathname.startsWith("/quiz-suggeriti/undefined")) {
-  return redirect301(req, "/it/quiz");
+  return redirect301(req, "/suggested");
 }
 
 if (pathname.startsWith("/roadmap-management/undefined")) {
@@ -166,7 +167,16 @@ if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
   return redirect301(req, "/");
 }
 
-  
+  // ---------------------------------------------------------------------
+  // LEGACY REDIRECTS (src/lib/legacyRedirects.ts)
+  // Prima degli alias, dei prefix generici e della normalizzazione /en:
+  // le destinazioni sono già finali (un solo salto).
+  // ---------------------------------------------------------------------
+  const legacyTarget = resolveLegacyRedirect(pathname);
+  if (legacyTarget) {
+    return redirect301(req, legacyTarget);
+  }
+
 
   // ---------------------------------------------------------------------
   // HARD ALIASES
@@ -437,11 +447,10 @@ if (pathname === "/it/certificazioni/ceh/sniffing-session-hijacking/ripasso") {
 
 // Microsoft AI-901: 5 topic legacy soft-ritirati nel cutover 2026-09-07
 // (0 domande attive nel DB) -> redirect alla pagina certificazione.
-// NOTA: messi qui e non in next.config.ts redirects() perché quel blocco,
-// probabilmente per un limite di dimensione del routes-manifest di Vercel,
-// smette di essere applicato oltre un certo numero di regole (verificato
-// empiricamente il 2026-09-07: le regole aggiunte in coda, e alcune regole
-// preesistenti subito prima, non scattavano più dopo il deploy).
+// NOTA: il vecchio next.config.ts non è mai stato caricato da Next (ordine di
+// risoluzione next.config.js → .mjs → .ts: vinceva sempre next.config.mjs),
+// per questo le sue regole "non scattavano". Rimosso il 2026-09-29: i
+// redirect legacy vivono qui o in src/lib/legacyRedirects.ts.
 if (pathname === "/it/certificazioni/microsoft-ai/concetti-di-ai") {
   return redirect301(req, "/it/certificazioni/microsoft-ai");
 }
