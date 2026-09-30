@@ -1,4 +1,5 @@
 import "server-only";
+import { internalApiHeaders } from "./internal-api";
 
 export type Lang = "it" | "en" | "fr" | "es";
 
@@ -69,6 +70,7 @@ export async function getTopicPageData({
   const res = await fetch(
     `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
     {
+      headers: internalApiHeaders(),
       next: {
         revalidate: 3600,
         tags: [`topic:${normalizedCertSlug}:${topicSlug}:${lang}`],
@@ -76,8 +78,14 @@ export async function getTopicPageData({
     }
   );
 
+  // 404 → pagina 404. Qualsiasi altro errore (429 rate limit, 5xx) resta un
+  // errore: NON va trasformato in 404, o Google deindicizzerebbe pagine vere.
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Failed topic page fetch");
+  if (!res.ok) {
+    throw new Error(
+      `Failed topic page fetch (HTTP ${res.status}) for ${normalizedCertSlug}/${topicSlug}?lang=${lang}`
+    );
+  }
 
   const data = await res.json();
 

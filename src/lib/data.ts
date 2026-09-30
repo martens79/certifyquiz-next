@@ -1,5 +1,6 @@
 // src/lib/data.ts
 import "server-only";
+import { internalApiHeaders } from "@/lib/server/internal-api";
 import type { ReviewModuleStructure } from "@/lib/review-module-types";
 
 /**
@@ -696,6 +697,7 @@ export async function getTopicsByCertSlug(
   try {
     const r = await okOrThrow(
       fetchWithTimeout(`${API}/topic-pages/by-cert/${encodeURIComponent(canonSlug)}?lang=${locale}`, {
+        headers: internalApiHeaders(),
         next: {
           tags: [`cert:${canonSlug}:topics`, `cert:${canonSlug}`],
           revalidate: 86400,
@@ -718,7 +720,14 @@ export async function getTopicsByCertSlug(
         slug: pickTopicSlugByLocale(t, locale),
       }))
       .filter((t) => t.title && t.slug);
-  } catch {
+  } catch (err) {
+    // Degrado silenzioso (lista topic vuota): logga per distinguere un 429 del
+    // rate limiter o un 5xx da un semplice "nessun topic".
+    console.warn(
+      `[topic-pages/by-cert] ${canonSlug}?lang=${locale} failed: ${
+        err instanceof Error ? err.message.slice(0, 160) : String(err)
+      }`
+    );
     return [];
   }
 }
