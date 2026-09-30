@@ -16,6 +16,21 @@ export const NON_INDEXABLE_CERTIFICATION_SLUGS = new Set([
   "sap-analytics-cloud",
 ]);
 
+/**
+ * Temporary fail-closed rollout guard. These certifications stay `noindex, follow`
+ * (landing in every language, their topic pages, and out of the sitemap) even
+ * when their inventory becomes positive, because the content is imported into
+ * production step by step. Remove a slug explicitly, in its own change, only
+ * after the production DB import, deploy and production smoke test.
+ */
+export const ROLLOUT_NOINDEX_CERTIFICATION_SLUGS = new Set([
+  "az-802",
+]);
+
+export function isRolloutNoindexCertification(slug: string | null | undefined): boolean {
+  return typeof slug === "string" && ROLLOUT_NOINDEX_CERTIFICATION_SLUGS.has(slug);
+}
+
 export type CertificationIndexabilityInput = {
   slug: string;
   questionCount?: number | null;
@@ -28,6 +43,7 @@ export function isCertificationIndexable(
     typeof input === "string" ? { slug: input, questionCount: undefined } : input;
 
   if (NON_INDEXABLE_CERTIFICATION_SLUGS.has(slug)) return false;
+  if (isRolloutNoindexCertification(slug)) return false;
 
   // Missing inventory data is kept backwards-compatible for callers that only
   // apply the editorial deny-list. When a reliable count is supplied, however,

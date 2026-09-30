@@ -1,4 +1,8 @@
+import { isRolloutNoindexCertification } from "./certification-indexability";
+
 type TopicForIndexability = {
+  /** Slug of the parent certification. Required so the rollout guard cannot be skipped by a caller. */
+  certificationSlug: string | null;
   title?: string | null;
   description?: string | null;
   intro?: string | null;
@@ -10,8 +14,10 @@ type TopicForIndexability = {
 /**
  * A topic URL is a search landing page only when it contains substantial,
  * localized publisher content. Quiz inventory and template chrome do not count.
+ * Topics of a certification under the rollout guard stay noindex regardless.
  */
 export function isTopicIndexable(topic: TopicForIndexability): boolean {
+  if (isRolloutNoindexCertification(topic.certificationSlug)) return false;
   if (topic.questionCount == null || topic.questionCount <= 0) return false;
 
   const prose = [

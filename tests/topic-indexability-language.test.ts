@@ -4,6 +4,7 @@ import { isTopicIndexable } from "../src/lib/seo/topic-indexability.ts";
 
 const word = "practical";
 const rich = {
+  certificationSlug: "database-foundations",
   title: "Database Fundamentals",
   description: Array.from({ length: 40 }, () => word).join(" "),
   intro: "x".repeat(200),
