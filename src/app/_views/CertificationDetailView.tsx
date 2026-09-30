@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
+import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
 import { getSapPlaceholderCertification } from "@/features/business-applications/data";
@@ -120,7 +121,9 @@ export async function CertificationDetailView({
     (CERTS_BY_SLUG as Record<string, CertificationData | undefined>)[dbSlug];
 
   // Phase A contracts can live in the registry without publishing thin pages.
-  if (reg?.publicationStatus === "planned") return notFound();
+  // Planned certifications are 404 publicly; only a local developer preview renders them
+  // (still noindex through the rollout guard).
+  if (isPlannedCertification(reg) && !isPlannedPreviewEnabled()) return notFound();
 
   // `resources` sostituisce la vecchia fetch degli scenari e copre in una
   // sola chiamata TUTTI i conteggi della griglia "Materiale di studio"

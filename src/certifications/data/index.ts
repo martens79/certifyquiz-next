@@ -134,6 +134,7 @@ import SalesforcePlatformAdministrator from "./salesforce-platform-administrator
 import AZ802 from "./az-802";
 import LFS101 from "./lfs101";
 import AppleDeviceSupport from "./apple-device-support";
+import PLCFundamentals from "./plc-fundamentals";
 
 /* ---------------------------------------------------------------------
  * 🧩 Registro principale
@@ -201,6 +202,7 @@ const RAW_CERTS = [
   AZ802,                      // slug: "az-802" — publicationStatus: "planned"
   LFS101,                     // slug: "lfs101" — publicationStatus: "planned"
   AppleDeviceSupport,         // slug: "apple-device-support" — publicationStatus: "planned"
+  PLCFundamentals,            // slug: "plc-fundamentals" — publicationStatus: "planned" (not launched; no IDS_BY_SLUG until the production import)
 ] as const;
 
 /**
