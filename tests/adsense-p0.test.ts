@@ -10,6 +10,7 @@ import { containsRawMarkdown } from "../src/lib/seo/markdown-rendering.ts";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const completeTopic = {
+  certificationSlug: "ccna",
   title: "Routing fundamentals",
   intro: "A".repeat(200),
   content: Array.from({ length: 320 }, () => "routing").join(" "),

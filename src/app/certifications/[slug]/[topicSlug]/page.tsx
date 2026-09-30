@@ -115,7 +115,7 @@ export async function generateMetadata({
     title,
     description,
     robots: {
-      index: isTopicIndexable({ ...data.topic, questionCount: data.questionCount }),
+      index: isTopicIndexable({ ...data.topic, certificationSlug: slug, questionCount: data.questionCount }),
       follow: true,
     },
     alternates: {
