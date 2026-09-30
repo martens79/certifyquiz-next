@@ -19,8 +19,8 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("rollout guard lists exactly az-802 (remove only after production import + deploy + smoke)", () => {
-  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["az-802"]);
+test("rollout guard lists exactly az-802 and plc-fundamentals (remove only after production import + deploy + smoke)", () => {
+  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["az-802", "plc-fundamentals"]);
   assert.equal(isRolloutNoindexCertification("az-802"), true);
   assert.equal(isRolloutNoindexCertification("ccna"), false);
   assert.equal(isRolloutNoindexCertification(null), false);

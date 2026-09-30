@@ -5,6 +5,8 @@ import type { Locale } from "@/lib/i18n";
 import { getCertificationsListRSC } from "@/lib/server/certs";
 import type { CertListItem } from "@/lib/certs";
 import { CertificationListClient } from "@/components/CertificationListClient";
+import { CERTS_BY_SLUG } from "@/certifications/registry";
+import { isPubliclyListed } from "@/certifications/publication";
 
 /* ------------------------- CANONICAL PATHS (PUBLIC) ------------------------- */
 /**
@@ -324,9 +326,11 @@ export default async function CertificationsListView({ lang }: ViewProps) {
     certs.push(...toAdd);
   }
 
+  // Planned certifications (registered, not launched) are never listed, even when the
+  // backend already returns their row.
   const visible = certs.filter(
     (c): c is CertListItem & { slug: string } =>
-      typeof c.slug === "string" && c.slug.trim().length > 0
+      typeof c.slug === "string" && c.slug.trim().length > 0 && isPubliclyListed(c.slug, CERTS_BY_SLUG)
   );
 
   /* ------------------------- JSON-LD ------------------------- */
