@@ -7,7 +7,7 @@ type Locale = "it" | "en" | "fr" | "es";
 
 type TopicContentProps = {
   content: string | null | undefined;
-  quizRoute: string;
+  quizRoute?: string;
   reviewRoute?: string;
   lang: Locale;
 };
@@ -51,12 +51,12 @@ export default function TopicContent({
       </div>
 
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Link
+        {quizRoute && (<Link
           href={quizRoute}
           className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           {quizLabels[lang]}
-        </Link>
+        </Link>)}
 
         {reviewRoute && (
           <Link
