@@ -19,10 +19,13 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("rollout guard lists exactly az-802 and plc-fundamentals (remove only after production import + deploy + smoke)", () => {
-  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["az-802", "plc-fundamentals"]);
-  assert.equal(isRolloutNoindexCertification("az-802"), true);
+test("AZ-802 is published; PLC Fundamentals keeps its rollout guard", () => {
+  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["plc-fundamentals"]);
+  assert.equal(isRolloutNoindexCertification("az-802"), false);
   assert.equal(isRolloutNoindexCertification("ccna"), false);
+  assert.equal(isRolloutNoindexCertification("plc-fundamentals"), true);
+  assert.equal(isCertificationIndexable({ slug: "plc-fundamentals", questionCount: 175 }), false);
+  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "plc-fundamentals", questionCount: 15 }), false);
   assert.equal(isRolloutNoindexCertification(null), false);
 });
 
@@ -30,15 +33,15 @@ test("AZ-802 landing stays noindex with 0 questions", () => {
   assert.equal(isCertificationIndexable({ slug: "az-802", questionCount: 0 }), false);
 });
 
-test("AZ-802 landing stays noindex with 175 questions in every language, and in the slug-only form", () => {
+test("AZ-802 landing is indexable with a positive inventory in every language", () => {
   for (const questionCount of [175, 1, null, undefined]) {
-    assert.equal(isCertificationIndexable({ slug: "az-802", questionCount }), false, String(questionCount));
+    assert.equal(isCertificationIndexable({ slug: "az-802", questionCount }), true, String(questionCount));
   }
-  assert.equal(isCertificationIndexable("az-802"), false);
+  assert.equal(isCertificationIndexable("az-802"), true);
 });
 
-test("AZ-802 topics stay noindex even when complete and with questions", () => {
-  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "az-802", questionCount: 15 }), false);
+test("AZ-802 topics are indexable only with complete content and questions", () => {
+  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "az-802", questionCount: 15 }), true);
   assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "az-802", questionCount: 0 }), false);
 });
 
@@ -56,7 +59,7 @@ test("a normal complete topic keeps its behavior", () => {
   assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: null, questionCount: 15 }), true);
 });
 
-test("sitemap: landing entries go through isCertificationIndexable (AZ-802 excluded, others unchanged) and no topic URL is emitted", () => {
+test("sitemap: landing entries go through isCertificationIndexable (AZ-802 included, others unchanged) and no topic URL is emitted", () => {
   const source = readFileSync(new URL("../src/app/sitemap.ts", import.meta.url), "utf8");
   assert.match(source, /canonicalCerts\.filter\(\(c\) => isCertificationIndexable\(\{\s*slug: c\.slug,\s*questionCount: c\.questionCountByLang\[lang\] \?\? null,\s*\}\)\)/);
   assert.match(source, /Topic URLs are intentionally omitted/);
@@ -67,7 +70,7 @@ test("sitemap: landing entries go through isCertificationIndexable (AZ-802 exclu
   ];
   for (const lang of ["it", "en", "fr", "es"] as const) {
     const kept = certs.filter((c) => isCertificationIndexable({ slug: c.slug, questionCount: c.questionCountByLang[lang] ?? null })).map((c) => c.slug);
-    assert.deepEqual(kept, ["ccna"], lang);
+    assert.deepEqual(kept, ["az-802", "ccna"], lang);
   }
 });
 

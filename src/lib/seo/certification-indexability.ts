@@ -24,7 +24,6 @@ export const NON_INDEXABLE_CERTIFICATION_SLUGS = new Set([
  * after the production DB import, deploy and production smoke test.
  */
 export const ROLLOUT_NOINDEX_CERTIFICATION_SLUGS = new Set([
-  "az-802",
   // Planned Technical Skills path (EN/IT only at launch; FR/ES never indexable until
   // translated). Also publicationStatus "planned" in the registry.
   "plc-fundamentals",
