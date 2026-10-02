@@ -71,10 +71,9 @@ export async function getTopicPageData({
     `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
     {
       headers: internalApiHeaders(),
-      next: {
-        revalidate: 3600,
-        tags: [`topic:${normalizedCertSlug}:${topicSlug}:${lang}`],
-      },
+      // Inventory controls robots and quiz actions: do not reuse a stale pool
+      // after questions are withdrawn or a certification is cut over.
+      cache: "no-store",
     }
   );
 

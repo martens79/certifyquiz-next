@@ -1,3 +1,4 @@
+import { hasQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
 import Image from "next/image";
 import Link from "next/link";
@@ -140,6 +141,7 @@ export default function CertificationPage({
   const pageTitle = pickLabel(title, lang) || "Certification";
   const pageDescription = pickLabel(description, lang);
   const questionCount = getQuestionCountByLang(data, lang);
+  const hasQuestions = hasQuizInventory(questionCount);
 
 const questionLabel = {
   it: "domande",
@@ -360,7 +362,9 @@ const pageTopics =
 
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
+        {!hasQuestions && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         <StudyMaterialGrid
+          quizQuestionCount={questionCount}
           lang={lang}
           resources={resources}
           certificationSlug={data.slug}
@@ -378,13 +382,13 @@ const pageTopics =
 
         {/* Acquisition primaria: il test viene prima delle offerte e chiede
             l'email solo dopo aver mostrato il risultato. */}
-        <ContextualLeadMagnetBox
+        {hasQuestions && (<ContextualLeadMagnetBox
           lang={lang}
           variant="cert"
           certificationSlug={data.slug}
           quizHref={quizHref}
           className="mb-8"
-        />
+        />)}
 
         <CertificationPackageOffers
           lang={lang}
@@ -433,12 +437,12 @@ const pageTopics =
         )}
 
         {/* Practice box */}
-        <CertificationPracticeBox
+        {hasQuestions && (<CertificationPracticeBox
           lang={lang}
           certificationTitle={pageTitle}
           quizHref={quizHref}
           topics={practiceBoxTopics}
-        />
+        />)}
 
         {prioritySeoLinks && (
           <nav aria-label={prioritySeoLinks.title} className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">

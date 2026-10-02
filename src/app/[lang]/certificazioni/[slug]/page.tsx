@@ -1,3 +1,4 @@
+import { hasQuizInventory } from "@/lib/quiz-availability";
 // src/app/[lang]/certificazioni/[slug]/page.tsx
 // Pagina dettaglio certificazione — Next 15, SSG + ISR, SEO EN-root safe
 // Pattern: View in file normale + Page (await params Promise)
@@ -127,13 +128,16 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
   // hreflang
   const languages: Record<string, string> = {};
   for (const l of locales) {
+    if (!hasQuizInventory(cert?.questionCountByLang?.[l])) continue;
     languages[toHreflang(l)] =
       l === "en"
         ? new URL(enRootDetailPath(slug), SITE_URL).toString()
         : new URL(localizedDetailPath(l, slug), SITE_URL).toString();
   }
 
-  languages["x-default"] = new URL(enRootDetailPath(slug), SITE_URL).toString();
+  if (hasQuizInventory(cert?.questionCountByLang?.en)) {
+    languages["x-default"] = new URL(enRootDetailPath(slug), SITE_URL).toString();
+  }
 
   const ogAbs =
     ogImage?.startsWith("http")

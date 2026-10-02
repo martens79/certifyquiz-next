@@ -1,3 +1,4 @@
+import { hasQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -134,6 +135,7 @@ export default async function TopicPageEs({
 
   const labels = getLabels();
 
+  const hasQuestions = hasQuizInventory(data.questionCount);
   const quizHref = `/es/quiz/topic/${data.topic.id}`;
   const reviewHref = `/es/certificaciones/${slug}/${topicSlug}/repaso`;
 
@@ -167,14 +169,15 @@ export default async function TopicPageEs({
                 {labels.quickReview}
               </Link>
 
-              <Link
+              {hasQuestions && (<Link
                 href={quizHref}
                 className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-300 px-6 py-3 rounded-full font-semibold text-slate-900 shadow-sm"
               >
                 {labels.startQuiz}
-              </Link>
+              </Link>)}
             </div>
 
+            {!hasQuestions && <p className="text-sm text-slate-600 mt-3">{unavailableQuizLabels.es}</p>}
             {data.questionCount !== null && (
               <p className="text-sm text-slate-500 mt-3">
                 {labels.availableQuestions}: {data.questionCount}
@@ -190,14 +193,14 @@ export default async function TopicPageEs({
           )}
 
           {/* Lead magnet */}
-          <ContextualLeadMagnetBox
+          {hasQuestions && (<ContextualLeadMagnetBox
             lang="es"
             variant="topic"
             certificationSlug={slug}
             topicSlug={topicSlug}
             quizHref={quizHref}
             className="mb-8"
-          />
+          />)}
         </section>
 
         {/* CONTENT */}
@@ -205,7 +208,7 @@ export default async function TopicPageEs({
           <section className="bg-white border rounded-2xl p-6 mb-8">
             <TopicContent
               content={data.topic.content}
-              quizRoute={quizHref}
+              quizRoute={hasQuestions ? quizHref : undefined}
               reviewRoute={reviewHref}
               lang="es"
             />
@@ -257,7 +260,7 @@ export default async function TopicPageEs({
       <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
         <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
           <div className="text-xs text-slate-500 mb-2">
-            {labels.mobileHint}
+            {hasQuestions ? labels.mobileHint : unavailableQuizLabels.es}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -268,12 +271,12 @@ export default async function TopicPageEs({
               {labels.quickReviewShort}
             </Link>
 
-            <Link
+            {hasQuestions && (<Link
               href={quizHref}
               className="flex items-center justify-center w-full bg-yellow-400 hover:bg-yellow-300 px-3 py-3 rounded-full text-sm font-semibold text-slate-900"
             >
               {labels.quizShort}
-            </Link>
+            </Link>)}
           </div>
         </div>
       </div>

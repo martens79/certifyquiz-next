@@ -1,3 +1,4 @@
+import { hasQuizInventory } from "@/lib/quiz-availability";
 // src/app/certifications/[slug]/page.tsx
 import type { Metadata } from "next";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
@@ -196,15 +197,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // (IT/FR/ES), così il cluster punta in entrambe le direzioni.
   const languages: Record<string, string> = {};
   for (const l of locales) {
+    if (!hasQuizInventory(data?.questionCountByLang?.[l])) continue;
     languages[toHreflang(l)] =
       l === "en"
         ? new URL(enRootDetailPath(canonicalSlug), siteUrl).toString()
         : new URL(localizedDetailPath(l, canonicalSlug), siteUrl).toString();
   }
-  languages["x-default"] = new URL(
-    enRootDetailPath(canonicalSlug),
-    siteUrl
-  ).toString();
+  if (hasQuizInventory(data.questionCountByLang?.en)) {
+    languages["x-default"] = new URL(enRootDetailPath(canonicalSlug), siteUrl).toString();
+  }
 
   return {
     title,

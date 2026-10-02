@@ -1,3 +1,4 @@
+import { hasQuizInventory } from "../quiz-availability";
 /**
  * Certification landing pages that are useful in navigation but are not yet
  * substantial enough to be search landing pages.
@@ -47,8 +48,7 @@ export function isCertificationIndexable(
   if (NON_INDEXABLE_CERTIFICATION_SLUGS.has(slug)) return false;
   if (isRolloutNoindexCertification(slug)) return false;
 
-  // Missing inventory data is kept backwards-compatible for callers that only
-  // apply the editorial deny-list. When a reliable count is supplied, however,
-  // zero inventory must fail closed.
-  return questionCount == null || questionCount > 0;
+  // String callers apply only the editorial deny-list. Metadata and sitemap
+  // callers supply inventory explicitly and must fail closed when unavailable.
+  return typeof input === "string" || hasQuizInventory(questionCount);
 }

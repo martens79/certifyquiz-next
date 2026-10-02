@@ -9,6 +9,7 @@ type Props = {
   resources: CertificationResources | null;
   certificationSlug: string;
   quizHref: string;
+  quizQuestionCount?: number;
   reviewsHref: string;
   scenariosHref: string;
   guideHref: string | null;
@@ -228,6 +229,7 @@ export default function StudyMaterialGrid({
   resources,
   certificationSlug,
   quizHref,
+  quizQuestionCount,
   reviewsHref,
   scenariosHref,
   guideHref,
@@ -237,7 +239,7 @@ export default function StudyMaterialGrid({
   const t = LABELS[lang];
   const certificationId = resources?.certificationId ?? null;
 
-  const questionCount = resources?.quiz.questionCount ?? 0;
+  const questionCount = quizQuestionCount ?? resources?.quiz.questionCount ?? 0;
   const topicCount = resources?.quiz.topicCount ?? 0;
   const reviewCount = resources?.reviews.count ?? 0;
   const scenarioCount = resources?.scenarios.count ?? 0;
@@ -272,7 +274,7 @@ export default function StudyMaterialGrid({
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <Card
-          href={quizHref}
+          href={questionCount > 0 ? quizHref : null}
           icon="📝"
           title={t.quiz}
           desc={t.quizDesc}
@@ -281,6 +283,7 @@ export default function StudyMaterialGrid({
           lang={lang}
           certificationId={certificationId}
           certificationSlug={certificationSlug}
+          soonLabel={t.soon}
           resourceType="quiz"
         />
 
