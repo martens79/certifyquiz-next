@@ -1,6 +1,7 @@
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { looksLikeHtml } from "@/lib/looks-like-html";
 
 type Locale = "it" | "en" | "fr" | "es";
 
@@ -25,9 +26,7 @@ const reviewLabels: Record<Locale, string> = {
   es: "📘 Repaso rápido",
 };
 
-export function looksLikeHtml(value: string) {
-  return /<\/?[a-z][\s\S]*>/i.test(value);
-}
+export { looksLikeHtml };
 
 export default function TopicContent({
   content,
