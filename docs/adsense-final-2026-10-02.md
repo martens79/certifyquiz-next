@@ -19,11 +19,12 @@ No educational content or database rows were changed. Existing 404 guards and le
 
 ## Validation
 
-- Frontend: typecheck and initial production build PASS; 10 focused tests PASS.
+- Frontend: typecheck and final production build PASS; 10 focused tests PASS.
 - Backend: 25 relevant tests PASS; 32 HTTP requests against production data in a read-only transaction PASS, including zero/valid counts and lists.
-- Local built frontend: 16 inventory pages and 8 nonexistent URLs PASS across EN/IT/FR/ES.
+- Final built frontend: 16 inventory pages and 8 nonexistent URLs PASS across EN/IT/FR/ES. Mixed PEKIT inventory hreflang PASS (IT only). Global generated sitemap validation: all 207 eligible certification/language URLs present, all 41 zero-inventory certification/language URLs absent, no unexpected URLs.
 - Live public routes: homepages, labs, blog, guide catalogs, reviews, About, Contact, Privacy, Terms and cookie policy checked. `/guide` and `/cookies` are the actual EN navigation destinations; invented `/guides` and `/cookie` probes were not treated as blockers.
 - Full backend suite: 560 PASS, 4 FAIL, 2 SKIP (566 reported tests). Failures: exhibit normalization coverage guard, legacy question-route expectation (404 vs 200, plus its file aggregate), and a Node test-runner deserialization error in postGateHardLockEnforcement.e2e. These are outside the inventory changes. The exhibit normalization guard also fails with test and validator files identical to origin/main (after line-ending normalization).
+- The repeatable exporter was run against production and matched the original inventory exactly.
 - Changes are not deployed. Production still has the 175 empty-inventory CTA pages; post-deploy verification is pending.
 
 Exact ID/slug/language/status/robots/canonical/hreflang/sitemap/CTA inventory: `zero-inventory.csv`. Low inventory: `low-inventory.csv`. The complete inventory exports and read-only audit script are in the companion backend PR.
