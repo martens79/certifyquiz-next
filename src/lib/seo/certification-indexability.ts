@@ -24,11 +24,7 @@ export const NON_INDEXABLE_CERTIFICATION_SLUGS = new Set([
  * production step by step. Remove a slug explicitly, in its own change, only
  * after the production DB import, deploy and production smoke test.
  */
-export const ROLLOUT_NOINDEX_CERTIFICATION_SLUGS = new Set([
-  // Planned Technical Skills path (EN/IT only at launch; FR/ES never indexable until
-  // translated). Also publicationStatus "planned" in the registry.
-  "plc-fundamentals",
-]);
+export const ROLLOUT_NOINDEX_CERTIFICATION_SLUGS = new Set<string>([]);
 
 export function isRolloutNoindexCertification(slug: string | null | undefined): boolean {
   return typeof slug === "string" && ROLLOUT_NOINDEX_CERTIFICATION_SLUGS.has(slug);

@@ -52,16 +52,17 @@ test("registry: 12 topics with EN/IT slugs matching the backend import catalog; 
   assert.equal(reg.examBlueprint, undefined, "no official exam blueprint");
 });
 
-test("noindex: the landing is noindex in every language and the slug-only form, whatever the inventory", () => {
-  assert.equal(isRolloutNoindexCertification(SLUG), true);
+test("indexability: launched PLC uses inventory and topic quality gates", () => {
+  assert.equal(isRolloutNoindexCertification(SLUG), false);
   for (const questionCount of [274, 1, 0, null, undefined]) {
-    assert.equal(isCertificationIndexable({ slug: SLUG, questionCount }), false, String(questionCount));
+    assert.equal(isCertificationIndexable({ slug: SLUG, questionCount }), typeof questionCount === "number" && questionCount > 0, String(questionCount));
   }
-  assert.equal(isCertificationIndexable(SLUG), false);
-  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: SLUG, questionCount: 24 }), false);
+  assert.equal(isCertificationIndexable(SLUG), true);
+  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: SLUG, questionCount: 24 }), true);
+  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: SLUG, questionCount: 0 }), false);
 });
 
-test("sitemap: plc-fundamentals is excluded in IT/EN/FR/ES while published certifications stay", () => {
+test("sitemap: PLC is included in EN/IT and excluded in untranslated FR/ES", () => {
   const source = read("../src/app/sitemap.ts");
   assert.match(source, /canonicalCerts\.filter\(\(c\) => isCertificationIndexable\(\{\s*slug: c\.slug,\s*questionCount: c\.questionCountByLang\[lang\] \?\? null,\s*\}\)\)/);
   const certs = [
@@ -71,11 +72,11 @@ test("sitemap: plc-fundamentals is excluded in IT/EN/FR/ES while published certi
   ];
   for (const lang of LANGS) {
     const kept = certs.filter((c) => isCertificationIndexable({ slug: c.slug, questionCount: c.questionCountByLang[lang] ?? null })).map((c) => c.slug);
-    assert.deepEqual(kept, ["ccna", "lfs101"], lang);
+    assert.deepEqual(kept, lang === "it" || lang === "en" ? [SLUG, "ccna", "lfs101"] : ["ccna", "lfs101"], lang);
   }
 });
 
-test("metadata: both landing routes return noindex,follow from the indexability check before any registry logic", () => {
+test("metadata: landing routes retain the inventory guard before registry logic", () => {
   const root = read("../src/app/certifications/[slug]/page.tsx");
   const localized = read("../src/app/[lang]/certificazioni/[slug]/page.tsx");
   for (const [name, source] of [["root", root], ["localized", localized]] as const) {

@@ -19,13 +19,13 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("AZ-802 is published; PLC Fundamentals keeps its rollout guard", () => {
-  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["plc-fundamentals"]);
+test("AZ-802 and PLC are published without rollout guards", () => {
+  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], []);
   assert.equal(isRolloutNoindexCertification("az-802"), false);
   assert.equal(isRolloutNoindexCertification("ccna"), false);
-  assert.equal(isRolloutNoindexCertification("plc-fundamentals"), true);
-  assert.equal(isCertificationIndexable({ slug: "plc-fundamentals", questionCount: 175 }), false);
-  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "plc-fundamentals", questionCount: 15 }), false);
+  assert.equal(isRolloutNoindexCertification("plc-fundamentals"), false);
+  assert.equal(isCertificationIndexable({ slug: "plc-fundamentals", questionCount: 274 }), true);
+  assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: "plc-fundamentals", questionCount: 15 }), true);
   assert.equal(isRolloutNoindexCertification(null), false);
 });
 
