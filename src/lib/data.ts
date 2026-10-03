@@ -283,6 +283,7 @@ const LIVE = new Set([
 
   // ✅ canonici corretti
   "security-plus",
+  "pentest-plus",
   "cisco-ccst-cybersecurity",
 
    // NUOVI

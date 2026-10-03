@@ -53,6 +53,7 @@ const LEVEL_BY_SLUG: Record<string, LevelKey> = {
   "comptia-a-plus": "intermediate",
   "network-plus": "intermediate",
   "security-plus": "intermediate",
+  "pentest-plus": "intermediate",
   ccna: "intermediate",
   ceh: "intermediate",
   "java-se": "intermediate",
@@ -100,6 +101,7 @@ const ICON_BY_SLUG: Record<string, string> = {
   "comptia-itf-plus": "/images/certifications/itf-icon.png",
   "comptia-a-plus": "/images/certifications/comptia-a-plus.png",
   "security-plus": "/images/certifications/securityplus-icon.png",
+  "pentest-plus": "/images/certifications/pentest-plus.svg",
   "network-plus": "/images/certifications/networkplus.png",
   "comptia-cloud-plus": "/images/certifications/cloudplus-icon.png",
 
