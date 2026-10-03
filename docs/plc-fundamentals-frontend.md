@@ -24,5 +24,5 @@ Everything is wired but **nothing is public** yet. The registry entry `plc-funda
 
 - FR/ES strings in the registry entry repeat EN only to satisfy the type; they are never public.
 - Done in the follow-up PR: `403 TOPIC_PREMIUM_REQUIRED` and `404 TOPIC_NOT_AVAILABLE` on the topic quiz (training and `?mode=assessment`) show a Premium invitation / "not available" panel instead of the engine (`src/lib/topic-access.ts`, `TopicPremiumRequired`). Verified in dev against a stub backend; to re-verify with the real backend after the import.
-- Still open: for a FREE user, the practice test and the mixed quiz draw only from the 68 free questions (the backend filters the pool); the UI does not say so yet and should offer the Premium upsell for the full pool.
+- Also in the follow-up PR: `FreePoolNotice` tells a non-entitled user, under the mixed quiz and the practice test, that these draw only from the 68 free questions (with a Premium link). Hidden for entitled users, while the status is unknown and on request errors.
 - Exhibit rendering must be re-verified with the 70 exhibits of the current dataset (earlier check covered 56).

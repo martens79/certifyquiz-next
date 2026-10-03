@@ -11,26 +11,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/apiClient";
+import { loadTopicAccess, type TopicStatus } from "@/lib/topic-access-client";
 import { premiumHref } from "@/lib/topic-access";
 
 export type AccessTier = "free" | "premium" | null | undefined;
-type Status = "open" | "free" | "unlocked" | "locked";
-type AccessPayload = { entitled?: boolean; topics?: Array<{ id: number; status: Status }> };
+type Status = TopicStatus;
 type Lang = "it" | "en" | "fr" | "es";
-
-const requests = new Map<number, Promise<Map<number, Status>>>();
-
-function loadStatuses(certId: number): Promise<Map<number, Status>> {
-  let p = requests.get(certId);
-  if (!p) {
-    p = apiGet<AccessPayload>(`/topics/${certId}/access`)
-      .then((data) => new Map((data.topics ?? []).map((t) => [t.id, t.status] as const)))
-      .catch(() => new Map<number, Status>());
-    requests.set(certId, p);
-  }
-  return p;
-}
 
 const LABELS: Record<Lang, { free: string; premium: string; unlocked: string; locked: string; cta: string }> = {
   it: { free: "Gratis", premium: "Premium", unlocked: "Premium · sbloccato", locked: "Bloccato · Premium", cta: "Passa a Premium" },
@@ -55,8 +41,8 @@ export default function TopicAccessBadge({
   useEffect(() => {
     if (tier !== "free" && tier !== "premium") return;
     let alive = true;
-    loadStatuses(certId).then((m) => {
-      if (alive) setStatus(m.get(topicId) ?? null);
+    loadTopicAccess(certId).then((s) => {
+      if (alive) setStatus(s.statuses.get(topicId) ?? null);
     });
     return () => {
       alive = false;

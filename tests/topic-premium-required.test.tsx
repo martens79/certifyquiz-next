@@ -79,3 +79,31 @@ test("topic quiz client: 403/404 gate errors render the panel and never reach th
   const engine = src.indexOf("<QuizEngine", panel);
   assert.ok(panel > 0 && engine > panel, "the panel returns before the QuizEngine render");
 });
+
+test("free-pool notice: localized with the free count, hidden until the user is known not to be entitled", async () => {
+  const { default: FreePoolNotice, freePoolMessage } = await import("../src/components/topics/FreePoolNotice");
+  const { PLC_FREE_QUESTION_COUNT, INDUSTRIAL_AUTOMATION_CERT_SLUG } = await import("../src/lib/industrial-automation");
+  const { CERTS_BY_SLUG } = await import("../src/certifications/data/index");
+  assert.equal(PLC_FREE_QUESTION_COUNT, 68);
+  for (const lang of LANGS) {
+    const m = freePoolMessage(lang, PLC_FREE_QUESTION_COUNT);
+    assert.match(m.body, /68/, lang);
+    assert.ok(m.cta.length > 3);
+  }
+  // first paint (and any entitled / unknown user): nothing is rendered
+  assert.equal(renderToStaticMarkup(createElement(FreePoolNotice, { certId: 1, lang: "en", freeQuestions: 68 })), "");
+  // the count agrees with the landing FAQ
+  const faq = CERTS_BY_SLUG[INDUSTRIAL_AUTOMATION_CERT_SLUG].extraContent?.faq;
+  assert.match(faq!.en[1].a, new RegExp(`${PLC_FREE_QUESTION_COUNT} questions`));
+  assert.match(faq!.it[1].a, new RegExp(`${PLC_FREE_QUESTION_COUNT} domande`));
+});
+
+test("topics page: the notice is under the mixed quiz and the practice test, for the gated certification only", () => {
+  const page = read("../src/app/[lang]/quiz/[slug]/page.tsx");
+  assert.match(page, /const gatedPool = resolvedSlug === INDUSTRIAL_AUTOMATION_CERT_SLUG && topics\.some\(\(t\) => t\.access_tier === "premium"\)/);
+  const mixed = page.indexOf("{mixedDesc}");
+  const mock = page.indexOf("{mockDesc}");
+  const notice = "{gatedPool ? <FreePoolNotice certId={certId} lang={L} freeQuestions={PLC_FREE_QUESTION_COUNT} /> : null}";
+  assert.ok(page.indexOf(notice, mixed) > mixed && page.indexOf(notice, mixed) < mock, "under the mixed quiz");
+  assert.ok(page.indexOf(notice, mock) > mock, "under the practice test");
+});
