@@ -12,6 +12,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/apiClient";
+import { premiumHref } from "@/lib/topic-access";
 
 export type AccessTier = "free" | "premium" | null | undefined;
 type Status = "open" | "free" | "unlocked" | "locked";
@@ -37,10 +38,6 @@ const LABELS: Record<Lang, { free: string; premium: string; unlocked: string; lo
   fr: { free: "Gratuit", premium: "Premium", unlocked: "Premium · débloqué", locked: "Verrouillé · Premium", cta: "Passer à Premium" },
   es: { free: "Gratis", premium: "Premium", unlocked: "Premium · desbloqueado", locked: "Bloqueado · Premium", cta: "Pasar a Premium" },
 };
-
-export function premiumHref(lang: Lang): string {
-  return lang === "en" ? "/premium" : `/${lang}/premium`;
-}
 
 export default function TopicAccessBadge({
   certId,
