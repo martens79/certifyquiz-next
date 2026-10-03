@@ -213,6 +213,7 @@ const certificationNames: CertificationNames = {
 
   sicurezza: [
     { name: "Security+", link: certPath(lang, "security-plus") },
+    { name: "PenTest+", link: certPath(lang, "pentest-plus") },
     { name: "CEH", link: certPath(lang, "ceh") },
     { name: "CISSP", link: certPath(lang, "cissp") },
     { name: "ISC2 CC", link: certPath(lang, "isc2-cc") },

@@ -12,6 +12,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "icdl": 4,  // ✅ nuovo slug canonical
   "pekit": 5,
   "security-plus": 6,
+  "pentest-plus": 77,
   "cissp": 7,
   "isc2-cc": 8,
   "ceh": 9,
@@ -107,6 +108,7 @@ import OracleDatabaseSQL from "./OracleDatabaseSQL";
 import PEKIT from "./PEKIT";
 import PythonDeveloper from "./PythonDeveloper";
 import SecurityPlus from "./SecurityPlus";
+import PenTestPlus from "./PenTestPlus";
 import VMwareVCP from "./VMwareVCP";
 import GoogleCloudDigitalLeader from "./google-cloud-digital-leader";
 import AWSAIPractitioner from "./aws-ai-practitioner";
@@ -174,7 +176,8 @@ const RAW_CERTS = [
   OracleDatabaseSQL,          // slug: "oracle-database-sql"
   PEKIT,                      // slug: "pekit"
   PythonDeveloper,            // slug: "python-developer"
-  SecurityPlus,               // slug: "security-plus"
+  SecurityPlus,
+  PenTestPlus,               // slug: "security-plus"
   VMwareVCP,                  // slug: "vmware-vcp"
   GoogleCloudDigitalLeader,   // slug: "google-cloud-digital-leader"
   AWSAIPractitioner,          // slug: "aws-ai-practitioner"
