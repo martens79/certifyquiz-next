@@ -69,6 +69,7 @@ export const IDS_BY_SLUG: Record<string, number> = {
   "az-802": 72,
   "lfs101": 73,
   "apple-device-support": 74,
+  "plc-fundamentals": 75, // real production id (imported 2026-10-03, topics hidden); still planned + noindex
 };
 
 /* ---------------------------------------------------------------------
@@ -205,7 +206,7 @@ const RAW_CERTS = [
   AZ802,                      // slug: "az-802" — publicationStatus: "planned"
   LFS101,                     // slug: "lfs101" — publicationStatus: "planned"
   AppleDeviceSupport,         // slug: "apple-device-support" — publicationStatus: "planned"
-  PLCFundamentals,            // slug: "plc-fundamentals" — publicationStatus: "planned" (not launched; no IDS_BY_SLUG until the production import)
+  PLCFundamentals,            // slug: "plc-fundamentals" — publicationStatus: "planned" (not launched; id 75 in IDS_BY_SLUG, still hidden)
 ] as const;
 
 /**

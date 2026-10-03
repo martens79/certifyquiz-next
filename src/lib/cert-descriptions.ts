@@ -325,6 +325,14 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
   es: "Soporte Apple: configuración, gestión, seguridad y solución de problemas en Mac, iPhone y iPad.",
 },
 
+/* ----------------------- Industrial Automation ------------------------- */
+"plc-fundamentals": {
+  it: "Percorso formativo vendor-neutral sui PLC: sicurezza, circuiti di comando, sensori, I/O, ladder, segnali analogici, HMI, reti e ricerca guasti. Non è una certificazione ufficiale.",
+  en: "Vendor-neutral PLC training path: safety, control circuits, sensors, I/O, ladder logic, analog signals, HMI, networks and troubleshooting. Not an official certification.",
+  fr: "Parcours de formation PLC indépendant des constructeurs. Pas une certification officielle.",
+  es: "Ruta de formación PLC independiente del fabricante. No es una certificación oficial.",
+},
+
 /* ------------------------- Business Applications ----------------------- */
 "sap-s4hana-financial-accounting": {
   it: "SAP S/4HANA Finance: contabilità generale, crediti, debiti, cespiti e chiusura finanziaria.",

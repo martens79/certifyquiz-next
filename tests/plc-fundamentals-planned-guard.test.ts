@@ -27,11 +27,12 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("registry: plc-fundamentals is planned, has no production id yet, and is the only planned entry", () => {
+test("registry: plc-fundamentals is planned, has its production id (75), and is the only planned entry", () => {
   const reg = CERTS_BY_SLUG[SLUG];
   assert.ok(reg, "registry entry exists");
   assert.equal(reg.publicationStatus, "planned");
-  assert.equal(IDS_BY_SLUG[SLUG], undefined);
+  assert.equal(IDS_BY_SLUG[SLUG], 75);
+  assert.equal(reg.id, 75);
   const planned = Object.values(CERTS_BY_SLUG).filter((c) => c && isPlannedCertification(c)).map((c) => c.slug);
   assert.deepEqual([...new Set(planned)], [SLUG], "no live certification is hidden by the planned filter");
 });

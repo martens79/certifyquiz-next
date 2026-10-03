@@ -6,9 +6,9 @@ import type { Locale } from "@/lib/i18n";
 import { getToken } from "@/lib/auth";
 import Home, { type HomeStats } from "./Home";
 
-type Props = { lang: Locale };
+type Props = { lang: Locale; showIndustrialAutomation?: boolean };
 
-export default function HomeWithAuth({ lang }: Props) {
+export default function HomeWithAuth({ lang, showIndustrialAutomation = false }: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [stats, setStats] = useState<HomeStats | null>(null);
 
@@ -28,5 +28,12 @@ export default function HomeWithAuth({ lang }: Props) {
     })();
   }, []);
 
-  return <Home lang={lang} isLoggedIn={isLoggedIn} stats={stats ?? undefined} />;
+  return (
+    <Home
+      lang={lang}
+      isLoggedIn={isLoggedIn}
+      stats={stats ?? undefined}
+      showIndustrialAutomation={showIndustrialAutomation}
+    />
+  );
 }

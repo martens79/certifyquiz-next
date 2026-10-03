@@ -28,4 +28,6 @@ export const PRIMARY_CERT_SLUG_BY_CATEGORY: Record<CategoryKey, string> = {
   foundations: "foundations",
 
   "sistemi-operativi": "az-802",
+
+  "industrial-automation": "plc-fundamentals",
 };

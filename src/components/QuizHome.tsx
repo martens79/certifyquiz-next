@@ -306,6 +306,9 @@ foundations: [
   { name: "LFS101", link: certPath(lang, "lfs101") },
   { name: "Apple Device Support", link: certPath(lang, "apple-device-support") },
 ],
+// Industrial Automation: intentionally empty while PLC Fundamentals is planned; this map
+// also feeds the flat search list, so nothing may be listed here before launch.
+"industrial-automation": [],
 };
 
   const allCerts: CertItem[] = Object.values(certificationNames).flat();

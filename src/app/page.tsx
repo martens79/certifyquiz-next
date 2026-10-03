@@ -1,6 +1,7 @@
 ﻿// src/app/page.tsx
 import type { Metadata } from "next";
 import HomeWithAuth from "@/components/home/HomeWithAuth";
+import { isIndustrialAutomationPublic } from "@/lib/industrial-automation";
 
 const SITE =
   (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
@@ -38,6 +39,6 @@ export const metadata: Metadata = {
 };
 
 export default function HomeRootEN() {
-  return <HomeWithAuth lang="en" />;
+  return <HomeWithAuth lang="en" showIndustrialAutomation={isIndustrialAutomationPublic("en")} />;
 }
 

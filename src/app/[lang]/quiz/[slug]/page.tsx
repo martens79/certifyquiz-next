@@ -4,8 +4,12 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { getCertBySlug as getRegistryCertBySlug, CERT_SLUGS } from "@/certifications/registry";
+import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
+import TopicAccessBadge from "@/components/topics/TopicAccessBadge";
+import { INDUSTRIAL_AUTOMATION_CERT_SLUG, INDUSTRIAL_AUTOMATION_LANGS } from "@/lib/industrial-automation";
 import { getCertBySlug as getDatabaseCertBySlug } from "@/lib/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
@@ -39,6 +43,9 @@ type TopicRow = {
   slug_en?: string;
   slug_fr?: string;
   slug_es?: string;
+
+  // topic gate (PLC Fundamentals): "free" | "premium", null for ordinary certifications
+  access_tier?: "free" | "premium" | null;
 };
 
 // ─────────────────── Helpers ───────────────────
@@ -325,6 +332,13 @@ function categoryLabel(key: CategoryKey, lang: Locale) {
       fr: "Systèmes d'exploitation",
       es: "Sistemas Operativos",
     },
+
+    "industrial-automation": {
+      it: "Automazione industriale",
+      en: "Industrial Automation",
+      fr: "Automatisation industrielle",
+      es: "Automatización industrial",
+    },
   };
 
   const o = map[key] ?? map.default;
@@ -398,12 +412,21 @@ export default async function QuizTopicsPage({
     (await getDatabaseCertBySlug(resolvedSlug, L));
   const certId = cert?.id;
 
+  // Planned (not launched) certifications have no public quiz page, and PLC Fundamentals is
+  // offered in EN/IT only. A local developer preview is the only exception.
+  const registryCert = getRegistryCertBySlug(resolvedSlug);
+  if (isPlannedCertification(registryCert) && !isPlannedPreviewEnabled()) notFound();
+  if (resolvedSlug === INDUSTRIAL_AUTOMATION_CERT_SLUG && !INDUSTRIAL_AUTOMATION_LANGS.includes(L)) notFound();
+
   // ✅ QUI IL FIX IMPORTANTE
   const certName = shortCertName(resolvedSlug);
   
 
   if (!certId) {
-    const list = [...CERT_SLUGS].slice().sort();
+    const list = [...CERT_SLUGS]
+      .filter((s) => !isPlannedCertification(getRegistryCertBySlug(s)))
+      .slice()
+      .sort();
 
     return (
       <main className="mx-auto max-w-5xl px-4 py-10">
@@ -638,6 +661,7 @@ const mockCta =
                 className={`rounded-2xl p-4 md:p-5 bg-white shadow-sm transition ${css.wrapper}`}
               >
                 <div className="font-semibold">{title}</div>
+                <TopicAccessBadge certId={certId} topicId={t.id} tier={t.access_tier} lang={L} />
                 {desc && <div className="text-sm opacity-80 mt-1">{desc}</div>}
 
                 {topicHref ? (

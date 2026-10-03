@@ -7,6 +7,7 @@ import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certification
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
 import { getSapPlaceholderCertification } from "@/features/business-applications/data";
+import { INDUSTRIAL_AUTOMATION_CERT_SLUG, INDUSTRIAL_AUTOMATION_LANGS } from "@/lib/industrial-automation";
 import {
   getCertBySlug,
   getTopicsByCertSlug,
@@ -124,6 +125,8 @@ export async function CertificationDetailView({
   // Planned certifications are 404 publicly; only a local developer preview renders them
   // (still noindex through the rollout guard).
   if (isPlannedCertification(reg) && !isPlannedPreviewEnabled()) return notFound();
+  // PLC Fundamentals is offered in English and Italian only: no FR/ES landing.
+  if (reg?.slug === INDUSTRIAL_AUTOMATION_CERT_SLUG && !INDUSTRIAL_AUTOMATION_LANGS.includes(lang)) return notFound();
 
   // `resources` sostituisce la vecchia fetch degli scenari e copre in una
   // sola chiamata TUTTI i conteggi della griglia "Materiale di studio"
