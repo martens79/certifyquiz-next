@@ -107,7 +107,8 @@ test("topic access badge: no request for ordinary certifications, Premium upsell
   const badge = read("../src/components/topics/TopicAccessBadge.tsx");
   assert.match(badge, /if \(tier !== "free" && tier !== "premium"\) return;/);
   assert.match(badge, /if \(tier !== "free" && tier !== "premium"\) return null;/);
-  assert.match(badge, /`\/topics\/\$\{certId\}\/access`/);
+  assert.match(badge, /loadTopicAccess\(certId\)/);
+  assert.match(read("../src/lib/topic-access-client.ts"), /`\/topics\/\$\{certId\}\/access`/);
   assert.match(badge, /effective === "locked" \?/);
   for (const lang of ["it", "en", "fr", "es"]) assert.match(badge, new RegExp(`${lang}: \\{ free:`));
 });
