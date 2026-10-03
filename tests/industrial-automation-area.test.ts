@@ -15,29 +15,32 @@ import { PRIMARY_CERT_SLUG_BY_CATEGORY } from "../src/lib/primary-cert-by-catego
 const LANGS = ["it", "en", "fr", "es"] as const;
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), "utf8");
 
-test("area is hidden in every language while PLC Fundamentals is planned (the current state)", () => {
-  assert.equal(CERTS_BY_SLUG[INDUSTRIAL_AUTOMATION_CERT_SLUG].publicationStatus, "planned");
-  for (const lang of LANGS) assert.equal(isIndustrialAutomationPublic(lang), false, lang);
+test("area is public in EN/IT only once PLC Fundamentals is launched (the current state), never FR/ES", () => {
+  assert.equal(CERTS_BY_SLUG[INDUSTRIAL_AUTOMATION_CERT_SLUG].publicationStatus, undefined);
+  assert.deepEqual(LANGS.filter((l) => isIndustrialAutomationPublic(l)), ["it", "en"]);
+  assert.deepEqual([...INDUSTRIAL_AUTOMATION_LANGS], ["it", "en"]);
+  assert.equal(isIndustrialAutomationPublic("de"), false);
 });
 
-test("launching the registry entry turns the area on in EN/IT only, never FR/ES", () => {
+test("putting the registry entry back to planned hides the area in every language (rollback switch)", () => {
   const cert = CERTS_BY_SLUG[INDUSTRIAL_AUTOMATION_CERT_SLUG] as { publicationStatus?: string };
   const previous = cert.publicationStatus;
   try {
-    delete cert.publicationStatus;
-    assert.deepEqual(LANGS.filter((l) => isIndustrialAutomationPublic(l)), ["it", "en"]);
-    assert.deepEqual([...INDUSTRIAL_AUTOMATION_LANGS], ["it", "en"]);
-    assert.equal(isIndustrialAutomationPublic("de"), false);
+    cert.publicationStatus = "planned";
+    for (const lang of LANGS) assert.equal(isIndustrialAutomationPublic(lang), false, lang);
   } finally {
-    cert.publicationStatus = previous;
+    if (previous === undefined) delete cert.publicationStatus; else cert.publicationStatus = previous;
   }
-  assert.equal(isIndustrialAutomationPublic("en"), false);
+  assert.equal(isIndustrialAutomationPublic("en"), true);
 });
 
-test("developer preview shows the area in EN/IT only, and never in production", () => {
+test("developer preview shows a planned area in EN/IT only, and never in production", () => {
   const env = process.env as Record<string, string | undefined>;
+  const cert = CERTS_BY_SLUG[INDUSTRIAL_AUTOMATION_CERT_SLUG] as { publicationStatus?: string };
+  const savedStatus = cert.publicationStatus;
   const saved = { p: env.CERTIFYQUIZ_PLANNED_PREVIEW, n: env.NODE_ENV, v: env.VERCEL_ENV };
   try {
+    cert.publicationStatus = "planned";
     env.CERTIFYQUIZ_PLANNED_PREVIEW = "1";
     delete env.VERCEL_ENV;
     env.NODE_ENV = "development";
@@ -48,6 +51,7 @@ test("developer preview shows the area in EN/IT only, and never in production", 
     env.VERCEL_ENV = "production";
     assert.deepEqual(LANGS.filter((l) => isIndustrialAutomationPublic(l)), []);
   } finally {
+    if (savedStatus === undefined) delete cert.publicationStatus; else cert.publicationStatus = savedStatus;
     for (const [k, v] of [["CERTIFYQUIZ_PLANNED_PREVIEW", saved.p], ["NODE_ENV", saved.n], ["VERCEL_ENV", saved.v]] as const) {
       if (v === undefined) delete env[k]; else env[k] = v;
     }

@@ -206,7 +206,7 @@ const RAW_CERTS = [
   AZ802,                      // slug: "az-802" — publicationStatus: "planned"
   LFS101,                     // slug: "lfs101" — publicationStatus: "planned"
   AppleDeviceSupport,         // slug: "apple-device-support" — publicationStatus: "planned"
-  PLCFundamentals,            // slug: "plc-fundamentals" — publicationStatus: "planned" (not launched; id 75 in IDS_BY_SLUG, still hidden)
+  PLCFundamentals,            // slug: "plc-fundamentals" — launched in EN/IT (id 75), still ROLLOUT_NOINDEX
 ] as const;
 
 /**

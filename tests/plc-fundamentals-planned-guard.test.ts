@@ -27,14 +27,14 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("registry: plc-fundamentals is planned, has its production id (75), and is the only planned entry", () => {
+test("registry: plc-fundamentals is launched (not planned), has its production id (75), and no entry is planned", () => {
   const reg = CERTS_BY_SLUG[SLUG];
   assert.ok(reg, "registry entry exists");
-  assert.equal(reg.publicationStatus, "planned");
+  assert.equal(reg.publicationStatus, undefined);
   assert.equal(IDS_BY_SLUG[SLUG], 75);
   assert.equal(reg.id, 75);
   const planned = Object.values(CERTS_BY_SLUG).filter((c) => c && isPlannedCertification(c)).map((c) => c.slug);
-  assert.deepEqual([...new Set(planned)], [SLUG], "no live certification is hidden by the planned filter");
+  assert.deepEqual([...new Set(planned)], [], "no certification is hidden by the planned filter");
 });
 
 test("registry: 12 topics with EN/IT slugs matching the backend import catalog; not presented as official", () => {
@@ -86,9 +86,9 @@ test("metadata: both landing routes return noindex,follow from the indexability 
   }
 });
 
-test("discovery: planned certifications are not listed; published ones are", () => {
-  assert.equal(isPubliclyListed(SLUG, CERTS_BY_SLUG), false);
-  for (const slug of ["ccna", "lfs101", "az-802", "apple-device-support", "unknown-db-only-slug"]) {
+test("discovery: planned certifications are not listed; published ones (PLC included) are", () => {
+  assert.equal(isPubliclyListed("any", { any: { ...CERTS_BY_SLUG[SLUG], publicationStatus: "planned" } }), false, "a planned entry stays hidden");
+  for (const slug of [SLUG, "ccna", "lfs101", "az-802", "apple-device-support", "unknown-db-only-slug"]) {
     assert.equal(isPubliclyListed(slug, CERTS_BY_SLUG), true, slug);
   }
   const list = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");
@@ -97,7 +97,7 @@ test("discovery: planned certifications are not listed; published ones are", () 
   assert.match(category, /publicationStatus !== "planned"/, "category pages filter planned slugs");
 });
 
-test("page: planned landing is 404 publicly; a local developer preview may render it", () => {
+test("page: a planned landing is 404 publicly; a local developer preview may render it", () => {
   const view = read("../src/app/_views/CertificationDetailView.tsx");
   assert.match(view, /if \(isPlannedCertification\(reg\) && !isPlannedPreviewEnabled\(\)\) return notFound\(\);/);
   const on = { [PLANNED_PREVIEW_ENV]: "1" };
