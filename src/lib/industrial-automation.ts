@@ -12,6 +12,8 @@ import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certification
 
 export const INDUSTRIAL_AUTOMATION_CERT_SLUG = "plc-fundamentals";
 export const INDUSTRIAL_AUTOMATION_LANGS: ReadonlyArray<string> = ["it", "en"];
+/** Free questions of PLC Fundamentals (PLC-01, PLC-02, PLC-06): the pool of a non-entitled user. */
+export const PLC_FREE_QUESTION_COUNT = 68;
 
 export function isIndustrialAutomationPublic(lang: string): boolean {
   if (!INDUSTRIAL_AUTOMATION_LANGS.includes(lang)) return false;

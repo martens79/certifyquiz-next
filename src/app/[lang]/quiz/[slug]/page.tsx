@@ -9,7 +9,8 @@ import { notFound } from "next/navigation";
 import { getCertBySlug as getRegistryCertBySlug, CERT_SLUGS } from "@/certifications/registry";
 import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
 import TopicAccessBadge from "@/components/topics/TopicAccessBadge";
-import { INDUSTRIAL_AUTOMATION_CERT_SLUG, INDUSTRIAL_AUTOMATION_LANGS } from "@/lib/industrial-automation";
+import FreePoolNotice from "@/components/topics/FreePoolNotice";
+import { INDUSTRIAL_AUTOMATION_CERT_SLUG, INDUSTRIAL_AUTOMATION_LANGS, PLC_FREE_QUESTION_COUNT } from "@/lib/industrial-automation";
 import { getCertBySlug as getDatabaseCertBySlug } from "@/lib/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
@@ -462,6 +463,8 @@ export default async function QuizTopicsPage({
   const css = getCategoryStyle(styleCategoryKey);
 
   const topics = await fetchTopics(certId);
+  // topic gate: only PLC Fundamentals today; the notice is for users who are not entitled
+  const gatedPool = resolvedSlug === INDUSTRIAL_AUTOMATION_CERT_SLUG && topics.some((t) => t.access_tier === "premium");
   const categoryName = categoryLabel(rawCategoryKey, L);
   const base = SEO_BASE[L];
   const categoryHref =
@@ -600,6 +603,7 @@ const mockCta =
             <div>
               <h2 className="text-base font-semibold">{mixedLabel}</h2>
               <p className="text-sm text-slate-700">{mixedDesc}</p>
+              {gatedPool ? <FreePoolNotice certId={certId} lang={L} freeQuestions={PLC_FREE_QUESTION_COUNT} /> : null}
             </div>
 
             <Link
@@ -615,6 +619,7 @@ const mockCta =
             <div>
               <h2 className="text-base font-semibold">{mockLabel}</h2>
               <p className="text-sm text-slate-700">{mockDesc}</p>
+              {gatedPool ? <FreePoolNotice certId={certId} lang={L} freeQuestions={PLC_FREE_QUESTION_COUNT} /> : null}
             </div>
 
             <Link

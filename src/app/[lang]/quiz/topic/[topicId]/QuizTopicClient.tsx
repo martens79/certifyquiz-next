@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import QuizEngine from "@/components/quiz/QuizEngine";
 import ComingSoonBox from "@/components/ui/ComingSoonBox";
+import TopicPremiumRequired from "@/components/topics/TopicPremiumRequired";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-types";
@@ -21,6 +22,7 @@ import {
 
 import { getCertSlugById } from "@/lib/certs";
 import { isPostGateLimitError } from "@/lib/quiz-explanation-access";
+import { isTopicNotAvailableError, isTopicPremiumRequiredError } from "@/lib/topic-access";
 import { getExamSpecForCert } from "@/lib/exam-specs";
 
 /* ─────────────────────────────────────────────────────────────
@@ -57,6 +59,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 
   // Solo se /questions tornasse 401 (finché non è 100% pubblico)
   const [needsLoginForQuestions, setNeedsLoginForQuestions] = useState(false);
+
+  // Topic gate (PLC Fundamentals): the backend refuses a Premium topic with 403
+  // TOPIC_PREMIUM_REQUIRED, or a not-launched one with 404 TOPIC_NOT_AVAILABLE.
+  // Neither is a load error: show the Premium invitation / "not available" panel.
+  const [topicGate, setTopicGate] = useState<null | "premium" | "unavailable">(null);
 
   // meta
   const [certificationId, setCertificationId] = useState<number | null>(null);
@@ -191,6 +198,15 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         return [];
       }
 
+      if (isTopicPremiumRequiredError(e)) {
+        setTopicGate("premium");
+        return [];
+      }
+      if (isTopicNotAvailableError(e)) {
+        setTopicGate("unavailable");
+        return [];
+      }
+
       // Hard paywall post-gate (Fase A, enforcement server-side): non è un
       // errore di caricamento, è il backend che rifiuta un nuovo batch
       // Training. Rilancia cosi' che l'effetto interno di QuizEngine lo
@@ -206,6 +222,13 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   }, [numericId, L, isAssessmentMode]);
 
   if (blocked || Number.isNaN(numericId)) return null;
+
+  /* ─────────────────────────────────────────────────────────────
+     TOPIC GATE (403 TOPIC_PREMIUM_REQUIRED / 404 TOPIC_NOT_AVAILABLE)
+  ───────────────────────────────────────────────────────────── */
+  if (topicGate) {
+    return <TopicPremiumRequired lang={L} backHref={backToHref} kind={topicGate} />;
+  }
 
   /* ─────────────────────────────────────────────────────────────
      UI SOFT LOGIN (solo se /questions torna 401)
