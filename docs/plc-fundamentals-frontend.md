@@ -1,16 +1,16 @@
-# PLC Fundamentals · frontend integration (not launched)
+# PLC Fundamentals · frontend integration (launched EN/IT, noindex)
 
 PLC Fundamentals (area "Industrial Automation") is a CertifyQuiz training path, **not an official certification**. Launch languages: EN + IT.
 
 ## State of this change
 
-Everything is wired but **nothing is public** yet. The registry entry `plc-fundamentals` is still `publicationStatus: "planned"` and still in `ROLLOUT_NOINDEX_CERTIFICATION_SLUGS`.
+**Launched in EN + IT, still noindex.** `publicationStatus: "planned"` is removed from the registry entry `plc-fundamentals` (production certification id 75 in `IDS_BY_SLUG`). The slug is **still** in `ROLLOUT_NOINDEX_CERTIFICATION_SLUGS`: noindex,follow in every language, topics noindex, absent from the sitemap. Removing that entry is a separate change after the production smoke test.
 
-- Home: a text-only "Industrial Automation · PLC Fundamentals · In preparazione / Coming soon" card (EN/IT, no link) while the area is not public.
-- Industrial Automation category (`/categories/industrial-automation`, `/it/categorie/automazione-industriale`): 404 and noindex until launch; FR/ES always 404.
-- Landing and quiz topics page: 404 while planned; FR/ES 404 for PLC Fundamentals even after launch.
+- Home: Industrial Automation card (with link) on a full-width row under Management, Business Applications, Data & Analytics and Operating Systems, before Foundations.
+- Industrial Automation category (`/categories/industrial-automation`, `/it/categorie/automazione-industriale`), landing and quiz topics page: public in EN/IT; FR/ES always 404.
 - Topic list: `TopicAccessBadge` shows Free / Premium / Locked from the backend contract (`access_tier` in the cached topic list; per-user `GET /topics/:certId/access`, never cached). Ordinary certifications are unaffected (no badge, no request).
-- Visibility is derived in one place, `src/lib/industrial-automation.ts` (`isIndustrialAutomationPublic`): public only when the registry entry is not planned and the language is EN/IT. A local preview (`CERTIFYQUIZ_PLANNED_PREVIEW=1`, never in production) shows it like the planned landing.
+- Quiz: `403 TOPIC_PREMIUM_REQUIRED` shows the Premium invitation, `404 TOPIC_NOT_AVAILABLE` the "not available" panel; mixed quiz and practice test show the free-pool notice (68 questions) to users without Premium access.
+- Visibility is derived in one place, `src/lib/industrial-automation.ts` (`isIndustrialAutomationPublic`): public when the registry entry is not planned and the language is EN/IT. **Rollback switch:** putting `publicationStatus: "planned"` back hides everything again (the backend keeps serving nothing for topics with `is_active = 0`).
 
 ## Launch steps (each its own change, with explicit approval)
 

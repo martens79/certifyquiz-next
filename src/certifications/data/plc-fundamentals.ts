@@ -2,16 +2,15 @@
 // PLC Fundamentals – Industrial Automation: a CertifyQuiz Technical Skills path.
 // It is NOT an official, vendor or accredited certification.
 //
-// PLANNED (not launched). While publicationStatus is "planned":
-// - the landing returns 404 in every language (CertificationDetailView), except in a
-//   local developer preview (CERTIFYQUIZ_PLANNED_PREVIEW=1, never on Vercel production);
-// - it is excluded from the certifications list and category pages;
-// - it is in ROLLOUT_NOINDEX_CERTIFICATION_SLUGS: noindex,follow in every language,
-//   its topics noindex, and absent from the sitemap, whatever the DB inventory.
-// No IDS_BY_SLUG entry until the production import assigns the certification id.
+// LAUNCHED (EN + IT): publicationStatus is no longer "planned" (production id 75 in
+// IDS_BY_SLUG). The area, category page, landing and quiz topics page are public in EN/IT.
+// It is STILL in ROLLOUT_NOINDEX_CERTIFICATION_SLUGS: noindex,follow in every language, its
+// topics noindex, and absent from the sitemap, whatever the DB inventory. That entry is
+// removed in a separate change after the production smoke test.
+// FR/ES stay 404 for this certification (see lib/industrial-automation).
 //
 // Launch languages: EN + IT. FR/ES are not offered: their strings below repeat EN only
-// to satisfy LocalizedText and must be replaced or kept non-public before any launch.
+// to satisfy LocalizedText and stay non-public.
 // Topic slugs match the backend import catalog
 // (quiz_project tools/content/plc-fundamentals/import/catalog.js).
 
@@ -58,7 +57,6 @@ const topic = (it: string, en: string, slugIt: string, slugEn: string) => ({
 
 const PLCFundamentals: CertificationData = {
   slug: "plc-fundamentals",
-  publicationStatus: "planned",
   imageUrl: "/images/certifications/plc-fundamentals.svg",
   officialUrl: "https://www.certifyquiz.com/certifications/plc-fundamentals",
 
