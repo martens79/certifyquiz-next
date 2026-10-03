@@ -4,6 +4,7 @@ import type { Locale, Localized } from "@/lib/i18n";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n";
+import { isIndustrialAutomationPublic } from "@/lib/industrial-automation";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
   /\/+$/,
@@ -197,7 +198,7 @@ export default async function LangHome(
       <StructuredData id="ld-home-categories" data={categoriesItemListLd} />
       <main id="main">
         {/* HomeWithAuth gestisce il token e passa isLoggedIn a <Home /> */}
-        <HomeWithAuth lang={lang} />
+        <HomeWithAuth lang={lang} showIndustrialAutomation={isIndustrialAutomationPublic(lang)} />
       </main>
     </>
   );

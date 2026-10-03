@@ -6,6 +6,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
 
@@ -26,6 +27,7 @@ import {
   type CertDescLocale,
 } from "@/lib/cert-descriptions";
 import BusinessEcosystems from "@/features/business-applications/BusinessEcosystems";
+import { isIndustrialAutomationPublic } from "@/lib/industrial-automation";
 
 /* -------------------------------- Config -------------------------------- */
 
@@ -228,6 +230,23 @@ const CATEGORY_META: Record<
   },
 },
 
+"industrial-automation": {
+  key: "industrial-automation",
+  emoji: "🏭",
+  title: {
+    it: "Automazione industriale",
+    en: "Industrial Automation",
+    fr: "Automatisation industrielle",
+    es: "Automatización industrial",
+  },
+  subtitle: {
+    it: "Percorsi tecnici vendor-neutral sull'automazione industriale, a partire dai fondamenti dei PLC. Percorsi formativi CertifyQuiz, non certificazioni ufficiali.",
+    en: "Vendor-neutral technical paths in industrial automation, starting with PLC fundamentals. CertifyQuiz training paths, not official certifications.",
+    fr: "Parcours techniques indépendants des constructeurs en automatisation industrielle, à commencer par les bases des automates. Parcours de formation CertifyQuiz, pas des certifications officielles.",
+    es: "Rutas técnicas independientes del fabricante sobre automatización industrial, empezando por los fundamentos de los PLC. Rutas formativas de CertifyQuiz, no certificaciones oficiales.",
+  },
+},
+
 "sistemi-operativi": {
   key: "sistemi-operativi",
   emoji: "🖥️",
@@ -246,6 +265,10 @@ const CATEGORY_META: Record<
 },
 };
 
+
+const CARD_TITLE_OVERRIDES: Record<string, string> = {
+  "plc-fundamentals": "PLC Fundamentals",
+};
 
 const ROADMAP_BY_CATEGORY: Partial<Record<CategoryKey, string>> = {
   base: "fundamentals",
@@ -359,6 +382,8 @@ const key = resolveInternalKey(lang, cat);
   
 
   const meta = CATEGORY_META[key];
+  // Industrial Automation is not public until its first path launches (EN/IT only).
+  const hiddenArea = key === "industrial-automation" && !isIndustrialAutomationPublic(lang);
   const title = meta.title[lang] ?? meta.title.it;
   const desc = meta.subtitle[lang] ?? meta.subtitle.it;
   const canonical = `${SITE_URL}${localizedCategoryPath(lang, key)}`;
@@ -376,7 +401,7 @@ const key = resolveInternalKey(lang, cat);
       type: "website",
     },
     twitter: { card: "summary_large_image", title, description: desc },
-    robots: { index: true, follow: true },
+    robots: hiddenArea ? { index: false, follow: false } : { index: true, follow: true },
   };
 }
 
@@ -402,6 +427,8 @@ export default async function CategoryPage({ params }: Props) {
       </main>
     );
   }
+  if (key === "industrial-automation" && !isIndustrialAutomationPublic(lang)) notFound();
+
   const meta = CATEGORY_META[key];
   const css = getCategoryStyle(key);
 
@@ -544,7 +571,7 @@ const certSlugs =
               className={`rounded-2xl p-5 shadow-sm transition ${css.wrapper}`}
             >
 <div className="text-lg font-semibold leading-snug">
-  {slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+  {CARD_TITLE_OVERRIDES[slug] ?? slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
 </div>
 
 <p className="mt-1 text-sm opacity-80 leading-snug">

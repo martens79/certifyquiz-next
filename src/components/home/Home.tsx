@@ -30,6 +30,7 @@ import {
   BarChart3,
   Boxes,
   MonitorCog,
+  Factory,
 } from "lucide-react";
 
 /* Helpers */
@@ -108,6 +109,11 @@ const CATEGORY_UI: Record<
     border: "border-indigo-200",
     ring: "hover:ring-2 hover:ring-indigo-200/60",
   },
+  "industrial-automation": {
+    bg: "bg-stone-50",
+    border: "border-stone-300",
+    ring: "hover:ring-2 hover:ring-stone-300/60",
+  },
 } as const;
 
 export type HomeStats = {
@@ -120,9 +126,11 @@ type Props = {
   lang?: Locale;
   isLoggedIn?: boolean;
   stats?: HomeStats;
+  /** Server-computed: true only once PLC Fundamentals is launched (see lib/industrial-automation). */
+  showIndustrialAutomation?: boolean;
 };
 
-export default function Home({ lang, isLoggedIn = false, stats }: Props) {
+export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAutomation = false }: Props) {
   const safeLang: Locale =
     lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
@@ -356,6 +364,28 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
         safeLang
       ),
     },
+    {
+      key: "industrial-automation",
+      icon: <Factory size={20} aria-hidden="true" />,
+      title: L(
+        {
+          it: "Automazione industriale",
+          en: "Industrial Automation",
+          fr: "Automatisation industrielle",
+          es: "Automatización industrial",
+        },
+        safeLang
+      ),
+      desc: L(
+        {
+          it: "PLC Fundamentals: sicurezza, cablaggio, ladder, HMI e reti industriali.",
+          en: "PLC Fundamentals: safety, wiring, ladder logic, HMI and industrial networks.",
+          fr: "Automates, sécurité, câblage, ladder, IHM et réseaux industriels.",
+          es: "PLC, seguridad, cableado, ladder, HMI y redes industriales.",
+        },
+        safeLang
+      ),
+    },
   ];
 
   return (
@@ -576,7 +606,8 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
     cat.key !== "management" &&
     cat.key !== "business-applications" &&
     cat.key !== "data-analytics" &&
-    cat.key !== "sistemi-operativi"
+    cat.key !== "sistemi-operativi" &&
+    cat.key !== "industrial-automation"
 )
       .map((cat) => {
         const ui = CATEGORY_UI[cat.key];
@@ -600,14 +631,15 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
       })}
   </div>
 
-  <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3">
   {allCategories
     .filter(
       (cat) =>
         cat.key === "management" ||
         cat.key === "business-applications" ||
         cat.key === "data-analytics" ||
-        cat.key === "sistemi-operativi"
+        cat.key === "sistemi-operativi" ||
+        (cat.key === "industrial-automation" && showIndustrialAutomation)
     )
     .map((cat) => {
       const ui = CATEGORY_UI[cat.key];
@@ -616,7 +648,7 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   <Link
     key={cat.key}
     href={categoryPath(safeLang, cat.key)}
-    className={`mt-3 flex items-center justify-between gap-4 transition p-4 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
+    className={`${cat.key === "industrial-automation" ? "col-span-full order-last" : ""} flex items-center justify-between gap-4 transition p-4 rounded-xl shadow border ${ui.bg} ${ui.border} ${ui.ring} text-left`}
   >
     <div className="flex items-center gap-3">
       <div className="shrink-0 text-slate-800">{cat.icon}</div>
@@ -663,6 +695,16 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
             },
             safeLang
           )
+        : cat.key === "industrial-automation"
+        ? L(
+            {
+              it: "PLC, ladder, sicurezza, ricerca guasti →",
+              en: "PLCs, ladder logic, safety, troubleshooting →",
+              fr: "Automates, ladder, sécurité, diagnostic →",
+              es: "PLC, ladder, seguridad, diagnóstico →",
+            },
+            safeLang
+          )
         : L(
             {
               it: "Windows Server, Linux, Apple →",
@@ -676,6 +718,24 @@ export default function Home({ lang, isLoggedIn = false, stats }: Props) {
   </Link>
 );
     })}
+    {!showIndustrialAutomation && (safeLang === "it" || safeLang === "en") && (
+      <div className="col-span-full order-last rounded-xl border border-indigo-200 bg-indigo-50 p-4 shadow">
+        <div className="flex items-center gap-3">
+          <Factory size={20} aria-hidden="true" className="shrink-0 text-slate-800" />
+          <div>
+            <div className="text-sm font-bold text-slate-800">Industrial Automation</div>
+            <div className="mt-1 text-sm font-semibold text-indigo-800">
+              PLC Fundamentals · {safeLang === "it" ? "In preparazione" : "Coming soon"}
+            </div>
+            <p className="mt-1 text-xs text-slate-600">
+              {safeLang === "it"
+                ? "Percorso formativo su PLC, sicurezza, cablaggio, ladder, HMI e reti industriali. Non è una certificazione ufficiale."
+                : "Training in PLCs, safety, wiring, ladder logic, HMI and industrial networks. This is not an official certification."}
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
 {/* FOUNDATIONS */}
 <Link

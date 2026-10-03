@@ -154,7 +154,8 @@ export type CategoryKey =
   | "data-analytics"
   | "business-applications"
   | "foundations"
-  | "sistemi-operativi";
+  | "sistemi-operativi"
+  | "industrial-automation";
 
 export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   it: {
@@ -172,6 +173,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     "business-applications": "business-applications",
     foundations: "fondamenti",
     "sistemi-operativi": "sistemi-operativi",
+    "industrial-automation": "automazione-industriale",
   },
 
   en: {
@@ -189,6 +191,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
     "business-applications": "business-applications",
     foundations: "foundations",
     "sistemi-operativi": "operating-systems",
+    "industrial-automation": "industrial-automation",
   },
 
   fr: {
@@ -206,6 +209,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   "business-applications": "business-applications",
     foundations: "foundations",
     "sistemi-operativi": "systemes-exploitation",
+    "industrial-automation": "automatisation-industrielle",
   },
 
   es: {
@@ -223,6 +227,7 @@ export const CAT_KEY_TO_SLUG: Record<Locale, Record<CategoryKey, string>> = {
   "business-applications": "business-applications",
     foundations: "foundations",
     "sistemi-operativi": "sistemas-operativos",
+    "industrial-automation": "automatizacion-industrial",
   },
 };
 
@@ -241,6 +246,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "business-applications": "business-applications",
     fondamenti: "foundations",
     "sistemi-operativi": "sistemi-operativi",
+    "automazione-industriale": "industrial-automation",
   },
 
   en: {
@@ -257,6 +263,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
     "business-applications": "business-applications",
     foundations: "foundations",
     "operating-systems": "sistemi-operativi",
+    "industrial-automation": "industrial-automation",
   },
 
  fr: {
@@ -273,6 +280,7 @@ export const CAT_SLUG_TO_KEY: Record<Locale, Record<string, CategoryKey>> = {
   "business-applications": "business-applications",
   foundations: "foundations",
   "systemes-exploitation": "sistemi-operativi",
+  "automatisation-industrielle": "industrial-automation",
 },
 
 es: {
@@ -289,6 +297,7 @@ es: {
   "business-applications": "business-applications",
   foundations: "foundations",
   "sistemas-operativos": "sistemi-operativi",
+  "automatizacion-industrial": "industrial-automation",
 },
 };
 

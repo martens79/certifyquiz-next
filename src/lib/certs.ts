@@ -50,6 +50,7 @@ export type CategoryKey =
   | "business-applications"
   | "foundations"
   | "sistemi-operativi"
+  | "industrial-automation"
   | "default";
 
 export type CatStyle = {
@@ -113,6 +114,10 @@ foundations: {
   "sistemi-operativi": {
     wrapper: "bg-amber-50 border border-amber-200 hover:ring-2 hover:ring-amber-200/70",
     header: "bg-amber-50 border border-amber-200",
+  },
+  "industrial-automation": {
+    wrapper: "bg-stone-50 border border-stone-300 hover:ring-2 hover:ring-stone-300/70",
+    header: "bg-stone-50 border border-stone-300",
   },
   default: {
     wrapper: "bg-gray-50 border border-gray-200 hover:ring-2 hover:ring-gray-200/70",
@@ -261,6 +266,9 @@ openai: "ai",
 "az-802": "sistemi-operativi",
 "lfs101": "sistemi-operativi",
 "apple-device-support": "sistemi-operativi",
+
+// Industrial Automation (technical skills path, planned: not listed until launched)
+"plc-fundamentals": "industrial-automation",
 
 };
 
