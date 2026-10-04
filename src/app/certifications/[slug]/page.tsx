@@ -6,6 +6,7 @@ import { getCertificationDetailResult } from "@/lib/server/certs";
 import { locales } from "@/lib/i18n";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
+import { P1_LANDING_OVERRIDES } from "@/certifications/editorial/p1-landing-overrides";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 
 // Robots and canonical metadata depend on live, per-language inventory.
@@ -42,7 +43,13 @@ const PUBLIC_TO_REGISTRY_KEY: Record<string, string> = {
 const toRegistryKey = (publicSlug: string) =>
   PUBLIC_TO_REGISTRY_KEY[publicSlug] ?? publicSlug;
 
+// Revisione editoriale 2026-10-04: titoli/meta EN coerenti con il contenuto reale (vedi overlay).
+const P1_SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = Object.fromEntries(
+  Object.entries(P1_LANDING_OVERRIDES).map(([slug, o]) => [slug, { title: o.metaTitle?.en, description: o.metaDescription?.en }])
+);
+
 const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = {
+  ...P1_SEO_OVERRIDES,
   "microsoft-sql-server": {
     title: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
     description:
@@ -83,15 +90,6 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     description:
       "Prepare for CEH 312-50 with 1000+ exam-style questions. Covers ethical hacking, network attacks, web vulnerabilities and exploitation. Start free.",
   },
-  "csharp": {
-    title: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
-    description:
-      "Prepare for the AZ-204 Azure Developer exam with C#/.NET practice questions. Covers compute, storage, security, APIs and monitoring. Start free.",
-  },
-  "microsoft-csharp": {
-  title: "C# / AZ-204 Practice Test 2026 – Azure Developer Exam Prep | CertifyQuiz",
-  description: "...",
-},
   "microsoft-ai": {
     title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
     description:
