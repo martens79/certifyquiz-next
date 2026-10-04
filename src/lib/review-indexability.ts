@@ -48,6 +48,11 @@ const PLACEHOLDER_PATTERNS = [
   /^\s*(?:[-*]\s*)?todo\s*[:.!-]?\s*$/im,
 ];
 
+/** true solo se la review e' classificata "distinct": le altre non sono mai indicizzabili. */
+export function isReviewSeoIntentDistinct(certificationSlug: string, topicId: number): boolean {
+  return REVIEW_SEO_INTENT[`${certificationSlug}:${topicId}`] === "distinct";
+}
+
 export function getReviewSeoIntent(review: Pick<ReviewIndexabilityInput, "certificationSlug" | "topicId">): ReviewSeoIntent | "unclassified" {
   return REVIEW_SEO_INTENT[`${review.certificationSlug}:${review.topicId}`] ?? "unclassified";
 }

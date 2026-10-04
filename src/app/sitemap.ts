@@ -1,7 +1,8 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
 import { sanityServerClient } from "@/lib/sanity.server";
-import { selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
+import { backendGetJson, type BackendResult } from "@/lib/server/backend-fetch";
+import { isReviewSeoIntentDistinct, selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 import { isTopicIndexable } from "@/lib/seo/topic-indexability";
@@ -59,23 +60,46 @@ const canonicalCertificationSlug = (slug: string) =>
 
 type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
 
-export async function getIndexableRemoteReviews(timeoutMs=15000):Promise<Record<Lang,string[]>> {
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeoutMs);
-  const empty=():Record<Lang,string[]>=>({it:[],es:[],en:[],fr:[]});
-  try {
-    const lists=await Promise.all(langs.map(async lang=>{const response=await fetch(`${API_BASE}/topic-reviews?lang=${lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});return response.ok?{lang,items:await response.json() as RemoteReviewListItem[]}:null}));
-    if(lists.some(list=>!list))return empty();
-    const clusters=new Map<string,Array<{lang:Lang;href:string;review:ReviewIndexabilityInput}>>();
-    const localizedReviews=await Promise.all(lists.flatMap(list=>list?list.items.map(async item=>{
-      const response=await fetch(`${API_BASE}/certifications/${encodeURIComponent(item.certSlug)}/topics/${encodeURIComponent(item.topicSlug)}/review?lang=${list.lang}`,{headers:{accept:"application/json"},cache:"no-store",signal:controller.signal});
-      return response.ok?{key:`${item.certSlug}:${item.topicId}`,lang:list.lang,href:item.href,review:await response.json() as ReviewIndexabilityInput}:null;
-    }):[]));
-    for(const item of localizedReviews){if(!item)continue;const cluster=clusters.get(item.key)||[];cluster.push(item);clusters.set(item.key,cluster)}
-    const urls=empty();
-    for(const item of selectIndexableReviewClusterItems(clusters.values()))urls[item.lang].push(item.href);
-    return urls;
-  } catch { return empty(); } finally { clearTimeout(timer); }
+/**
+ * Una sitemap e' una vista COMPLETA o non e' una vista: a runtime un errore del
+ * backend interrompe la rigenerazione (Next continua a servire l'ultima sitemap
+ * valida) invece di pubblicare per un'ora una sitemap monca.
+ * Eccezione: durante `next build` non esiste una sitemap precedente e un backend
+ * in 429/down non deve far fallire il deploy; la pagina viene rigenerata entro
+ * `revalidate` (1 h) dal primo accesso utile.
+ */
+const isBuildPhase = () => process.env.NEXT_PHASE === "phase-production-build";
+
+function requireData<T>(result: BackendResult<T>, what: string): T | null {
+  if (result.kind === "ok") return result.data;
+  if (result.kind === "not_found") return null;
+  const message = `sitemap: ${what} non disponibile (${result.reason}${result.status ? ` ${result.status}` : ""})`;
+  if (isBuildPhase()) {
+    console.warn(`${message} - build: sitemap parziale, verra' rigenerata`);
+    return null;
+  }
+  throw new Error(message);
+}
+
+/** Ogni fetch della sitemap e' in Data Cache: GET /sitemap.xml non genera chiamate per-richiesta. */
+const SITEMAP_FETCH_REVALIDATE = 3600;
+
+export async function getIndexableRemoteReviews():Promise<Record<Lang,string[]>> {
+  const urls:Record<Lang,string[]>={it:[],es:[],en:[],fr:[]};
+  const lists=await Promise.all(langs.map(async lang=>({lang,items:requireData(await backendGetJson<RemoteReviewListItem[]>(`${API_BASE}/topic-reviews?lang=${lang}`,{revalidate:SITEMAP_FETCH_REVALIDATE,tags:["sitemap:reviews"]}),`elenco ripassi ${lang}`)??[]})));
+  // Un ripasso e' indicizzabile solo se la sua intenzione SEO e' "distinct" (vedi
+  // evaluateReviewIndexability): per tutti gli altri l'esito e' gia' noto senza
+  // scaricarne il contenuto. Il dettaglio si legge solo per i cluster candidati
+  // (poche decine di chiamate, non ~1.500 a ogni sitemap).
+  const candidates=lists.flatMap(list=>list.items.filter(item=>isReviewSeoIntentDistinct(item.certSlug,item.topicId)).map(item=>({lang:list.lang,item})));
+  const clusters=new Map<string,Array<{lang:Lang;href:string;review:ReviewIndexabilityInput}>>();
+  const localized=await Promise.all(candidates.map(async({lang,item})=>{
+    const review=requireData(await backendGetJson<ReviewIndexabilityInput>(`${API_BASE}/certifications/${encodeURIComponent(item.certSlug)}/topics/${encodeURIComponent(item.topicSlug)}/review?lang=${lang}`,{revalidate:SITEMAP_FETCH_REVALIDATE,tags:["sitemap:reviews"]}),`ripasso ${item.certSlug}/${item.topicSlug} ${lang}`);
+    return review?{key:`${item.certSlug}:${item.topicId}`,lang,href:item.href,review}:null;
+  }));
+  for(const item of localized){if(!item)continue;const cluster=clusters.get(item.key)||[];cluster.push(item);clusters.set(item.key,cluster)}
+  for(const item of selectIndexableReviewClusterItems(clusters.values()))urls[item.lang].push(item.href);
+  return urls;
 }
 
 type SanityArticle = {
@@ -103,94 +127,73 @@ const blogSitemapQuery = `
   ,"body": coalesce(body, content)
 }`;
 
-async function getRemoteCerts(timeoutMs = 15000): Promise<RemoteCert[]> {
-  const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), timeoutMs);
+async function getRemoteCerts(): Promise<RemoteCert[]> {
+  const list = requireData(
+    await backendGetJson<Array<{ id: number; slug: string | null }>>(`${API_BASE}/certifications?lang=en`, {
+      revalidate: SITEMAP_FETCH_REVALIDATE,
+      tags: ["certs:list"],
+    }),
+    "elenco certificazioni"
+  ) ?? [];
 
-  const url = `${API_BASE}/certifications?lang=en`;
+  const base = list.filter(
+    (c): c is { id: number; slug: string } =>
+      typeof c.id === "number" && typeof c.slug === "string" && c.slug.trim().length > 0
+  );
 
-  try {
-    const res = await fetch(url, {
-      headers: { accept: "application/json" },
-      next: { revalidate: 3600 },
-      signal: controller.signal,
-    });
-
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const arr = (await res.json()) as Array<{
-      id: number;
-      slug: string | null;
-    }>;
-
-    const base = arr.filter(
-      (c): c is { id: number; slug: string } =>
-        typeof c.id === "number" &&
-        typeof c.slug === "string" &&
-        c.slug.trim().length > 0
+  const enriched: RemoteCert[] = [];
+  const concurrency = 8;
+  for (let start = 0; start < base.length; start += concurrency) {
+    const batch = base.slice(start, start + concurrency);
+    const details = await Promise.all(
+      batch.map(async (cert) => {
+        const payload = requireData(
+          await backendGetJson<{ questionCountByLang?: Partial<Record<Lang, number>> }>(
+            `${API_BASE}/certifications/by-slug/${encodeURIComponent(cert.slug)}`,
+            {
+              // Apple inventory is the publication gate for its verified first
+              // release: keep its cache short (60 s) so the count is not stale.
+              revalidate: cert.slug === "apple-device-support" ? 60 : SITEMAP_FETCH_REVALIDATE,
+              tags: ["certs:list", `cert:${cert.slug}`],
+            }
+          ),
+          `certificazione ${cert.slug}`
+        );
+        if (!payload?.questionCountByLang) return null;
+        return { ...cert, questionCountByLang: payload.questionCountByLang };
+      })
     );
-
-    const enriched: RemoteCert[] = [];
-    const concurrency = 8;
-    for (let start = 0; start < base.length; start += concurrency) {
-      const batch = base.slice(start, start + concurrency);
-      const details = await Promise.all(
-        batch.map(async (cert) => {
-          try {
-            const detail = await fetch(
-              `${API_BASE}/certifications/by-slug/${encodeURIComponent(cert.slug)}`,
-              {
-                headers: { accept: "application/json" },
-                // Apple inventory is the publication gate for its verified
-                // first release; do not retain the pre-import zero count.
-                next: { revalidate: cert.slug === "apple-device-support" ? 0 : 3600 },
-                signal: controller.signal,
-              }
-            );
-            if (!detail.ok) return null;
-            const payload = (await detail.json()) as {
-              questionCountByLang?: Partial<Record<Lang, number>>;
-            };
-            if (!payload.questionCountByLang) return null;
-            return { ...cert, questionCountByLang: payload.questionCountByLang };
-          } catch {
-            return null;
-          }
-        })
-      );
-      enriched.push(...details.filter((item): item is RemoteCert => item !== null));
-    }
-    return enriched;
-  } catch {
-    return [];
-  } finally {
-    clearTimeout(t);
+    enriched.push(...details.filter((item): item is RemoteCert => item !== null));
   }
+  return enriched;
 }
 
 async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
+  // Un errore di Sanity interrompe la rigenerazione (si resta sull'ultima sitemap
+  // valida): non si pubblica per un'ora una sitemap senza articoli (in build: vedi sopra).
+  let articles: SanityArticle[];
   try {
-    const articles = await sanityServerClient.fetch<SanityArticle[]>(
-      blogSitemapQuery
-    );
-
-    return articles
-      .filter((a) => a.slug && a.lang && isArticleIndexable(a))
-      .map((a) => {
-        const lang = a.lang as Lang;
-        const base = lang === "en" ? SITE : `${SITE}/${lang}`;
-        const segment = BLOG_SEGMENT_BY_LANG[lang] ?? "blog";
-
-        return {
-          url: `${base}/${segment}/${a.slug}`,
-          changeFrequency: "monthly" as const,
-          priority: 0.7,
-          lastModified: a.publishedAt ? new Date(a.publishedAt) : new Date(),
-        };
-      });
-  } catch {
+    articles = await sanityServerClient.fetch<SanityArticle[]>(blogSitemapQuery);
+  } catch (error) {
+    if (!isBuildPhase()) throw error;
+    console.warn("sitemap: articoli non disponibili - build: sitemap parziale, verra' rigenerata");
     return [];
   }
+
+  return articles
+    .filter((a) => a.slug && a.lang && isArticleIndexable(a))
+    .map((a) => {
+      const lang = a.lang as Lang;
+      const base = lang === "en" ? SITE : `${SITE}/${lang}`;
+      const segment = BLOG_SEGMENT_BY_LANG[lang] ?? "blog";
+
+      return {
+        url: `${base}/${segment}/${a.slug}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+        lastModified: a.publishedAt ? new Date(a.publishedAt) : new Date(),
+      };
+    });
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -204,23 +207,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const appleTopics: Record<Lang, string[]> = { en: [], it: [], fr: [], es: [] };
   const apple = certs.find(c => c.slug === "apple-device-support");
   if (apple && langs.every(lang => (apple.questionCountByLang[lang] ?? 0) >= 45)) {
-    try {
-      const response = await fetch(`${API_BASE}/topics/${apple.id}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-      if (response.ok) {
-        const topics = await response.json() as Array<Record<string, string>>;
-        if (topics.length === 9) {
-          const checked = await Promise.all(langs.flatMap(lang => topics.map(async topic => {
-            const slug = topic[`slug_${lang}`];
-            if (!slug) return null;
-            const result = await fetch(`${API_BASE}/topic-pages/apple-device-support/${encodeURIComponent(slug)}?lang=${lang}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
-            if (!result.ok) return null;
-            const page = await result.json();
-            return page.questionCount >= 5 && isTopicIndexable({ ...page.topic, questionCount: page.questionCount }) ? { lang, slug } : null;
-          })));
-          if (checked.every(Boolean)) for (const item of checked) if (item) appleTopics[item.lang].push(item.slug);
-        }
-      }
-    } catch { /* Fail closed if any localized content cannot be verified. */ }
+    const topics = requireData(
+      await backendGetJson<Array<Record<string, string>>>(`${API_BASE}/topics/${apple.id}`, { revalidate: 300, tags: ["cert:apple-device-support"] }),
+      "topic Apple"
+    ) ?? [];
+    if (topics.length === 9) {
+      const checked = await Promise.all(langs.flatMap(lang => topics.map(async topic => {
+        const slug = topic[`slug_${lang}`];
+        if (!slug) return null;
+        const page = requireData(
+          await backendGetJson<{ questionCount: number; topic: Record<string, unknown> }>(`${API_BASE}/topic-pages/apple-device-support/${encodeURIComponent(slug)}?lang=${lang}`, { revalidate: 300, tags: ["cert:apple-device-support"] }),
+          `topic Apple ${slug} ${lang}`
+        );
+        if (!page) return null;
+        return page.questionCount >= 5 && isTopicIndexable({ ...(page.topic as object), questionCount: page.questionCount } as Parameters<typeof isTopicIndexable>[0]) ? { lang, slug } : null;
+      })));
+      // Fail closed: if any localized topic cannot be verified (content, not transport), publish none.
+      if (checked.every(Boolean)) for (const item of checked) if (item) appleTopics[item.lang].push(item.slug);
+    }
   }
 
   // The API still exposes two legacy registry slugs. Publish only their final
