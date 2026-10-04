@@ -1,5 +1,6 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { backendGetJson, type BackendResult } from "@/lib/server/backend-fetch";
 import { isReviewSeoIntentDistinct, selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
@@ -64,18 +65,25 @@ type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number;
  * Una sitemap e' una vista COMPLETA o non e' una vista: a runtime un errore del
  * backend interrompe la rigenerazione (Next continua a servire l'ultima sitemap
  * valida) invece di pubblicare per un'ora una sitemap monca.
- * Eccezione: durante `next build` non esiste una sitemap precedente e un backend
- * in 429/down non deve far fallire il deploy; la pagina viene rigenerata entro
- * `revalidate` (1 h) dal primo accesso utile.
+ * Durante `next build` non esiste una sitemap precedente e un backend in 429/down
+ * non deve far fallire il deploy: `noStore()` fa scartare a Next il prerender di
+ * questa route (nessuna sitemap parziale nel deploy), che viene generata completa
+ * alla prima richiesta runtime e poi tenuta in cache per `revalidate`.
  */
 const isBuildPhase = () => process.env.NEXT_PHASE === "phase-production-build";
+
+/** In build: la route diventa dinamica (nessun output prerenderizzato). Fuori da Next e' un no-op. */
+function skipPrerender() {
+  noStore();
+}
 
 function requireData<T>(result: BackendResult<T>, what: string): T | null {
   if (result.kind === "ok") return result.data;
   if (result.kind === "not_found") return null;
   const message = `sitemap: ${what} non disponibile (${result.reason}${result.status ? ` ${result.status}` : ""})`;
   if (isBuildPhase()) {
-    console.warn(`${message} - build: sitemap parziale, verra' rigenerata`);
+    console.warn(`${message} - build: sitemap non prerenderizzata, verra' generata a runtime`);
+    skipPrerender();
     return null;
   }
   throw new Error(message);
@@ -176,7 +184,8 @@ async function getBlogEntries(): Promise<MetadataRoute.Sitemap> {
     articles = await sanityServerClient.fetch<SanityArticle[]>(blogSitemapQuery);
   } catch (error) {
     if (!isBuildPhase()) throw error;
-    console.warn("sitemap: articoli non disponibili - build: sitemap parziale, verra' rigenerata");
+    console.warn("sitemap: articoli non disponibili - build: sitemap non prerenderizzata, verra' generata a runtime");
+    skipPrerender();
     return [];
   }
 
