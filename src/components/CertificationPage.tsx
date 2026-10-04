@@ -1,4 +1,4 @@
-import { hasQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
+import { resolveQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +47,8 @@ function getList<T>(rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined, l
   const list = rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
   return Array.isArray(list) ? [...list] : [];
 }
-function getQuestionCountByLang(data: CertificationData, lang: Lang): number {
+/** Conteggio per lingua dal backend; `undefined` = SCONOSCIUTO (non zero). */
+function getQuestionCountByLang(data: CertificationData, lang: Lang): number | undefined {
   const counts = (data as CertificationData & {
     questionCountByLang?: Partial<Record<Lang, number>>;
     questionCount?: number;
@@ -56,7 +57,7 @@ function getQuestionCountByLang(data: CertificationData, lang: Lang): number {
   return (
     counts?.[lang] ??
     (data as CertificationData & { questionCount?: number }).questionCount ??
-    0
+    undefined
   );
 }
 function isTopicLinkItem(value: unknown): value is TopicLinkItem {
@@ -140,8 +141,15 @@ export default function CertificationPage({
 
   const pageTitle = pickLabel(title, lang) || "Certification";
   const pageDescription = pickLabel(description, lang);
-  const questionCount = getQuestionCountByLang(data, lang);
-  const hasQuestions = hasQuizInventory(questionCount);
+  // Inventario: conteggio per lingua del dettaglio; se manca (API in errore) si
+  // usa quello di `resources`; se manca anche questo e' SCONOSCIUTO, non zero.
+  const inventory = resolveQuizInventory(
+    getQuestionCountByLang(data, lang),
+    resources?.quiz?.questionCount
+  );
+  const questionCount = inventory.state === "available" ? inventory.count : 0;
+  // Solo uno zero confermato dal backend nasconde la pratica; "sconosciuto" no.
+  const hasQuestions = inventory.state !== "zero";
 
 const questionLabel = {
   it: "domande",
@@ -279,10 +287,6 @@ const pageTopics =
     return null;
   })();
 
-  //solo le cert foundations hanno il riquadro con le guide 
-  const isFoundationCert =
-  data.slug.includes("foundations") || data.slug.includes("foundation");
-
   const quizHref = data.quizRoute?.[lang] ?? data.quizRoute?.it ?? `${basePath}/quiz/${data.slug}`;
   const reviewsHref = (() => {
   switch (lang) {
@@ -362,9 +366,9 @@ const pageTopics =
 
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
-        {!hasQuestions && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
+        {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         <StudyMaterialGrid
-          quizQuestionCount={questionCount}
+          quizQuestionCount={inventory.state === "available" ? inventory.count : inventory.state === "zero" ? 0 : undefined}
           lang={lang}
           resources={resources}
           certificationSlug={data.slug}
@@ -524,35 +528,6 @@ const pageTopics =
               </ul>
             </div>
           )}
-
-          {isFoundationCert && (
-  <div className="bg-blue-100 p-4 rounded-xl shadow">
-    <h2 className="text-lg font-semibold text-blue-800 mb-2">
-      {({
-        it: "Materiale di ripasso",
-        en: "Study materials",
-        fr: "Ressources de révision",
-        es: "Material de repaso",
-      } as const)[lang]}
-    </h2>
-
-    <p className="text-sm text-gray-800 mb-4">
-      {({
-        it: "Guide e materiali dedicati saranno disponibili presto.",
-        en: "Guides and study materials will be available soon.",
-        fr: "Des guides et supports seront bientôt disponibles.",
-        es: "Las guías y materiales estarán disponibles pronto.",
-      } as const)[lang]}
-    </p>
-
-    <button
-      disabled
-      className="inline-flex items-center justify-center rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white cursor-not-allowed"
-    >
-      🚧 Coming Soon
-    </button>
-  </div>
-)}
 
           {/* Why choose */}
           {whyChoose.length > 0 && (

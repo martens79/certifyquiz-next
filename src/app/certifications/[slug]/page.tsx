@@ -2,7 +2,7 @@ import { hasQuizInventory } from "@/lib/quiz-availability";
 // src/app/certifications/[slug]/page.tsx
 import type { Metadata } from "next";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
-import { getCertificationDetailRSC } from "@/lib/server/certs";
+import { getCertificationDetailResult } from "@/lib/server/certs";
 import { locales } from "@/lib/i18n";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
@@ -148,9 +148,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   // Metadata controls robots and sitemap eligibility, so do not retain a stale
   // per-language inventory for a full day after a backend content release.
-  const data = await getCertificationDetailRSC(toRegistryKey(canonicalSlug), 300);
+  const detail = await getCertificationDetailResult(toRegistryKey(canonicalSlug), 300);
 
-  if (!data) {
+  // Solo un 404 del backend significa "questa certificazione non esiste".
+  if (detail.kind === "not_found") {
     return {
       title: "IT Certification | CertifyQuiz",
       description:
@@ -159,10 +160,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  // 429/timeout/5xx: inventario SCONOSCIUTO (non zero). Si prosegue con i dati del
+  // registry e senza noindex per inventario; mai un 500 per i metadata.
+  const data = detail.kind === "ok" ? detail.data : null;
+  const knownCount = data?.questionCountByLang?.en;
+
   if (
     !isCertificationIndexable({
       slug: canonicalSlug,
-      questionCount: data.questionCountByLang?.en ?? null,
+      questionCount: knownCount ?? null,
+      inventoryUnknown: typeof knownCount !== "number",
     })
   ) {
     return { robots: { index: false, follow: true } };
@@ -171,7 +178,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 
-  const certName = data.name_en || data.name || canonicalSlug;
+  const certName = data?.name_en || data?.name || registryCert?.title?.en || canonicalSlug;
   const override = SEO_OVERRIDES[canonicalSlug] || {};
 
   const title =
@@ -180,8 +187,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description =
     override.description ||
-    data.description_en ||
-    data.description ||
+    data?.description_en ||
+    data?.description ||
     `Prepare for ${certName} with realistic quizzes, exam-style questions and clear explanations.`;
 
   const pageUrl = `${siteUrl}/certifications/${canonicalSlug}`;
@@ -203,7 +210,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ? new URL(enRootDetailPath(canonicalSlug), siteUrl).toString()
         : new URL(localizedDetailPath(l, canonicalSlug), siteUrl).toString();
   }
-  if (hasQuizInventory(data.questionCountByLang?.en)) {
+  if (hasQuizInventory(data?.questionCountByLang?.en)) {
     languages["x-default"] = new URL(enRootDetailPath(canonicalSlug), siteUrl).toString();
   }
 

@@ -33,16 +33,28 @@ export function isRolloutNoindexCertification(slug: string | null | undefined): 
 export type CertificationIndexabilityInput = {
   slug: string;
   questionCount?: number | null;
+  /**
+   * true quando l'inventario NON e' noto perche' la lettura dal backend e' fallita
+   * (429/timeout/5xx). Un errore temporaneo non e' evidenza di "zero domande":
+   * il giudizio resta quello editoriale (deny-list e rollout), mai noindex per
+   * inventario. Per i soli metadata; la sitemap non lo usa.
+   */
+  inventoryUnknown?: boolean;
 };
 
 export function isCertificationIndexable(
   input: string | CertificationIndexabilityInput
 ): boolean {
-  const { slug, questionCount } =
-    typeof input === "string" ? { slug: input, questionCount: undefined } : input;
+  const { slug, questionCount, inventoryUnknown } =
+    typeof input === "string"
+      ? { slug: input, questionCount: undefined, inventoryUnknown: false }
+      : { inventoryUnknown: false, ...input };
 
   if (NON_INDEXABLE_CERTIFICATION_SLUGS.has(slug)) return false;
   if (isRolloutNoindexCertification(slug)) return false;
+
+  // Inventario non noto per un errore backend: nessun noindex "per inventario".
+  if (inventoryUnknown) return true;
 
   // This first teaching release is only ready once its complete translated
   // question package is available. Missing inventory must fail closed.

@@ -14,6 +14,7 @@ import {
   getCertificationResources,
   type Cert,
 } from "@/lib/data";
+import { normalizeDbSlug } from "@/lib/cert-db-slug";
 export const dynamic = "force-dynamic";
 
 type Lang = Locale;
@@ -27,14 +28,6 @@ const SLUG_REDIRECTS: Record<string, string> = {
 };
 
 /* ------------------------------- DB/API slug aliases ---------------------------------- */
-
-const normalizeDbSlug = (slug: string) => {
-  if (slug === "network-plus") return "comptia-network-plus";
-  if (slug === "tensorflow") return "google-tensorflow";
-  if (slug === "tensorflow-developer") return "google-tensorflow";
-  if (slug === "python-developer") return "python";
-  return slug;
-};
 
 /* ------------------------------- Adapter ---------------------------------- */
 

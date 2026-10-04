@@ -6,6 +6,8 @@ import "server-only";
  * In Vercel imposta: API_BASE_URL=https://api.certifyquiz.com/api
  * Fallback: proxy interno Next → /api/backend
  */
+import { backendGetJson } from "@/lib/server/backend-fetch";
+
 const BASE_URL = (process.env.API_BASE_URL || "http://localhost:3000/api/backend").replace(/\/+$/, "");
 
 /** Tag ISR riutilizzabili */
@@ -100,4 +102,17 @@ export async function getCertificationDetailRSC(slug: string, revalidateSeconds 
     if (e.message?.includes("404")) return null;
     throw e;
   }
+}
+
+/**
+ * Come getCertificationDetailRSC ma senza lanciare: distingue `not_found` (il backend
+ * dice che la certificazione non esiste) da `error` (429/timeout/5xx: inventario
+ * SCONOSCIUTO, non "zero domande"). Usata dai metadata, dove un errore temporaneo
+ * non deve mai diventare noindex.
+ */
+export async function getCertificationDetailResult(slug: string, revalidateSeconds = 300) {
+  return backendGetJson<CertDetail>(`${BASE_URL}/certifications/by-slug/${encodeURIComponent(slug)}`, {
+    revalidate: revalidateSeconds,
+    tags: [CERTS_LIST_TAG, certTag(slug)],
+  });
 }

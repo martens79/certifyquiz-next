@@ -205,6 +205,7 @@ export default async function TopicPageIt({
           <section className="bg-white border rounded-2xl p-6 mb-8">
             <TopicContent
               content={data.topic.content}
+              introText={data.topic.intro}
               quizRoute={hasQuestions ? quizHref : undefined}
               reviewRoute={reviewHref}
               lang="it"

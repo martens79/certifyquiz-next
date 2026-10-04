@@ -239,7 +239,11 @@ export default function StudyMaterialGrid({
   const t = LABELS[lang];
   const certificationId = resources?.certificationId ?? null;
 
-  const questionCount = quizQuestionCount ?? resources?.quiz.questionCount ?? 0;
+  // `undefined` = inventario SCONOSCIUTO (API in errore): non e' zero, quindi la
+  // card Quiz resta cliccabile; solo uno zero confermato la disabilita.
+  const knownQuestionCount = quizQuestionCount ?? resources?.quiz?.questionCount;
+  const questionCount = knownQuestionCount ?? 0;
+  const quizInventoryUnknown = knownQuestionCount === undefined;
   const topicCount = resources?.quiz.topicCount ?? 0;
   const reviewCount = resources?.reviews.count ?? 0;
   const scenarioCount = resources?.scenarios.count ?? 0;
@@ -248,6 +252,9 @@ export default function StudyMaterialGrid({
   const showGuide = !!resources?.guide.available && !!guideHref;
   const showMaps = !!resources?.maps.available;
   const showLabs = labCount > 0;
+  // Come Guida, Mappe e Lab: senza scenari la card non compare, invece di
+  // mostrare una voce disabilitata "Coming soon" su ogni landing.
+  const showScenarios = scenarioCount > 0;
 
   // Scenari e' l'ultima card e chiude la griglia a 2 colonne. Quiz e Ripassi
   // sono sempre presenti (2); Guida e Mappe sono condizionali. Con un numero
@@ -274,7 +281,7 @@ export default function StudyMaterialGrid({
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <Card
-          href={questionCount > 0 ? quizHref : null}
+          href={quizInventoryUnknown || questionCount > 0 ? quizHref : null}
           icon="📝"
           title={t.quiz}
           desc={t.quizDesc}
@@ -351,21 +358,22 @@ export default function StudyMaterialGrid({
           />
         ) : null}
 
-        <Card
-          href={scenarioCount > 0 ? scenariosHref : null}
-          icon="🎯"
-          title={t.scenarios}
-          desc={t.scenariosDesc}
-          meta={scenarioCount > 0 ? t.scenarioCount(scenarioCount) : null}
-          premium
-          tone="premium"
-          soonLabel={t.soon}
-          className={scenariSpansFull ? "col-span-2" : ""}
-          lang={lang}
-          certificationId={certificationId}
-          certificationSlug={certificationSlug}
-          resourceType="scenarios"
-        />
+        {showScenarios ? (
+          <Card
+            href={scenariosHref}
+            icon="🎯"
+            title={t.scenarios}
+            desc={t.scenariosDesc}
+            meta={t.scenarioCount(scenarioCount)}
+            premium
+            tone="premium"
+            className={scenariSpansFull ? "col-span-2" : ""}
+            lang={lang}
+            certificationId={certificationId}
+            certificationSlug={certificationSlug}
+            resourceType="scenarios"
+          />
+        ) : null}
       </div>
     </section>
   );

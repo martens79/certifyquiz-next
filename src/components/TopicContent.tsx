@@ -2,6 +2,7 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { looksLikeHtml } from "@/lib/looks-like-html";
+import { stripDuplicateIntro } from "@/lib/topic-intro";
 
 type Locale = "it" | "en" | "fr" | "es";
 
@@ -10,6 +11,8 @@ type TopicContentProps = {
   quizRoute?: string;
   reviewRoute?: string;
   lang: Locale;
+  /** Intro gia' mostrata sopra: un primo paragrafo identico non viene ripetuto. */
+  introText?: string | null;
 };
 
 const quizLabels: Record<Locale, string> = {
@@ -33,10 +36,12 @@ export default function TopicContent({
   quizRoute,
   reviewRoute,
   lang,
+  introText,
 }: TopicContentProps) {
   if (!content) return null;
 
   const isHtml = looksLikeHtml(content);
+  const body = isHtml ? content : stripDuplicateIntro(content, introText);
 
   return (
     <section className="mt-8">
@@ -45,7 +50,7 @@ export default function TopicContent({
           <div dangerouslySetInnerHTML={{ __html: content }} />
         ) : (
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {content}
+            {body}
           </ReactMarkdown>
         )}
       </div>
