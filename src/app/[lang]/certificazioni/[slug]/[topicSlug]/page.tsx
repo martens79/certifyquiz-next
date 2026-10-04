@@ -378,6 +378,7 @@ export default async function TopicPage({
           <section className="bg-white border rounded-2xl p-6 mb-8">
             <TopicContent
               content={data.topic.content}
+              introText={getLocalizedText(data.topic.intro, lang)}
               quizRoute={quizHref}
               reviewRoute={reviewHref}
               lang={lang}

@@ -248,6 +248,9 @@ export default function StudyMaterialGrid({
   const showGuide = !!resources?.guide.available && !!guideHref;
   const showMaps = !!resources?.maps.available;
   const showLabs = labCount > 0;
+  // Come Guida, Mappe e Lab: senza scenari la card non compare, invece di
+  // mostrare una voce disabilitata "Coming soon" su ogni landing.
+  const showScenarios = scenarioCount > 0;
 
   // Scenari e' l'ultima card e chiude la griglia a 2 colonne. Quiz e Ripassi
   // sono sempre presenti (2); Guida e Mappe sono condizionali. Con un numero
@@ -351,21 +354,22 @@ export default function StudyMaterialGrid({
           />
         ) : null}
 
-        <Card
-          href={scenarioCount > 0 ? scenariosHref : null}
-          icon="🎯"
-          title={t.scenarios}
-          desc={t.scenariosDesc}
-          meta={scenarioCount > 0 ? t.scenarioCount(scenarioCount) : null}
-          premium
-          tone="premium"
-          soonLabel={t.soon}
-          className={scenariSpansFull ? "col-span-2" : ""}
-          lang={lang}
-          certificationId={certificationId}
-          certificationSlug={certificationSlug}
-          resourceType="scenarios"
-        />
+        {showScenarios ? (
+          <Card
+            href={scenariosHref}
+            icon="🎯"
+            title={t.scenarios}
+            desc={t.scenariosDesc}
+            meta={t.scenarioCount(scenarioCount)}
+            premium
+            tone="premium"
+            className={scenariSpansFull ? "col-span-2" : ""}
+            lang={lang}
+            certificationId={certificationId}
+            certificationSlug={certificationSlug}
+            resourceType="scenarios"
+          />
+        ) : null}
       </div>
     </section>
   );
