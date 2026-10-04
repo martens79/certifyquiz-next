@@ -8,6 +8,7 @@
 // modulo, il guard su typeof window basta a renderlo innocuo in SSR.
 
 import { getToken } from "@/lib/auth";
+import { isAutomatedClient } from "@/lib/automated-client";
 import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
 
 type TrackParams = Record<string, string | number | boolean | null | undefined>;
@@ -210,6 +211,11 @@ export function trackFunnelEvent(
 ) {
   if (typeof window === "undefined") return;
 
+  // Crawler che eseguono JS e browser headless non scrivono in funnel_events:
+  // gonfiano gli eventi di esposizione (vedi automated-client.ts). Il controllo
+  // sta qui perche' e' l'unico punto da cui il client scrive nel funnel DB.
+  if (isAutomatedClient()) return;
+
   const referrer = safeReferrer();
   const metadata = body.metadata || (body.plan ? { plan: body.plan } : null);
 
@@ -281,6 +287,9 @@ export function trackFunnelEventOnce(
   endpoint = "/api/backend/funnel-event"
 ) {
   if (typeof window === "undefined") return;
+
+  // Prima del dedup: un client automatizzato non deve lasciare nemmeno la chiave.
+  if (isAutomatedClient()) return;
 
   const storageKey = `cq_funnel_once:${dedupeKey}`;
 
