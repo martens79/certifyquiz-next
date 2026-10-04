@@ -24,6 +24,7 @@ import { getCertSlugById } from "@/lib/certs";
 import { isPostGateLimitError } from "@/lib/quiz-explanation-access";
 import { isTopicNotAvailableError, isTopicPremiumRequiredError } from "@/lib/topic-access";
 import { getExamSpecForCert } from "@/lib/exam-specs";
+import { APPLE_DEVICE_SUPPORT_SLUG } from "@/lib/apple-device-support-release";
 
 /* ─────────────────────────────────────────────────────────────
    NORMALIZZAZIONE DATI
@@ -284,8 +285,8 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       storageScope={`topic:${numericId}:${L}`}
       categoryColor="from-blue-900 to-blue-700"
       backToHref={backToHref}
-      mode={isAssessmentMode ? "assessment" : undefined}
-      hideModeSwitch={isAssessmentMode}
+      mode={isAssessmentMode ? "assessment" : certSlug === APPLE_DEVICE_SUPPORT_SLUG ? "training" : undefined}
+      hideModeSwitch={isAssessmentMode || certSlug === APPLE_DEVICE_SUPPORT_SLUG}
       blockSize={10}
       context={{
         kind: "topic",

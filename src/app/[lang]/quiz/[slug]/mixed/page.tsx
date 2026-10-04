@@ -26,6 +26,7 @@ import {
 } from '@/lib/apiClient';
 
 import { getExamSpecForCert } from '@/lib/exam-specs';
+import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from '@/lib/apple-device-support-release';
 
 /* --------------------------- normalize API → UI -------------------------- */
 function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
@@ -323,10 +324,10 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
               {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
               {currentLang === 'en' ? '' : '.'}
             </li>
-            <li>
+            {currentSlug !== APPLE_DEVICE_SUPPORT_SLUG && <li>
               {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{' '}
               <strong>{copy.bullets.k_timer}</strong>.
-            </li>
+            </li>}
             <li>
               {copy.bullets.c} <strong>{copy.bullets.k_progress}</strong>{' '}
               {currentLang === 'it'
@@ -354,6 +355,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
         </div>
       </div>
 
+      {currentSlug === APPLE_DEVICE_SUPPORT_SLUG && <p className="mx-auto max-w-5xl px-4 mt-4 text-sm text-slate-600">{APPLE_DEVICE_SUPPORT_MOCK_NOTICE[currentLang]}</p>}
       {/* Coming soon (no pool in this language) */}
       {isComingSoon && (
         <div className="mx-auto max-w-5xl px-4 mt-6">
@@ -377,8 +379,8 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   categoryColor="from-blue-900 to-blue-700"
 
   // 🔥 MODE (assessment override)
-  mode={isAssessmentMode ? "assessment" : undefined}
-  hideModeSwitch={isAssessmentMode}
+  mode={isAssessmentMode ? "assessment" : currentSlug === APPLE_DEVICE_SUPPORT_SLUG ? "training" : undefined}
+  hideModeSwitch={isAssessmentMode || currentSlug === APPLE_DEVICE_SUPPORT_SLUG}
   blockSize={10}
 
   context={{

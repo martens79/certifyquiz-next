@@ -138,7 +138,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalSlug = normalizeCertSlug(slug);
   const registryCert = getRegistryCertBySlug(toRegistryKey(canonicalSlug));
 
-  if (!isCertificationIndexable(canonicalSlug)) {
+  if (canonicalSlug !== "apple-device-support" && !isCertificationIndexable(canonicalSlug)) {
     return { robots: { index: false, follow: true } };
   }
 

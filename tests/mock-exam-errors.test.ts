@@ -25,3 +25,11 @@ test("CEH blueprint pool error is neutral and localized in IT/EN/FR/ES", () => {
 test("unrelated load errors keep the existing mock-exam fallback", () => {
   assert.equal(getMockExamLoadError(new Error("network"), "en"), null);
 });
+
+test("Apple first package unavailability is explained in all four languages", () => {
+  for (const lang of ["en", "it", "fr", "es"] as const) {
+    const message = getMockExamLoadError({ detail: { code: "MOCK_EXAM_FIRST_PACKAGE_UNAVAILABLE" } }, lang);
+    assert.ok(message);
+    assert.match(message!, /topic|sujet|tema/);
+  }
+});

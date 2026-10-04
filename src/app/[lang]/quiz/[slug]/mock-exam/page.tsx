@@ -20,6 +20,7 @@ import {
 
 import { getExamSpecForCert } from "@/lib/exam-specs";
 import { getMockExamLoadError } from "@/lib/mock-exam-errors";
+import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
 
 /* --------------------------- normalize API → UI -------------------------- */
 function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
@@ -168,6 +169,10 @@ export default function MockExamPage() {
 
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
+  }
+
+  if (currentSlug === APPLE_DEVICE_SUPPORT_SLUG) {
+    return <div className="mx-auto max-w-3xl p-6"><h1 className="text-lg font-semibold">{t.unavailable}</h1><p className="mt-2">{APPLE_DEVICE_SUPPORT_MOCK_NOTICE[currentLang]}</p><a className="mt-4 inline-block underline" href={withLang(currentLang, `/quiz/${currentSlug}`)}>{t.backLabel}</a></div>;
   }
 
   if (!certId) {
