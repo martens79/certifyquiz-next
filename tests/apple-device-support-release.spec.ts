@@ -1,11 +1,22 @@
 import { test, expect } from "@playwright/test";
 import Apple from "../src/certifications/data/apple-device-support";
 
-test.use({ channel: "chrome" });
+test.use({ channel: "chrome", serviceWorkers: "block" });
 test.setTimeout(240_000);
 const bases = { en: "/certifications", it: "/it/certificazioni", fr: "/fr/certifications", es: "/es/certificaciones" };
 const reviewSegments = { en: "review", it: "ripasso", fr: "revision", es: "repaso" };
 const api = "http://127.0.0.1:3401/api";
+
+// Production builds rewrite browser API calls to the public service. Bind this
+// integration suite to the real isolated API instead; no responses are mocked.
+test.beforeEach(async ({ page }) => {
+  if (!process.env.APPLE_RELEASE_SANDBOX) return;
+  await page.route("**/api/backend/**", async route => {
+    const url = new URL(route.request().url());
+    const response = await route.fetch({ url: `${api}/${url.pathname.split("/api/backend/")[1]}${url.search}` });
+    await route.fulfill({ response });
+  });
+});
 
 for (const lang of ["en", "it", "fr", "es"] as const) {
   test(`${lang}: complete landing, nine topics, reviews and working training`, async ({ page, request }) => {
