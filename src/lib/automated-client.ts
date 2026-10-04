@@ -68,7 +68,19 @@ function readNavigator(): NavigatorLike | undefined {
   return navigator as unknown as NavigatorLike;
 }
 
-export function isAutomatedClient(nav: NavigatorLike | undefined = readNavigator()): boolean {
+// Fail-open anche sulle eccezioni: se leggere una proprieta' di navigator lancia
+// (proxy revocati, sandbox, estensioni che strumentano navigator) il client NON
+// e' considerato automatizzato e l'evento passa. Senza questo, l'errore salirebbe
+// fino al componente che ha chiamato trackFunnelEvent.
+export function isAutomatedClient(nav?: NavigatorLike): boolean {
+  try {
+    return detectAutomatedClient(nav ?? readNavigator());
+  } catch {
+    return false;
+  }
+}
+
+function detectAutomatedClient(nav: NavigatorLike | undefined): boolean {
   if (!nav) return false;
 
   // Segnale ufficiale (WebDriver spec): true solo se il browser e' controllato

@@ -184,6 +184,33 @@ test("isAutomatedClient: missing or empty signals never mean bot", async () => {
   assert.equal(isAutomatedClient({ webdriver: 1 }), false);
 });
 
+test("isAutomatedClient: unexpected value shapes are fail-open", async () => {
+  const { isAutomatedClient } = await detectorModule;
+  assert.equal(isAutomatedClient(null as any), false);
+  assert.equal(isAutomatedClient({ userAgent: {} as any }), false);
+  assert.equal(isAutomatedClient({ userAgentData: 7 as any }), false);
+  assert.equal(isAutomatedClient({ userAgentData: { brands: "x" as any } }), false);
+  assert.equal(isAutomatedClient({ userAgentData: { brands: [null, undefined, 3, {}] as any } }), false);
+});
+
+test("isAutomatedClient: a navigator whose properties throw is fail-open (never throws, never bot)", async () => {
+  const { isAutomatedClient } = await detectorModule;
+  for (const property of ["webdriver", "userAgent", "userAgentData"]) {
+    const hostile = {};
+    Object.defineProperty(hostile, property, {
+      get() {
+        throw new Error(`blocked: ${property}`);
+      },
+    });
+    assert.doesNotThrow(() => isAutomatedClient(hostile as any), property);
+    assert.equal(isAutomatedClient(hostile as any), false, property);
+  }
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  assert.doesNotThrow(() => isAutomatedClient(revoked.proxy as any));
+  assert.equal(isAutomatedClient(revoked.proxy as any), false);
+});
+
 test("isAutomatedClient: Chrome Client Hints without a headless brand are not filtered", async () => {
   const { isAutomatedClient } = await detectorModule;
   assert.equal(
@@ -303,6 +330,54 @@ test("trackFunnelEvent: a browser with no navigator signals still writes (missin
 
   trackFunnelEvent({ event: "checkout_started", lang: "it" });
 
+  assert.equal(beaconCalls.length, 1);
+});
+
+function hostileNavigator(property: string) {
+  const nav: Record<string, unknown> = {
+    sendBeacon: (endpoint: string) => {
+      beaconCalls.push(endpoint);
+      return true;
+    },
+  };
+  Object.defineProperty(nav, property, {
+    get() {
+      throw new Error(`blocked: ${property}`);
+    },
+  });
+  Object.defineProperty(globalThis, "navigator", { value: nav, configurable: true });
+}
+
+test("trackFunnelEvent / trackFunnelEventOnce: a navigator that throws on read still tracks the event (fail-open)", async () => {
+  const { trackFunnelEvent, trackFunnelEventOnce } = await analyticsModule;
+  for (const property of ["webdriver", "userAgent", "userAgentData"]) {
+    beaconCalls.length = 0;
+    sessionStore.clear();
+    hostileNavigator(property);
+
+    assert.doesNotThrow(() => trackFunnelEvent({ event: "checkout_started", lang: "it" }), property);
+    assert.doesNotThrow(
+      () => trackFunnelEventOnce(`k:${property}`, { event: "pricing_viewed", lang: "it" }),
+      property
+    );
+
+    assert.equal(beaconCalls.length, 2, `${property}: both events must still be sent`);
+  }
+});
+
+test("trackFunnelEventOnce: the filter runs before the in-memory and storage dedupe", async () => {
+  const { trackFunnelEventOnce } = await analyticsModule;
+  beaconCalls.length = 0;
+  sessionStore.clear();
+
+  // 1) un client automatizzato non "brucia" la chiave: un browser normale che usa
+  //    la stessa chiave nello stesso processo deve ancora poter registrare.
+  setNavigator({ webdriver: true });
+  trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
+  assert.equal(beaconCalls.length, 0);
+
+  setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.chromeWindows });
+  trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
   assert.equal(beaconCalls.length, 1);
 });
 
