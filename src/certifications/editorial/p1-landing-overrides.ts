@@ -623,8 +623,8 @@ const jncie: Override = {
   description: t(
     "150 domande a scelta multipla in 5 argomenti (routing avanzato, switching, sicurezza, MPLS e VPN, troubleshooting) per ripassare la teoria. Non simulano il laboratorio pratico JNCIE.",
     "120 multiple-choice questions in 4 topics (advanced routing, switching, security, MPLS and VPN) to review the theory. They do not simulate the hands-on JNCIE lab exam.",
-    "Quiz à choix multiple pour réviser la théorie JNCIE (routage avancé, commutation, sécurité, MPLS et VPN). Ils ne simulent pas l'examen pratique en laboratoire. Il n'existe pas encore de questions en français.",
-    "Cuestionarios de opción múltiple para repasar la teoría de JNCIE (enrutamiento avanzado, conmutación, seguridad, MPLS y VPN). No simulan el examen práctico de laboratorio. Aún no existen preguntas en español.",
+    "Quiz à choix multiple pour réviser la théorie JNCIE (routage avancé, commutation, sécurité, MPLS et VPN). Ils ne simulent pas l'examen pratique en laboratoire.",
+    "Cuestionarios de opción múltiple para repasar la teoría de JNCIE (enrutamiento avanzado, conmutación, seguridad, MPLS y VPN). No simulan el examen práctico de laboratorio.",
   ),
   metaTitle: t(
     "JNCIE Quiz Teorici – Routing, MPLS, Sicurezza | CertifyQuiz",
@@ -787,7 +787,7 @@ const javascript: Override = {
   metaDescription: t(
     "177 domande su JavaScript: tipi, oggetti e funzioni, DOM ed eventi, debug, async e test, con spiegazioni. Percorso di pratica, non un singolo esame.",
     "177 JavaScript questions: types, objects and functions, DOM and events, debugging, async and testing, with explanations. A practice path, not a single exam.",
-    "177 questions sur JavaScript : types, objets et fonctions, DOM et événements, débogage, async et tests, avec explications. Un parcours d'entraînement, pas un examen unique.",
+    "177 questions sur JavaScript : types, objets, DOM, débogage, async et tests, avec explications. Parcours d'entraînement, pas un examen unique.",
     "177 preguntas sobre JavaScript: tipos, objetos y funciones, DOM y eventos, depuración, async y pruebas, con explicaciones. Una ruta de práctica, no un único examen.",
   ),
   extraContent: {
@@ -944,8 +944,8 @@ const msVirtualization: Override = {
   metaDescription: t(
     "210 domande su Hyper-V: switch virtuali, storage, replica, checkpoint, integration services, backup e disaster recovery. Non è un esame Microsoft dedicato.",
     "210 questions on Hyper-V: virtual switches, storage, replication, checkpoints, integration services, backup and disaster recovery. Not a dedicated Microsoft exam.",
-    "210 questions sur Hyper-V : commutateurs virtuels, stockage, réplication, points de contrôle, services d'intégration, sauvegarde et reprise. Pas un examen Microsoft dédié.",
-    "210 preguntas sobre Hyper-V: conmutadores virtuales, almacenamiento, replicación, puntos de control, servicios de integración, copias de seguridad y recuperación. No es un examen de Microsoft dedicado.",
+    "210 questions sur Hyper-V : commutateurs virtuels, stockage, réplication, points de contrôle, sauvegarde et reprise. Pas un examen Microsoft dédié.",
+    "210 preguntas sobre Hyper-V: conmutadores virtuales, almacenamiento, replicación, puntos de control, copias de seguridad. No es un examen dedicado de Microsoft.",
   ),
   extraContent: {
     examReferenceHeading: t("Riferimenti Microsoft", "Microsoft references", "Références Microsoft", "Referencias de Microsoft"),

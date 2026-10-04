@@ -369,6 +369,7 @@ const pageTopics =
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         <StudyMaterialGrid
           quizQuestionCount={inventory.state === "available" ? inventory.count : inventory.state === "zero" ? 0 : undefined}
+          quizTopicCount={inventory.state === "zero" ? 0 : dbTopics.length > 0 ? dbTopics.length : undefined}
           lang={lang}
           resources={resources}
           certificationSlug={data.slug}

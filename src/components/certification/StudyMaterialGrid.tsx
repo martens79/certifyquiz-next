@@ -10,6 +10,8 @@ type Props = {
   certificationSlug: string;
   quizHref: string;
   quizQuestionCount?: number;
+  /** Topic con domande nella lingua corrente; se assente si usa il conteggio globale di `resources`. */
+  quizTopicCount?: number;
   reviewsHref: string;
   scenariosHref: string;
   guideHref: string | null;
@@ -21,7 +23,7 @@ const LABELS = {
   it: {
     heading: "Materiale di studio",
     quiz: "Quiz",
-    quizDesc: "Allenati con domande d'esame",
+    quizDesc: "Allenati con domande in stile esame",
     reviews: "Ripassi",
     reviewsDesc: "Rivedi i concetti chiave",
     guide: "Guida PDF",
@@ -43,7 +45,7 @@ const LABELS = {
   en: {
     heading: "Study material",
     quiz: "Quiz",
-    quizDesc: "Practise with exam questions",
+    quizDesc: "Practise with exam-style questions",
     reviews: "Reviews",
     reviewsDesc: "Go over the key concepts",
     guide: "PDF Guide",
@@ -65,7 +67,7 @@ const LABELS = {
   fr: {
     heading: "Matériel d'étude",
     quiz: "Quiz",
-    quizDesc: "Entraînez-vous aux questions d'examen",
+    quizDesc: "Entraînez-vous avec des questions de type examen",
     reviews: "Révisions",
     reviewsDesc: "Revoyez les concepts clés",
     guide: "Guide PDF",
@@ -87,7 +89,7 @@ const LABELS = {
   es: {
     heading: "Material de estudio",
     quiz: "Quiz",
-    quizDesc: "Practica con preguntas de examen",
+    quizDesc: "Practica con preguntas de estilo examen",
     reviews: "Repasos",
     reviewsDesc: "Repasa los conceptos clave",
     guide: "Guía PDF",
@@ -230,6 +232,7 @@ export default function StudyMaterialGrid({
   certificationSlug,
   quizHref,
   quizQuestionCount,
+  quizTopicCount,
   reviewsHref,
   scenariosHref,
   guideHref,
@@ -244,7 +247,9 @@ export default function StudyMaterialGrid({
   const knownQuestionCount = quizQuestionCount ?? resources?.quiz?.questionCount;
   const questionCount = knownQuestionCount ?? 0;
   const quizInventoryUnknown = knownQuestionCount === undefined;
-  const topicCount = resources?.quiz.topicCount ?? 0;
+  // Il conteggio di `resources` e' del record certificazione (tutte le lingue): se la pagina
+  // conosce i topic realmente disponibili nella lingua corrente, vince quel numero.
+  const topicCount = quizTopicCount ?? resources?.quiz.topicCount ?? 0;
   const reviewCount = resources?.reviews.count ?? 0;
   const scenarioCount = resources?.scenarios.count ?? 0;
   const labCount = resources?.labs?.count ?? 0;
@@ -264,8 +269,11 @@ export default function StudyMaterialGrid({
   // span: diventa una card normale e va proprio a occupare quello slot.
   // Con un numero PARI (0 o 2 condizionali) lo slot non si crea mai, quindi
   // Scenari resta a piena larghezza come oggi.
+  // Con zero domande CONFERMATE nella lingua la card Quiz non compare (niente card "presto"):
+  // la pagina resta informativa e non promette contenuti inesistenti.
+  const showQuiz = quizInventoryUnknown || questionCount > 0;
   const cardsBeforeScenari =
-    2 + (showGuide ? 1 : 0) + (showMaps ? 1 : 0) + (showLabs ? 1 : 0);
+    (showQuiz ? 1 : 0) + 1 + (showGuide ? 1 : 0) + (showMaps ? 1 : 0) + (showLabs ? 1 : 0);
   const scenariSpansFull = cardsBeforeScenari % 2 === 0;
 
   const quizMeta = [
@@ -280,8 +288,9 @@ export default function StudyMaterialGrid({
       <h2 className="mb-3 text-lg font-bold text-blue-900">{t.heading}</h2>
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        {showQuiz ? (
         <Card
-          href={quizInventoryUnknown || questionCount > 0 ? quizHref : null}
+          href={quizHref}
           icon="📝"
           title={t.quiz}
           desc={t.quizDesc}
@@ -293,6 +302,7 @@ export default function StudyMaterialGrid({
           soonLabel={t.soon}
           resourceType="quiz"
         />
+        ) : null}
 
         <Card
           href={reviewsHref}
