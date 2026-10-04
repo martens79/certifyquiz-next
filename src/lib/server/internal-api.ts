@@ -2,8 +2,9 @@
 //
 // Header di autenticazione server-to-server Vercel → Railway.
 //
-// Il backend salta il rate limiter globale SOLO per le GET SEO read-only in
-// allowlist (oggi /api/topic-pages/*) quando riceve questo header con il
+// Il backend salta il rate limiter globale SOLO per le GET read-only in
+// allowlist (/api/topic-pages/*, /api/certifications/by-slug/:slug,
+// /api/certifications/:slug/resources) quando riceve questo header con il
 // secret corretto (vedi quiz_project/middleware/internalRateLimitBypass.js).
 // Motivo: le fetch SSR/ISR escono da pochi IP Vercel condivisi e un picco di
 // render non in cache esauriva il bucket → 429 → pagine 500 (2026-09-29).

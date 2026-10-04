@@ -1,4 +1,4 @@
-import { hasQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
+import { resolveQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
 import Image from "next/image";
 import Link from "next/link";
@@ -47,7 +47,8 @@ function getList<T>(rec: Readonly<Record<Lang, ReadonlyArray<T>>> | undefined, l
   const list = rec[lang] ?? rec.it ?? rec.en ?? rec.fr ?? rec.es ?? ([] as readonly T[]);
   return Array.isArray(list) ? [...list] : [];
 }
-function getQuestionCountByLang(data: CertificationData, lang: Lang): number {
+/** Conteggio per lingua dal backend; `undefined` = SCONOSCIUTO (non zero). */
+function getQuestionCountByLang(data: CertificationData, lang: Lang): number | undefined {
   const counts = (data as CertificationData & {
     questionCountByLang?: Partial<Record<Lang, number>>;
     questionCount?: number;
@@ -56,7 +57,7 @@ function getQuestionCountByLang(data: CertificationData, lang: Lang): number {
   return (
     counts?.[lang] ??
     (data as CertificationData & { questionCount?: number }).questionCount ??
-    0
+    undefined
   );
 }
 function isTopicLinkItem(value: unknown): value is TopicLinkItem {
@@ -140,8 +141,15 @@ export default function CertificationPage({
 
   const pageTitle = pickLabel(title, lang) || "Certification";
   const pageDescription = pickLabel(description, lang);
-  const questionCount = getQuestionCountByLang(data, lang);
-  const hasQuestions = hasQuizInventory(questionCount);
+  // Inventario: conteggio per lingua del dettaglio; se manca (API in errore) si
+  // usa quello di `resources`; se manca anche questo e' SCONOSCIUTO, non zero.
+  const inventory = resolveQuizInventory(
+    getQuestionCountByLang(data, lang),
+    resources?.quiz?.questionCount
+  );
+  const questionCount = inventory.state === "available" ? inventory.count : 0;
+  // Solo uno zero confermato dal backend nasconde la pratica; "sconosciuto" no.
+  const hasQuestions = inventory.state !== "zero";
 
 const questionLabel = {
   it: "domande",
@@ -358,9 +366,9 @@ const pageTopics =
 
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
-        {!hasQuestions && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
+        {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         <StudyMaterialGrid
-          quizQuestionCount={questionCount}
+          quizQuestionCount={inventory.state === "available" ? inventory.count : inventory.state === "zero" ? 0 : undefined}
           lang={lang}
           resources={resources}
           certificationSlug={data.slug}

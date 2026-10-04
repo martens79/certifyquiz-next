@@ -239,7 +239,11 @@ export default function StudyMaterialGrid({
   const t = LABELS[lang];
   const certificationId = resources?.certificationId ?? null;
 
-  const questionCount = quizQuestionCount ?? resources?.quiz.questionCount ?? 0;
+  // `undefined` = inventario SCONOSCIUTO (API in errore): non e' zero, quindi la
+  // card Quiz resta cliccabile; solo uno zero confermato la disabilita.
+  const knownQuestionCount = quizQuestionCount ?? resources?.quiz?.questionCount;
+  const questionCount = knownQuestionCount ?? 0;
+  const quizInventoryUnknown = knownQuestionCount === undefined;
   const topicCount = resources?.quiz.topicCount ?? 0;
   const reviewCount = resources?.reviews.count ?? 0;
   const scenarioCount = resources?.scenarios.count ?? 0;
@@ -277,7 +281,7 @@ export default function StudyMaterialGrid({
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <Card
-          href={questionCount > 0 ? quizHref : null}
+          href={quizInventoryUnknown || questionCount > 0 ? quizHref : null}
           icon="📝"
           title={t.quiz}
           desc={t.quizDesc}

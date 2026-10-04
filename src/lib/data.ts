@@ -1,6 +1,7 @@
 // src/lib/data.ts
 import "server-only";
 import { internalApiHeaders } from "@/lib/server/internal-api";
+import { backendGetJson } from "@/lib/server/backend-fetch";
 import type { ReviewModuleStructure } from "@/lib/review-module-types";
 
 /**
@@ -231,14 +232,19 @@ export async function getCertificationResources(
 ): Promise<CertificationResources | null> {
   const canonSlug = normalizeSlug(certSlug);
 
-  const res = await fetch(
-    `${API}/certifications/${encodeURIComponent(canonSlug)}/resources?lang=${lang}`,
-    { next: { revalidate: 3600 } }
-  );
+  // Errori (429/timeout/5xx/rete) -> null: la landing resta renderizzabile e i
+  // conteggi mancanti restano "sconosciuti". Mai un throw che diventa un 500.
+  const result = await backendGetJson<{
+    certification?: { name?: string; id?: number | string | null };
+    resources?: Omit<CertificationResources, "certificationName" | "certificationId">;
+  }>(`${API}/certifications/${encodeURIComponent(canonSlug)}/resources?lang=${lang}`, {
+    revalidate: 3600,
+    tags: ["certs:list", `cert:${canonSlug}`],
+  });
 
-  if (!res.ok) return null;
+  if (result.kind !== "ok") return null;
 
-  const json = await res.json();
+  const json = result.data;
 
   if (!json?.resources) return null;
 
@@ -565,25 +571,24 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
 };
   };
 
-  // 1) Prova endpoint dettaglio
-try {
-  const r = await okOrThrow(
-    fetchWithTimeout(
-      `${API}/certifications/by-slug/${encodeURIComponent(canonSlug)}?locale=${locale}`,
-      {
-        cache: "no-store",
-      } as NextFetchInit
-    )
+  // 1) Endpoint dettaglio. Data Cache (300s, 60s per Apple: il suo rilascio e'
+  // regolato dal conteggio) invece di no-store: meno chiamate e, se un refresh
+  // fallisce, Next continua a servire il valore in cache.
+  // Un errore (429/timeout/5xx) NON diventa "0 domande": senza payload valido si
+  // passa alla lista, che non ha i conteggi, e la certificazione resta con
+  // inventario SCONOSCIUTO (questionCountByLang assente), non a zero.
+  const detail = await backendGetJson<unknown>(
+    `${API}/certifications/by-slug/${encodeURIComponent(canonSlug)}?locale=${locale}`,
+    {
+      revalidate: canonSlug === "apple-device-support" ? 60 : 300,
+      tags: ["certs:list", `cert:${canonSlug}`],
+    }
   );
-
-    const raw: unknown = await r.json().catch(() => null);
-
+  if (detail.kind === "ok") {
+    const raw = detail.data;
     const obj: Record<string, unknown> | undefined =
       Array.isArray(raw) ? pickFromArray(raw) : isRecord(raw) ? raw : undefined;
-
     if (obj) return toCert(obj);
-  } catch {
-    // Se l'endpoint dettaglio fallisce, NON mandare 404: prova la lista sotto
   }
 
   // 2) Fallback online: lista certificazioni e filtro locale

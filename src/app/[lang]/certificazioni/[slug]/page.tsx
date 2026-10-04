@@ -73,10 +73,14 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
 
   const cert = await getCertBySlug(registryKey, L);
 
+  // `undefined` = il backend non ha risposto (429/timeout/5xx): inventario
+  // SCONOSCIUTO, non zero. Noindex solo con uno zero reale (o per policy editoriale).
+  const knownCount = cert?.questionCountByLang?.[L] ?? cert?.questionCount;
   if (
     !isCertificationIndexable({
       slug,
-      questionCount: cert?.questionCountByLang?.[L] ?? cert?.questionCount ?? null,
+      questionCount: knownCount ?? null,
+      inventoryUnknown: typeof knownCount !== "number",
     })
   ) {
     return { robots: { index: false, follow: true } };
