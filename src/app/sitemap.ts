@@ -141,7 +141,9 @@ async function getRemoteCerts(timeoutMs = 15000): Promise<RemoteCert[]> {
               `${API_BASE}/certifications/by-slug/${encodeURIComponent(cert.slug)}`,
               {
                 headers: { accept: "application/json" },
-                next: { revalidate: 3600 },
+                // Apple inventory is the publication gate for its verified
+                // first release; do not retain the pre-import zero count.
+                next: { revalidate: cert.slug === "apple-device-support" ? 0 : 3600 },
                 signal: controller.signal,
               }
             );
