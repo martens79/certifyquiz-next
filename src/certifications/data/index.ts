@@ -1,5 +1,6 @@
 // src/certifications/data/index.ts
 import type { CertificationData } from "../types";
+import { P1_LANDING_OVERRIDES } from "../editorial/p1-landing-overrides";
 
 /* ---------------------------------------------------------------------
  * 🔢 ID reali dal database (slug → id) — CHIAVI TUTTE QUOTATE
@@ -214,6 +215,8 @@ const RAW_CERTS = [
  */
 export const CERTS: ReadonlyArray<CertificationData> = RAW_CERTS.map((c) => ({
   ...c,
+  // Revisione editoriale 2026-10-04: sostituisce i campi indicati (vedi l'overlay).
+  ...(P1_LANDING_OVERRIDES[c.slug] ?? {}),
   id: IDS_BY_SLUG[c.slug] ?? undefined,
 }));
 

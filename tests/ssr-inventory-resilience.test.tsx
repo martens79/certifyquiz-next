@@ -227,7 +227,7 @@ const loadGrid = async () => {
   return (await import("../src/components/certification/StudyMaterialGrid")).default;
 };
 
-const grid = async (quizQuestionCount: number | undefined, resources: unknown) => {
+const grid = async (quizQuestionCount: number | undefined, resources: unknown, quizTopicCount?: number) => {
   const Grid = await loadGrid();
   return renderToStaticMarkup(
     createElement(Grid, {
@@ -236,6 +236,7 @@ const grid = async (quizQuestionCount: number | undefined, resources: unknown) =
       certificationSlug: "ccna",
       quizHref: "/en/quiz/ccna",
       quizQuestionCount,
+      quizTopicCount,
       reviewsHref: "/reviews",
       scenariosHref: "/scenarios",
       guideHref: null,
@@ -268,11 +269,18 @@ test("griglia: inventario sconosciuto ma resources disponibile -> conteggio da r
   assert.match(html, /href="\/en\/quiz\/ccna"/);
 });
 
-test("griglia: zero reale -> Quiz disabilitato; positivo -> cliccabile con conteggio", async () => {
+test("griglia: zero reale -> nessuna card Quiz ne' 'Coming soon'; positivo -> cliccabile con conteggio", async () => {
   const zero = await grid(0, res(0));
   assert.doesNotMatch(zero, /href="\/en\/quiz\/ccna"/);
-  assert.match(zero, /Coming soon/);
+  assert.doesNotMatch(zero, /Coming soon|Bient|Pr[oó]ximamente|In arrivo/);
   assert.match(await grid(150, res(150)), /150 questions/);
+});
+
+test("griglia: i topic mostrati sono quelli della lingua, non il conteggio globale del record", async () => {
+  // resources.topicCount (globale) = 9, ma nella lingua corrente ce ne sono 4
+  assert.match(await grid(120, res(120), 4), /120 questions · 4 topics/);
+  // senza conteggio locale resta il valore di resources
+  assert.match(await grid(120, res(120)), /120 questions · 9 topics/);
 });
 
 test("CertificationPage: 'not available yet' solo con zero confermato", () => {

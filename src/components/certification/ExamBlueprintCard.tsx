@@ -18,7 +18,7 @@ const COPY = {
     article: "Approfondimento",
     noWeights:
       "L’ente certificatore pubblica gli argomenti ufficiali dell’esame, ma non indica un peso percentuale per ciascun dominio.",
-    note: "I quiz di CertifyQuiz sono organizzati seguendo i domini e gli obiettivi ufficiali dell’esame.",
+    note: "I quiz di CertifyQuiz sono organizzati attorno ai domini ufficiali dell’esame.",
   },
   en: {
     title: "Official exam blueprint",
@@ -35,7 +35,7 @@ const COPY = {
     article: "Related article",
     noWeights:
       "The certification provider publishes the official exam topics but does not specify a percentage weight for each domain.",
-    note: "CertifyQuiz quizzes are organized around the official exam domains and objectives.",
+    note: "CertifyQuiz quizzes are organized around the official exam domains.",
   },
   fr: {
     title: "Programme officiel de l’examen",
@@ -52,7 +52,7 @@ const COPY = {
     article: "Article associé",
     noWeights:
       "L’organisme certificateur publie les sujets officiels de l’examen, mais n’indique pas de pondération pour chaque domaine.",
-    note: "Les quiz CertifyQuiz sont organisés selon les domaines et objectifs officiels de l’examen.",
+    note: "Les quiz CertifyQuiz sont organisés autour des domaines officiels de l’examen.",
   },
   es: {
     title: "Programa oficial del examen",
@@ -69,7 +69,7 @@ const COPY = {
     article: "Artículo relacionado",
     noWeights:
       "La entidad certificadora publica los temas oficiales del examen, pero no indica un peso porcentual para cada dominio.",
-    note: "Los cuestionarios de CertifyQuiz se organizan según los dominios y objetivos oficiales del examen.",
+    note: "Los cuestionarios de CertifyQuiz se organizan en torno a los dominios oficiales del examen.",
   },
 } as const;
 
