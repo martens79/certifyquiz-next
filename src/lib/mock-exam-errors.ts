@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/quiz-types";
+import { APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
 
 const BLUEPRINT_UNAVAILABLE: Record<Locale, string> = {
   it: "La simulazione d’esame non è temporaneamente disponibile per questa lingua. Riprova più tardi.",
@@ -9,6 +10,7 @@ const BLUEPRINT_UNAVAILABLE: Record<Locale, string> = {
 
 export function getMockExamLoadError(error: unknown, lang: Locale): string | null {
   const detail = (error as { detail?: { code?: unknown } } | null)?.detail;
+  if (detail?.code === "MOCK_EXAM_FIRST_PACKAGE_UNAVAILABLE") return APPLE_DEVICE_SUPPORT_MOCK_NOTICE[lang];
   return detail?.code === "CEH_BLUEPRINT_POOL_TOO_SMALL"
     ? BLUEPRINT_UNAVAILABLE[lang] ?? BLUEPRINT_UNAVAILABLE.en
     : null;

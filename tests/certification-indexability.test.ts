@@ -39,3 +39,11 @@ test("completed LFS101 landing is indexable only with positive inventory", () =>
   assert.equal(isCertificationIndexable({ slug: "lfs101", questionCount: 356 }), true);
   assert.equal(isCertificationIndexable({ slug: "lfs101", questionCount: 0 }), false);
 });
+
+test("Apple first release fails closed until the complete locale inventory exists", () => {
+  for (const questionCount of [undefined, null, 0, 1, 44]) {
+    assert.equal(isCertificationIndexable({ slug: "apple-device-support", questionCount }), false);
+  }
+  assert.equal(isCertificationIndexable({ slug: "apple-device-support", questionCount: 45 }), true);
+  assert.equal(isCertificationIndexable("apple-device-support"), false);
+});

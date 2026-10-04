@@ -15,6 +15,7 @@ import { getCertBySlug as getDatabaseCertBySlug } from "@/lib/data";
 import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 import { categoryPath, type CategoryKey } from "@/lib/paths";
+import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
 
 export const runtime = "nodejs";
 export const revalidate = 60;
@@ -618,16 +619,16 @@ const mockCta =
           <div className="flex flex-col gap-3 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-base font-semibold">{mockLabel}</h2>
-              <p className="text-sm text-slate-700">{mockDesc}</p>
+              <p className="text-sm text-slate-700">{resolvedSlug === APPLE_DEVICE_SUPPORT_SLUG ? APPLE_DEVICE_SUPPORT_MOCK_NOTICE[L] : mockDesc}</p>
               {gatedPool ? <FreePoolNotice certId={certId} lang={L} freeQuestions={PLC_FREE_QUESTION_COUNT} /> : null}
             </div>
 
-            <Link
+            {resolvedSlug !== APPLE_DEVICE_SUPPORT_SLUG && <Link
               href={quizMockExamPath(L, resolvedSlug)}
               className="inline-flex items-center justify-center rounded-full border border-orange-500 px-4 py-1.5 text-sm font-semibold text-orange-700 hover:bg-orange-100"
             >
               {mockCta}
-            </Link>
+            </Link>}
           </div>
         </div>
       </section>

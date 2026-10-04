@@ -4,6 +4,7 @@ import { sanityServerClient } from "@/lib/sanity.server";
 import { selectIndexableReviewClusterItems, type ReviewIndexabilityInput } from "@/lib/review-indexability";
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
+import { isTopicIndexable } from "@/lib/seo/topic-indexability";
 
 export const revalidate = 3600;
 
@@ -196,6 +197,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getRemoteCerts(),
     getBlogEntries(),
   ]);
+  // Only this reviewed release supplies verified localized topic content.
+  // Other active database rows remain excluded by the existing policy.
+  const appleTopics: Record<Lang, string[]> = { en: [], it: [], fr: [], es: [] };
+  const apple = certs.find(c => c.slug === "apple-device-support");
+  if (apple && langs.every(lang => (apple.questionCountByLang[lang] ?? 0) >= 45)) {
+    try {
+      const response = await fetch(`${API_BASE}/topics/${apple.id}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+      if (response.ok) {
+        const topics = await response.json() as Array<Record<string, string>>;
+        if (topics.length === 9) {
+          const checked = await Promise.all(langs.flatMap(lang => topics.map(async topic => {
+            const slug = topic[`slug_${lang}`];
+            if (!slug) return null;
+            const result = await fetch(`${API_BASE}/topic-pages/apple-device-support/${encodeURIComponent(slug)}?lang=${lang}`, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+            if (!result.ok) return null;
+            const page = await result.json();
+            return page.questionCount >= 5 && isTopicIndexable({ ...page.topic, questionCount: page.questionCount }) ? { lang, slug } : null;
+          })));
+          if (checked.every(Boolean)) for (const item of checked) if (item) appleTopics[item.lang].push(item.slug);
+        }
+      }
+    } catch { /* Fail closed if any localized content cannot be verified. */ }
+  }
 
   // The API still exposes two legacy registry slugs. Publish only their final
   // public destinations so every certification URL in the sitemap is a 200.
@@ -330,7 +354,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 0.8,
           })),
 
-          // Topic URLs are intentionally omitted until the backend sitemap feed
+          ...appleTopics[lang].map(slug => ({
+            url: `${base}/${listSegment}/apple-device-support/${slug}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+          })),
+          // Other topic URLs are intentionally omitted until the backend sitemap feed
           // exposes the same editorial-quality signal used by topic metadata.
           // Publishing every active DB row previously added ~1,700 mostly
           // templated URLs without proving that localized guide content exists.

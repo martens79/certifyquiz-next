@@ -44,6 +44,10 @@ export function isCertificationIndexable(
   if (NON_INDEXABLE_CERTIFICATION_SLUGS.has(slug)) return false;
   if (isRolloutNoindexCertification(slug)) return false;
 
+  // This first teaching release is only ready once its complete translated
+  // question package is available. Missing inventory must fail closed.
+  if (slug === "apple-device-support") return questionCount != null && questionCount >= 45;
+
   // String callers apply only the editorial deny-list. Metadata and sitemap
   // callers supply inventory explicitly and must fail closed when unavailable.
   return typeof input === "string" || hasQuizInventory(questionCount);
