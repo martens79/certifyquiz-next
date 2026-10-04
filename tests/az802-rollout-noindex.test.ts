@@ -34,8 +34,11 @@ test("AZ-802 landing stays noindex with 0 questions", () => {
 });
 
 test("AZ-802 landing is indexable with a positive inventory in every language", () => {
-  for (const questionCount of [175, 1, null, undefined]) {
+  for (const questionCount of [175, 1]) {
     assert.equal(isCertificationIndexable({ slug: "az-802", questionCount }), true, String(questionCount));
+  }
+  for (const questionCount of [null, undefined]) {
+    assert.equal(isCertificationIndexable({ slug: "az-802", questionCount }), false);
   }
   assert.equal(isCertificationIndexable("az-802"), true);
 });
@@ -59,10 +62,14 @@ test("a normal complete topic keeps its behavior", () => {
   assert.equal(isTopicIndexable({ ...richTopic, certificationSlug: null, questionCount: 15 }), true);
 });
 
-test("sitemap: landing entries go through isCertificationIndexable (AZ-802 included, others unchanged) and no topic URL is emitted", () => {
+test("sitemap: landings require inventory and topic publication is limited to the verified Apple release", () => {
   const source = readFileSync(new URL("../src/app/sitemap.ts", import.meta.url), "utf8");
   assert.match(source, /canonicalCerts\.filter\(\(c\) => isCertificationIndexable\(\{\s*slug: c\.slug,\s*questionCount: c\.questionCountByLang\[lang\] \?\? null,\s*\}\)\)/);
-  assert.match(source, /Topic URLs are intentionally omitted/);
+  assert.match(source, /certs\.find\(c => c\.slug === "apple-device-support"\)/);
+  assert.match(source, /apple\.questionCountByLang\[lang\] \?\? 0\) >= 45/);
+  assert.match(source, /page\.questionCount >= 5 && isTopicIndexable/);
+  assert.match(source, /checked\.every\(Boolean\)/);
+  assert.match(source, /appleTopics\[lang\]\.map/);
   // The same predicate the sitemap applies, per language, with AZ-802 fully loaded vs a normal certification.
   const certs = [
     { slug: "az-802", questionCountByLang: { it: 175, en: 175, fr: 175, es: 175 } },
