@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import QuestionExhibit from "../src/components/quiz/QuestionExhibit";
 import { MicroQuizCard, normalize } from "../src/components/reviews/module/ReviewMicroQuiz";
-import type { Question as ApiQuestion } from "../src/lib/apiClient";
+import type { AnswerCheckResult, Question as ApiQuestion } from "../src/lib/apiClient";
 
 const CLI_OUTPUT = [
   "R1# show vrrp brief",
@@ -39,8 +39,20 @@ function apiQuestion(overrides: Partial<ApiQuestion> = {}): ApiQuestion {
   } as ApiQuestion;
 }
 
-const card = (question: ReturnType<typeof normalize>, selectedId: number | string | null = null) =>
-  renderToStaticMarkup(createElement(MicroQuizCard, { question, selectedId, onSelect: () => {}, t }));
+// Paywall Phase 2: l'esito arriva dal server (POST /answers/check), non dal payload della domanda.
+const serverResult = (correct: boolean): AnswerCheckResult => ({
+  question_id: 9001,
+  correct,
+  correct_answer_id: 2,
+  explanation: null,
+  explanation_access: { granted: true, reason: "test" },
+});
+
+const card = (
+  question: ReturnType<typeof normalize>,
+  selectedId: number | string | null = null,
+  result: AnswerCheckResult | null = null
+) => renderToStaticMarkup(createElement(MicroQuizCard, { question, selectedId, result, onSelect: () => {}, t }));
 
 /* -------------------------------- QuestionExhibit ------------------------------- */
 
@@ -105,9 +117,11 @@ test("ReviewMicroQuiz normalize: exhibit null / missing stays null and the rest 
     assert.equal(q.exhibit, null);
     assert.equal(q.question, "Based on the output shown, which statement is correct?");
     assert.deepEqual(
-      q.answers.map((a) => a.isCorrect),
-      [false, true]
+      q.answers.map((a) => a.text),
+      ["R1 is Backup because its priority is higher", "R2 is Master because R1 lost its virtual IP"]
     );
+    // Phase 2: il payload non porta la chiave di risposta; l'esito esiste solo dopo /answers/check.
+    assert.ok(q.answers.every((a) => !("isCorrect" in a)));
   }
 });
 
@@ -124,9 +138,15 @@ test("MicroQuizCard shows the exhibit before the question text", () => {
 });
 
 test("MicroQuizCard keeps the exhibit visible after an answer is selected", () => {
-  const html = card(normalize(apiQuestion()), 1);
+  const html = card(normalize(apiQuestion()), 1, serverResult(false));
   assert.ok(html.includes(CLI_OUTPUT));
   assert.match(html, /role="status"/);
+});
+
+test("MicroQuizCard shows no verdict until the server result arrives, and keeps the exhibit", () => {
+  const html = card(normalize(apiQuestion()), 1, null);
+  assert.ok(html.includes(CLI_OUTPUT));
+  assert.doesNotMatch(html, /role="status"/);
 });
 
 test("MicroQuizCard with null exhibit: no figure, question and answers still render (no regression)", () => {

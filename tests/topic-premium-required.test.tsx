@@ -102,7 +102,8 @@ test("topics page: the notice is under the mixed quiz and the practice test, for
   const page = read("../src/app/[lang]/quiz/[slug]/page.tsx");
   assert.match(page, /const gatedPool = resolvedSlug === INDUSTRIAL_AUTOMATION_CERT_SLUG && topics\.some\(\(t\) => t\.access_tier === "premium"\)/);
   const mixed = page.indexOf("{mixedDesc}");
-  const mock = page.indexOf("{mockDesc}");
+  // {mockDesc} sta ora dentro un'espressione condizionale (Apple Device Support): ": mockDesc}".
+  const mock = page.indexOf(": mockDesc}");
   const notice = "{gatedPool ? <FreePoolNotice certId={certId} lang={L} freeQuestions={PLC_FREE_QUESTION_COUNT} /> : null}";
   assert.ok(page.indexOf(notice, mixed) > mixed && page.indexOf(notice, mixed) < mock, "under the mixed quiz");
   assert.ok(page.indexOf(notice, mock) > mock, "under the practice test");
