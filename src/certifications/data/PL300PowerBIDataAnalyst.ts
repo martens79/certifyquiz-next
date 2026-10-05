@@ -7,7 +7,7 @@ const PL300PowerBIDataAnalyst = {
   imageUrl: "/images/certifications/pl-300-power-bi-data-analyst.png",
 
   officialUrl:
-    "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+    "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
 
   // Verificato il 2026-08-04 su learn.microsoft.com (Study Guide ufficiale Microsoft).
   examBlueprint: {
@@ -18,7 +18,7 @@ const PL300PowerBIDataAnalyst = {
     officialSourceUrl:
       "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/pl-300",
     officialExamPageUrl:
-      "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+      "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
     lastVerifiedAt: "2026-08-04",
     domains: [
       { name: "Prepare the data", percentageMin: 25, percentageMax: 30 },
@@ -158,25 +158,25 @@ const PL300PowerBIDataAnalyst = {
       it: [
         {
           text: "Microsoft PL-300 — Pagina ufficiale della certificazione",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
         },
       ],
       en: [
         {
           text: "Microsoft PL-300 — Official certification page",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
         },
       ],
       fr: [
         {
           text: "Microsoft PL-300 — Page officielle de la certification",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
         },
       ],
       es: [
         {
           text: "Microsoft PL-300 — Página oficial de la certificación",
-          url: "https://learn.microsoft.com/en-us/credentials/certifications/power-bi-data-analyst-associate/",
+          url: "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
         },
       ],
     },
