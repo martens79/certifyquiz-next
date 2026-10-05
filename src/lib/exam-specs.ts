@@ -49,8 +49,9 @@ export const EXAM_SPECS_BY_CERT_ID: Record<number, ExamSpec> = {
   // 33 — Cisco CCST – Networking
   33: { questions: 50, durationSec: 60 * 60 },
 
-  // 12 — Cisco CCST – Cybersecurity
-  12: { questions: 50, durationSec: 60 * 60 },
+  // 34 — Cisco CCST – Cybersecurity (era erroneamente mappato su id 12,
+  // certification_id inesistente: la mock-exam cadeva sul fallback generico)
+  34: { questions: 50, durationSec: 60 * 60 },
 
   /* ===================== SECURITY ADVANCED ===================== */
 
