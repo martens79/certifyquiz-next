@@ -35,7 +35,7 @@ const CEH = {
 
   title: {
     it: "CEH Practice Test 2026 – Oltre 1000 Domande Tipo Esame (312-50)",
-    en: "CEH Practice Test 2026 – 1000+ Questions + Exam Simulation (312-50)",
+    en: "CEH Practice Exam 2026 – 1,800+ Questions + Timed Simulation (312-50)",
     fr: "CEH Test Pratique 2026 – 1000+ QCM + Simulation 125 Questions",
     es: "CEH Practice Test 2026 – Más de 1000 Preguntas + Simulación de Examen",
   },
@@ -49,19 +49,20 @@ const CEH = {
 
   description: {
     it: "Preparati al CEH 312-50 con oltre 1000 domande tipo esame. Modalità training completa, simulazione cronometrata da 125 domande e quiz misti per misurare la tua preparazione reale.",
-    en: "Prepare for CEH 312-50 with 1000+ real exam-style questions. Includes training mode, 125-question timed exam simulation, mixed quizzes and last-week revision practice.",
+    en: "Prepare for CEH 312-50 with 1,800+ real exam-style questions. Includes training mode, 125-question timed exam simulation, mixed quizzes and last-week revision practice.",
     fr: "Préparez le CEH 312-50 avec plus de 1000 QCM type examen. Test pratique CEH avec mode entraînement, simulation chronométrée de 125 questions et quiz mixtes.",
     es: "Prepárate para CEH 312-50 con más de 1000 preguntas tipo examen. Incluye modo entrenamiento, simulación cronometrada de 125 preguntas y cuestionarios mixtos.",
   },
 
+  practiceName: { it: "CEH 312-50", en: "CEH 312-50", fr: "CEH 312-50", es: "CEH 312-50" },
   metaTitle: {
-    en: "CEH Practice Test 2026 – 1000+ Ethical Hacking Questions | CertifyQuiz",
+    en: "CEH Practice Exam 2026 – 1,800+ Questions & 312-50 Simulation | CertifyQuiz",
     it: "CEH Practice Test 2026 – Oltre 1000 Domande Ethical Hacking | CertifyQuiz",
     fr: "CEH Test Pratique 2026 – 1000+ Questions Hacking Éthique | CertifyQuiz",
     es: "CEH Practice Test 2026 – Más de 1000 Preguntas Hacking Ético | CertifyQuiz",
   },
   metaDescription: {
-    en: "Prepare for CEH 312-50 with 1000+ exam-style questions. Covers ethical hacking, network attacks, web vulnerabilities and exploitation. Start free.",
+    en: "Prepare for CEH 312-50 with 1,800+ exam-style questions, a timed 125-question simulation and offensive labs. Covers recon, network and web attacks. Start free.",
     it: "Preparati al CEH 312-50 con oltre 1000 domande tipo esame. Copre ethical hacking, attacchi di rete, vulnerabilità web ed exploit. Inizia gratis.",
     fr: "Préparez le CEH 312-50 avec plus de 1000 QCM type examen. Couvre hacking éthique, attaques réseau, vulnérabilités web et exploitation. Commencez gratuitement.",
     es: "Prepárate para el CEH 312-50 con más de 1000 preguntas tipo examen. Cubre hacking ético, ataques de red, vulnerabilidades web y explotación. Empieza gratis.",
@@ -418,7 +419,7 @@ const CEH = {
         "Pensato anche per il ripasso finale nelle ultime settimane prima dell’esame CEH.",
       ],
       en: [
-        "1000+ exam-style questions aligned with CEH 312-50.",
+        "1,800+ exam-style questions aligned with CEH 312-50.",
         "Training mode for volume and exam mode to measure true readiness.",
         "Timed 125-question simulation to build pace, pressure tolerance and time management.",
         "Mixed quizzes to expose weak areas and prepare for the full exam experience.",
@@ -466,7 +467,7 @@ const CEH = {
       en: [
         {
           q: "How many CEH questions are available?",
-          a: "The pool contains 1000+ CEH exam-style questions. Counts may differ slightly by language because updates are not always released at the same time.",
+          a: "The pool contains 1,800+ CEH exam-style questions. Counts may differ slightly by language because updates are not always released at the same time.",
         },
         {
           q: "Is there a timed exam simulation?",

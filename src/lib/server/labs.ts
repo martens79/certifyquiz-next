@@ -3,6 +3,7 @@ import "server-only";
 
 import type { Locale } from "@/lib/paths";
 import { getCertBySlug } from "@/certifications/registry";
+import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 
 // Stessa convenzione di src/lib/data.ts: in locale, senza API_BASE_URL impostato
 // a un host locale, questo colpisce la produzione (server-only, mai il proxy
@@ -89,7 +90,7 @@ export async function getLabsCatalog(lang: Locale): Promise<LabsCatalog> {
         const slug = String(c.certificationSlug);
         return {
           slug,
-          label: getCertBySlug(slug)?.title[lang] ?? slug,
+          label: resolveQuestionCountTokens(getCertBySlug(slug)?.title[lang] ?? slug, undefined, lang),
           count: Number(c.labCount),
         };
       })

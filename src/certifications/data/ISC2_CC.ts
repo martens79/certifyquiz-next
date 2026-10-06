@@ -7,24 +7,24 @@ const ISC2CC = {
   imageUrl: "/images/certifications/isc2-icon.png",
   officialUrl: "https://www.isc2.org/certifications/certified-in-cybersecurity",
 
-  // Verificato il 2026-08-04 sul documento ufficiale ISC2 (Exam Outline, effective
-  // 2025-10-01). Da 2026-09-01 l'esame passa a un nuovo programma con contenuti
-  // aggiornati sulla sicurezza AI: fino ad allora resta in vigore questo.
+  // Verificato il 2026-10-06 sul documento ufficiale ISC2 (Exam Outline v01/2026,
+  // effective 2026-09-01). Sostituisce l'outline effective 2025-10-01: non
+  // ripubblicarlo (vedi tests/isc2-cc-blueprint.test.ts). I pesi sono quelli
+  // ufficiali ISC2 (somma 99,9% per arrotondamento).
   examBlueprint: {
     provider: "ISC2",
-    officialSourceName: "ISC2 Certified in Cybersecurity (CC) — Exam Outline (effective 2025-10-01)",
+    officialSourceName: "ISC2 Certified in Cybersecurity (CC) — Exam Outline (effective 2026-09-01)",
     officialSourceUrl:
-      "https://edge.sitecorecloud.io/internationf173-xmc4e73-prodbc0f-9660/media/Project/ISC2/Main/Media/documents/exam-outlines/MAR-EXAMS-CC-Exam_Outline-English---10012025---FINAL.pdf",
+      "https://edge.sitecorecloud.io/internationf173-xmc4e73-prodbc0f-9660/media/Project/ISC2/Main/Media/documents/exam-outlines/2026/EXAMS-CC_Exam_Outline-English-Revised-01-2026-Final.pdf",
     officialExamPageUrl:
       "https://www.isc2.org/certifications/cc/cc-certification-exam-outline",
-    lastVerifiedAt: "2026-08-04",
-    note: "Dal 1° settembre 2026 l'esame CC passerà a un nuovo programma che integra concetti di sicurezza AI in tutti i domini.",
+    lastVerifiedAt: "2026-10-06",
     domains: [
-      { name: "Security Principles", percentage: 26 },
-      { name: "Business Continuity (BC), Disaster Recovery (DR) & Incident Response Concepts", percentage: 10 },
-      { name: "Access Controls Concepts", percentage: 22 },
-      { name: "Network Security", percentage: 24 },
-      { name: "Security Operations", percentage: 18 },
+      { name: "Security Principles", percentage: 24 },
+      { name: "Security Governance", percentage: 17.3 },
+      { name: "Identity And Access Management (IAM) Concepts", percentage: 20 },
+      { name: "Networking and Cloud Security Concepts", percentage: 21.3 },
+      { name: "Security Operations and Incident Response", percentage: 17.3 },
     ],
   },
 
@@ -50,6 +50,7 @@ const ISC2CC = {
   fr: "Préparez l’examen ISC2 Certified in Cybersecurity avec un test pratique gratuit, des QCM type examen, des explications claires et une révision ciblée.",
   es: "Prepárate para el examen ISC2 Certified in Cybersecurity con un practice test gratis, preguntas tipo examen, explicaciones claras y repaso guiado.",
 },
+practiceName: { it: "ISC2 CC", en: "ISC2 CC", fr: "ISC2 CC", es: "ISC2 CC" },
 metaTitle: {
   it: "ISC2 CC – Practice Test e Quiz Cybersecurity 2026 | CertifyQuiz",
   en: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
@@ -228,7 +229,7 @@ metaDescription: {
         },
         {
           q: "Quali argomenti copre l’esame ISC2 CC?",
-          a: "L’esame copre concetti di sicurezza, gestione del rischio, controlli di sicurezza, conformità e standard, e risposta agli incidenti.",
+          a: "L’esame copre cinque domini: Security Principles, Security Governance, concetti di Identity and Access Management (IAM), concetti di Networking and Cloud Security, e Security Operations e Incident Response.",
         },
         {
           q: "Come mi preparo al meglio per ISC2 CC?",
@@ -246,7 +247,7 @@ metaDescription: {
         },
         {
           q: "What topics are covered in the ISC2 CC exam?",
-          a: "The exam covers security fundamentals, risk management, security controls, compliance and standards, and incident response.",
+          a: "The exam covers five domains: Security Principles, Security Governance, Identity and Access Management (IAM) Concepts, Networking and Cloud Security Concepts, and Security Operations and Incident Response.",
         },
         {
           q: "What is the best way to prepare for ISC2 CC?",
@@ -268,7 +269,7 @@ metaDescription: {
         },
         {
           q: "Quels sujets sont couverts par l’examen ISC2 CC ?",
-          a: "L’examen couvre les fondamentaux de la sécurité, la gestion des risques, les contrôles de sécurité, la conformité et les normes, ainsi que la réponse aux incidents.",
+          a: "L’examen couvre cinq domaines : Security Principles, Security Governance, concepts d’Identity and Access Management (IAM), concepts de Networking and Cloud Security, et Security Operations and Incident Response.",
         },
         {
           q: "Quelle est la meilleure façon de se préparer à ISC2 CC ?",
@@ -286,7 +287,7 @@ metaDescription: {
         },
         {
           q: "¿Qué temas cubre el examen ISC2 CC?",
-          a: "El examen cubre fundamentos de seguridad, gestión de riesgos, controles de seguridad, cumplimiento y estándares, y respuesta ante incidentes.",
+          a: "El examen cubre cinco dominios: Security Principles, Security Governance, conceptos de Identity and Access Management (IAM), conceptos de Networking and Cloud Security y Security Operations and Incident Response.",
         },
         {
           q: "¿Cuál es la mejor forma de prepararme para ISC2 CC?",

@@ -8,6 +8,7 @@ import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
 import { P1_LANDING_OVERRIDES } from "@/certifications/editorial/p1-landing-overrides";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
+import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 
 // Robots and canonical metadata depend on live, per-language inventory.
 // Keep the route cached, but never retain an obsolete publication decision
@@ -61,9 +62,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
   },
   "ccna": {
-    title: "CCNA Practice Test 2026: 1,400+ Questions & 18 Labs | CertifyQuiz",
+    title: "CCNA 200-301 Practice Test 2026: 1,400+ Exam Questions & Labs | CertifyQuiz",
     description:
-      "Practice for Cisco CCNA 200-301 with 1,400+ CCNA practice questions, a CCNA mock exam and 18 interactive labs with explanations. Start free.",
+      "Practice CCNA 200-301 exam questions: 1,400+ questions with explanations, a full CCNA mock test and 18 interactive labs. Start free.",
   },
   "cissp": {
     title: "CISSP Practice Test 2026 – Exam-Style Questions | CertifyQuiz",
@@ -86,9 +87,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for Cisco CCST with practice questions on networking, cybersecurity and IT support. Choose your specialization and start free.",
   },
   "ceh": {
-    title: "CEH Practice Test 2026 – 1000+ Ethical Hacking Questions | CertifyQuiz",
+    title: "CEH Practice Exam 2026 – 1,800+ Questions & 312-50 Simulation | CertifyQuiz",
     description:
-      "Prepare for CEH 312-50 with 1000+ exam-style questions. Covers ethical hacking, network attacks, web vulnerabilities and exploitation. Start free.",
+      "Prepare for CEH 312-50 with 1,800+ exam-style questions, a timed 125-question simulation and offensive labs. Covers recon, network and web attacks. Start free.",
   },
   "microsoft-ai": {
     title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
@@ -176,7 +177,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 
-  const certName = data?.name_en || data?.name || registryCert?.title?.en || canonicalSlug;
+  // Il titolo del registry puo' contenere `{questionCount|soglia}`: va risolto, altrimenti
+  // con l'API giu' finirebbe grezzo in og:image:alt e nell'URL dell'immagine OG.
+  const registryTitle = registryCert?.title?.en
+    ? resolveQuestionCountTokens(registryCert.title.en, knownCount, "en")
+    : undefined;
+  const certName = data?.name_en || data?.name || registryTitle || canonicalSlug;
   const override = SEO_OVERRIDES[canonicalSlug] || {};
 
   const title =
