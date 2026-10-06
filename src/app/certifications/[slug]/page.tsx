@@ -61,9 +61,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
   },
   "ccna": {
-    title: "CCNA Practice Test 2026: 1,400+ Questions & 18 Labs | CertifyQuiz",
+    title: "CCNA 200-301 Practice Test 2026: 1,400+ Exam Questions & Labs | CertifyQuiz",
     description:
-      "Practice for Cisco CCNA 200-301 with 1,400+ CCNA practice questions, a CCNA mock exam and 18 interactive labs with explanations. Start free.",
+      "Practice CCNA 200-301 exam questions: 1,400+ questions with explanations, a full CCNA mock test and 18 interactive labs. Start free.",
   },
   "cissp": {
     title: "CISSP Practice Test 2026 – Exam-Style Questions | CertifyQuiz",
@@ -86,9 +86,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for Cisco CCST with practice questions on networking, cybersecurity and IT support. Choose your specialization and start free.",
   },
   "ceh": {
-    title: "CEH Practice Test 2026 – 1000+ Ethical Hacking Questions | CertifyQuiz",
+    title: "CEH Practice Exam 2026 – 1,800+ Questions & 312-50 Simulation | CertifyQuiz",
     description:
-      "Prepare for CEH 312-50 with 1000+ exam-style questions. Covers ethical hacking, network attacks, web vulnerabilities and exploitation. Start free.",
+      "Prepare for CEH 312-50 with 1,800+ exam-style questions, a timed 125-question simulation and offensive labs. Covers recon, network and web attacks. Start free.",
   },
   "microsoft-ai": {
     title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",

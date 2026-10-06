@@ -284,6 +284,14 @@ const pageTopics =
         ],
       };
     }
+    if (data.slug === "comptia-network-plus" || data.slug === "cisco-ccst-networking") {
+      return {
+        title: { it: "Continua il percorso networking", en: "Continue your networking path", fr: "Poursuivre votre parcours networking", es: "Continúa tu ruta de networking" }[lang],
+        links: [
+          { label: { it: "Roadmap certificazioni networking", en: "Networking certification roadmap", fr: "Parcours certifications networking", es: "Ruta de certificaciones de networking" }[lang], href: lang === "en" ? "/roadmap-networking" : `/${lang}/roadmap-networking` },
+        ],
+      };
+    }
     return null;
   })();
 
@@ -444,7 +452,7 @@ const pageTopics =
         {/* Practice box */}
         {hasQuestions && (<CertificationPracticeBox
           lang={lang}
-          certificationTitle={pageTitle}
+          certificationTitle={pickLabel(data.practiceName, lang) || pageTitle}
           quizHref={quizHref}
           topics={practiceBoxTopics}
         />)}

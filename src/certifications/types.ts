@@ -186,6 +186,10 @@ export type CertificationData = {
   metaTitle?: LocalizedText;
   metaDescription?: LocalizedText;
 
+  /** Nome breve usato nell'H2/testo del box "domande di pratica". Se assente si
+   *  usa il titolo (H1) della landing: utile solo quando l'H1 è già un nome pulito. */
+  practiceName?: LocalizedText;
+
   /** Programma verificato dell'esame; se assente la relativa card non viene mostrata. */
   examBlueprint?: ExamBlueprint;
 
