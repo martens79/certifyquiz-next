@@ -19,6 +19,7 @@ import ContextualLeadMagnetBox from "@/components/newsletter/ContextualLeadMagne
 import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
 import TopicIntro from "@/components/TopicIntro";
+import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -139,8 +140,6 @@ export default function CertificationPage({
     lifecycleNotice,
   } = data;
 
-  const pageTitle = pickLabel(title, lang) || "Certification";
-  const pageDescription = pickLabel(description, lang);
   // Inventario: conteggio per lingua del dettaglio; se manca (API in errore) si
   // usa quello di `resources`; se manca anche questo e' SCONOSCIUTO, non zero.
   const inventory = resolveQuizInventory(
@@ -148,6 +147,13 @@ export default function CertificationPage({
     resources?.quiz?.questionCount
   );
   const questionCount = inventory.state === "available" ? inventory.count : 0;
+  // I testi del registry possono contenere `{questionCount}`: si risolve col
+  // conteggio live (o col fallback indicato nel segnaposto).
+  const withLiveCount = (text: string) =>
+    resolveQuestionCountTokens(text, inventory.state === "available" ? inventory.count : undefined, lang);
+
+  const pageTitle = withLiveCount(pickLabel(title, lang) || "Certification");
+  const pageDescription = withLiveCount(pickLabel(description, lang));
   // Solo uno zero confermato dal backend nasconde la pratica; "sconosciuto" no.
   const hasQuestions = inventory.state !== "zero";
 
@@ -197,7 +203,7 @@ const pageTopics =
     : [];
 
   const currentCertification = isLocalizedArray<string>(extraContent?.currentCertification)
-    ? getList<string>(extraContent.currentCertification, lang)
+    ? getList<string>(extraContent.currentCertification, lang).map(withLiveCount)
     : [];
 
   const guideSections = isLocalizedArray<GuideSection>(extraContent?.guideSections)
