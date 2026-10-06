@@ -48,13 +48,13 @@ export default function AssessmentEntrySection({ lang }: Props) {
   const t = COPY[lang];
 
   return (
-    <section className="mx-auto mt-8 max-w-6xl px-4 md:mt-10">
-      <div className="mx-auto max-w-2xl rounded-3xl border border-amber-200 bg-amber-50 p-6 text-center shadow-sm md:p-8">
+    <section className="mx-auto mt-5 max-w-6xl px-4 sm:mt-8 md:mt-10">
+      <div className="mx-auto max-w-2xl rounded-3xl border border-amber-200 bg-amber-50 p-4 text-center shadow-sm sm:p-6 md:p-8">
         <div className="text-xs font-bold uppercase tracking-wide text-amber-700">
           {t.eyebrow}
         </div>
 
-        <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+        <h2 className="mt-2 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
           {t.heading}
         </h2>
 
@@ -62,7 +62,7 @@ export default function AssessmentEntrySection({ lang }: Props) {
           {t.body}
         </p>
 
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-4 flex gap-2 overflow-x-auto max-sm:-mx-4 max-sm:px-4 max-sm:pb-1 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden sm:mt-6 sm:flex-wrap sm:justify-center sm:overflow-visible">
           {CERTS.map((cert) => (
             <Link
               key={cert.slug}
@@ -73,7 +73,7 @@ export default function AssessmentEntrySection({ lang }: Props) {
                   cert_slug: cert.slug,
                 })
               }
-              className="inline-flex items-center justify-center rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-sm font-bold text-amber-900 shadow-sm transition hover:border-amber-400 hover:bg-amber-100"
+              className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-xl border border-amber-300 bg-white px-4 py-2.5 text-sm font-bold text-amber-900 shadow-sm transition hover:border-amber-400 hover:bg-amber-100"
             >
               {cert.label}
             </Link>

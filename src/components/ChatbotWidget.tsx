@@ -169,6 +169,24 @@ export default function ChatbotWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Home (/, /it, /fr, /es): su mobile il pulsante e' piu' piccolo e compare solo dopo
+  // circa un viewport di scroll, cosi' nel primo schermo non compete con hero, CTA e finder.
+  // Il comportamento e' interamente in CSS (@media max-width: 767px): desktop e altre pagine
+  // non cambiano.
+  const isHome = /^\/(?:it|en|fr|es)?\/?$/.test(pathname);
+  const [pastFold, setPastFold] = useState(false);
+
+  useEffect(() => {
+    if (!isHome) {
+      setPastFold(false);
+      return;
+    }
+    const onScroll = () => setPastFold(window.scrollY > window.innerHeight * 0.9);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
   useEffect(() => {
     const update = () => setLang(getLangFromCookie());
     update();
@@ -315,6 +333,18 @@ export default function ChatbotWidget() {
             right: 16px;
           }
 
+          /* Home mobile: 44px, sopra la bottom nav (anche con safe-area), nascosto nel primo viewport */
+          .cq-chat-btn.cq-chat-home {
+            width: 44px !important;
+            height: 44px !important;
+            bottom: calc(88px + env(safe-area-inset-bottom));
+          }
+          .cq-chat-btn.cq-chat-home:not(.cq-chat-shown) {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+          }
+
           .cq-chat-window {
             bottom: 148px;
             right: 8px;
@@ -327,7 +357,7 @@ export default function ChatbotWidget() {
       <button
         onClick={() => setIsOpen((o) => !o)}
         aria-label={isOpen ? t.closeLabel : t.openLabel}
-        className="cq-chat-btn"
+        className={`cq-chat-btn${isHome ? " cq-chat-home" : ""}${isHome && (pastFold || isOpen) ? " cq-chat-shown" : ""}`}
         style={{
           width: "56px",
           height: "56px",

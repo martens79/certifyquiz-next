@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import HomeWithAuth from "@/components/home/HomeWithAuth";
 import { isIndustrialAutomationPublic } from "@/lib/industrial-automation";
+import { getHomeFinderCerts, getHomeStats } from "@/lib/server/home-data";
 
 const SITE =
   (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
@@ -38,7 +39,17 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-export default function HomeRootEN() {
-  return <HomeWithAuth lang="en" showIndustrialAutomation={isIndustrialAutomationPublic("en")} />;
+export default async function HomeRootEN() {
+  // Metriche e lista certificazioni lette lato server (cache dati: 1h / 5 min).
+  // In caso di errore restano null: la home usa i fallback (metriche client, soli chip).
+  const [stats, finderCerts] = await Promise.all([getHomeStats(), getHomeFinderCerts("en")]);
+  return (
+    <HomeWithAuth
+      lang="en"
+      showIndustrialAutomation={isIndustrialAutomationPublic("en")}
+      initialStats={stats}
+      finderCerts={finderCerts}
+    />
+  );
 }
 

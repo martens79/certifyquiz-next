@@ -95,26 +95,28 @@ export default function MethodSection({ lang }: Props) {
   const t = COPY[lang];
 
   return (
-    <section className="mx-auto mt-8 max-w-6xl px-4 md:mt-10">
-      <div className="mx-auto mb-6 max-w-2xl text-center">
-        <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+    <section className="mx-auto mt-6 max-w-6xl px-4 sm:mt-8 md:mt-10">
+      <div className="mx-auto mb-3 max-w-2xl text-center sm:mb-6">
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
           {t.heading}
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         {t.steps.map((step, index) => (
           <div
             key={step.title}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="flex gap-3 border-b border-slate-200 py-3 last:border-b-0 sm:block sm:rounded-2xl sm:border sm:bg-white sm:p-5 sm:shadow-sm sm:last:border-b"
           >
-            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-extrabold text-white">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-extrabold text-white sm:mb-2 sm:h-8 sm:w-8">
               {index + 1}
             </div>
-            <h3 className="font-bold text-slate-900">{step.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              {step.body}
-            </p>
+            <div>
+              <h3 className="font-bold text-slate-900">{step.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600 sm:mt-2">
+                {step.body}
+              </p>
+            </div>
           </div>
         ))}
       </div>

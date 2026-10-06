@@ -115,21 +115,28 @@ export default function NextChapterSection({ lang }: Props) {
   const t = COPY[lang];
 
   return (
-    <section className="mx-auto mt-8 max-w-6xl px-4 md:mt-10">
-      <div className="mx-auto mb-6 max-w-2xl text-center">
+    <section className="mx-auto mt-6 max-w-6xl px-4 sm:mt-8 md:mt-10">
+      <div className="mx-auto mb-3 max-w-2xl text-center sm:mb-6">
         <div className="text-xs font-bold uppercase tracking-wide text-blue-700">
           {t.eyebrow}
         </div>
-        <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+        <h2 className="mt-2 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">
           {t.heading}
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Mobile: carousel con scroll-snap nativo (nessun auto-scroll, tutte le card sempre nel DOM).
+          Da sm in su: la stessa griglia di prima. */}
+      <div
+        role="region"
+        aria-label={t.heading}
+        tabIndex={0}
+        className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3"
+      >
         {t.cards.map((card) => (
           <div
             key={card.title}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="w-[84%] shrink-0 snap-start rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:w-auto sm:shrink sm:p-5"
           >
             <h3 className="font-bold text-slate-900">{card.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-600">
