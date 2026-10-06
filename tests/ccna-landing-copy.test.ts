@@ -42,3 +42,22 @@ test("no registry certification other than CCNA uses count tokens", async () => 
   const withTokens = CERTS.filter((c) => /\{questionCount/.test(JSON.stringify(c))).map((c) => c.slug);
   assert.deepEqual(withTokens, ["ccna"]);
 });
+
+test("every {questionCount} token in the registry declares a non-empty fallback", async () => {
+  const { CERTS } = await import("../src/certifications/registry.ts");
+  const tokens: string[] = [];
+  const walk = (value: unknown, path: string): void => {
+    if (typeof value === "string") {
+      for (const m of value.matchAll(/\{questionCount(\|[^}]*)?\}/g)) {
+        tokens.push(m[0]);
+        assert.ok(m[1] && m[1].length > 1, `token without fallback at ${path}: ${m[0]}`);
+      }
+    } else if (Array.isArray(value)) {
+      value.forEach((v, i) => walk(v, `${path}[${i}]`));
+    } else if (value && typeof value === "object") {
+      for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`);
+    }
+  };
+  for (const cert of CERTS) walk(cert, cert.slug);
+  assert.ok(tokens.length > 0, "the scan must find the CCNA tokens");
+});

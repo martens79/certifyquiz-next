@@ -8,6 +8,7 @@ import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { getCertBySlug as getRegistryCertBySlug } from "@/certifications/registry";
 import { P1_LANDING_OVERRIDES } from "@/certifications/editorial/p1-landing-overrides";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
+import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 
 // Robots and canonical metadata depend on live, per-language inventory.
 // Keep the route cached, but never retain an obsolete publication decision
@@ -176,7 +177,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 
-  const certName = data?.name_en || data?.name || registryCert?.title?.en || canonicalSlug;
+  // Il titolo del registry puo' contenere `{questionCount|soglia}`: va risolto, altrimenti
+  // con l'API giu' finirebbe grezzo in og:image:alt e nell'URL dell'immagine OG.
+  const registryTitle = registryCert?.title?.en
+    ? resolveQuestionCountTokens(registryCert.title.en, knownCount, "en")
+    : undefined;
+  const certName = data?.name_en || data?.name || registryTitle || canonicalSlug;
   const override = SEO_OVERRIDES[canonicalSlug] || {};
 
   const title =
