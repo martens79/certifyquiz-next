@@ -50,6 +50,7 @@ const ISC2CC = {
   fr: "Préparez l’examen ISC2 Certified in Cybersecurity avec un test pratique gratuit, des QCM type examen, des explications claires et une révision ciblée.",
   es: "Prepárate para el examen ISC2 Certified in Cybersecurity con un practice test gratis, preguntas tipo examen, explicaciones claras y repaso guiado.",
 },
+practiceName: { it: "ISC2 CC", en: "ISC2 CC", fr: "ISC2 CC", es: "ISC2 CC" },
 metaTitle: {
   it: "ISC2 CC – Practice Test e Quiz Cybersecurity 2026 | CertifyQuiz",
   en: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",

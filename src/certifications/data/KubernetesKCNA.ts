@@ -40,13 +40,13 @@ const KUBERNETES_KCNA = {
     en: "Kubernetes KCNA — Practice Test & Exam Prep 2026 | CertifyQuiz",
     it: "Kubernetes KCNA in Italiano — Quiz e Simulazione Esame 2026",
     fr: "Kubernetes KCNA en Français — Quiz et Examen Blanc 2026",
-    es: "Kubernetes KCNA en Español — Quiz y Examen de Práctica 2026",
+    es: "Kubernetes KCNA en Español — 240 Preguntas de Práctica 2026",
   },
   metaDescription: {
     en: "Prepare for the Kubernetes KCNA exam with practice questions on containers, architecture, networking, storage and cloud-native security. Start free!",
     it: "Preparati all'esame KCNA con domande su container, architettura Kubernetes, networking, storage e sicurezza cloud-native. Inizia gratis!",
     fr: "Préparez l'examen KCNA avec des questions sur les conteneurs, l'architecture Kubernetes, le networking, le stockage et la sécurité cloud-native. Commencez gratuitement !",
-    es: "Prepárate para el examen KCNA con preguntas sobre contenedores, arquitectura Kubernetes, networking, almacenamiento y seguridad cloud-native. ¡Empieza gratis!",
+    es: "Prepara el examen KCNA con 240 preguntas de práctica en español: Kubernetes, contenedores, networking, almacenamiento y seguridad cloud-native. ¡Empieza gratis!",
   },
   topics: [
     {
