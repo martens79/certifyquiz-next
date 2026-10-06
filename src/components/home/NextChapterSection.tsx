@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from "react";
+
 import type { Locale } from "@/lib/paths";
 
 type Props = { lang: Locale };
@@ -111,8 +113,19 @@ const COPY: Record<Locale, { eyebrow: string; heading: string; cards: Card[] }> 
   },
 };
 
+// Sotto `sm` la sezione e' un carousel scrollabile: solo li' serve un'area focalizzabile da tastiera.
+// Da `sm` in su e' una griglia statica e non deve aggiungere tab stop ne' landmark.
+const CAROUSEL_QUERY = "(max-width: 639px)";
+const subscribeCarousel = (cb: () => void) => {
+  const mq = window.matchMedia(CAROUSEL_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+const isCarousel = () => window.matchMedia(CAROUSEL_QUERY).matches;
+
 export default function NextChapterSection({ lang }: Props) {
   const t = COPY[lang];
+  const carousel = useSyncExternalStore(subscribeCarousel, isCarousel, () => false);
 
   return (
     <section className="mx-auto mt-6 max-w-6xl px-4 sm:mt-8 md:mt-10">
@@ -128,9 +141,7 @@ export default function NextChapterSection({ lang }: Props) {
       {/* Mobile: carousel con scroll-snap nativo (nessun auto-scroll, tutte le card sempre nel DOM).
           Da sm in su: la stessa griglia di prima. */}
       <div
-        role="region"
-        aria-label={t.heading}
-        tabIndex={0}
+        {...(carousel ? { role: "region", "aria-label": t.heading, tabIndex: 0 } : {})}
         className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3"
       >
         {t.cards.map((card) => (

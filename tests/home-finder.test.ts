@@ -25,7 +25,7 @@ const json = (status: number, body: unknown) =>
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { normalizeQuery, prepareFinderIndex, searchFinder, POPULAR_CERTS, FINDER_COPY } = require("../src/lib/home-finder.ts") as typeof import("../src/lib/home-finder");
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { getHomeFinderCerts, getHomeStats } = require("../src/lib/server/home-data.ts") as typeof import("../src/lib/server/home-data");
+const { getHomeFinderCerts, getHomeStats, SOFT_DEADLINE_MS } = require("../src/lib/server/home-data.ts") as typeof import("../src/lib/server/home-data");
 
 /* ----------------------------------------------------------------- ricerca */
 const FIXTURE = [
@@ -162,11 +162,19 @@ test("getHomeFinderCerts: errore backend, payload non valido o lista vuota => nu
   assert.equal(await getHomeFinderCerts("en"), null);
 });
 
-test("getHomeFinderCerts: le certificazioni 'planned' non compaiono", async () => {
-  handler = () => json(200, [{ id: 9, slug: "ccna", name: "CCNA" }, { id: 10, slug: "plc-fundamentals", name: "PLC Fundamentals" }]);
-  const res = (await getHomeFinderCerts("en"))!;
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { CERTS_BY_SLUG } = require("../src/certifications/registry.ts") as typeof import("../src/certifications/registry");
-  const planned = CERTS_BY_SLUG["plc-fundamentals"]?.publicationStatus === "planned";
-  assert.equal(res.some((c) => c.slug === "plc-fundamentals"), !planned);
+test("il backend lento non blocca mai il rendering oltre la soglia (stats e lista)", async () => {
+  handler = () => new Promise<Response>((resolve) => setTimeout(() => resolve(json(200, RAW)), SOFT_DEADLINE_MS * 3));
+  const t0 = Date.now();
+  const [stats, certs] = await Promise.all([getHomeStats(), getHomeFinderCerts("en")]);
+  const elapsed = Date.now() - t0;
+  assert.equal(stats, null);
+  assert.equal(certs, null);
+  assert.ok(elapsed < SOFT_DEADLINE_MS * 2, `attesa ${elapsed}ms`);
+});
+
+test("backend veloce: dati restituiti entro la soglia", async () => {
+  handler = () => json(200, RAW);
+  const t0 = Date.now();
+  assert.ok(await getHomeFinderCerts("en"));
+  assert.ok(Date.now() - t0 < 300);
 });

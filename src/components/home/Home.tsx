@@ -399,31 +399,18 @@ export default function Home({
   ];
 
   // Chip categoria del finder mobile: ordine per rilevanza, solo categorie pubbliche.
-  const FINDER_CATEGORY_ORDER: Array<Exclude<CategoryKey, "default">> = [
-    "sicurezza",
-    "reti",
-    "cloud",
-    "ai",
-    "programmazione",
-    "database",
-    "sistemi-operativi",
-    "data-analytics",
-    "virtualizzazione",
-    "management",
-    "business-applications",
-    "base",
+  const categoryTitle = new Map<string, string>(allCategories.map((c) => [c.key, c.title]));
+  categoryTitle.set("foundations", "Foundations");
+  const finderCategoryKeys: Array<Exclude<CategoryKey, "default">> = [
+    "sicurezza", "reti", "cloud", "ai", "programmazione", "database", "sistemi-operativi",
+    "data-analytics", "virtualizzazione", "management", "business-applications", "base", "foundations",
+    ...(showIndustrialAutomation ? (["industrial-automation"] as const) : []),
   ];
-  const finderCategories: FinderCategory[] = [
-    ...FINDER_CATEGORY_ORDER.map((key) => allCategories.find((c) => c.key === key)).filter(
-      (c): c is (typeof allCategories)[number] => Boolean(c)
-    ).map((c) => ({ key: c.key, title: c.title, href: categoryPath(safeLang, c.key) })),
-    { key: "foundations", title: "Foundations", href: categoryPath(safeLang, "foundations") },
-    ...(showIndustrialAutomation
-      ? allCategories
-          .filter((c) => c.key === "industrial-automation")
-          .map((c) => ({ key: c.key, title: c.title, href: categoryPath(safeLang, c.key) }))
-      : []),
-  ];
+  const finderCategories: FinderCategory[] = finderCategoryKeys.map((key) => ({
+    key,
+    title: categoryTitle.get(key) ?? key,
+    href: categoryPath(safeLang, key),
+  }));
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 overflow-x-hidden min-h-[100dvh]">
