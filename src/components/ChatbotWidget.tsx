@@ -351,6 +351,15 @@ export default function ChatbotWidget() {
             left: 8px;
             width: auto !important;
           }
+
+          /* Cookie, suggerimento lingua e installazione sono avvisi a tutta
+             larghezza sopra la bottom nav: finche' uno e' visibile l'assistente
+             resta nascosto (stato conservato) e torna alla chiusura dell'avviso. */
+          body:has([data-cq-notice]) .cq-chat-btn,
+          body:has([data-cq-notice]) .cq-chat-window {
+            visibility: hidden;
+            pointer-events: none;
+          }
         }
       `}</style>
 

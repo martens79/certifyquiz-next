@@ -659,10 +659,12 @@ useEffect(() => {
 
   return (
     <header
-      className={`top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60 ${
+      className={`top-0 z-40 w-full border-b ${
+        // Menu aperto: sfondo pieno e nessun backdrop-blur, altrimenti
+        // bg-white/80 + blur lasciano trasparire la pagina sotto.
         openDrawer
           ? "fixed inset-0 h-screen h-[100dvh] overflow-hidden bg-white"
-          : "sticky"
+          : "sticky bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/60"
       }`}
     >
       <a
