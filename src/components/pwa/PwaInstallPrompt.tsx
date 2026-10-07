@@ -1,5 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { langFromPathname } from "@/lib/i18n";
+import { useConsent } from "@/components/analytics/ConsentProvider";
 import { useEffect, useRef, useState } from "react";
 import { getAnonymousSessionId } from "@/lib/analytics";
 
@@ -86,7 +89,18 @@ function shouldShowPrompt(): boolean {
   return true;
 }
 
+const COPY = {
+  it: { title: "Installa CertifyQuiz", body: "Apri quiz, ripassi e simulazioni più velocemente dal tuo telefono.", install: "Installa", later: "Non ora" },
+  en: { title: "Install CertifyQuiz", body: "Open quizzes, reviews and simulations faster from your phone.", install: "Install", later: "Not now" },
+  fr: { title: "Installer CertifyQuiz", body: "Accédez plus vite aux quiz, révisions et simulations sur votre téléphone.", install: "Installer", later: "Plus tard" },
+  es: { title: "Instala CertifyQuiz", body: "Abre tests, repasos y simulacros más rápido desde tu teléfono.", install: "Instalar", later: "Ahora no" },
+};
+
 export default function PwaInstallPrompt() {
+  const t = COPY[langFromPathname(usePathname())];
+  const { ready, status } = useConsent();
+  const consentKnownRef = useRef(false);
+  consentKnownRef.current = ready && status !== "unknown";
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
@@ -108,6 +122,8 @@ export default function PwaInstallPrompt() {
 
     if (!shouldShowPrompt()) return;
 
+    let showTimer: ReturnType<typeof setTimeout> | undefined;
+
     const handler = (event: Event) => {
       // Ignora firing multipli dello stesso listener nella stessa sessione
       if (promptHandledThisSession) return;
@@ -119,13 +135,20 @@ export default function PwaInstallPrompt() {
 
       setDeferredPrompt(event as BeforeInstallPromptEvent);
 
-      setTimeout(() => {
+      // Dopo 5s mostra il prompt solo a consenso cookie noto e senza il
+      // suggerimento lingua visibile (niente avvisi sovrapposti): altrimenti riprova.
+      const showWhenFree = () => {
+        if (!consentKnownRef.current || document.querySelector("[data-lang-suggestion]")) {
+          showTimer = setTimeout(showWhenFree, 2000);
+          return;
+        }
         setVisible(true);
         // Salva il timestamp del primo show
         localStorage.setItem(PROMPT_SHOWN_KEY, Date.now().toString());
         window.gtag?.("event", "pwa_install_prompt_shown");
         trackPwaEvent("pwa_install_prompt_shown");
-      }, 5000);
+      };
+      showTimer = setTimeout(showWhenFree, 5000);
     };
 
     const installedHandler = () => {
@@ -137,6 +160,7 @@ export default function PwaInstallPrompt() {
     window.addEventListener("appinstalled", installedHandler);
 
     return () => {
+      clearTimeout(showTimer);
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
     };
@@ -179,10 +203,10 @@ export default function PwaInstallPrompt() {
     setVisible(false);
   };
 
-  if (!visible || !deferredPrompt) return null;
+  if (!visible || !deferredPrompt || !ready || status === "unknown") return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
       <div className="flex items-start gap-3">
         <img
           src="/icons/icon-192.png"
@@ -192,28 +216,28 @@ export default function PwaInstallPrompt() {
 
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-900">
-            Installa CertifyQuiz
+            {t.title}
           </p>
 
           <p className="mt-1 text-xs text-slate-600">
-            Apri quiz, ripassi e simulazioni più velocemente dal tuo telefono.
+            {t.body}
           </p>
 
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               onClick={installApp}
-              className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
+              className="min-h-11 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
             >
-              Installa
+              {t.install}
             </button>
 
             <button
               type="button"
               onClick={dismiss}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"
+              className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"
             >
-              Non ora
+              {t.later}
             </button>
           </div>
         </div>

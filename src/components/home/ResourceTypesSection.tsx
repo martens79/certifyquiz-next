@@ -4,6 +4,7 @@ import { BookOpen, Gamepad2, Terminal } from "lucide-react";
 import type { Locale } from "@/lib/paths";
 import {
   certificationsPath,
+  quizHomePath,
   guidesPath,
   gamesPath,
   interactiveLabsPath,
@@ -18,7 +19,7 @@ type Props = { lang: Locale };
 
 const COPY = {
   it: {
-    kicker: "GLI STRUMENTI DIETRO LA PROMESSA",
+    kicker: "PREPARAZIONE",
     heading: "Quiz d'esame, simulazioni e strumenti di studio per oltre 50 certificazioni IT",
     quiz: "Quiz",
     quizDesc: "Domande in stile esame costruite sui domini ufficiali — con una spiegazione su ogni risposta sbagliata, non solo un punteggio.",
@@ -39,7 +40,7 @@ const COPY = {
     newBadge: "Nuovo",
   },
   en: {
-    kicker: "THE TOOLS BEHIND THE PROMISE",
+    kicker: "PREPARATION",
     heading: "Practice tests, exam simulations and study tools for 50+ IT certifications",
     quiz: "Quizzes",
     quizDesc: "Exam-style questions built on the official exam domains — with an explanation on every wrong answer, not just a score.",
@@ -60,7 +61,7 @@ const COPY = {
     newBadge: "New",
   },
   fr: {
-    kicker: "LES OUTILS DERRIÈRE LA PROMESSE",
+    kicker: "PRÉPARATION",
     heading: "Quiz d'examen, simulations et outils d'étude pour plus de 50 certifications IT",
     quiz: "Quiz",
     quizDesc: "Des questions au format de l'examen, construites sur les domaines officiels — avec une explication à chaque erreur, pas seulement un score.",
@@ -81,7 +82,7 @@ const COPY = {
     newBadge: "Nouveau",
   },
   es: {
-    kicker: "LAS HERRAMIENTAS DETRÁS DE LA PROMESA",
+    kicker: "PREPARACIÓN",
     heading: "Tests de examen, simulacros y herramientas de estudio para más de 50 certificaciones IT",
     quiz: "Tests",
     quizDesc: "Preguntas al estilo del examen, construidas sobre los dominios oficiales — con una explicación en cada error, no solo una puntuación.",
@@ -114,24 +115,30 @@ const COPY = {
  * "Materiale di studio" della pagina certificazione, quindi la home e quella
  * pagina si parlano, e non entra nulla nel bundle.
  */
+const PREPARATION = {
+  it: { heading: "Gli strumenti per prepararti", practice: "Esercitati", practiceDesc: "Quiz per argomento e spiegazioni per capire gli errori.", exam: "Simula l’esame", examDesc: "Timer e punteggio finale per le certificazioni supportate. Revisione delle risposte con Premium.", labs: "Metti in pratica", labsDesc: "Laboratori guidati per le certificazioni disponibili. Accesso gratuito o Premium.", mistakes: "Ripassa gli errori", mistakesDesc: "Torna sulle domande sbagliate e consolida i punti deboli. Premium.", more: "Altri strumenti di studio" },
+  en: { heading: "Your preparation toolkit", practice: "Practice", practiceDesc: "Topic quizzes and explanations to understand mistakes.", exam: "Simulate the exam", examDesc: "Timer and final score for supported certifications. Answer review with Premium.", labs: "Put skills into practice", labsDesc: "Guided labs for available certifications. Free or Premium access.", mistakes: "Review mistakes", mistakesDesc: "Revisit wrong answers and strengthen weak topics. Premium.", more: "More study tools" },
+  fr: { heading: "Vos outils de préparation", practice: "Entraînez-vous", practiceDesc: "Quiz par sujet et explications pour comprendre vos erreurs.", exam: "Simulez l’examen", examDesc: "Chronomètre et score final pour les certifications prises en charge. Révision des réponses avec Premium.", labs: "Passez à la pratique", labsDesc: "Labs guidés pour les certifications disponibles. Accès gratuit ou Premium.", mistakes: "Révisez vos erreurs", mistakesDesc: "Reprenez les mauvaises réponses et renforcez vos points faibles. Premium.", more: "Autres outils de révision" },
+  es: { heading: "Tus herramientas de preparación", practice: "Practica", practiceDesc: "Tests por tema y explicaciones para comprender tus errores.", exam: "Simula el examen", examDesc: "Temporizador y resultado final para certificaciones compatibles. Revisión de respuestas con Premium.", labs: "Ponlo en práctica", labsDesc: "Laboratorios guiados para certificaciones disponibles. Acceso gratuito o Premium.", mistakes: "Repasa tus errores", mistakesDesc: "Revisa las respuestas incorrectas y refuerza los puntos débiles. Premium.", more: "Más herramientas de estudio" },
+} as const;
+
 export default function ResourceTypesSection({ lang }: Props) {
   const t = COPY[lang];
+  const prep = PREPARATION[lang];
+  const capabilities = [
+    { icon: "📝", title: prep.practice, desc: prep.practiceDesc, href: quizHomePath(lang) },
+    { icon: "⏱", title: prep.exam, desc: prep.examDesc, href: certificationsPath(lang) },
+    { icon: <Terminal size={18} />, title: prep.labs, desc: prep.labsDesc, href: interactiveLabsPath(lang) },
+    { icon: "↺", title: prep.mistakes, desc: prep.mistakesDesc, href: lang === "en" ? "/review/errors" : `/${lang}/review/errors` },
+  ];
 
   // Emoji, le stesse della griglia "Materiale di studio" della pagina
   // certificazione: chi arriva da qui ritrova gli stessi simboli là.
   const items = [
-    { icon: "📝", title: t.quiz, desc: t.quizDesc, href: certificationsPath(lang) },
     { icon: "📖", title: t.reviews, desc: t.reviewsDesc, href: reviewsPath(lang) },
     { icon: "📕", title: t.guides, desc: t.guidesDesc, href: guidesPath(lang) },
     { icon: "🗺️", title: t.maps, desc: t.mapsDesc, href: mapsPath(lang) },
     { icon: "🎯", title: t.scenarios, desc: t.scenariosDesc, href: scenariosPath(lang) },
-    {
-      icon: <Terminal size={18} strokeWidth={2.25} />,
-      title: t.labs,
-      desc: t.labsDesc,
-      href: interactiveLabsPath(lang),
-      isNew: true,
-    },
     {
       icon: <Gamepad2 size={19} strokeWidth={2.25} />,
       title: t.games,
@@ -149,17 +156,29 @@ export default function ResourceTypesSection({ lang }: Props) {
   ];
 
   return (
-    <section className="mx-auto mt-5 max-w-6xl md:mt-6" aria-label={t.heading}>
+    <section className="mx-auto mt-5 max-w-6xl md:mt-6" aria-label={prep.heading}>
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
         <div className="text-[11px] font-semibold uppercase tracking-wide text-blue-700">
           🎯 {t.kicker}
         </div>
 
         <h2 className="mt-1 text-lg font-extrabold text-slate-800 md:text-xl">
-          {t.heading}
+          {prep.heading}
         </h2>
 
-        <ul className="mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
+        <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 lg:gap-3">
+          {capabilities.map(({ icon, title, desc, href }) => (
+            <li key={title} className="min-w-0">
+              <Link href={href} className="flex h-full items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-3 hover:border-blue-400 focus-visible:outline-2 focus-visible:outline-blue-600">
+                <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-blue-100">{icon}</span>
+                <span className="min-w-0"><span className="block text-sm font-bold text-slate-900">{title}</span><span className="mt-1 block text-xs leading-relaxed text-slate-600">{desc}</span></span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <details className="mt-4">
+          <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold text-blue-700 focus-visible:outline-2 focus-visible:outline-blue-600">{prep.more}</summary>
+        <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 lg:gap-3">
           {items.map(({ icon, title, desc, href, isNew, trackingEvent }) => (
             <li key={href} className="min-w-0">
               <Link
@@ -197,6 +216,7 @@ export default function ResourceTypesSection({ lang }: Props) {
             </li>
           ))}
         </ul>
+        </details>
       </div>
     </section>
   );
