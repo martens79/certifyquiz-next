@@ -1,0 +1,102 @@
+
+=== before en-375
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,359,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[313,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Start 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /paths drawer expanded: false
+
+=== before it-375
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,359,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[313,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Inizia 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /it/percorsi drawer expanded: false
+
+=== before fr-375
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,359,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[313,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Commencer 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /fr/parcours drawer expanded: false
+
+=== before es-375
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[315,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,359,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[313,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Empezar 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /es/rutas drawer expanded: false
+
+=== before en-390
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,374,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[328,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Start 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /paths drawer expanded: false
+
+=== before it-390
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,374,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[328,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Inizia 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /it/percorsi drawer expanded: false
+
+=== before fr-390
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,374,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[328,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Commencer 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /fr/parcours drawer expanded: false
+
+=== before es-390
+A1 cookie banner shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"}
+A2 language hint shown      assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":false,"cover":"DIV"} hint: 1
+A3 notices closed           assistant: {"present":true,"visibility":"visible","opacity":"1","box":[330,628,44,44],"usable":true,"cover":"svg"}
+A4 assistant opened         window: {"vis":"visible","box":[8,137,374,475]} overflowX: false nav: [683,77]
+A5 assistant closed again   window present: 0 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[328,626,48,48],"usable":true,"cover":"svg"}
+B1 drawer open              header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"fixed"} bodyOverflow: hidden
+B2 last link               y: 434 hit: A:Empezar 🚀
+B3 page behind locked      scrollY before/after open+wheel: 500 500 nav: [683,77] overflowX: false
+B4 Escape                  expanded: false focus on trigger: mobile-drawer inert: true bodyOverflow: visible header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"}
+B5 link click              -> /es/rutas drawer expanded: false
+
+C desktop en 1440 header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"} assistant: {"present":true,"visibility":"visible","opacity":"1","box":[1360,820,56,56],"usable":true,"cover":"svg"} overflowX: false
+  after cookie choice: hint: 1 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[1360,820,56,56],"usable":true,"cover":"svg"}
+
+C desktop it 1440 header: {"bg":"oklab(0.999994 0.0000455677 0.0000200868 / 0.6)","backdrop":"blur(8px)","pos":"sticky"} assistant: {"present":true,"visibility":"visible","opacity":"1","box":[1360,820,56,56],"usable":true,"cover":"svg"} overflowX: false
+  after cookie choice: hint: 1 assistant: {"present":true,"visibility":"visible","opacity":"1","box":[1360,820,56,56],"usable":true,"cover":"svg"}
