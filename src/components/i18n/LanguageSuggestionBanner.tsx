@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useConsent } from "@/components/analytics/ConsentProvider";
 
 type Lang = "it" | "en" | "fr" | "es";
 
@@ -45,6 +46,7 @@ function buildLocalizedPath(pathname: string, lang: Lang): string {
 export default function LanguageSuggestionBanner() {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
+  const { ready, status } = useConsent();
 
   // Non interrompere i momenti ad alta intenzione o di concentrazione.
   // La lingua resta sempre modificabile dall'header.
@@ -111,10 +113,11 @@ export default function LanguageSuggestionBanner() {
     setSuggestedLang(null);
   }
 
-  if (!suggestedLang) return null;
+  // Un solo avviso alla volta: prima il consenso cookie, poi il suggerimento lingua.
+  if (!suggestedLang || !ready || status === "unknown") return null;
 
   return (
-    <div className="fixed left-4 right-4 bottom-24 md:bottom-4 z-[9999] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-xl">
+    <div data-lang-suggestion className="fixed left-4 right-4 bottom-24 md:bottom-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-xl">
       <p className="mb-3 font-semibold text-slate-900">
         {LABELS[suggestedLang]}
       </p>

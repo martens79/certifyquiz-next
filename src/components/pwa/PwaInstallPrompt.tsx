@@ -99,6 +99,8 @@ const COPY = {
 export default function PwaInstallPrompt() {
   const t = COPY[langFromPathname(usePathname())];
   const { ready, status } = useConsent();
+  const consentKnownRef = useRef(false);
+  consentKnownRef.current = ready && status !== "unknown";
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
@@ -120,6 +122,8 @@ export default function PwaInstallPrompt() {
 
     if (!shouldShowPrompt()) return;
 
+    let showTimer: ReturnType<typeof setTimeout> | undefined;
+
     const handler = (event: Event) => {
       // Ignora firing multipli dello stesso listener nella stessa sessione
       if (promptHandledThisSession) return;
@@ -131,13 +135,20 @@ export default function PwaInstallPrompt() {
 
       setDeferredPrompt(event as BeforeInstallPromptEvent);
 
-      setTimeout(() => {
+      // Dopo 5s mostra il prompt solo a consenso cookie noto e senza il
+      // suggerimento lingua visibile (niente avvisi sovrapposti): altrimenti riprova.
+      const showWhenFree = () => {
+        if (!consentKnownRef.current || document.querySelector("[data-lang-suggestion]")) {
+          showTimer = setTimeout(showWhenFree, 2000);
+          return;
+        }
         setVisible(true);
         // Salva il timestamp del primo show
         localStorage.setItem(PROMPT_SHOWN_KEY, Date.now().toString());
         window.gtag?.("event", "pwa_install_prompt_shown");
         trackPwaEvent("pwa_install_prompt_shown");
-      }, 5000);
+      };
+      showTimer = setTimeout(showWhenFree, 5000);
     };
 
     const installedHandler = () => {
@@ -149,6 +160,7 @@ export default function PwaInstallPrompt() {
     window.addEventListener("appinstalled", installedHandler);
 
     return () => {
+      clearTimeout(showTimer);
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
     };
@@ -194,7 +206,7 @@ export default function PwaInstallPrompt() {
   if (!visible || !deferredPrompt || !ready || status === "unknown") return null;
 
   return (
-    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
       <div className="flex items-start gap-3">
         <img
           src="/icons/icon-192.png"

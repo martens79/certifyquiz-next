@@ -19,7 +19,7 @@ type Props = { lang: Locale };
 
 const COPY = {
   it: {
-    kicker: "GLI STRUMENTI DIETRO LA PROMESSA",
+    kicker: "PREPARAZIONE",
     heading: "Quiz d'esame, simulazioni e strumenti di studio per oltre 50 certificazioni IT",
     quiz: "Quiz",
     quizDesc: "Domande in stile esame costruite sui domini ufficiali — con una spiegazione su ogni risposta sbagliata, non solo un punteggio.",
@@ -40,7 +40,7 @@ const COPY = {
     newBadge: "Nuovo",
   },
   en: {
-    kicker: "THE TOOLS BEHIND THE PROMISE",
+    kicker: "PREPARATION",
     heading: "Practice tests, exam simulations and study tools for 50+ IT certifications",
     quiz: "Quizzes",
     quizDesc: "Exam-style questions built on the official exam domains — with an explanation on every wrong answer, not just a score.",
@@ -61,7 +61,7 @@ const COPY = {
     newBadge: "New",
   },
   fr: {
-    kicker: "LES OUTILS DERRIÈRE LA PROMESSE",
+    kicker: "PRÉPARATION",
     heading: "Quiz d'examen, simulations et outils d'étude pour plus de 50 certifications IT",
     quiz: "Quiz",
     quizDesc: "Des questions au format de l'examen, construites sur les domaines officiels — avec une explication à chaque erreur, pas seulement un score.",
@@ -82,7 +82,7 @@ const COPY = {
     newBadge: "Nouveau",
   },
   es: {
-    kicker: "LAS HERRAMIENTAS DETRÁS DE LA PROMESA",
+    kicker: "PREPARACIÓN",
     heading: "Tests de examen, simulacros y herramientas de estudio para más de 50 certificaciones IT",
     quiz: "Tests",
     quizDesc: "Preguntas al estilo del examen, construidas sobre los dominios oficiales — con una explicación en cada error, no solo una puntuación.",
@@ -116,10 +116,10 @@ const COPY = {
  * pagina si parlano, e non entra nulla nel bundle.
  */
 const PREPARATION = {
-  it: { heading: "Gli strumenti per prepararti", practice: "Esercitati", practiceDesc: "Quiz per argomento e spiegazioni per capire gli errori.", exam: "Simula l’esame", examDesc: "Timer e risultato finale per le certificazioni supportate. Premium.", labs: "Metti in pratica", labsDesc: "Laboratori guidati per le certificazioni disponibili. Accesso gratuito o Premium.", mistakes: "Ripassa gli errori", mistakesDesc: "Torna sulle domande sbagliate e consolida i punti deboli. Premium.", more: "Altri strumenti di studio" },
-  en: { heading: "Your preparation toolkit", practice: "Practice", practiceDesc: "Topic quizzes and explanations to understand mistakes.", exam: "Simulate the exam", examDesc: "Timer and final score for supported certifications. Premium.", labs: "Put skills into practice", labsDesc: "Guided labs for available certifications. Free or Premium access.", mistakes: "Review mistakes", mistakesDesc: "Revisit wrong answers and strengthen weak topics. Premium.", more: "More study tools" },
-  fr: { heading: "Vos outils de préparation", practice: "Entraînez-vous", practiceDesc: "Quiz par sujet et explications pour comprendre vos erreurs.", exam: "Simulez l’examen", examDesc: "Chronomètre et score final pour les certifications prises en charge. Premium.", labs: "Passez à la pratique", labsDesc: "Labs guidés pour les certifications disponibles. Accès gratuit ou Premium.", mistakes: "Révisez vos erreurs", mistakesDesc: "Reprenez les mauvaises réponses et renforcez vos points faibles. Premium.", more: "Autres outils de révision" },
-  es: { heading: "Tus herramientas de preparación", practice: "Practica", practiceDesc: "Tests por tema y explicaciones para comprender tus errores.", exam: "Simula el examen", examDesc: "Temporizador y resultado final para certificaciones compatibles. Premium.", labs: "Ponlo en práctica", labsDesc: "Laboratorios guiados para certificaciones disponibles. Acceso gratuito o Premium.", mistakes: "Repasa tus errores", mistakesDesc: "Revisa las respuestas incorrectas y refuerza los puntos débiles. Premium.", more: "Más herramientas de estudio" },
+  it: { heading: "Gli strumenti per prepararti", practice: "Esercitati", practiceDesc: "Quiz per argomento e spiegazioni per capire gli errori.", exam: "Simula l’esame", examDesc: "Timer e punteggio finale per le certificazioni supportate. Revisione delle risposte con Premium.", labs: "Metti in pratica", labsDesc: "Laboratori guidati per le certificazioni disponibili. Accesso gratuito o Premium.", mistakes: "Ripassa gli errori", mistakesDesc: "Torna sulle domande sbagliate e consolida i punti deboli. Premium.", more: "Altri strumenti di studio" },
+  en: { heading: "Your preparation toolkit", practice: "Practice", practiceDesc: "Topic quizzes and explanations to understand mistakes.", exam: "Simulate the exam", examDesc: "Timer and final score for supported certifications. Answer review with Premium.", labs: "Put skills into practice", labsDesc: "Guided labs for available certifications. Free or Premium access.", mistakes: "Review mistakes", mistakesDesc: "Revisit wrong answers and strengthen weak topics. Premium.", more: "More study tools" },
+  fr: { heading: "Vos outils de préparation", practice: "Entraînez-vous", practiceDesc: "Quiz par sujet et explications pour comprendre vos erreurs.", exam: "Simulez l’examen", examDesc: "Chronomètre et score final pour les certifications prises en charge. Révision des réponses avec Premium.", labs: "Passez à la pratique", labsDesc: "Labs guidés pour les certifications disponibles. Accès gratuit ou Premium.", mistakes: "Révisez vos erreurs", mistakesDesc: "Reprenez les mauvaises réponses et renforcez vos points faibles. Premium.", more: "Autres outils de révision" },
+  es: { heading: "Tus herramientas de preparación", practice: "Practica", practiceDesc: "Tests por tema y explicaciones para comprender tus errores.", exam: "Simula el examen", examDesc: "Temporizador y resultado final para certificaciones compatibles. Revisión de respuestas con Premium.", labs: "Ponlo en práctica", labsDesc: "Laboratorios guiados para certificaciones disponibles. Acceso gratuito o Premium.", mistakes: "Repasa tus errores", mistakesDesc: "Revisa las respuestas incorrectas y refuerza los puntos débiles. Premium.", more: "Más herramientas de estudio" },
 } as const;
 
 export default function ResourceTypesSection({ lang }: Props) {

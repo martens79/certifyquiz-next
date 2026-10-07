@@ -765,7 +765,7 @@ useEffect(() => {
           aria-hidden={!openDrawer}
           inert={!openDrawer}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 pb-[calc(10rem+env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 pb-[calc(18rem+env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
             <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
               {quick.filter((q) => [homeHref, pricingHref, businessHref].includes(q.href)).map((q) => (
                 <Link key={q.href} href={q.href} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm hover:bg-gray-100" onClick={() => { q.onClick?.(); setOpenDrawer(false); }}>{q.label}</Link>
