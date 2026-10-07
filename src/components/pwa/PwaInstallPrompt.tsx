@@ -206,7 +206,7 @@ export default function PwaInstallPrompt() {
   if (!visible || !deferredPrompt || !ready || status === "unknown") return null;
 
   return (
-    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+    <div data-cq-notice className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
       <div className="flex items-start gap-3">
         <img
           src="/icons/icon-192.png"

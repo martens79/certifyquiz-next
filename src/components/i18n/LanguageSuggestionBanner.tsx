@@ -117,7 +117,7 @@ export default function LanguageSuggestionBanner() {
   if (!suggestedLang || !ready || status === "unknown") return null;
 
   return (
-    <div data-lang-suggestion className="fixed left-4 right-4 bottom-24 md:bottom-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-xl">
+    <div data-lang-suggestion data-cq-notice className="fixed left-4 right-4 bottom-24 md:bottom-4 z-[10000] mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-xl">
       <p className="mb-3 font-semibold text-slate-900">
         {LABELS[suggestedLang]}
       </p>

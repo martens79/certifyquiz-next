@@ -15,7 +15,7 @@ export default function CookieBanner() {
   const t = COPY[langFromPathname(usePathname())];
   if (!ready || status !== "unknown") return null;
   return (
-    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 right-4 md:bottom-4 md:right-24 rounded-2xl shadow p-4 bg-white border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 z-[10000]">
+    <div data-cq-notice className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 right-4 md:bottom-4 md:right-24 rounded-2xl shadow p-4 bg-white border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 z-[10000]">
       <p className="text-sm">{t.message}</p>
       <div className="flex shrink-0 gap-2">
         <button onClick={() => setConsent(false)} className="min-h-11 px-3 py-2 border rounded-xl">{t.reject}</button>
