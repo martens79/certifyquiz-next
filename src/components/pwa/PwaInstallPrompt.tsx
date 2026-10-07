@@ -1,5 +1,8 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { langFromPathname } from "@/lib/i18n";
+import { useConsent } from "@/components/analytics/ConsentProvider";
 import { useEffect, useRef, useState } from "react";
 import { getAnonymousSessionId } from "@/lib/analytics";
 
@@ -86,7 +89,16 @@ function shouldShowPrompt(): boolean {
   return true;
 }
 
+const COPY = {
+  it: { title: "Installa CertifyQuiz", body: "Apri quiz, ripassi e simulazioni più velocemente dal tuo telefono.", install: "Installa", later: "Non ora" },
+  en: { title: "Install CertifyQuiz", body: "Open quizzes, reviews and simulations faster from your phone.", install: "Install", later: "Not now" },
+  fr: { title: "Installer CertifyQuiz", body: "Accédez plus vite aux quiz, révisions et simulations sur votre téléphone.", install: "Installer", later: "Plus tard" },
+  es: { title: "Instala CertifyQuiz", body: "Abre tests, repasos y simulacros más rápido desde tu teléfono.", install: "Instalar", later: "Ahora no" },
+};
+
 export default function PwaInstallPrompt() {
+  const t = COPY[langFromPathname(usePathname())];
+  const { ready, status } = useConsent();
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
@@ -179,10 +191,10 @@ export default function PwaInstallPrompt() {
     setVisible(false);
   };
 
-  if (!visible || !deferredPrompt) return null;
+  if (!visible || !deferredPrompt || !ready || status === "unknown") return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] md:bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
       <div className="flex items-start gap-3">
         <img
           src="/icons/icon-192.png"
@@ -192,28 +204,28 @@ export default function PwaInstallPrompt() {
 
         <div className="flex-1">
           <p className="text-sm font-semibold text-slate-900">
-            Installa CertifyQuiz
+            {t.title}
           </p>
 
           <p className="mt-1 text-xs text-slate-600">
-            Apri quiz, ripassi e simulazioni più velocemente dal tuo telefono.
+            {t.body}
           </p>
 
           <div className="mt-3 flex gap-2">
             <button
               type="button"
               onClick={installApp}
-              className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
+              className="min-h-11 rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white"
             >
-              Installa
+              {t.install}
             </button>
 
             <button
               type="button"
               onClick={dismiss}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"
+              className="min-h-11 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700"
             >
-              Non ora
+              {t.later}
             </button>
           </div>
         </div>

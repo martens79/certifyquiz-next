@@ -473,6 +473,8 @@ export default function Header({ lang }: Props) {
   const isProfile = pathNoQuery === profilePath;
 
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const desktopNavRef = useRef<HTMLElement | null>(null);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const drawerRef = useRef<HTMLDivElement | null>(null);
 
@@ -566,6 +568,38 @@ export default function Header({ lang }: Props) {
   ui.interactiveLabs,
   ui.reviews,
 ]);
+const groupLabels = {
+  it: { learn: "Impara", practice: "Esercitati", explore: "Esplora" },
+  en: { learn: "Learn", practice: "Practice", explore: "Explore" },
+  fr: { learn: "Apprendre", practice: "S’entraîner", explore: "Explorer" },
+  es: { learn: "Aprende", practice: "Practica", explore: "Explora" },
+}[lang];
+const groups = [
+  { key: "learn", label: groupLabels.learn, hrefs: [pathsHref, reviewsHref, guidesHref, mapsHref] },
+  { key: "practice", label: groupLabels.practice, hrefs: [quizHomeHref, scenariosHref, labsHref, gamesHref] },
+  { key: "explore", label: groupLabels.explore, hrefs: [certsHref, blogHref, suggestedHref] },
+];
+useEffect(() => {
+  setOpenGroup(null);
+}, [pathname]);
+useEffect(() => {
+  if (!openGroup) return;
+  const closeOutside = (event: MouseEvent) => {
+    if (!desktopNavRef.current?.contains(event.target as Node)) setOpenGroup(null);
+  };
+  const closeEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      desktopNavRef.current?.querySelector<HTMLButtonElement>(`button[data-group="${openGroup}"]`)?.focus();
+      setOpenGroup(null);
+    }
+  };
+  document.addEventListener("mousedown", closeOutside);
+  document.addEventListener("keydown", closeEscape);
+  return () => {
+    document.removeEventListener("mousedown", closeOutside);
+    document.removeEventListener("keydown", closeEscape);
+  };
+}, [openGroup]);
 const [isAdminLocal, setIsAdminLocal] = useState(false);
 
 useEffect(() => {
@@ -705,26 +739,19 @@ useEffect(() => {
 
         {/* Quick actions desktop */}
         <div className="hidden items-center justify-between py-1.5 text-sm text-gray-800 md:flex">
-          {/* flex-wrap: 12 voci non stanno su una riga sotto i ~1050px e la
-              pagina finiva per scrollare in orizzontale (succedeva gia' con 11) */}
-          <nav className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label={ui.quick}>
-            {quick.map((q) => {
-              const active = isActive(q.href);
-              return (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className={`flex items-center gap-1 ${
-                    active ? "underline underline-offset-4" : "hover:opacity-80"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                  onClick={q.onClick}
-                >
-                  {q.icon}
-                  <span>{q.label}</span>
-                </Link>
-              );
-            })}
+          <nav ref={desktopNavRef} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpenGroup(null); }} className="flex flex-wrap items-center gap-x-4 gap-y-1" aria-label={ui.quick}>
+            <Link href={homeHref} className="flex min-h-11 items-center gap-1" aria-current={isActive(homeHref) ? "page" : undefined}><IconHome />{ui.home}</Link>
+            {groups.map((group) => (
+              <div key={group.key} className="relative">
+                <button type="button" data-group={group.key} className="flex min-h-11 items-center gap-2 rounded-lg px-2 font-semibold hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-gray-900" aria-expanded={openGroup === group.key} aria-controls={`desktop-${group.key}`} onClick={() => setOpenGroup(openGroup === group.key ? null : group.key)}>{group.label}<span aria-hidden>⌄</span></button>
+                <div id={`desktop-${group.key}`} hidden={openGroup !== group.key} className="absolute left-0 top-full z-50 w-64 rounded-xl border bg-white p-2 shadow-lg">
+                  {quick.filter((q) => group.hrefs.includes(q.href)).map((q) => (
+                    <Link key={q.href} href={q.href} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-gray-900" aria-current={isActive(q.href) ? "page" : undefined} onClick={() => { q.onClick?.(); setOpenGroup(null); }}>{q.icon}{q.label}</Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {quick.filter((q) => q.href === pricingHref || q.href === businessHref).map((q) => <Link key={q.href} href={q.href} onClick={q.onClick} className="flex min-h-11 items-center gap-1" aria-current={isActive(q.href) ? "page" : undefined}>{q.icon}{q.label}</Link>)}
           </nav>
         </div>
 
@@ -736,21 +763,20 @@ useEffect(() => {
             openDrawer ? "flex min-h-0 flex-1 flex-col border-t" : "max-h-0"
           }`}
           aria-hidden={!openDrawer}
+          inert={!openDrawer}
         >
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-3 pb-[calc(10rem+env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch]">
             <nav className="flex flex-col gap-1" aria-label={ui.secondaryNav}>
-              {quick.map((q) => (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className="rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => {
-                    q.onClick?.();
-                    setOpenDrawer(false);
-                  }}
-                >
-                  {q.label}
-                </Link>
+              {quick.filter((q) => [homeHref, pricingHref, businessHref].includes(q.href)).map((q) => (
+                <Link key={q.href} href={q.href} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm hover:bg-gray-100" onClick={() => { q.onClick?.(); setOpenDrawer(false); }}>{q.label}</Link>
+              ))}
+              {groups.map((group) => (
+                <div key={group.key} className="mt-2 border-t pt-3">
+                  <p className="px-3 text-xs font-bold uppercase tracking-wide text-slate-500">{group.label}</p>
+                  {quick.filter((q) => group.hrefs.includes(q.href)).map((q) => (
+                    <Link key={q.href} href={q.href} className="flex min-h-11 items-center rounded-md px-3 py-2 text-sm hover:bg-gray-100" onClick={() => { q.onClick?.(); setOpenDrawer(false); }}>{q.label}</Link>
+                  ))}
+                </div>
               ))}
 
                 {isAdminLocal && (

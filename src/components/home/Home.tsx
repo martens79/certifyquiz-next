@@ -445,10 +445,10 @@ export default function Home({
         <p className="max-md:order-2 mt-2 text-base font-medium text-slate-700 sm:mt-3 sm:text-lg md:text-xl">
           {L(
             {
-              it: "Sei davvero pronto per l'esame? Non scoprirlo il giorno dell'esame.",
-              en: "Are you really ready for the exam? Don't find out on exam day.",
-              fr: "Êtes-vous vraiment prêt pour l'examen ? Ne l'apprenez pas le jour J.",
-              es: "¿Estás realmente preparado para el examen? No lo descubras el día del examen.",
+              it: "Preparati con metodo. Metti alla prova le tue competenze.",
+              en: "Prepare with a plan. Put your skills to the test.",
+              fr: "Préparez-vous avec méthode. Testez vos compétences.",
+              es: "Prepárate con método. Pon a prueba tus habilidades.",
             },
             safeLang
           )}
@@ -457,10 +457,10 @@ export default function Home({
         <p className="max-md:order-7 mt-4 text-sm md:mt-3 md:text-base text-slate-600">
           {L(
             {
-              it: "Mettiti alla prova prima: quiz, simulazioni, assessment e pratica per capire dove sei preparato — e dove no.",
-              en: "Test yourself first: quizzes, simulations, assessments and hands-on practice to see where you're ready — and where you're not.",
-              fr: "Testez-vous avant : quiz, simulations, évaluations et pratique pour savoir où vous êtes prêt — et où vous ne l'êtes pas.",
-              es: "Ponte a prueba antes: tests, simulacros, evaluaciones y práctica para saber dónde estás preparado — y dónde no.",
+              it: "Scegli una certificazione, individua le lacune e allenati sugli argomenti da migliorare.",
+              en: "Choose a certification, find your gaps and practice the topics you need to improve.",
+              fr: "Choisissez une certification, repérez vos lacunes et travaillez les sujets à améliorer.",
+              es: "Elige una certificación, identifica tus lagunas y practica los temas que necesitas mejorar.",
             },
             safeLang
           )}
@@ -496,16 +496,16 @@ export default function Home({
               language: safeLang,
               user_state: isLoggedIn ? "free" : "anonymous",
               source_page: "homepage",
-              content_type: "readiness_assessment",
+              content_type: "quiz_catalog",
             })}
             className="inline-flex justify-center bg-blue-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-transform hover:scale-[1.02]"
           >
             {L(
               {
-                it: "Scopri se sei pronto",
-                en: "Find out if you're ready",
-                fr: "Découvrez si vous êtes prêt",
-                es: "Descubre si estás preparado",
+                it: "Inizia a esercitarti gratis",
+                en: "Start practicing free",
+                fr: "Entraînez-vous gratuitement",
+                es: "Empieza a practicar gratis",
               },
               safeLang
             )}
@@ -533,10 +533,10 @@ export default function Home({
         <p className="max-md:order-4 mt-2 text-sm text-neutral-600 sm:mt-3">
           {L(
             {
-              it: "Inizi gratis. Ogni risposta sbagliata arriva con il ragionamento, non solo con la correzione.",
-              en: "Start free. Every wrong answer comes with the reasoning, not just the correction.",
-              fr: "Commencez gratuitement. Chaque mauvaise réponse est accompagnée du raisonnement, pas seulement de la correction.",
-              es: "Empieza gratis. Cada respuesta incorrecta viene con el razonamiento, no solo con la corrección.",
+              it: "Inizia gratis. Le spiegazioni ti aiutano a capire gli errori; si applicano i limiti del piano gratuito.",
+              en: "Start free. Explanations help you understand mistakes; free plan limits apply.",
+              fr: "Commencez gratuitement. Comprenez vos erreurs grâce aux explications, dans les limites de l’offre gratuite.",
+              es: "Empieza gratis. Comprende tus errores con explicaciones; se aplican los límites del plan gratuito.",
             },
             safeLang
           )}
@@ -547,29 +547,25 @@ export default function Home({
         </div>
       </header>
 
-      {/* Sezioni sotto l'hero.
-          Ordine DOM = ordine mobile (hero → finder → assessment → brand → metodo → strumenti →
-          prossimo capitolo → resto). Da md in su `md:order-*` ripristina esattamente l'ordine
-          desktop precedente (brand → prossimo capitolo → assessment → metodo → …). Tra le sezioni
-          ri-ordinate solo l'assessment ha elementi focalizzabili, quindi l'ordine di tab non cambia. */}
+      {/* Preparation tools precede motivation. Finder stays inside the compact mobile hero. */}
       <div className="flex flex-col">
-        <div className="md:order-3">
-          <AssessmentEntrySection lang={safeLang} />
-        </div>
-
         <div className="md:order-1">
-          <BrandLineBand lang={safeLang} />
-        </div>
-
-        <div className="md:order-4">
-          <MethodSection lang={safeLang} />
-        </div>
-
-        <div className="md:order-5">
           <ResourceTypesSection lang={safeLang} />
         </div>
 
         <div className="md:order-2">
+          <AssessmentEntrySection lang={safeLang} />
+        </div>
+
+        <div className="md:order-4">
+          <BrandLineBand lang={safeLang} />
+        </div>
+
+        <div className="md:order-3">
+          <MethodSection lang={safeLang} />
+        </div>
+
+        <div className="md:order-5">
           <NextChapterSection lang={safeLang} />
         </div>
 
