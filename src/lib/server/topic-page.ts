@@ -45,11 +45,13 @@ const API_BASE_URL = process.env.API_BASE_URL!;
 
 const CERT_SLUG_ALIASES: Record<string, string> = {
   "vmware-certified-professional": "vmware-vcp",
-  "tensorflow-developer": "tensorflow",
-  "google-tensorflow": "tensorflow",
+  "tensorflow-developer": "google-tensorflow",
+  "tensorflow": "google-tensorflow",
+  "google-tensorflow": "google-tensorflow",
   "network-plus": "comptia-network-plus",
   "cisco-ccst-security": "cisco-ccst-cybersecurity",
-  "microsoft-csharp": "csharp",
+  "microsoft-csharp": "microsoft-csharp",
+  "csharp": "microsoft-csharp",
 };
 
 export function normalizeCertSlug(slug: string) {

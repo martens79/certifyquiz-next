@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveLegacyRedirect } from "./lib/legacyRedirects";
+import { AUDITED_TOPIC_REDIRECTS } from "./lib/audited-topic-redirects";
 
 const LOCALES = new Set(["it", "en", "fr", "es"]);
 
@@ -172,6 +173,9 @@ if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
   // Prima degli alias, dei prefix generici e della normalizzazione /en:
   // le destinazioni sono già finali (un solo salto).
   // ---------------------------------------------------------------------
+  const auditedTarget = AUDITED_TOPIC_REDIRECTS[pathname];
+  if (auditedTarget) return redirect301(req, auditedTarget);
+
   const legacyTarget = resolveLegacyRedirect(pathname);
   if (legacyTarget) {
     return redirect301(req, legacyTarget);
@@ -552,401 +556,115 @@ if (pathname === "/es/certificaciones/microsoft-ai/procesamiento-de-lenguaje-nat
 }
 
 if (pathname === "/it/certificazioni/microsoft-ai/ai-generativa") {
-  return redirect301(req, "/it/certificazioni/microsoft-ai");
-}
-if (pathname === "/it/certificazioni/microsoft-ai/ai-generativa/ripasso") {
-  return redirect301(req, "/it/certificazioni/microsoft-ai");
-}
-if (pathname === "/certifications/microsoft-ai/generative-ai") {
-  return redirect301(req, "/certifications/microsoft-ai");
-}
-if (pathname === "/certifications/microsoft-ai/generative-ai/review") {
-  return redirect301(req, "/certifications/microsoft-ai");
-}
-if (pathname === "/fr/certifications/microsoft-ai/ia-generative") {
-  return redirect301(req, "/fr/certifications/microsoft-ai");
-}
-if (pathname === "/fr/certifications/microsoft-ai/ia-generative/revision") {
-  return redirect301(req, "/fr/certifications/microsoft-ai");
-}
-if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa") {
-  return redirect301(req, "/es/certificaciones/microsoft-ai");
-}
-if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa/repaso") {
-  return redirect301(req, "/es/certificaciones/microsoft-ai");
-}
+  return redirect301(req, "/it/certificazioni/micr…3389 tokens truncated… headers: { "content-type": "application/json" } });
 
-    // ---------------------------------------------------------------------
-  // LEGACY CERTIFICATION SLUGS
-  // Vecchi slug singoli ancora indicizzati da Google
-  // ---------------------------------------------------------------------
+test("internalApiHeaders: header solo se INTERNAL_SERVER_TOKEN è impostato", async () => {
+  const { internalApiHeaders, INTERNAL_TOKEN_HEADER } = await import("../src/lib/server/internal-api");
+  delete process.env.INTERNAL_SERVER_TOKEN;
+  assert.deepEqual(internalApiHeaders(), {});
+  process.env.INTERNAL_SERVER_TOKEN = SECRET;
+  assert.deepEqual(internalApiHeaders(), { [INTERNAL_TOKEN_HEADER]: SECRET });
+  assert.equal(INTERNAL_TOKEN_HEADER, "X-Internal-Server-Token");
+});
 
-  // Google TensorFlow -> TensorFlow
-  if (pathname === "/certifications/google-tensorflow") {
-    return redirect301(req, "/certifications/tensorflow");
+test("getTopicPageData invia l'header interno e non mette il secret nell'URL", async () => {
+  process.env.INTERNAL_SERVER_TOKEN = SECRET;
+  const { getTopicPageData } = await import("../src/lib/server/topic-page");
+  calls.length = 0;
+  nextResponse = () =>
+    json(200, {
+      topic: { id: 1, quiz_id: null, slug: "t", title: "T", description: "" },
+      certification: { id: 2, slug: "c", title: "C" },
+      relatedTopics: [],
+      questionCount: 3,
+    });
+  const data = await getTopicPageData({ certSlug: "c", topicSlug: "t", lang: "en" });
+  assert.equal(data?.topic.id, 1);
+  assert.deepEqual(data?.topic.faq, []);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.example.test/api/topic-pages/c/t?lang=en");
+  assert.equal(calls[0].headers["X-Internal-Server-Token"], SECRET);
+  assert.ok(!calls[0].url.includes(SECRET));
+});
+
+test("getTopicPageData: 404 → null, ma 429 e 5xx restano errori (mai 404)", async () => {
+  const { getTopicPageData } = await import("../src/lib/server/topic-page");
+
+  nextResponse = () => json(404, { error: "TOPIC_PAGE_NOT_FOUND" });
+  assert.equal(await getTopicPageData({ certSlug: "c", topicSlug: "missing", lang: "en" }), null);
+
+  for (const status of [429, 500, 503]) {
+    nextResponse = () => json(status, { error: "x" });
+    await assert.rejects(
+      getTopicPageData({ certSlug: "c", topicSlug: "t", lang: "it" }),
+      (err: Error) => {
+        assert.match(err.message, new RegExp(`HTTP ${status}`));
+        assert.ok(!err.message.includes(SECRET), "il secret non deve finire nel messaggio d'errore");
+        return true;
+      },
+    );
   }
-
-  if (pathname === "/it/certificazioni/google-tensorflow") {
-    return redirect301(req, "/it/certificazioni/tensorflow");
-  }
-
-  if (pathname === "/fr/certifications/google-tensorflow") {
-    return redirect301(req, "/fr/certifications/tensorflow");
-  }
-
-  if (pathname === "/es/certificaciones/google-tensorflow") {
-    return redirect301(req, "/es/certificaciones/tensorflow");
-  }
-
-  // Python -> Python Developer
-  if (pathname === "/certifications/python") {
-    return redirect301(req, "/certifications/python-developer");
-  }
-
-  if (pathname === "/it/certificazioni/python") {
-    return redirect301(req, "/it/certificazioni/python-developer");
-  }
-
-  if (pathname === "/fr/certifications/python") {
-    return redirect301(req, "/fr/certifications/python-developer");
-  }
-
-  if (pathname === "/es/certificaciones/python") {
-    return redirect301(req, "/es/certificaciones/python-developer");
-  }
-
-  // CompTIA Network+ — slug canonico (DB/registry): comptia-network-plus
-  if (pathname === "/certifications/network-plus") {
-    return redirect301(req, "/certifications/comptia-network-plus");
-  }
-
-  if (pathname === "/it/certificazioni/network-plus") {
-    return redirect301(req, "/it/certificazioni/comptia-network-plus");
-  }
-
-  if (pathname === "/fr/certifications/network-plus") {
-    return redirect301(req, "/fr/certifications/comptia-network-plus");
-  }
-
-  if (pathname === "/fr/certifications/comptia-network") {
-    return redirect301(req, "/fr/certifications/comptia-network-plus");
-  }
-
-  if (pathname === "/es/certificaciones/network-plus") {
-    return redirect301(req, "/es/certificaciones/comptia-network-plus");
-  }
-    // ---------------------------------------------------------------------
-  // STATIC LEGACY PAGES
-  // Vecchie pagine statiche/localizzate non più esistenti
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/it/come-funziona") {
-    return redirect301(req, "/it/percorsi");
-  }
-
-  if (pathname === "/es/como-funciona") {
-    return redirect301(req, "/es/rutas");
-  }
-
-  if (pathname === "/fr/fonctionnement") {
-    return redirect301(req, "/fr/parcours");
-  }
-
-  if (pathname === "/es/contactos") {
-    return redirect301(req, "/es");
-  }
-
-  // ---------------------------------------------------------------------
-  // LEGACY HUBS
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/hub/security") {
-    return redirect301(req, "/categories/security");
-  }
-
-  if (pathname === "/it/hub/security") {
-    return redirect301(req, "/it/categorie/sicurezza");
-  }
-
-  if (pathname === "/es/hub/security") {
-    return redirect301(req, "/es/categorias/seguridad");
-  }
-
-  if (pathname === "/fr/hub/security") {
-    return redirect301(req, "/fr/categories/securite");
-  }
-
-  // ---------------------------------------------------------------------
-  // ECDL -> ICDL
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/certifications/ecdl" || pathname === "/en/certifications/ecdl") {
-    return redirect301(req, "/certifications/icdl");
-  }
-
-  if (pathname === "/it/certificazioni/ecdl") {
-    return redirect301(req, "/it/certificazioni/icdl");
-  }
-
-  if (pathname === "/fr/certifications/ecdl") {
-    return redirect301(req, "/fr/certifications/icdl");
-  }
-
-  if (pathname === "/es/certificaciones/ecdl") {
-    return redirect301(req, "/es/certificaciones/icdl");
-  }
-  // ---------------------------------------------------------------------
-  // LEGACY CERTIFICATION TOPIC URLS
-  //
-  // Vecchia struttura:
-  // /certifications/:certSlug/:topicSlug
-  // /it/certificazioni/:certSlug/:topicSlug
-  // /fr/certifications/:certSlug/:topicSlug
-  // /es/certificaciones/:certSlug/:topicSlug
-  //
-  // Nuova struttura: redirect alla pagina certificazione.
-  // ---------------------------------------------------------------------
-    // DISABILITATO:
-  // Questa regola era troppo aggressiva.
-  // Intercettava anche URL validi dei topic SEO / topic pages
-  // e riportava l'utente alla pagina certificazione invece che al topic/quiz.
-  //
-  // const legacyCertTopicRedirect = redirectLegacyCertificationTopic(req, pathname);
-  //
-  // if (legacyCertTopicRedirect) {
-  //   return legacyCertTopicRedirect;
-  // }
-  // ---------------------------------------------------------------------
-  // LEGACY "mixed by category" -> NEW /it/quiz/<cert>/mixed
-  //
-  // IMPORTANTE:
-  // Questo blocco deve stare PRIMA del redirect generale /quiz/* -> /en/quiz/*
-  // altrimenti /quiz/reti/mixed diventa /en/quiz/reti/mixed e resta rotto.
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/quiz/sicurezza/mixed") {
-    return redirect301(req, "/it/quiz/security-plus/mixed");
-  }
-
-  if (pathname === "/quiz/reti/mixed") {
-    return redirect301(req, "/it/quiz/ccna/mixed");
-  }
-
-  if (pathname === "/quiz/cloud/mixed") {
-    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
-  }
-
-  if (pathname === "/quiz/database/mixed") {
-    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
-  }
-
-  if (pathname === "/quiz/programmazione/mixed") {
-    return redirect301(req, "/it/quiz/javascript-developer/mixed");
-  }
-
-  if (pathname === "/quiz/virtualizzazione/mixed") {
-    return redirect301(req, "/it/quiz/vmware-vcp/mixed");
-  }
-
-  if (pathname === "/quiz/intelligenza-artificiale/mixed") {
-    return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
-  }
-
-  if (pathname === "/it/quiz/sicurezza/mixed") {
-    return redirect301(req, "/it/quiz/security-plus/mixed");
-  }
-
-  if (pathname === "/it/quiz/reti/mixed") {
-    return redirect301(req, "/it/quiz/ccna/mixed");
-  }
-
-  if (pathname === "/it/quiz/cloud/mixed") {
-    return redirect301(req, "/it/quiz/aws-cloud-practitioner/mixed");
-  }
-
-  if (pathname === "/it/quiz/database/mixed") {
-    return redirect301(req, "/it/quiz/microsoft-sql-server/mixed");
-  }
-
-  if (pathname === "/it/quiz/programmazione/mixed") {
-    return redirect301(req, "/it/quiz/javascript-developer/mixed");
-  }
-
-  if (pathname === "/it/quiz/virtualizzazione/mixed") {
-    return redirect301(req, "/it/quiz/vmware-vcp/mixed");
-  }
-
-  if (pathname === "/it/quiz/intelligenza-artificiale/mixed") {
-    return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
-  }
-// Google Cloud -> Google Cloud Digital Leader
-if (pathname.startsWith("/certifications/google-cloud/")) {
-  const topicSlug = pathname.replace("/certifications/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/certifications/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/it/certificazioni/google-cloud/")) {
-  const topicSlug = pathname.replace("/it/certificazioni/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/it/certificazioni/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/fr/certifications/google-cloud/")) {
-  const topicSlug = pathname.replace("/fr/certifications/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/fr/certifications/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/es/certificaciones/google-cloud/")) {
-  const topicSlug = pathname.replace("/es/certificaciones/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/es/certificaciones/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-  // ---------------------------------------------------------------------
-  // QUIZ
-  // EN canonical = /en/quiz/*
-  //
-  // - /quiz/* root -> /en/quiz/*
-  // - legacy specifici vengono gestiti prima
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/quiz/javascript") {
-    return redirect301(req, "/en/quiz/javascript-developer");
-  }
-
-  if (pathname === "/it/quiz/javascript") {
-    return redirect301(req, "/it/quiz/javascript-developer");
-  }
-
-  // Qualsiasi /quiz/* senza prefisso lingua => /en/quiz/*
-  // Non tocca /it/quiz, /fr/quiz, /es/quiz, /en/quiz
-  if (pathname === "/quiz" || pathname.startsWith("/quiz/")) {
-    return redirect301(req, `/en${pathname}`);
-  }
-
-  // ---------------------------------------------------------------------
-  // REVIEW ERRORS
-  // EN-root
-  // ---------------------------------------------------------------------
-
-  if (pathname === "/review" || pathname.startsWith("/review/")) {
-    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
-  }
-
-  const reviewPrefixed = pathname.match(/^\/(it|en|fr|es)\/review(\/|$)/);
-
-  if (reviewPrefixed) {
-    return redirect301(req, pathname.replace(/^\/(it|en|fr|es)/, ""));
-  }
-
-  // ---------------------------------------------------------------------
-  // BLOG
-  // EN root optional: /en/blog -> /blog
-  // ---------------------------------------------------------------------
-
-  const editorialBlogTarget = BLOG_EDITORIAL_REDIRECTS[pathname];
-  if (editorialBlogTarget) {
-    return redirect301(req, editorialBlogTarget);
-  }
-
-  if (pathname.startsWith("/en/blog")) {
-    return redirect301(req, pathname.replace(/^\/en/, ""));
-  }
-
-  // ---------------------------------------------------------------------
-  // NORMALIZZAZIONE PREFISSI LINGUA + SEGMENTI SPORCHI
-  // ---------------------------------------------------------------------
-
-  const parts = pathname.split("/").filter(Boolean);
-
-  if (parts.length === 0) {
-    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
-  }
-
-  let changed = false;
-
-  // EN root: rimuovi /en SOLO per SEO pages.
-  // Non rimuovere /en da quiz e blog.
-  if (parts[0] === "en" && parts[1] !== "quiz" && parts[1] !== "blog") {
-    parts.shift();
-    changed = true;
-  }
-
-  // Doppia lingua: /it/en/... -> /en/...
-  // Tiene solo la seconda lingua.
-  if (isLocale(parts[0]) && isLocale(parts[1])) {
-    const second = parts[1];
-    parts.splice(0, 2, second);
-    changed = true;
-  }
-
-  // Locale corrente
-  const locale = isLocale(parts[0]) ? parts[0] : "en";
-  const segIndex = isLocale(parts[0]) ? 1 : 0;
-  const seg = parts[segIndex];
-
-  // Segmenti canonici per lingua
-  if (locale === "fr") {
-    if (seg === "certificazioni") {
-      parts[segIndex] = "certifications";
-      changed = true;
-    }
-
-    if (seg === "categorie") {
-      parts[segIndex] = "categories";
-      changed = true;
+});
+
+test("topic resolver uses the real DB key for public TensorFlow/C# aliases in every language", async () => {
+  const { getTopicPageData } = await import("../src/lib/server/topic-page");
+  const previousFetch = globalThis.fetch;
+  const cases = [
+    ["tensorflow", "google-tensorflow", "neural-networks"],
+    ["google-tensorflow", "google-tensorflow", "neural-networks"],
+    ["tensorflow-developer", "google-tensorflow", "neural-networks"],
+    ["csharp", "microsoft-csharp", "object-oriented-programming"],
+    ["microsoft-csharp", "microsoft-csharp", "object-oriented-programming"],
+  ];
+  try {
+  for (const lang of ["en", "it", "fr", "es"] as const) {
+    for (const [certSlug, dbSlug, topicSlug] of cases) {
+      calls.length = 0;
+      globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        calls.push({ url, headers: { ...(init?.headers as Record<string, string>) } });
+        return url === `https://api.example.test/api/topic-pages/${dbSlug}/${topicSlug}?lang=${lang}`
+          ? json(200, { topic: { id: 145, faq: [] }, certification: { slug: dbSlug }, relatedTopics: [], questionCount: 5 })
+          : json(404, { error: "TOPIC_PAGE_NOT_FOUND" });
+      }) as typeof fetch;
+      assert.equal((await getTopicPageData({ certSlug, topicSlug, lang }))?.topic.id, 145);
+      assert.equal(calls.length, 1);
     }
   }
-
-  if (locale === "es") {
-    if (seg === "certificazioni") {
-      parts[segIndex] = "certificaciones";
-      changed = true;
-    }
-
-    if (seg === "categorie") {
-      parts[segIndex] = "categorias";
-      changed = true;
-    }
-
-    if (seg === "certifications") {
-      parts[segIndex] = "certificaciones";
-      changed = true;
-    }
+  } finally {
+    globalThis.fetch = previousFetch;
   }
+});
 
-  if (locale === "it") {
-    if (seg === "certifications") {
-      parts[segIndex] = "certificazioni";
-      changed = true;
+test("getTopicsByCertSlug (by-cert) invia l'header interno", async () => {
+  process.env.INTERNAL_SERVER_TOKEN = SECRET;
+  const { getTopicsByCertSlug } = await import("../src/lib/data");
+  calls.length = 0;
+  nextResponse = () => json(200, { topics: [{ id: 1, slug_en: "a", title_en: "A", slug: "a", title: "A" }] });
+  await getTopicsByCertSlug("ccna", "en");
+  const call = calls.find((c) => c.url.includes("/topic-pages/by-cert/"));
+  assert.ok(call, "fetch by-cert non eseguita");
+  assert.equal(call.headers["X-Internal-Server-Token"], SECRET);
+  assert.ok(!call.url.includes(SECRET));
+});
+
+test("il secret non è esposto come NEXT_PUBLIC_* e il modulo resta server-only", () => {
+  const src = fs.readFileSync(path.resolve(process.cwd(), "src/lib/server/internal-api.ts"), "utf8");
+  assert.match(src, /^import "server-only";/m);
+  assert.ok(!/NEXT_PUBLIC_INTERNAL/.test(src));
+
+  const offenders: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|tsx)$/.test(e.name)) {
+        const t = fs.readFileSync(p, "utf8");
+        if (/NEXT_PUBLIC_INTERNAL_SERVER_TOKEN/.test(t)) offenders.push(p);
+        if (/^["']use client["']/m.test(t) && /INTERNAL_SERVER_TOKEN|server\/internal-api/.test(t)) offenders.push(p);
+      }
     }
-
-    if (seg === "categories") {
-      parts[segIndex] = "categorie";
-      changed = true;
-    }
-  }
-
-  if (!changed) {
-    return withLangCookie(NextResponse.next(), detectLocaleFromPath(pathname));
-  }
-
-  return redirect301(req, buildPath(parts));
-}
-
-export const config = {
-  matcher: ["/((?!_next|api|favicon.ico).*)"],
-};
+  };
+  walk(path.resolve(process.cwd(), "src"));
+  assert.deepEqual(offenders, []);
+});

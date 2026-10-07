@@ -1,5 +1,6 @@
 //src/components/PortableTextComponents.tsx
 import Link from "next/link";
+import { auditedContentLink } from "@/lib/audited-content-link";
 import type { PortableTextComponents } from "@portabletext/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -11,7 +12,9 @@ import {
 function MarkdownBlock({ value }: { value: { children?: unknown[] } }) {
   const markdown = portableTextBlockText(value);
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
+      a: ({ href, children, ...props }) => <a {...props} href={auditedContentLink(href || "#")}>{children}</a>,
+    }}>
       {markdown}
     </ReactMarkdown>
   );
@@ -62,6 +65,8 @@ export const portableTextComponents: PortableTextComponents = {
 if (href && href !== "#" && !/^https?:\/\//.test(href) && !href.startsWith("/")) {
   href = `/${href}`;
 }
+
+      href = auditedContentLink(href);
 
       const openInNewTab = Boolean(value?.openInNewTab);
       const isExternal = /^https?:\/\//.test(href);
