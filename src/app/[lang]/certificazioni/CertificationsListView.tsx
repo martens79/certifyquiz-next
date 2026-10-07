@@ -7,6 +7,7 @@ import type { CertListItem } from "@/lib/certs";
 import { CertificationListClient } from "@/components/CertificationListClient";
 import { CERTS_BY_SLUG } from "@/certifications/registry";
 import { isPubliclyListed } from "@/certifications/publication";
+import { normalizeSlug } from "@/lib/cert-slug";
 
 /* ------------------------- CANONICAL PATHS (PUBLIC) ------------------------- */
 /**
@@ -203,51 +204,6 @@ type ViewProps = { lang: Locale };
 
 const RAW_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com";
 const SITE_URL = RAW_SITE_URL.replace(/\/+$/, "");
-
-/* ------------------------- SLUG NORMALIZATION ------------------------- */
-/**
- * Normalizza slug dal backend (o vecchi URL) verso slug canonici del tuo registry.
- * Se qui normalizzi bene, spariscono:
- * - 404 da slug legacy
- * - "slug non mappato" nei quiz (quando usi lo stesso slug)
- */
-const normalizeSlug = (raw: unknown): string => {
-  const s = String(raw ?? "").trim();
-
-  // canonical ICDL
-  if (s === "ecdl") return "icdl";
-
-  // CompTIA aliases
-  if (s === "comptia-security-plus") return "security-plus";
-  if (s === "comptia-network-plus") return "network-plus";
-
-  // Legacy slugs (visti in giro)
-if (s === "mysql-certification") return "mysql";
-if (s === "google-tensorflow") return "tensorflow";
-
-// Microsoft AI aliases: canonical = microsoft-ai
-if (s === "microsoft-ai-fundamentals") return "microsoft-ai";
-if (s === "ai-fundamentals") return "microsoft-ai";
-
-if (s === "azure-fundamentals") return "microsoft-azure-fundamentals";
-
-  // VMware legacy
-  if (s === "vmware-certified-professional") return "vmware-vcp";
-
-  // Dev languages legacy
-  if (s === "python") return "python-developer";
-  if (s === "javascript") return "javascript-developer";
-
-  
-
-// CCST aliases: canonical = cisco-ccst-cybersecurity
-if (s === "cisco-ccst-security") return "cisco-ccst-cybersecurity";
-if (s === "ccst-cybersecurity") return "cisco-ccst-cybersecurity";
-
-if (s === "microsoft-csharp") return "csharp";
-
-  return s;
-};
 
 export default async function CertificationsListView({ lang }: ViewProps) {
   const L = lang;

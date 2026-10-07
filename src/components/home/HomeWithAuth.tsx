@@ -5,15 +5,30 @@ import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n";
 import { getToken } from "@/lib/auth";
 import Home, { type HomeStats } from "./Home";
+import type { FinderCert } from "@/lib/home-finder";
 
-type Props = { lang: Locale; showIndustrialAutomation?: boolean };
+type Props = {
+  lang: Locale;
+  showIndustrialAutomation?: boolean;
+  /** Metriche lette lato server. Se null/assenti si ricade sul fetch client. */
+  initialStats?: HomeStats | null;
+  finderCerts?: FinderCert[] | null;
+};
 
-export default function HomeWithAuth({ lang, showIndustrialAutomation = false }: Props) {
+export default function HomeWithAuth({
+  lang,
+  showIndustrialAutomation = false,
+  initialStats = null,
+  finderCerts = null,
+}: Props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [stats, setStats] = useState<HomeStats | null>(null);
+  const [stats, setStats] = useState<HomeStats | null>(initialStats);
 
   useEffect(() => {
     setIsLoggedIn(!!getToken());
+
+    // Metriche gia' presenti dal server: niente richiesta aggiuntiva.
+    if (initialStats) return;
 
     (async () => {
       try {
@@ -26,6 +41,7 @@ export default function HomeWithAuth({ lang, showIndustrialAutomation = false }:
         // silent fail
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al mount
   }, []);
 
   return (
@@ -34,6 +50,7 @@ export default function HomeWithAuth({ lang, showIndustrialAutomation = false }:
       isLoggedIn={isLoggedIn}
       stats={stats ?? undefined}
       showIndustrialAutomation={showIndustrialAutomation}
+      finderCerts={finderCerts}
     />
   );
 }

@@ -17,6 +17,8 @@ import BrandLineBand from "@/components/home/BrandLineBand";
 import NextChapterSection from "@/components/home/NextChapterSection";
 import AssessmentEntrySection from "@/components/home/AssessmentEntrySection";
 import MethodSection from "@/components/home/MethodSection";
+import MobileCertFinder, { type FinderCategory } from "@/components/home/MobileCertFinder";
+import type { FinderCert } from "@/lib/home-finder";
 import {
   BrainCircuit,
   LockKeyhole,
@@ -128,9 +130,17 @@ type Props = {
   stats?: HomeStats;
   /** Server-computed: true only once PLC Fundamentals is launched (see lib/industrial-automation). */
   showIndustrialAutomation?: boolean;
+  /** Lista leggera per il finder mobile (server-side). null/assente = solo chip. */
+  finderCerts?: FinderCert[] | null;
 };
 
-export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAutomation = false }: Props) {
+export default function Home({
+  lang,
+  isLoggedIn = false,
+  stats,
+  showIndustrialAutomation = false,
+  finderCerts = null,
+}: Props) {
   const safeLang: Locale =
     lang === "it" || lang === "en" || lang === "fr" || lang === "es"
       ? lang
@@ -388,22 +398,39 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
     },
   ];
 
+  // Chip categoria del finder mobile: ordine per rilevanza, solo categorie pubbliche.
+  const categoryTitle = new Map<string, string>(allCategories.map((c) => [c.key, c.title]));
+  categoryTitle.set("foundations", "Foundations");
+  const finderCategoryKeys: Array<Exclude<CategoryKey, "default">> = [
+    "sicurezza", "reti", "cloud", "ai", "programmazione", "database", "sistemi-operativi",
+    "data-analytics", "virtualizzazione", "management", "business-applications", "base", "foundations",
+    ...(showIndustrialAutomation ? (["industrial-automation"] as const) : []),
+  ];
+  const finderCategories: FinderCategory[] = finderCategoryKeys.map((key) => ({
+    key,
+    title: categoryTitle.get(key) ?? key,
+    href: categoryPath(safeLang, key),
+  }));
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-4 md:py-6 overflow-x-hidden min-h-[100dvh]">
-      {/* HERO */}
-      <header className="text-center max-w-3xl mx-auto">
-        <div className="flex justify-center mb-3">
+      {/* HERO
+          Mobile: flex-col con `order` (H1 → CTA → metriche → finder → testo descrittivo), così il
+          finder compare nel primo viewport. Da md in su è un normale blocco: stesso ordine DOM
+          e stesso aspetto di prima. Nessun testo viene rimosso o nascosto con display:none. */}
+      <header className="flex flex-col text-center max-w-3xl mx-auto md:block">
+        <div className="hidden justify-center mb-3 md:flex">
           <Image
             src={logo}
             alt="CertifyQuiz"
             width={40}
             height={40}
             className="h-9 w-auto"
-            priority
+            loading="eager"
           />
         </div>
 
-        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight">
+        <h1 className="max-md:order-1 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight">
           {L(
             {
               it: "Quiz e simulazioni per le certificazioni IT",
@@ -415,7 +442,7 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
           )}
         </h1>
 
-        <p className="mt-3 text-lg md:text-xl font-medium text-slate-700">
+        <p className="max-md:order-2 mt-2 text-base font-medium text-slate-700 sm:mt-3 sm:text-lg md:text-xl">
           {L(
             {
               it: "Sei davvero pronto per l'esame? Non scoprirlo il giorno dell'esame.",
@@ -427,7 +454,7 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
           )}
         </p>
 
-        <p className="mt-3 text-sm md:text-base text-slate-600">
+        <p className="max-md:order-7 mt-4 text-sm md:mt-3 md:text-base text-slate-600">
           {L(
             {
               it: "Mettiti alla prova prima: quiz, simulazioni, assessment e pratica per capire dove sei preparato — e dove no.",
@@ -439,9 +466,11 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
           )}
         </p>
 
-        {stats && (
-          <p className="mt-4 text-xs md:text-sm text-slate-600">
-            {L(
+        {/* Metriche: lette lato server (home-stats, cache 1h) → presenti nell'HTML iniziale.
+            Il <p> c'è sempre, con altezza minima, così il fallback client non sposta nulla. */}
+        <p className="max-md:order-5 mt-2.5 min-h-7 text-xs sm:mt-4 md:text-sm text-slate-600">
+          {stats &&
+            L(
               {
                 it: `${stats.questions.toLocaleString("it-IT")} domande • ${stats.topics.toLocaleString(
                   "it-IT"
@@ -458,10 +487,9 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
               },
               safeLang
             )}
-          </p>
-        )}
+        </p>
 
-        <div className="mt-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+        <div className="max-md:order-3 mt-3 flex flex-col sm:flex-row justify-center gap-2 sm:mt-4 sm:gap-3">
           <Link
             href={`/${safeLang}/quiz-home`}
             onClick={() => trackEvent("homepage_primary_cta_clicked", {
@@ -483,10 +511,11 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
             )}
           </Link>
 
+          {/* Su mobile lo sostituisce il finder (stessa destinazione, più diretto). */}
           {!isLoggedIn && (
             <Link
               href={certificationsPath(safeLang)}
-              className="inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
+              className="max-md:hidden inline-flex justify-center items-center rounded-xl border px-6 py-3 font-bold hover:bg-neutral-50 transition"
             >
               {L(
                 {
@@ -501,7 +530,7 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
           )}
         </div>
 
-        <p className="mt-3 text-sm text-neutral-600">
+        <p className="max-md:order-4 mt-2 text-sm text-neutral-600 sm:mt-3">
           {L(
             {
               it: "Inizi gratis. Ogni risposta sbagliata arriva con il ragionamento, non solo con la correzione.",
@@ -512,24 +541,48 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
             safeLang
           )}
         </p>
+
+        <div className="max-md:order-6">
+          <MobileCertFinder lang={safeLang} certs={finderCerts} categories={finderCategories} />
+        </div>
       </header>
 
-      <BrandLineBand lang={safeLang} />
+      {/* Sezioni sotto l'hero.
+          Ordine DOM = ordine mobile (hero → finder → assessment → brand → metodo → strumenti →
+          prossimo capitolo → resto). Da md in su `md:order-*` ripristina esattamente l'ordine
+          desktop precedente (brand → prossimo capitolo → assessment → metodo → …). Tra le sezioni
+          ri-ordinate solo l'assessment ha elementi focalizzabili, quindi l'ordine di tab non cambia. */}
+      <div className="flex flex-col">
+        <div className="md:order-3">
+          <AssessmentEntrySection lang={safeLang} />
+        </div>
 
-      <NextChapterSection lang={safeLang} />
+        <div className="md:order-1">
+          <BrandLineBand lang={safeLang} />
+        </div>
 
-      <AssessmentEntrySection lang={safeLang} />
+        <div className="md:order-4">
+          <MethodSection lang={safeLang} />
+        </div>
 
-      <MethodSection lang={safeLang} />
+        <div className="md:order-5">
+          <ResourceTypesSection lang={safeLang} />
+        </div>
 
-      <ResourceTypesSection lang={safeLang} />
+        <div className="md:order-2">
+          <NextChapterSection lang={safeLang} />
+        </div>
 
-{/* PATH BOX — guida l’utente che non sa da dove iniziare */}
-<PathBox lang={safeLang} />
+        {/* PATH BOX — guida l’utente che non sa da dove iniziare */}
+        <div className="md:order-6">
+          <PathBox lang={safeLang} />
+        </div>
 
-      <HomeFeatureCarousel lang={safeLang} />
+        <div className="md:order-7">
+          <HomeFeatureCarousel lang={safeLang} />
+        </div>
 
-
+        <div className="md:order-8">
       {/* BLOG SECTION — spostata più in alto e resa più visibile */}
       <section className="mt-5 md:mt-6 max-w-5xl mx-auto" aria-label="Blog">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 md:p-5 shadow-sm">
@@ -597,6 +650,9 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
         </div>
       </section>
 
+        </div>
+
+        <div className="md:order-9">
      {/* CATEGORIE */}
 <section className="mt-5 md:mt-6" aria-label="Categories">
   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -804,6 +860,8 @@ export default function Home({ lang, isLoggedIn = false, stats, showIndustrialAu
     </Link>
   </div>
 </section>
+        </div>
+      </div>
     </div>
   );
 }

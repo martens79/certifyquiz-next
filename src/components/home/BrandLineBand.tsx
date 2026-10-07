@@ -12,7 +12,7 @@ const COPY: Record<Locale, string> = {
 export default function BrandLineBand({ lang }: Props) {
   return (
     <section className="mx-auto mt-6 max-w-4xl px-4 text-center md:mt-8">
-      <p className="text-lg font-semibold leading-snug text-slate-700 md:text-xl">
+      <p className="text-base font-semibold leading-snug text-slate-700 sm:text-lg md:text-xl">
         {COPY[lang]}
       </p>
     </section>

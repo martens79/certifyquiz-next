@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n";
 import { isIndustrialAutomationPublic } from "@/lib/industrial-automation";
+import { getHomeFinderCerts, getHomeStats } from "@/lib/server/home-data";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(
   /\/+$/,
@@ -160,6 +161,10 @@ export default async function LangHome(
   const { lang } = await props.params;
   if (!isLocale(lang)) notFound();
 
+  // Metriche e lista certificazioni lette lato server (cache dati: 1h / 5 min).
+  // In caso di errore restano null: la home usa i fallback (metriche client, soli chip).
+  const [homeStats, finderCerts] = await Promise.all([getHomeStats(), getHomeFinderCerts(lang)]);
+
   // JSON-LD: Breadcrumbs
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -198,7 +203,12 @@ export default async function LangHome(
       <StructuredData id="ld-home-categories" data={categoriesItemListLd} />
       <main id="main">
         {/* HomeWithAuth gestisce il token e passa isLoggedIn a <Home /> */}
-        <HomeWithAuth lang={lang} showIndustrialAutomation={isIndustrialAutomationPublic(lang)} />
+        <HomeWithAuth
+          lang={lang}
+          showIndustrialAutomation={isIndustrialAutomationPublic(lang)}
+          initialStats={homeStats}
+          finderCerts={finderCerts}
+        />
       </main>
     </>
   );
