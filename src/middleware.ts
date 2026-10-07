@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveLegacyRedirect } from "./lib/legacyRedirects";
+import { AUDITED_TOPIC_REDIRECTS } from "./lib/audited-topic-redirects";
 
 const LOCALES = new Set(["it", "en", "fr", "es"]);
 
@@ -172,6 +173,9 @@ if (pathname.includes("/undefined/") || pathname.endsWith("/undefined")) {
   // Prima degli alias, dei prefix generici e della normalizzazione /en:
   // le destinazioni sono già finali (un solo salto).
   // ---------------------------------------------------------------------
+  const auditedTarget = AUDITED_TOPIC_REDIRECTS[pathname];
+  if (auditedTarget) return redirect301(req, auditedTarget);
+
   const legacyTarget = resolveLegacyRedirect(pathname);
   if (legacyTarget) {
     return redirect301(req, legacyTarget);
@@ -779,42 +783,8 @@ if (pathname === "/es/certificaciones/microsoft-ai/ia-generativa/repaso") {
   if (pathname === "/it/quiz/intelligenza-artificiale/mixed") {
     return redirect301(req, "/it/quiz/microsoft-ai-fundamentals/mixed");
   }
-// Google Cloud -> Google Cloud Digital Leader
-if (pathname.startsWith("/certifications/google-cloud/")) {
-  const topicSlug = pathname.replace("/certifications/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/certifications/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/it/certificazioni/google-cloud/")) {
-  const topicSlug = pathname.replace("/it/certificazioni/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/it/certificazioni/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/fr/certifications/google-cloud/")) {
-  const topicSlug = pathname.replace("/fr/certifications/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/fr/certifications/google-cloud-digital-leader/${topicSlug}`
-  );
-}
-
-if (pathname.startsWith("/es/certificaciones/google-cloud/")) {
-  const topicSlug = pathname.replace("/es/certificaciones/google-cloud/", "");
-
-  return redirect301(
-    req,
-    `/es/certificaciones/google-cloud-digital-leader/${topicSlug}`
-  );
-}
+// Google Cloud has its own real DB topics. Only the audited exact legacy
+// mappings above may move a topic to Digital Leader.
   // ---------------------------------------------------------------------
   // QUIZ
   // EN canonical = /en/quiz/*

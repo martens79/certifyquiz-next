@@ -206,8 +206,9 @@ export default function Footer({ lang }: { lang: Locale }) {
       : "Questions, issues or suggestions? Contact us."}
   </p>
 
+  {/* Hydrate mailto locally: Cloudflare must not rewrite SSR email anchors into crawlable /cdn-cgi URLs. */}
   <a
-    href="mailto:certifyquiz@gmail.com?subject=Support%20Request%20-%20CertifyQuiz"
+    href={mounted ? "mailto:certifyquiz@gmail.com?subject=Support%20Request%20-%20CertifyQuiz" : undefined}
     className="inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
   >
     {lang === "it"
@@ -221,10 +222,10 @@ export default function Footer({ lang }: { lang: Locale }) {
 
   <div className="mt-3">
     <a
-      href="mailto:certifyquiz@gmail.com"
+      href={mounted ? "mailto:certifyquiz@gmail.com" : undefined}
       className="text-sm text-gray-700 underline hover:text-gray-900"
     >
-      certifyquiz@gmail.com
+      {mounted ? "certifyquiz@gmail.com" : "Email"}
     </a>
   </div>
 </div>

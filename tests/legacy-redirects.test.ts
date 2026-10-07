@@ -174,7 +174,7 @@ test("le source non corrispondono a route statiche dell'app", () => {
   }
 });
 
-test("precedenza: le regole legacy battono i prefix generici, il resto del middleware è invariato", () => {
+test("precedenza: i mapping esatti restano attivi senza il prefix Google Cloud indiscriminato", () => {
   // Il prefix google-cloud → google-cloud-digital-leader manterrebbe lo slug vecchio.
   assertRedirect(
     "/it/certificazioni/google-cloud/trasformazione-digitale-google-cloud",
@@ -185,7 +185,7 @@ test("precedenza: le regole legacy battono i prefix generici, il resto del middl
     "/fr/certifications/google-cloud-digital-leader/innovation-avec-les-donnees-et-google-cloud",
   );
   // Regole esistenti (decisioni più recenti del middleware) non cambiano.
-  assertRedirect("/certifications/google-cloud/some-topic", "/certifications/google-cloud-digital-leader/some-topic");
+  assertPassThrough("/certifications/google-cloud/some-topic");
   assertRedirect("/fr/inizia", "/fr/quiz-home");
   assertRedirect("/it/come-funziona", "/it/percorsi");
   assertRedirect("/hub/security", "/categories/security");

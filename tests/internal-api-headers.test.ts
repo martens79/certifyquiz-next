@@ -78,6 +78,36 @@ test("getTopicPageData: 404 → null, ma 429 e 5xx restano errori (mai 404)", as
   }
 });
 
+test("topic resolver uses the real DB key for public TensorFlow/C# aliases in every language", async () => {
+  const { getTopicPageData } = await import("../src/lib/server/topic-page");
+  const previousFetch = globalThis.fetch;
+  const cases = [
+    ["tensorflow", "google-tensorflow", "neural-networks"],
+    ["google-tensorflow", "google-tensorflow", "neural-networks"],
+    ["tensorflow-developer", "google-tensorflow", "neural-networks"],
+    ["csharp", "microsoft-csharp", "object-oriented-programming"],
+    ["microsoft-csharp", "microsoft-csharp", "object-oriented-programming"],
+  ];
+  try {
+  for (const lang of ["en", "it", "fr", "es"] as const) {
+    for (const [certSlug, dbSlug, topicSlug] of cases) {
+      calls.length = 0;
+      globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        calls.push({ url, headers: { ...(init?.headers as Record<string, string>) } });
+        return url === `https://api.example.test/api/topic-pages/${dbSlug}/${topicSlug}?lang=${lang}`
+          ? json(200, { topic: { id: 145, faq: [] }, certification: { slug: dbSlug }, relatedTopics: [], questionCount: 5 })
+          : json(404, { error: "TOPIC_PAGE_NOT_FOUND" });
+      }) as typeof fetch;
+      assert.equal((await getTopicPageData({ certSlug, topicSlug, lang }))?.topic.id, 145);
+      assert.equal(calls.length, 1);
+    }
+  }
+  } finally {
+    globalThis.fetch = previousFetch;
+  }
+});
+
 test("getTopicsByCertSlug (by-cert) invia l'header interno", async () => {
   process.env.INTERNAL_SERVER_TOKEN = SECRET;
   const { getTopicsByCertSlug } = await import("../src/lib/data");

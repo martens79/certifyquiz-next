@@ -1,0 +1,632 @@
+[
+  {
+    "path": "/certifications/sap-s4hana-sales/billing-accounting-integration",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/sap-s4hana-sales/billing",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/sap-s4hana-sales/struttura-organizzativa-dati-anagrafici-vendite",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/sap-s4hana-sales/sales-master-data",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/python/programacion-orientada-a-objetos",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/python-developer/programacion-orientada-a-objetos",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/sap-s4hana-sales/shipping-delivery",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/sap-s4hana-sales/delivery-shipping",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/project-management-foundations/agile-scrum-traditional-approaches",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/_next/static/css/ae0ff2217e86e58a.css",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/$",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/project-management-foundations/goals-scope-stakeholders",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/python/gestione-file-ed-eccezioni",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/python-developer/gestione-file-ed-eccezioni",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/python/operations-de-s",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/python-developer/operations-de-s",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/project-management-foundations/fundamentos-gestion-proyectos",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/favicon.ico/undefined/cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/project-management-foundations/fondamenti-project-management",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/project-management-foundations/obiettivi-scope-stakeholder",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/project-management-foundations/agile-scrum-approcci-tradizionali",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/project-management-foundations/agile-scrum-enfoques-tradicionales",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/declencheurs-et-evenements",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/declencheurs-et-evenements",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/python/programmazione-orientata-agli-oggetti",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/python-developer/programmazione-orientata-agli-oggetti",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/definition-et-manipulation-des-donnees",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/definition-et-manipulation-des-donnees",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/project-management-foundations/tiempo-costes-riesgos-calidad",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/project-management-foundations/objetivos-alcance-stakeholders",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/project-management-foundations/tempi-costi-rischi-qualita",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/modernizacion-de-infraestructura-y-aplicaciones",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/python/moduli-e-pacchetti",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/python-developer/moduli-e-pacchetti",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/procedures-stockees-et-fonctions",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/procedures-stockees-et-fonctions",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/gestion-des-utilisateurs-et-securite",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/gestion-des-utilisateurs-et-securite",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/python/modulos-y-paquetes",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/python-developer/modulos-y-paquetes",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/project-management-foundations/project-management-fundamentals",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/python/modules-et-paquets",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/python-developer/modules-et-paquets",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/python/gestion-de-archivos-y-excepciones",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/python-developer/gestion-de-archivos-y-excepciones",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud/cloud-infrastructure-security-costs",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/optimisation-des-performances",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/optimisation-des-performances",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/python/file-and-exception-handling",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/python-developer/file-and-exception-handling",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud/digital-transformation-google-cloud",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/google-cloud-digital-leader/digital-transformation-with-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud/transformacion-digital-google-cloud",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/google-cloud-digital-leader/transformacion-digital-con-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/ai-foundations/fondamentaux-intelligence-artificielle",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/transformacion-digital-google-cloud",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/google-cloud-digital-leader/transformacion-digital-con-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/datos-ia-innovacion",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/google-cloud-digital-leader/innovacion-con-datos-y-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/python/comprehensions-and-lambda-functions",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/python-developer/comprehensions-and-lambda-functions",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/modernization-of-infrastructure-and-applications",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/digital-transformation-google-cloud",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/google-cloud-digital-leader/digital-transformation-with-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/python/operazioni-i-o",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/python-developer/operazioni-i-o",
+    "state": "OPEN"
+  },
+  {
+    "path": "/favicon.ico/undefined/virtualizzazione",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud/data-ai-innovation",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/google-cloud-digital-leader/innovation-with-data-and-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud/compute-application-modernization",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud/dati-ai-innovazione",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/google-cloud-digital-leader/innovazione-con-i-dati-e-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/python/comprehensions-et-fonctions-lambda",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/python-developer/comprehensions-et-fonctions-lambda",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/python/programmation-orientee-objet",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/python-developer/programmation-orientee-objet",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/mysql-certification/transactions-et-concurrence",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/mysql/transactions-et-concurrence",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/python/object-oriented-programming",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/python-developer/object-oriented-programming",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/dati-ai-innovazione",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/google-cloud-digital-leader/innovazione-con-i-dati-e-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/python/gestion-des-fichiers-et-des-exceptions",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/python-developer/gestion-des-fichiers-et-des-exceptions",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/python/modules-and-packages",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/python-developer/modules-and-packages",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/modernizzazione-di-infrastrutture-e-applicazioni",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/modernisation-de-linfrastructure-et-des-applications",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/ai-foundations/llm-et-prompt-engineering",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/aws-ai-practitioner/security-governance-responsible-ai",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/aws-ai-practitioner/responsible-ai-security-governance",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/data-ai-innovation",
+    "classification": "REDIRECT_301",
+    "current_url": "/certifications/google-cloud-digital-leader/innovation-with-data-and-google-cloud",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/fondamenti-cloud-trasformazione-digitale",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/produits-services-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/ai-foundations/ia-responsable-ethique-securite",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/aws-ai-practitioner/servicios-ia-ml-aws",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/google-cloud-products-services",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/ai-foundations/responsible-ai-ethics-security",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/python/comprensiones-y-funciones-lambda",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/python-developer/comprensiones-y-funciones-lambda",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud/modernizacion-de-infraestructura-y-aplicaciones",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud/modernization-of-infrastructure-and-applications",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud/modernizzazione-di-infrastrutture-e-applicazioni",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud/modernisation-de-linfrastructure-et-des-applications",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/ai-foundations/ia-en-el-mundo-real",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/fondamentaux-cloud-transformation-numerique",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/ai-foundations/ai-in-the-real-world",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/aws-ai-practitioner/amazon-bedrock-ia-generative-aws",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/aws-ai-practitioner/ia-generative-amazon-bedrock",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/aws-ai-practitioner/casos-uso-empresarial-ia-aws",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/data-ai-machine-learning-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/valore-aziendale-casi-uso-business",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/sicurezza-affidabilita-governance-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/aws-ai-practitioner/sicurezza-governance-ai-responsabile",
+    "classification": "REDIRECT_301",
+    "current_url": "/it/certificazioni/aws-ai-practitioner/responsible-ai-sicurezza-governance",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/ai-foundations/machine-learning-deep-learning",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/ai-foundations/llm-e-prompt-engineering",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/ai-foundations/ai-nel-mondo-reale",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/aws-ai-practitioner/cas-usage-metier-ia-aws",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/ai-foundations/machine-learning-deep-learning",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/ai-foundations/ia-dans-le-monde-reel",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/productos-servicios-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/aws-ai-practitioner/seguridad-gobernanza-ia-responsable",
+    "classification": "REDIRECT_301",
+    "current_url": "/es/certificaciones/aws-ai-practitioner/ia-responsable-seguridad-gobernanza",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/ai-foundations/llm-y-prompt-engineering",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/aws-ai-practitioner/aws-ai-ml-services",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/ai-foundations/llm-and-prompt-engineering",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/prodotti-servizi-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/google-cloud-digital-leader/dati-ai-machine-learning-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/aws-ai-practitioner/casi-uso-business-ai-aws",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/it/certificazioni/ai-foundations/ai-responsabile-etica-sicurezza",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/valeur-metier-cas-usage-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/securite-fiabilite-gouvernance-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/google-cloud-digital-leader/donnees-ia-machine-learning-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/aws-ai-practitioner/services-ia-ml-aws",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/aws-ai-practitioner/securite-gouvernance-ia-responsable",
+    "classification": "REDIRECT_301",
+    "current_url": "/fr/certifications/aws-ai-practitioner/ia-responsable-securite-gouvernance",
+    "state": "OPEN"
+  },
+  {
+    "path": "/fr/certifications/aws-ai-practitioner/fondamentaux-ia-ml-generative",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/valor-empresarial-casos-uso-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/google-cloud-digital-leader/seguridad-fiabilidad-gobernanza-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/es/certificaciones/ai-foundations/machine-learning-deep-learning",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/security-reliability-governance-google-cloud",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/google-cloud-digital-leader/business-value-cloud-use-cases",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  },
+  {
+    "path": "/certifications/aws-ai-practitioner/ai-ml-generative-ai-fundamentals",
+    "classification": "KEEP_404",
+    "current_url": "",
+    "state": "OPEN"
+  }
+]

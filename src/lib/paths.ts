@@ -56,6 +56,9 @@ export const recommendedResourcesPath = (lang: Locale): string =>
  * /es/certificaciones/...
  */
 export const certPath = (lang: Locale, slug: string): string => {
+  // Public URLs differ from these registry/database keys.
+  if (slug === "google-tensorflow") slug = "tensorflow";
+  if (slug === "microsoft-csharp") slug = "csharp";
   switch (lang) {
     case "it":
       return `/it/certificazioni/${slug}`;
