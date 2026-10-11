@@ -93,3 +93,11 @@ html, body {
   .btn-ghost { @apply border-gray-600 text-gray-100 hover:bg-[#1e293b]; }
   .muted { @apply text-gray-400; }
 }
+
+/* =============================
+   App Android (TWA) - consumption-only
+   data-twa e' impostato su <html> solo dentro l'app (lib/twa.ts).
+============================= */
+html[data-twa] [data-twa-hide] {
+  display: none !important;
+}

@@ -18,6 +18,9 @@ import {
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
 import { resolveCommercialOrigin } from "@/lib/commercial-origin";
 import PackagesUpsell from "./PackagesUpsell";
+import { useTwa } from "@/hooks/useTwa";
+import { localeFromPathname } from "@/lib/twa";
+import TwaNotice from "@/components/twa/TwaNotice";
 
 type Lang = "it" | "es" | "en" | "fr";
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
@@ -605,7 +608,7 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
 
 // ── Componente principale ───────────────────────────────────────
 
-export default function PremiumComingSoonView({ forceLang }: Props) {
+function PremiumPricingView({ forceLang }: Props) {
   const pathname = usePathname();
   const { user, loading: authLoading, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -861,4 +864,18 @@ export default function PremiumComingSoonView({ forceLang }: Props) {
       </div>
     </main>
   );
+}
+
+/**
+ * Punto di ingresso della pagina pricing. Nell'app Android (TWA) l'acquisto non e'
+ * disponibile (app "consumption-only" per Google Play): al posto del listino e del
+ * checkout Stripe si mostra un avviso neutro. Sul web non cambia nulla.
+ */
+export default function PremiumComingSoonView(props: Props) {
+  const isTwa = useTwa();
+  const pathname = usePathname();
+  if (isTwa) {
+    return <TwaNotice lang={props.forceLang ?? localeFromPathname(pathname)} variant="section" />;
+  }
+  return <PremiumPricingView {...props} />;
 }
