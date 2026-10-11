@@ -20,6 +20,7 @@ import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
 import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
+import { practiceTopicCoverage } from "@/lib/practice-topic-coverage";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -192,7 +193,11 @@ const pageTopics =
         .filter((t) => t.label);
         
   // ✅ Practice box: normalizza sempre al formato LocalizedText
-  const practiceBoxTopics = topics.map((t) => toLocalizedText(t));
+  const practiceBoxTopics = practiceTopicCoverage(
+    data.slug,
+    dbTopics.map((t) => t.title),
+    topics.map((t) => toLocalizedText(t))
+  );
 
   const learn = isLocalizedArray<string>(extraContent?.learn)
     ? getList<string>(extraContent.learn, lang)
