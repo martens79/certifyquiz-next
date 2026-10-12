@@ -30,7 +30,11 @@ for (const lang of ["en", "it", "fr", "es"] as const) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("h1")).toContainText("Apple Device Support");
     await expect(page.getByRole("heading", { name: Apple.extraContent!.guideSections![lang][0].title })).toBeVisible();
-    await expect(page.locator("body")).toContainText("45");
+    const inventoryResponse = await request.get(`${api}/questions-count/74?lang=${lang}`);
+    expect(inventoryResponse.status()).toBe(200);
+    const inventory = await inventoryResponse.json();
+    expect(inventory.total).toBeGreaterThan(0);
+    await expect(page.locator("body")).toContainText(String(inventory.total));
     await expect(page.locator("body")).not.toContainText("9L0-3023");
     await expect(page.getByRole("combobox", { name: "Language" })).toHaveValue(lang);
     const robots = page.locator('meta[name="robots"]');
