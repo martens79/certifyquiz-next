@@ -305,7 +305,6 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     try {
       return await fetchPool();
     } catch (e: any) {
-      if (e?.status === 401) return [];
       throw e;
     }
   }, [fetchPool]);

@@ -196,7 +196,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
     } catch (e: any) {
       if (e?.status === 401) {
         setNeedsLoginForQuestions(true);
-        return [];
+        throw e;
       }
 
       if (isTopicPremiumRequiredError(e)) {

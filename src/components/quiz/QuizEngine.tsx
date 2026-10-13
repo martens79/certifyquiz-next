@@ -934,6 +934,12 @@ const openFeedback = () => {
         const status: number | undefined =
           typeof err?.status === 'number' ? err.status : undefined;
 
+        // Only a definitive denial after the HTTP client's refresh path may
+        // invalidate this scope; transport/malformed/5xx keep saved progress.
+        if (status === 401 || status === 403 || status === 404 || status === 410) {
+          clearProgress(scopedKey);
+        }
+
         if (status === 401) {
           setErr(
             lang === 'it'
