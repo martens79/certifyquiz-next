@@ -179,6 +179,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 );
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
   const [globalPoolTotal, setGlobalPoolTotal] = useState<number | null>(null);
+  // true quando la chiamata dei conteggi e' conclusa (con esito o con errore).
+  // Il quiz viene montato solo da quel momento: `trainingCap` ed `examSpec`
+  // dipendono da poolTotal e, se cambiassero dopo il mount, il motore
+  // rifarebbe il fetch del pool (un nuovo set casuale) a sessione gia' avviata.
+  const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
   const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
   const copy = COPY[currentLang] ?? COPY.it;
@@ -214,6 +219,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     let cancelled = false;
     setPoolTotal(null);
     setGlobalPoolTotal(null);
+    setPoolTotalSettled(false);
 
     (async () => {
       try {
@@ -233,6 +239,8 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
           setPoolTotal(null);
           setGlobalPoolTotal(null);
         }
+      } finally {
+        if (!cancelled) setPoolTotalSettled(true);
       }
     })();
 
@@ -288,6 +296,19 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, trainingCap, mode, isAssessmentMode]);
+
+  // Identita' stabile: il motore rifa' il fetch del pool ogni volta che questa
+  // funzione cambia. Una arrow inline qui significava "nuovo set casuale di
+  // domande a ogni re-render della pagina" (refresh del token, bfcache, ...).
+  // Cambia solo quando cambiano davvero i parametri della richiesta (fetchPool).
+  const fetchQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      return await fetchPool();
+    } catch (e: any) {
+      if (e?.status === 401) return [];
+      throw e;
+    }
+  }, [fetchPool]);
 
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
@@ -370,7 +391,12 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
       )}
 
       {/* Quiz (solo se NON coming soon) */}
-      {!isComingSoon && (
+      {!isComingSoon && !poolTotalSettled && (
+        <div className="mx-auto max-w-5xl px-4 mt-6 pb-10 text-center text-sm text-slate-600">
+          Caricamento quiz…
+        </div>
+      )}
+      {!isComingSoon && poolTotalSettled && (
         <div className="mx-auto max-w-5xl px-4 mt-6 pb-10">
   <QuizEngine
   key={`${currentSlug}:${currentLang}`}
@@ -421,14 +447,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   }}
 
   onModeChange={(m) => setMode(m)}
-  fetchQuestions={async () => {
-    try {
-      return await fetchPool();
-    } catch (e: any) {
-      if (e?.status === 401) return [];
-      throw e;
-    }
-  }}
+  fetchQuestions={fetchQuestions}
   onFeedback={async ({ questionId, type, description }) => {
     const token = getAccessToken();
     try {

@@ -650,6 +650,10 @@ const openFeedback = () => {
   // fresco, rev 0) potrebbe far partire una PUT che compete con la
   // riconciliazione stessa.
   const hydratedRef = useRef(false);
+  // Specchio di hydratedRef come stato: serve solo a far ripartire gli effect
+  // di autosave quando l'idratazione finisce (un ref non innesca render).
+  // La decisione "posso scrivere?" resta quella sincrona del ref.
+  const [hydrated, setHydrated] = useState(false);
 
   // Ancora per il countdown exam quando la fonte è il server (sync riuscito
   // via GET o PUT): {remainingAtSync, perfAtSync}. Il tick calcola SOLO un
@@ -721,6 +725,7 @@ const openFeedback = () => {
     let alive = true;
     const controller = new AbortController();
     hydratedRef.current = false;
+    setHydrated(false);
 
     (async () => {
       setLoading(true);
@@ -953,6 +958,7 @@ const openFeedback = () => {
         if (alive) {
           setLoading(false);
           hydratedRef.current = true;
+          setHydrated(true);
         }
       }
     })();
@@ -1220,6 +1226,17 @@ clearProgress(`${storageScope}:assessment`);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
+    // Nessuna scrittura finche' il load/ripristino non e' concluso. Al mount lo
+    // stato e' quello vuoto iniziale (qIds=[], idx=0): scriverlo qui, un frame
+    // dopo il mount ma PRIMA che l'effect asincrono di load legga il
+    // salvataggio, distruggeva il progresso che stava per essere ripristinato
+    // (reload, tab scartata dal browser mobile, ritorno dal background). Vale
+    // anche al cambio di scopedKey (login/logout, cambio mode): finche' il
+    // load non e' finito, lo stato in memoria appartiene alla chiave
+    // PRECEDENTE e non va scritto sotto quella nuova. Senza domande non c'e'
+    // nulla di valido da salvare (errore di load, pool vuoto, paywall).
+    if (!hydratedRef.current || questions.length === 0) return;
+
     // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
     // anche per i cambi innescati dal ripristino nel load effect (non solo
     // dalle azioni utente): non è un problema, resta monotono, che è
@@ -1258,7 +1275,7 @@ clearProgress(`${storageScope}:assessment`);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
     };
-  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated]);
 
   /* -------------------------- SYNC DB (resume cross-device) -------------------------
      Effetto separato da quello locale sopra, deliberatamente: quello locale
