@@ -6,7 +6,7 @@ export const API_PREFIX = "/api/backend";
 import { decodeApiJson, unavailableApiResponse, validateQuestionPayload } from '@/lib/api-response';
 
 /*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
-import { getToken, setToken, clearToken, setUser } from "@/lib/auth";
+import { getToken, setToken, clearToken, setUser, logout } from "@/lib/auth";
 
 
 /** Compat API: usata in giro nel codice */
@@ -22,8 +22,7 @@ export function setAccessToken(token: string | null, remember = true) {
 
 /** Pulisce token + user cache */
 export function clearAuth() {
-  clearToken();
-  setUser(null);
+  logout();
 }
 
 /*─────────────────────────────── TIPI BASE ───────────────────────────────*/
