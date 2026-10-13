@@ -31,9 +31,10 @@ const MIXED_SCOPE = (who: string) => `mixed:${CERT_SLUG}:en:training:${who}`;
 // Al mount il motore fa UN fetch del pool. In `next dev` React StrictMode
 // esegue gli effect due volte, quindi il conteggio osservabile e' 2; in
 // produzione e' 1. Prima del fix erano 3-4 (re-render per poolTotal/auth).
-const INITIAL_FETCHES_MAX = 2;
+const INITIAL_FETCHES_MAX = process.env.E2E_PROD === "1" ? 1 : 2;
 
-test.use({ viewport: { width: 412, height: 915 }, hasTouch: true, isMobile: true });
+// Keep the production PWA worker from bypassing the synthetic backend.
+test.use({ viewport: { width: 412, height: 915 }, hasTouch: true, isMobile: true, serviceWorkers: "block" });
 test.describe.configure({ timeout: 120_000 });
 
 async function openQuiz(page: Page, url: string) {
@@ -44,6 +45,31 @@ async function openQuiz(page: Page, url: string) {
 }
 
 test.describe("PR1 · sessione stabile (nessun refetch non voluto)", () => {
+  test("account switch with denied fetch never saves the previous account's questions", async ({ page, context }) => {
+    const be = new FakeBackend({ user: { id: 42 } });
+    await be.seedBrowserSession(context);
+    await be.install(page);
+    await openQuiz(page, MIXED_URL);
+    await advanceTo(page, 8);
+    const before = be.mixedFetches;
+    expect(await readStoredProgress(page, MIXED_SCOPE("user:42"))).not.toBeNull();
+
+    be.options.hardLocked = true;
+    const token = be.loginAs({ id: 43 });
+    await page.evaluate(({ token }) => {
+      const user = { id: 43, username: "other", email: "o@example.test", role: "user", premium: false, trial: false };
+      localStorage.setItem("cq:access", token);
+      localStorage.setItem("cq_user", JSON.stringify(user));
+      window.dispatchEvent(new CustomEvent("cq:token", { detail: token }));
+      window.dispatchEvent(new CustomEvent("cq:user", { detail: user }));
+    }, { token });
+    await expect.poll(() => be.mixedFetches, { timeout: 15_000 }).toBeGreaterThan(before);
+    await page.waitForTimeout(1500);
+    expect(await readStoredProgress(page, MIXED_SCOPE("user:43"))).toBeNull();
+    expect(await page.evaluate((scope) => localStorage.getItem(`cq:quiz:snap:${scope}`), MIXED_SCOPE("user:43"))).toBeNull();
+    expect(await readQuestionId(page)).toBeNull();
+  });
+
   test("avvio MIXED: un solo fetch del pool (nessun double-fetch legato a poolTotal)", async ({ page, context }) => {
     const be = new FakeBackend();
     await be.install(page);

@@ -923,6 +923,13 @@ const openFeedback = () => {
       } catch (e: unknown) {
         if (!alive) return;
 
+        // A rejected reload may follow an in-place account/scope change.
+        // Drop the previous session before hydration enables autosave again.
+        // Otherwise it would be written under the new user's storage key.
+        setQuestions([]);
+        setPool([]);
+        setResults({});
+
         const err: any = e;
         const status: number | undefined =
           typeof err?.status === 'number' ? err.status : undefined;
