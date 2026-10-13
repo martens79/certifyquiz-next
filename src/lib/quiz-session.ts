@@ -246,6 +246,8 @@ export function restoreSnapshot(raw: unknown, expect: SnapshotExpectation): Ques
  */
 export function isTransientFetchError(err: unknown): boolean {
   if (err instanceof TypeError) return true; // fetch() senza rete / DNS / CORS
+  const name = (err as { name?: unknown } | null)?.name;
+  if (name === 'TimeoutError' || name === 'AbortError') return true;
   const status = (err as { status?: unknown } | null)?.status;
   return typeof status === 'number' && (status === 408 || status === 429 || status >= 500);
 }

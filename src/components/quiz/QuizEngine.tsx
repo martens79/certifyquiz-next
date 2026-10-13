@@ -24,6 +24,11 @@ import {
 } from '@/lib/quiz-session';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
 import {
+  readExamAttempt, saveExamAttempt, clearExamAttempt, createExamAttempt,
+  attemptRemaining, checkpointAttempt, closeAttempt, sameAttemptQuestions,
+  type ExamAttempt,
+} from '@/lib/exam-attempt';
+import {
   calculateCompletedBlock,
   getCompletedBlockWrongPositions,
   getNextBlockQuestionCount,
@@ -669,6 +674,10 @@ const openFeedback = () => {
   // di autosave quando l'idratazione finisce (un ref non innesca render).
   // La decisione "posso scrivere?" resta quella sincrona del ref.
   const [hydrated, setHydrated] = useState(false);
+  const [attemptClosed, setAttemptClosed] = useState(false);
+  const [loadGeneration, setLoadGeneration] = useState(0);
+  const attemptRef = useRef<ExamAttempt | null>(null);
+  const attemptClockRef = useRef<{ left: number; perfAt: number } | null>(null);
 
   // Inizio del countdown exam appena ripristinato: l'effect di init del timer
   // (piu' sotto) azzera startedAtRef a ogni cambio di questions.length, cioe'
@@ -759,8 +768,25 @@ const openFeedback = () => {
     (async () => {
       setLoading(true);
       setErr(null);
+      setAttemptClosed(false);
+      attemptRef.current = null;
+      attemptClockRef.current = null;
 
       try {
+        const storedAttempt = effectiveMode === 'exam' ? readExamAttempt(scopedKey) : { exists: false, attempt: null };
+        if (storedAttempt.exists && (!storedAttempt.attempt || attemptRemaining(storedAttempt.attempt) <= 0)) {
+          if (storedAttempt.attempt) {
+            attemptRef.current = storedAttempt.attempt.status === 'active'
+              ? closeAttempt(storedAttempt.attempt, 'expired') : storedAttempt.attempt;
+            saveExamAttempt(attemptRef.current);
+          }
+          setRemaining(0);
+          setQuestions([]);
+          setPool([]);
+          setResults({});
+          setAttemptClosed(true);
+          return;
+        }
         let qs: Question[] = [];
         let fetchError: unknown = null;
         try {
@@ -910,7 +936,8 @@ const openFeedback = () => {
             userKey: userKeyPart,
             mode: effectiveMode,
             lang,
-            isPremium: isPremiumUser,
+            // A premium delivery requires a fresh positive server decision.
+            isPremium: isPremiumUser && !fetchError,
             qIds: Array.isArray(source.data.qIds) ? source.data.qIds : undefined,
           });
         }
@@ -921,23 +948,28 @@ const openFeedback = () => {
 
         let canRestore = idMatch || !!snapshotQuestions;
 
-        // Exam: il countdown continua anche a pagina chiusa. Se il tempo e'
-        // finito mentre l'utente era via, il ripristino non lo riporta in
-        // vita: ripartire con un esame nuovo e' l'unica via (come Restart).
-        if (canRestore && source?.kind === 'local' && effectiveMode === 'exam') {
-          const totalForCheck =
-            effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
-          if (
-            totalForCheck != null &&
-            examRemainingAfterAway({
-              remainingSec: source.data.remainingSec,
-              savedAt: source.data.savedAt,
-              totalSec: totalForCheck,
-            }) <= 0
-          ) {
-            canRestore = false;
-            snapshotQuestions = null;
+        // Unavailable authorization/payload is not a definitive invalidation.
+        if (fetchError && !canRestore) throw fetchError;
+
+        // An existing attempt may never silently become a different exam,
+        // even if its progress/snapshot vanished or can no longer be restored.
+        if (effectiveMode === 'exam' && (storedAttempt.exists || !!source) &&
+          (!canRestore || (storedAttempt.exists && (!storedAttempt.attempt ||
+           !sameAttemptQuestions(storedAttempt.attempt, activeIds) ||
+           (source?.kind === 'local' && source.data.attemptId && source.data.attemptId !== storedAttempt.attempt.attemptId))))) {
+          if (storedAttempt.attempt) {
+            attemptRef.current = closeAttempt(storedAttempt.attempt, 'unavailable');
+          } else {
+            attemptRef.current = closeAttempt(createExamAttempt({
+              scope: scopedKey, totalSec: effectiveDuration ?? Math.max(1, active.length) * 60,
+              qIds: [], seed: candidateSeed,
+            }), 'unavailable');
           }
+          // Keep the old evidence if storage cannot persist the tombstone.
+          if (saveExamAttempt(attemptRef.current)) clearProgress(scopedKey);
+          setQuestions([]); setPool([]); setResults({}); setRemaining(0);
+          setAttemptClosed(true);
+          return;
         }
 
         // Pool irraggiungibile e nessuno snapshot valido: errore come prima.
@@ -965,6 +997,29 @@ const openFeedback = () => {
         const total =
           effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
 
+        if (effectiveMode === 'exam' && total != null && active.length > 0) {
+          const legacyLeft = storedAttempt.attempt
+            ? Math.max(0, Math.min(total, typeof source?.data.remainingSec === 'number' ? source.data.remainingSec : total))
+            : canRestore && source?.kind === 'local'
+            ? examRemainingAfterAway({ remainingSec: source.data.remainingSec, savedAt: source.data.savedAt, totalSec: total })
+            : canRestore && source?.kind === 'db' && typeof source.data.remainingSec === 'number'
+              ? Math.max(0, Math.min(total, source.data.remainingSec)) : total;
+          const attempt = storedAttempt.attempt ?? createExamAttempt({ scope: scopedKey, totalSec: total, remainingSec: legacyLeft, qIds: activeIds, seed });
+          const left = Math.min(attemptRemaining(attempt), legacyLeft);
+          attemptRef.current = checkpointAttempt(attempt, left);
+          const saved = saveExamAttempt(attemptRef.current);
+          if (!saved && !storedAttempt.exists) {
+            throw new Error('Exam attempt cannot be saved. Enable browser storage and retry.');
+          }
+          attemptClockRef.current = { left, perfAt: performance.now() };
+          if (left === 0) {
+            setRemaining(0);
+            setQuestions([]); setPool([]); setResults({});
+            setAttemptClosed(true);
+            return;
+          }
+        }
+
         examServerSyncRef.current = null;
 
         if (canRestore && source!.kind === 'local') {
@@ -986,7 +1041,7 @@ const openFeedback = () => {
             // Il tempo passato lontano dalla pagina conta. Si riparte dalla
             // scadenza, non da startedAt: l'effect di init del timer azzera
             // startedAtRef al cambio delle domande (vedi pendingExamStartRef).
-            const left = examRemainingAfterAway({
+            const left = attemptRef.current ? attemptRemaining(attemptRef.current) : examRemainingAfterAway({
               remainingSec: p.remainingSec,
               savedAt: p.savedAt,
               totalSec: total,
@@ -1121,7 +1176,7 @@ const openFeedback = () => {
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId]);
+  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId, loadGeneration]);
 
     // ✅ Analytics — traccia quando un assessment/free test viene realmente avviato.
   // Usiamo un ref per evitare eventi doppi causati da re-render o Strict Mode.
@@ -1325,7 +1380,7 @@ clearProgress(`${storageScope}:assessment`);
   }, [effectiveMode, effectiveDuration, questions.length]);
 
   useEffect(() => {
-    if (effectiveMode !== 'exam' || finished) {
+    if (effectiveMode !== 'exam' || finished || attemptClosed || !hydrated || !attemptRef.current) {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
       return;
@@ -1360,6 +1415,11 @@ clearProgress(`${storageScope}:assessment`);
         rest = Math.max(0, total - elapsed);
       }
 
+      if (attemptRef.current && attemptClockRef.current) {
+        rest = Math.max(0, Math.min(rest, attemptRemaining(attemptRef.current),
+          Math.floor(attemptClockRef.current.left - (performance.now() - attemptClockRef.current.perfAt) / 1000)));
+      }
+
       setRemaining(rest);
 
       if (rest === 0) {
@@ -1378,7 +1438,7 @@ clearProgress(`${storageScope}:assessment`);
   // doFinish reads the latest quiz state; including it would restart the RAF
   // loop on every render and disturb timer scheduling.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining]);
+  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining, hydrated, attemptClosed]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
@@ -1394,7 +1454,7 @@ clearProgress(`${storageScope}:assessment`);
     if (!hydratedRef.current || questions.length === 0) return;
     // Quiz concluso: il salvataggio e' stato cancellato da doFinish e non deve
     // risorgere (un ripristino riaprirebbe un quiz gia' chiuso).
-    if (finished) return;
+    if (finished || attemptClosed) return;
 
     // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
     // anche per i cambi innescati dal ripristino nel load effect (non solo
@@ -1414,9 +1474,16 @@ clearProgress(`${storageScope}:assessment`);
       rev: revRef.current,
       savedAt: Date.now(),
       blockPaused: effectiveMode === 'training' ? blockPaused : false,
+      attemptId: effectiveMode === 'exam' ? attemptRef.current?.attemptId : undefined,
     };
 
-    const flush = () => saveProgress(scopedKey, payload);
+    const flush = () => {
+      saveProgress(scopedKey, payload);
+      if (effectiveMode === 'exam' && attemptRef.current?.scope === scopedKey && remaining != null) {
+        attemptRef.current = checkpointAttempt(attemptRef.current, remaining);
+        saveExamAttempt(attemptRef.current);
+      }
+    };
     const id = requestAnimationFrame(flush);
 
     // Chrome (e altri) sospendono i callback rAF nei tab in background: senza
@@ -1436,7 +1503,7 @@ clearProgress(`${storageScope}:assessment`);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
     };
-  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated, finished, blockPaused]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated, finished, blockPaused, attemptClosed]);
 
   /* ------------------- SNAPSHOT DOMANDE CONSEGNATE ------------------- */
   // Effetto separato da quello sopra, di proposito: l'autosave gira a ogni
@@ -1853,7 +1920,10 @@ const goToFirstUnanswered = () => {
 };
 
  async function doFinish(timeExpired = false) {
-  void timeExpired;
+  if (effectiveMode === 'exam' && attemptRef.current) {
+    attemptRef.current = closeAttempt(attemptRef.current, timeExpired ? 'expired' : 'completed');
+    saveExamAttempt(attemptRef.current);
+  }
   setFinished(true);
   setMockReviewGate(null);
 
@@ -2106,6 +2176,14 @@ const submitAssessmentReport = async () => {
 
   const restart = () => {
   clearProgress(scopedKey);
+  if (effectiveMode === 'exam') {
+    clearExamAttempt(scopedKey);
+    attemptRef.current = null;
+    attemptClockRef.current = null;
+    setAttemptClosed(false);
+    setLoadGeneration(n => n + 1); // Fresh authorization/pool after explicit intent.
+    return;
+  }
   pendingExamStartRef.current = null;
   restoredAnsweredRef.current = new Set();
   recheckAttemptedRef.current = new Set();
@@ -2212,7 +2290,22 @@ const submitAssessmentReport = async () => {
 
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
-  if (err) return <div className="min-h-screen grid place-items-center text-red-600">{err}</div>;
+  if (err) return <div className="min-h-screen grid place-items-center p-6">
+    <div className="space-y-4 text-center"><p className="text-red-600">{err}</p>
+      <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={() => setLoadGeneration(n => n + 1)}>
+        {lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Retry'}
+      </button>
+    </div>
+  </div>;
+  if (attemptClosed && effectiveMode === 'exam') {
+    return <div data-testid="exam-attempt-closed" className="min-h-screen grid place-items-center p-6">
+      <div className="space-y-4 text-center">
+        <h1 className="text-xl font-bold">{lang === 'it' ? 'Tentativo d’esame concluso o non ripristinabile' : lang === 'fr' ? 'Tentative terminée ou non récupérable' : lang === 'es' ? 'Intento finalizado o no recuperable' : 'Exam attempt ended or cannot be resumed'}</h1>
+        <p>{lang === 'it' ? 'Per iniziare un nuovo tentativo, premi Ricomincia.' : lang === 'fr' ? 'Démarrez une nouvelle tentative pour continuer.' : lang === 'es' ? 'Inicia un nuevo intento para continuar.' : 'Start a new attempt to continue.'}</p>
+        <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={restart}>{label('restart', lang)}</button>
+      </div>
+    </div>;
+  }
   if (!questions.length) {
     // Il batch Training può essere vuoto perché il backend l'ha rifiutato
     // (Fase A, enforcement server-side su /questions* con mode=training)

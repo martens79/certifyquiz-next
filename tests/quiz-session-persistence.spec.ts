@@ -237,14 +237,20 @@ test.describe("PR2 · sessione persistente", () => {
     const oldQid = await readQuestionId(page);
 
     const fresh = await closeAwayAndReopen(context, page, be, MOCK_SCOPE("anon"), 7200);
-    await openQuiz(fresh, MOCK_URL);
+    await fresh.goto(MOCK_URL, { waitUntil: 'domcontentloaded' });
+    await expect(fresh.getByTestId('exam-attempt-closed')).toBeVisible();
 
-    // esame nuovo, timer pieno, nessun invio automatico dell'esame scaduto
-    expect(await readHeader(fresh)).toMatchObject({ index: 1, answered: 0 });
+    // The expired attempt remains closed; no full timer without intent.
+    expect(await readHeader(fresh)).toBeNull();
     expect(be.mockEvaluations).toBe(0);
     expect(be.saveExamCalls).toBe(0);
     const timer = await readTimerSec(fresh);
-    expect(timer!).toBeGreaterThan(3500);
+    expect(timer ?? 0).toBe(0);
+    await fresh.reload();
+    await expect(fresh.getByTestId('exam-attempt-closed')).toBeVisible();
+    await dismissCookieBanner(fresh);
+    await fresh.getByRole('button', { name: /^Restart$/ }).click();
+    await expect.poll(() => readTimerSec(fresh)).toBeGreaterThan(3500);
     void oldQid;
   });
 

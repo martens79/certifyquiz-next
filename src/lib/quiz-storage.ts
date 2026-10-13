@@ -42,6 +42,8 @@ export type PersistPayload = {
   // Schermata di riepilogo blocco aperta (solo training con blockSize):
   // senza, un reload sul confine di blocco salterebbe il checkpoint.
   blockPaused?: boolean;
+  // Links progress to the independent deadline/tombstone record.
+  attemptId?: string;
 };
 
 // Chiave storage isolata per quiz (topic/mixed + lingua)

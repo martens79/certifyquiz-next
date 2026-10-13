@@ -436,6 +436,15 @@ export async function closeAwayAndReopen(
         sn.savedAt = (sn.savedAt ?? Date.now()) - awayMs;
         localStorage.setItem(snapKey, JSON.stringify(sn));
       }
+      const attemptKey = key.replace("cq:quiz:", "cq:quiz:attempt:");
+      const attemptRaw = localStorage.getItem(attemptKey);
+      if (attemptRaw) {
+        const attempt = JSON.parse(attemptRaw);
+        attempt.startedAt -= awayMs;
+        attempt.deadlineAt -= awayMs;
+        attempt.checkpointAt -= awayMs;
+        localStorage.setItem(attemptKey, JSON.stringify(attempt));
+      }
     },
     { key: `cq:quiz:${scope}`, awayMs: awaySec * 1000 }
   );
