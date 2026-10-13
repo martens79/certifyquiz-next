@@ -20,6 +20,7 @@ import {
   isPostGateHardLocked,
   shouldReportPostGateAnswer,
   isPostGateLimitError,
+  shouldShowPremiumUpsell,
 } from '@/lib/quiz-explanation-access';
 import {
   claimBlockReviewGateOpening,
@@ -390,6 +391,10 @@ export default function QuizEngine({
   // il Gruppo B dell'esperimento Rewarded Ads): serve per il testo del gate,
   // che altrimenti resterebbe hardcoded su "10" anche per chi ha un limite diverso.
   const [wrongExpLimit, setWrongExpLimit] = useState<number>(10);
+  // true SOLO se il server ha detto che le spiegazioni sono illimitate per questa
+  // certificazione (Premium, o pacchetto Study/Complete posseduto): serve a non
+  // mostrare upsell per una risorsa che l'utente ha gia'. Mai dedotto dal client.
+  const [explanationsUnlimited, setExplanationsUnlimited] = useState(false);
   const [experimentVariant, setExperimentVariant] = useState<string | null>(null);
   // Domande sbloccate via rewarded ad in questa sessione: bypassano il gate
   // senza toccare wrongExpLeft (il reward non è credito extra, è mirato a
@@ -436,12 +441,19 @@ export default function QuizEngine({
 useEffect(() => {
   if (!isLoggedIn || isPremiumUser) return;
 
+  // Il contesto puo' ricevere certificationId DOPO il mount: una risposta della
+  // richiesta senza certificazione (vista FREE) non deve sovrascrivere quella,
+  // corretta, della richiesta con certificazione.
+  let alive = true;
+
   apiFetch(`/me/explanation-status${context?.certificationId ? `?certification_id=${context.certificationId}` : ""}`)
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     })
     .then((data) => {
+      if (!alive) return;
+      setExplanationsUnlimited(data.unlimited === true);
       if (data.unlimited) setWrongExpLeft(null);
       else setWrongExpLeft(data.remaining ?? 0);
       if (typeof data.limit === "number") setWrongExpLimit(data.limit);
@@ -455,7 +467,14 @@ useEffect(() => {
     .catch((err) => {
       console.error("Errore explanation-status:", err);
     });
+
+  return () => {
+    alive = false;
+  };
 }, [isLoggedIn, isPremiumUser, context?.certificationId]);
+
+  // Upsell Premium: solo per chi non ha gia' le spiegazioni illimitate.
+  const showPremiumUpsell = shouldShowPremiumUpsell({ isPremiumUser, explanationsUnlimited });
 
   // Chiamato quando l'utente free (già oltre l'explanation gate) risponde a
   // una domanda, corretta o sbagliata che sia — vedi isPostGateHardLocked.
@@ -1435,6 +1454,7 @@ clearProgress(`${storageScope}:assessment`);
       mergeResults([checked]);
       const remaining = checked.explanation_access?.remaining;
       if (checked.explanation_access?.unlimited) {
+        setExplanationsUnlimited(true);
         setWrongExpLeft(null);
       } else if (typeof remaining === "number") {
         setWrongExpLeft(remaining);
@@ -2360,7 +2380,7 @@ const assessmentCopy =
               </div>
             )}
 
-            {isAssessmentResult && (
+            {isAssessmentResult && !explanationsUnlimited && (
   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
     <h2 className="text-lg font-bold text-gray-950">
       🔒 {lang === 'it'
@@ -2431,7 +2451,7 @@ const assessmentCopy =
 )}
 
            {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
-{!isAssessmentResult && !isPremiumUser && (
+{!isAssessmentResult && showPremiumUpsell && (
   <div className="pt-2">
     <PremiumTeaserBox
       lang={lang}
@@ -2493,7 +2513,7 @@ const assessmentCopy =
         : "Retry quiz"}
     </button>
 
-    {!isPremiumUser && (
+    {showPremiumUpsell && (
       <button
         type="button"
         onClick={() => router.push(pricingPath(lang))}

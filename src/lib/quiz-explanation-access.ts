@@ -29,6 +29,27 @@ export function claimWrongExplanationConsumption(
 }
 
 /**
+ * Upsell Premium mostrati a fine quiz (box assessment, PremiumTeaserBox,
+ * "Sblocca spiegazioni Premium"): hanno senso solo per chi non e' Premium E non
+ * possiede gia' le spiegazioni illimitate della certificazione (pacchetto
+ * Study/Complete).
+ *
+ * `explanationsUnlimited` arriva dal SERVER (GET /me/explanation-status e
+ * POST /answers/check -> `unlimited`): il client non lo deduce da nessun flag e
+ * non simula Premium. Finche' il server non ha risposto resta false, cioe' si
+ * comporta come prima.
+ */
+export function shouldShowPremiumUpsell({
+  isPremiumUser,
+  explanationsUnlimited,
+}: {
+  isPremiumUser: boolean;
+  explanationsUnlimited: boolean;
+}) {
+  return !isPremiumUser && explanationsUnlimited !== true;
+}
+
+/**
  * Hard paywall "explanation gate + N domande extra": blocca l'accesso a una
  * domanda NON ancora risposta quando il server ha già segnalato hardLocked.
  * Scoping esplicito, coerente con l'audit:
