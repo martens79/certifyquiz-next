@@ -6,7 +6,22 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
-import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
+import {
+  loadProgress,
+  saveProgress,
+  clearProgress,
+  loadSnapshot,
+  saveSnapshot,
+  pruneStaleSnapshots,
+} from '@/lib/quiz-storage';
+import {
+  buildSnapshot,
+  restoreSnapshot,
+  isTransientFetchError,
+  examRemainingAfterAway,
+  wasDeliveredToPremium,
+  SNAPSHOT_TTL_MS,
+} from '@/lib/quiz-session';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
 import {
   calculateCompletedBlock,
@@ -655,6 +670,20 @@ const openFeedback = () => {
   // La decisione "posso scrivere?" resta quella sincrona del ref.
   const [hydrated, setHydrated] = useState(false);
 
+  // Inizio del countdown exam appena ripristinato: l'effect di init del timer
+  // (piu' sotto) azzera startedAtRef a ogni cambio di questions.length, cioe'
+  // proprio subito dopo il ripristino. Questo ref porta il valore ripristinato
+  // oltre quel reset, cosi' il tempo trascorso lontano dalla pagina resta
+  // contato invece di tornare al valore pieno.
+  const pendingExamStartRef = useRef<number | null>(null);
+
+  // Id (stringa) delle domande che al ripristino risultavano gia' risposte.
+  // Il feedback del server (risposta corretta/spiegazione) non e' persistito
+  // di proposito: per queste domande viene richiesto di nuovo, una volta, al
+  // momento in cui l'utente le rivede (vedi effect di re-check).
+  const restoredAnsweredRef = useRef(new Set<string>());
+  const recheckAttemptedRef = useRef(new Set<string>());
+
   // Ancora per il countdown exam quando la fonte è il server (sync riuscito
   // via GET o PUT): {remainingAtSync, perfAtSync}. Il tick calcola SOLO un
   // delta monotono locale da perfAtSync (performance.now(), immune a salti
@@ -732,11 +761,26 @@ const openFeedback = () => {
       setErr(null);
 
       try {
-        const qs = await fetchQuestions();
+        let qs: Question[] = [];
+        let fetchError: unknown = null;
+        try {
+          qs = await fetchQuestions();
+        } catch (e) {
+          fetchError = e;
+        }
         if (!alive) return;
 
+        // Solo un guasto di trasporto (rete, 5xx, 429) puo' essere assorbito
+        // dallo snapshot, e solo piu' sotto. Ogni altro errore (401, paywall,
+        // lock post-gate, mock non disponibile) segue il percorso di sempre.
+        if (fetchError && !isTransientFetchError(fetchError)) throw fetchError;
+
         const poolQ = Array.isArray(qs) ? qs : [];
-        setPool(poolQ);
+        if (!fetchError) setPool(poolQ);
+
+        pendingExamStartRef.current = null;
+        restoredAnsweredRef.current = new Set();
+        recheckAttemptedRef.current = new Set();
 
         let local = loadProgress(scopedKey) as any;
 
@@ -753,8 +797,16 @@ const openFeedback = () => {
           const anonKey = `${storageScope}:${effectiveMode}:anon`;
           const anonLocal = loadProgress(anonKey) as any;
           if (anonLocal) {
+            // Anche le domande consegnate seguono il progresso: senza, il
+            // ripristino dopo il login (pool casuale) non avrebbe da dove
+            // ricostruire la sessione. Si rietichetta per il nuovo account;
+            // la validazione resta quella di sempre (TTL, mode, lingua).
+            const anonSnap = loadSnapshot(anonKey) as any;
             saveProgress(scopedKey, anonLocal);
             clearProgress(anonKey);
+            if (anonSnap && typeof anonSnap === 'object') {
+              saveSnapshot(scopedKey, { ...anonSnap, scope: scopedKey, userKey: userKeyPart });
+            }
             local = anonLocal;
             migratedFromAnon = true;
           }
@@ -839,11 +891,58 @@ const openFeedback = () => {
         // il perché), stessa garanzia: se il pool è cambiato da quando la
         // riga/il salvataggio è stato scritto, non ripristinare idx/risposte
         // su un ordine che non corrisponde più.
-        const canRestore =
+        const idMatch =
           !!source &&
           (source.kind === 'local'
             ? Array.isArray(source.data.qIds) && arraysEqual(source.data.qIds, activeIds)
             : typeof source.data.qidsHash === 'number' && hashIds(activeIds) === source.data.qidsHash);
+
+        // Il pool appena scaricato non ricostruisce la sessione salvata
+        // (MIXED e mock-exam estraggono un campione casuale a ogni fetch): si
+        // ripristinano le domande GIA' CONSEGNATE dallo snapshot. Solo se il
+        // server ha appena confermato l'accesso con un pool non vuoto, oppure
+        // e' irraggiungibile per un guasto di trasporto: un paywall, un lock
+        // post-gate o un 403 hanno gia' interrotto il flusso sopra.
+        let snapshotQuestions: Question[] | null = null;
+        if (!idMatch && source?.kind === 'local' && (poolQ.length > 0 || fetchError)) {
+          snapshotQuestions = restoreSnapshot(loadSnapshot(scopedKey), {
+            scope: scopedKey,
+            userKey: userKeyPart,
+            mode: effectiveMode,
+            lang,
+            isPremium: isPremiumUser,
+            qIds: Array.isArray(source.data.qIds) ? source.data.qIds : undefined,
+          });
+        }
+        if (snapshotQuestions) {
+          active = snapshotQuestions;
+          activeIds = active.map((q) => q.id);
+        }
+
+        let canRestore = idMatch || !!snapshotQuestions;
+
+        // Exam: il countdown continua anche a pagina chiusa. Se il tempo e'
+        // finito mentre l'utente era via, il ripristino non lo riporta in
+        // vita: ripartire con un esame nuovo e' l'unica via (come Restart).
+        if (canRestore && source?.kind === 'local' && effectiveMode === 'exam') {
+          const totalForCheck =
+            effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
+          if (
+            totalForCheck != null &&
+            examRemainingAfterAway({
+              remainingSec: source.data.remainingSec,
+              savedAt: source.data.savedAt,
+              totalSec: totalForCheck,
+            }) <= 0
+          ) {
+            canRestore = false;
+            snapshotQuestions = null;
+          }
+        }
+
+        // Pool irraggiungibile e nessuno snapshot valido: errore come prima.
+        if (fetchError && !canRestore) throw fetchError;
+        if (fetchError && snapshotQuestions) setPool(snapshotQuestions);
 
         // Se il candidato non è valido (pool cambiato, o nessuna fonte),
         // il seed candidato NON va riusato per la sessione nuova: genero un
@@ -858,6 +957,9 @@ const openFeedback = () => {
           activeIds = active.map((q) => q.id);
         }
         seedRef.current = seed;
+        // A restored session must obtain feedback for the current account.
+        // Never reuse explanations/results from the previous in-memory scope.
+        setResults({});
         setQuestions(active);
 
         const total =
@@ -871,11 +973,32 @@ const openFeedback = () => {
           setMarked(p.marked ?? {});
           setReviewLater(new Set(p.reviewLater ?? []));
           setIdx(Math.min(p.idx ?? 0, Math.max(0, active.length - 1)));
+          restoredAnsweredRef.current = new Set(
+            Object.entries(p.marked ?? {})
+              .filter(([, v]) => v != null)
+              .map(([k]) => String(k))
+          );
 
-          if (total == null) setRemaining(null);
-          else setRemaining(Math.min(total, p.remainingSec ?? total));
-
-          startedAtRef.current = p.startedAt ?? null;
+          if (total == null) {
+            setRemaining(null);
+            startedAtRef.current = p.startedAt ?? null;
+          } else if (effectiveMode === 'exam') {
+            // Il tempo passato lontano dalla pagina conta. Si riparte dalla
+            // scadenza, non da startedAt: l'effect di init del timer azzera
+            // startedAtRef al cambio delle domande (vedi pendingExamStartRef).
+            const left = examRemainingAfterAway({
+              remainingSec: p.remainingSec,
+              savedAt: p.savedAt,
+              totalSec: total,
+            });
+            const startedAt = Date.now() - (total - left) * 1000;
+            setRemaining(left);
+            startedAtRef.current = startedAt;
+            pendingExamStartRef.current = startedAt;
+          } else {
+            setRemaining(Math.min(total, p.remainingSec ?? total));
+            startedAtRef.current = p.startedAt ?? null;
+          }
           // Mai sotto il pavimento noto della DB (se una riga esiste, anche
           // scartata/non usata come fonte, es. nel caso di migrazione
           // anon->user sopra): altrimenti la prima PUT verrebbe scartata in
@@ -889,6 +1012,11 @@ const openFeedback = () => {
           setMarked(st.marked ?? {});
           setReviewLater(new Set(st.reviewLater ?? []));
           setIdx(Math.min(row.currentIndex ?? 0, Math.max(0, active.length - 1)));
+          restoredAnsweredRef.current = new Set(
+            Object.entries(st.marked ?? {})
+              .filter(([, v]) => v != null)
+              .map(([k]) => String(k))
+          );
           startedAtRef.current = null;
 
           if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
@@ -915,10 +1043,22 @@ const openFeedback = () => {
           revRef.current = dbEligible && dbRow ? dbRow.rev + 1 : 0;
         }
 
+        // Checkpoint di blocco: ripristinato solo se l'indice e' davvero su un
+        // confine di blocco (altrimenti il riepilogo non avrebbe senso).
+        const restoredIdx = canRestore && source?.kind === 'local' ? Number(source.data.idx ?? 0) : 0;
+        const restoredBlockPaused =
+          canRestore &&
+          source?.kind === 'local' &&
+          effectiveMode === 'training' &&
+          !!blockSize &&
+          !!source.data.blockPaused &&
+          restoredIdx > 0 &&
+          restoredIdx % blockSize === 0;
+
         setFinished(false);
         setLastSummary(null);
         setReviewMode(false);
-        setBlockPaused(false);
+        setBlockPaused(restoredBlockPaused);
         setBlockReview(null);
       } catch (e: unknown) {
         if (!alive) return;
@@ -1164,7 +1304,10 @@ clearProgress(`${storageScope}:assessment`);
 
   useEffect(() => {
     if (effectiveMode === 'exam') {
-      startedAtRef.current = null;
+      // Dopo un ripristino il countdown riparte dalla scadenza ricostruita,
+      // non da zero (vedi pendingExamStartRef). Si consuma una volta sola.
+      startedAtRef.current = pendingExamStartRef.current;
+      pendingExamStartRef.current = null;
 
       const total =
         effectiveDuration === null ? null : effectiveDuration ?? questions.length * 60;
@@ -1249,6 +1392,9 @@ clearProgress(`${storageScope}:assessment`);
     // PRECEDENTE e non va scritto sotto quella nuova. Senza domande non c'e'
     // nulla di valido da salvare (errore di load, pool vuoto, paywall).
     if (!hydratedRef.current || questions.length === 0) return;
+    // Quiz concluso: il salvataggio e' stato cancellato da doFinish e non deve
+    // risorgere (un ripristino riaprirebbe un quiz gia' chiuso).
+    if (finished) return;
 
     // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
     // anche per i cambi innescati dal ripristino nel load effect (non solo
@@ -1266,6 +1412,8 @@ clearProgress(`${storageScope}:assessment`);
       idx,
       seed: seedRef.current ?? undefined,
       rev: revRef.current,
+      savedAt: Date.now(),
+      blockPaused: effectiveMode === 'training' ? blockPaused : false,
     };
 
     const flush = () => saveProgress(scopedKey, payload);
@@ -1288,7 +1436,34 @@ clearProgress(`${storageScope}:assessment`);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
     };
-  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated, finished, blockPaused]);
+
+  /* ------------------- SNAPSHOT DOMANDE CONSEGNATE ------------------- */
+  // Effetto separato da quello sopra, di proposito: l'autosave gira a ogni
+  // secondo in exam (cambia `remaining`), mentre le domande consegnate
+  // cambiano solo a inizio sessione, al ripristino e al Restart. Scrivere
+  // qui l'intero set a ogni tick sarebbe un costo senza alcun beneficio.
+  // Contiene solo il payload gia' ricevuto dal browser (vedi lib/quiz-session):
+  // mai correttezza, risposta corretta o spiegazione.
+  useEffect(() => {
+    if (!hydratedRef.current || questions.length === 0 || finished) return;
+    const snapshot = buildSnapshot({
+      scope: scopedKey,
+      userKey: userKeyPart,
+      mode: effectiveMode,
+      lang,
+      // l'etichetta premium si fissa alla consegna: non si perde se il premium
+      // scade a sessione aperta
+      isPremium:
+        isPremiumUser ||
+        wasDeliveredToPremium(loadSnapshot(scopedKey), questions.map((q) => q.id)),
+      questions,
+    });
+    if (snapshot) {
+      saveSnapshot(scopedKey, snapshot);
+      pruneStaleSnapshots(SNAPSHOT_TTL_MS.training);
+    }
+  }, [questions, scopedKey, userKeyPart, effectiveMode, lang, isPremiumUser, hydrated, finished]);
 
   /* -------------------------- SYNC DB (resume cross-device) -------------------------
      Effetto separato da quello locale sopra, deliberatamente: quello locale
@@ -1401,6 +1576,50 @@ clearProgress(`${storageScope}:assessment`);
     };
   }, [questions, marked, reviewLater, effectiveMode, idx, scopedKey, isLoggedIn, context?.topicId, lang, effectiveDuration]);
 
+  /* ------------- RE-CHECK DELLE RISPOSTE RIPRISTINATE (training) -------------
+     Correttezza e spiegazione non vengono mai salvate lato client (Paywall
+     Phase 2): dopo un ripristino `results` e' vuoto. Quando l'utente rivede
+     una domanda gia' risposta, il feedback viene richiesto di nuovo al
+     server — la stessa /answers/check di choose(), idempotente per
+     (utente, domanda): la quota FREE e' consumata al primo tentativo, qui
+     non si consuma altro e una spiegazione gia' concessa viene riconsegnata.
+     Una sola richiesta per domanda e solo per quelle presenti al ripristino
+     (una risposta nuova la verifica choose()). Se fallisce, la domanda resta
+     neutra e si riprova alla prossima visita.
+  --------------------------------------------------------------------- */
+  const recheckPosition = blockReview?.positions[blockReview.cursor] ?? idx;
+  useEffect(() => {
+    if (!hydrated || finished || effectiveMode !== 'training') return;
+    const q = questions[recheckPosition];
+    if (!q) return;
+    const key = String(q.id);
+    const chosen = marked[q.id];
+    if (chosen == null) return;
+    if (!restoredAnsweredRef.current.has(key)) return;
+    if (results[key] || recheckAttemptedRef.current.has(key)) return;
+
+    recheckAttemptedRef.current.add(key);
+    let alive = true;
+    (async () => {
+      try {
+        const checked = await checkAnswer(q.id, chosen, lang);
+        if (!alive) return;
+        mergeResults([checked]);
+        applyCheckedAccess(checked);
+      } catch (err) {
+        recheckAttemptedRef.current.delete(key); // riprova alla prossima visita
+        console.error("Errore answers/check (ripristino):", err);
+      }
+    })();
+
+    return () => {
+      alive = false;
+      recheckAttemptedRef.current.delete(key);
+    };
+    // mergeResults/applyCheckedAccess leggono solo setter e props correnti
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, finished, effectiveMode, recheckPosition, questions, marked, results, lang]);
+
   /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
     () => Object.values(marked).filter((v) => v != null).length,
@@ -1467,9 +1686,35 @@ clearProgress(`${storageScope}:assessment`);
   }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
 
   /* ----------------------------- HANDLER ------------------------------ */
+  // Aggiorna quota e limite spiegazioni dalla risposta del server. Usata sia
+  // da choose() sia dal re-check dopo un ripristino: la regola e' una sola.
+  const applyCheckedAccess = (checked: AnswerCheckResult) => {
+    const remaining = checked.explanation_access?.remaining;
+    if (checked.explanation_access?.unlimited) {
+      setExplanationsUnlimited(true);
+      setWrongExpLeft(null);
+    } else if (typeof remaining === "number") {
+      setWrongExpLeft(remaining);
+      if (remaining === 0 && checked.explanation_access?.consumed) {
+        trackQuizEvent('free_limit_reached', {
+          language: lang,
+          certification_slug: context?.certificationSlug ?? null,
+          limit_type: 'wrong_explanations',
+          limit: checked.explanation_access?.limit ?? wrongExpLimit,
+        });
+      }
+    }
+    if (typeof checked.explanation_access?.limit === "number") {
+      setWrongExpLimit(checked.explanation_access.limit);
+    }
+  };
+
  const choose = async (q: Question, a: Answer) => {
   setActionsOpen(false);
   if (blockReview) return;
+  // Una nuova scelta supera il re-check del ripristino: la verifica la fa
+  // questo handler, una volta sola.
+  restoredAnsweredRef.current.delete(String(q.id));
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
 
@@ -1482,24 +1727,7 @@ clearProgress(`${storageScope}:assessment`);
     try {
       checked = await checkAnswer(q.id, a.id, lang);
       mergeResults([checked]);
-      const remaining = checked.explanation_access?.remaining;
-      if (checked.explanation_access?.unlimited) {
-        setExplanationsUnlimited(true);
-        setWrongExpLeft(null);
-      } else if (typeof remaining === "number") {
-        setWrongExpLeft(remaining);
-        if (remaining === 0 && checked.explanation_access?.consumed) {
-          trackQuizEvent('free_limit_reached', {
-            language: lang,
-            certification_slug: context?.certificationSlug ?? null,
-            limit_type: 'wrong_explanations',
-            limit: checked.explanation_access?.limit ?? wrongExpLimit,
-          });
-        }
-      }
-      if (typeof checked.explanation_access?.limit === "number") {
-        setWrongExpLimit(checked.explanation_access.limit);
-      }
+      applyCheckedAccess(checked);
     } catch (err) {
       console.error("Errore answers/check:", err);
     }
@@ -1878,6 +2106,9 @@ const submitAssessmentReport = async () => {
 
   const restart = () => {
   clearProgress(scopedKey);
+  pendingExamStartRef.current = null;
+  restoredAnsweredRef.current = new Set();
+  recheckAttemptedRef.current = new Set();
 
   assessmentStartedTrackedRef.current = false;
   completedTrackedRef.current = false;
@@ -3006,7 +3237,10 @@ return (
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
             const isRight = isAnswerCorrect(q.id, a.id);
-            const showFeedback = !isTestLike && chosen != null;
+            // Il verdetto e' del server: finche' non e' arrivato (risposta
+            // appena data, o domanda ripristinata dopo un reload) la scelta
+            // resta neutra invece di apparire "sbagliata".
+            const showFeedback = !isTestLike && chosen != null && !!serverResult;
 
             let btnClasses =
               'bg-white text-gray-900 border border-white/20 hover:bg-white/90';

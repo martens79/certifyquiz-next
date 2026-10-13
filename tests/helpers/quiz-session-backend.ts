@@ -27,6 +27,8 @@ export type BackendOptions = {
   freeExplanations?: number | "unlimited";
   /** il server rifiuta il batch Training con POST_GATE_QUIZ_LIMIT_REACHED */
   hardLocked?: boolean;
+  /** il server rifiuta il mock exam (MOCK_EXAM_ACCESS_REQUIRED) */
+  mockDenied?: boolean;
 };
 
 function makeQuestion(id: number) {
@@ -69,8 +71,8 @@ export class FakeBackend {
   private validToken = "tok-0";
   private rotation = 0;
   private freeLeft: number | "unlimited";
-  private firstAttempts = new Map<number, boolean>();
-  private explanationsGranted = new Set<number>();
+  private firstAttempts = new Map<string, boolean>();
+  private explanationsGranted = new Set<string>();
   /** sessione server lato refresh-cookie */
   private refreshCookie: boolean;
 
@@ -100,6 +102,11 @@ export class FakeBackend {
 
   get currentToken() {
     return this.validToken;
+  }
+
+  /** spiegazioni gratuite rimaste (null = illimitate) */
+  get freeRemaining(): number | null {
+    return this.user?.premium || this.freeLeft === "unlimited" ? null : (this.freeLeft as number);
   }
 
   /** Token e utente nel localStorage, come dopo un login riuscito. */
@@ -168,6 +175,7 @@ export class FakeBackend {
 
     await page.route("**/api/backend/mock-exam/questions/**", (route) => {
       this.mockFetches++;
+      if (this.options.mockDenied) return json(route, 403, { error: "MOCK_EXAM_ACCESS_REQUIRED" });
       return json(route, 200, {
         poolTotal: POOL_SIZE,
         questions: sample(MIXED_POOL, MOCK_QUESTIONS),
@@ -184,17 +192,18 @@ export class FakeBackend {
       this.checkCalls.push({ question_id: qId, answer_id: aId });
       const correctId = qId * 10 + 1;
       const correct = aId === correctId;
+      const attemptKey = `${this.user?.id ?? "anon"}:${qId}`;
 
       const unlimited = !!this.user?.premium || this.freeLeft === "unlimited";
-      if (!this.firstAttempts.has(qId)) this.firstAttempts.set(qId, correct);
-      const firstCorrect = this.firstAttempts.get(qId)!;
+      if (!this.firstAttempts.has(attemptKey)) this.firstAttempts.set(attemptKey, correct);
+      const firstCorrect = this.firstAttempts.get(attemptKey)!;
 
       let granted = true;
       let reason = "correct_answer";
       let consumed = false;
       if (unlimited) {
         reason = "unlimited";
-      } else if (!firstCorrect && !this.explanationsGranted.has(qId)) {
+      } else if (!firstCorrect && !this.explanationsGranted.has(attemptKey)) {
         if (typeof this.freeLeft === "number" && this.freeLeft > 0) {
           this.freeLeft -= 1;
           consumed = true;
@@ -206,7 +215,7 @@ export class FakeBackend {
       } else if (!firstCorrect) {
         reason = "already_granted";
       }
-      if (granted) this.explanationsGranted.add(qId);
+      if (granted) this.explanationsGranted.add(attemptKey);
 
       return json(route, 200, {
         question_id: qId,
@@ -384,4 +393,54 @@ export async function simulateBackgroundAndReturn(page: Page, opts: { bfcache?: 
     window.dispatchEvent(new Event("online"));
     window.dispatchEvent(new Event("focus"));
   }, { bfcache: !!opts.bfcache });
+}
+
+/** Chiavi quiz presenti in localStorage (progresso e snapshot). */
+export async function readQuizKeys(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("cq:quiz:")) keys.push(k);
+    }
+    return keys.sort();
+  });
+}
+
+/**
+ * Simula "il telefono e' rimasto fermo N secondi": chiude la pagina (che
+ * scrive l'ultimo salvataggio) e retrodata savedAt da una pagina neutra
+ * dello stesso origin. Ritorna una pagina nuova gia' collegata al backend.
+ */
+export async function closeAwayAndReopen(
+  context: BrowserContext,
+  page: Page,
+  backend: FakeBackend,
+  scope: string,
+  awaySec: number
+): Promise<Page> {
+  await page.close();
+  const neutral = await context.newPage();
+  await neutral.goto("/robots.txt");
+  await neutral.evaluate(
+    ({ key, awayMs }) => {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const o = JSON.parse(raw);
+      o.savedAt = (o.savedAt ?? Date.now()) - awayMs;
+      localStorage.setItem(key, JSON.stringify(o));
+      const snapKey = key.replace("cq:quiz:", "cq:quiz:snap:");
+      const sraw = localStorage.getItem(snapKey);
+      if (sraw) {
+        const sn = JSON.parse(sraw);
+        sn.savedAt = (sn.savedAt ?? Date.now()) - awayMs;
+        localStorage.setItem(snapKey, JSON.stringify(sn));
+      }
+    },
+    { key: `cq:quiz:${scope}`, awayMs: awaySec * 1000 }
+  );
+  await neutral.close();
+  const fresh = await context.newPage();
+  await backend.install(fresh);
+  return fresh;
 }
