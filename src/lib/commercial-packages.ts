@@ -39,10 +39,10 @@ const TAGLINE: Record<PackageKind, Record<Locale, string>> = {
     es: "Todo para aprobar el examen: teoría, práctica y simulaciones corregidas",
   },
   study: {
-    it: "Banca domande e materiale di studio",
-    en: "Question bank and study material",
-    fr: "Banque de questions et supports d'étude",
-    es: "Banco de preguntas y material de estudio",
+    it: "Banca domande, spiegazioni complete e materiale di studio",
+    en: "Question bank, full explanations and study material",
+    fr: "Banque de questions, explications complètes et supports d'étude",
+    es: "Banco de preguntas, explicaciones completas y material de estudio",
   },
   unknown: { it: "", en: "", fr: "", es: "" },
 };
@@ -156,7 +156,9 @@ const positive = (v: number | null | undefined) => (Number.isFinite(Number(v)) &
  * capability che il pacchetto include davvero lato backend:
  *   Complete: quiz, explanation, exam_mode, review, mistake_review, mock_review,
  *             scenario, lab, guide, map
- *   Study:    quiz, review, guide, map (niente spiegazioni/lab/mock review)
+ *   Study:    quiz, explanation, review, guide, map (niente lab/mock review/
+ *             ripasso errori/simulazioni). Le spiegazioni illimitate sono nel
+ *             pacchetto base per decisione del product owner (13/10/2026).
  */
 export function packageFeatures(productCode: string | null | undefined, counts: PackageResourceCounts, lang: Locale): string[] {
   const t = FEATURE[lang];
@@ -170,6 +172,7 @@ export function packageFeatures(productCode: string | null | undefined, counts: 
     if (labs) out.push(t.labs(labs));
     if (scenarios) out.push(t.scenarios(scenarios));
   } else {
+    if (kind === "study") out.push(t.explanations);
     out.push(t.reviews);
   }
   const guidePages = positive(counts.guidePages);
