@@ -150,7 +150,8 @@ test("script di bootstrap: imposta data-twa dal referrer e rispetta sessionStora
   assert.equal(run("https://www.google.com/"), undefined);
   assert.equal(run("android-app://com.certifyquiz.app/"), "1");
   assert.equal(run("https://www.certifyquiz.com/it"), "1"); // ricordato
-  assert.equal(run("", "?cq_twa=0"), undefined);
+  assert.equal(run("", "?cq_twa=0"), "1");
+  store.clear();
   // package simile ma diverso: non e' la nostra app
   assert.equal(run("android-app://com.certifyquiz.app.evil/"), undefined);
 });
@@ -165,4 +166,21 @@ test("TwaNotice: avviso neutro, senza prezzi ne' inviti all'acquisto, nelle 4 li
       assert.match(html, new RegExp(`href="${lang === "en" ? "/" : `/${lang}`}"`));
     }
   }
+});
+
+
+test("native mode cannot be reset on later navigations or the initial launch", () => {
+  const storage = memoryStorage();
+  assert.equal(detectTwa({referrer: TWA_REFERRER_PREFIX, search: "?cq_twa=0", storage}), true);
+  assert.equal(detectTwa({referrer: "", search: "?cq_twa=0", storage}), true);
+  assert.equal(detectTwa({referrer: TWA_REFERRER_PREFIX, search: "?cq_twa=0", storage: null}), true);
+});
+
+test("bootstrap still detects native mode when storage is blocked", () => {
+  let active = false;
+  const win = { get sessionStorage() { throw new Error("blocked"); } };
+  new Function("window", "document", "location", TWA_BOOTSTRAP_SCRIPT)(win,
+    {referrer: TWA_REFERRER_PREFIX, documentElement: {setAttribute: () => {active = true;}}},
+    {search: "?cq_twa=0"});
+  assert.equal(active, true);
 });

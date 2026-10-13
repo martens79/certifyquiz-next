@@ -98,6 +98,6 @@ html, body {
    App Android (TWA) - consumption-only
    data-twa e' impostato su <html> solo dentro l'app (lib/twa.ts).
 ============================= */
-html[data-twa] [data-twa-hide] {
+html[data-twa="1"] a[data-twa-hide="1"] {
   display: none !important;
 }

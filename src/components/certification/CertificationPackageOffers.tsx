@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useTwa } from "@/hooks/useTwa";
+import { detectTwa } from "@/lib/twa";
 import type { CertificationResources } from "@/lib/data";
 import { pricingPath, type Locale } from "@/lib/paths";
 import {
@@ -74,6 +75,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (detectTwa()) return;
     let alive = true;
     apiFetch(`/packages/offers/${encodeURIComponent(certificationSlug)}${isAdmin ? "?include_inactive=1" : ""}`)
       .then((r) => (r.ok ? r.json() : null))

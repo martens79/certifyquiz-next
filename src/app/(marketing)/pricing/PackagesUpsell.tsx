@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/auth";
 import { certPath, type Locale } from "@/lib/paths";
+import { detectTwa } from "@/lib/twa";
 
 type Cert = { slug: string; name: string; fromPriceMinor: number; currency: string };
 
@@ -41,6 +42,7 @@ export default function PackagesUpsell({ lang }: { lang: Locale }) {
   const [certs, setCerts] = useState<Cert[] | null>(null);
 
   useEffect(() => {
+    if (detectTwa()) return;
     let alive = true;
     apiFetch(`/packages/certifications?lang=${lang}`, { cache: "default" })
       .then((r) => (r.ok ? r.json() : null))

@@ -13,9 +13,9 @@ import {
 import TwaNotice from "./TwaNotice";
 
 function markAnchor(el: Element) {
-  if (el.tagName === "A" && isPurchaseHref(el.getAttribute("href"), location.origin)) {
-    el.setAttribute(TWA_HIDE_ATTRIBUTE, "");
-  }
+  if (el.tagName !== "A") return;
+  if (isPurchaseHref(el.getAttribute("href"), location.href)) el.setAttribute(TWA_HIDE_ATTRIBUTE, "1");
+  else el.removeAttribute(TWA_HIDE_ATTRIBUTE);
 }
 
 function markTree(root: ParentNode) {
@@ -64,10 +64,11 @@ export default function TwaGuard() {
       attributes: true,
       attributeFilter: ["href"],
     });
+    document.dispatchEvent(new Event("cq:twa-guard-ready"));
 
     const onClick = (event: MouseEvent) => {
       const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
-      if (target && isPurchaseHref(target.getAttribute("href"), location.origin)) {
+      if (target && isPurchaseHref(target.getAttribute("href"), location.href)) {
         event.preventDefault();
         event.stopPropagation();
       }
