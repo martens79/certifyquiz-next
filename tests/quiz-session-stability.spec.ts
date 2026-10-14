@@ -255,10 +255,4 @@ test.describe("PR1 · sessione stabile (nessun refetch non voluto)", () => {
     expect(writes.length).toBeGreaterThan(0);
     expect(writes.some((w) => w.startsWith("qIds=0"))).toBe(false);
   });
-
-  // Il MIXED e il mock-exam pescano un campione CASUALE a ogni fetch: dopo un
-  // reload completo il pool non coincide piu' con quello salvato. Il
-  // ripristino richiede lo snapshot delle domande consegnate (PR 2).
-  test.fixme("3 · MIXED dopo reload: sessione ripristinata (richiede snapshot, PR 2)", async () => {});
-  test.fixme("5 · Mock-exam dopo reload con timer conservato (richiede snapshot, PR 2)", async () => {});
 });
