@@ -49,6 +49,10 @@ export default function MockExamPage() {
   const [isResolvingCert, setIsResolvingCert] = useState(!staticCertId);
 
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
+  // true quando la chiamata del conteggio e' conclusa (con esito o errore):
+  // `examSpec` dipende da poolTotal, e se cambiasse dopo il mount il motore
+  // rifarebbe il fetch del mock (un nuovo esame casuale) a sessione avviata.
+  const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
   const certName = useMemo(() => currentSlug.replace(/-/g, " "), [currentSlug]);
   const isAuthenticated = !!getAccessToken();
@@ -128,6 +132,7 @@ export default function MockExamPage() {
   useEffect(() => {
     if (!certId) return;
     let cancelled = false;
+    setPoolTotalSettled(false);
 
     (async () => {
       try {
@@ -136,6 +141,8 @@ export default function MockExamPage() {
         if (!cancelled) setPoolTotal(total);
       } catch {
         if (!cancelled) setPoolTotal(null);
+      } finally {
+        if (!cancelled) setPoolTotalSettled(true);
       }
     })();
 
@@ -166,6 +173,18 @@ export default function MockExamPage() {
 
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang]);
+
+  // Identita' stabile (vedi mixed/page.tsx): il motore rifa' il fetch ogni
+  // volta che cambia, e per il mock ogni fetch e' un esame casuale diverso.
+  const fetchQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      return await fetchExamQuestions();
+    } catch (error) {
+      const message = getMockExamLoadError(error, currentLang);
+      if (message) throw new Error(message);
+      return [];
+    }
+  }, [fetchExamQuestions, currentLang]);
 
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
@@ -223,6 +242,9 @@ export default function MockExamPage() {
         </div>
       </div>
 
+      {!poolTotalSettled ? (
+        <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>
+      ) : (
       <QuizEngine
         key={`mock:${currentSlug}:${currentLang}`}
         lang={currentLang}
@@ -250,15 +272,7 @@ export default function MockExamPage() {
           exam: examSpec.questions,
         }}
         onModeChange={() => {}}
-        fetchQuestions={async () => {
-          try {
-            return await fetchExamQuestions();
-          } catch (error) {
-            const message = getMockExamLoadError(error, currentLang);
-            if (message) throw new Error(message);
-            return [];
-          }
-        }}
+        fetchQuestions={fetchQuestions}
         onFinish={async (s: any) => {
           try {
             await saveExam({
@@ -274,6 +288,7 @@ export default function MockExamPage() {
         }}
         backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
       />
+      )}
     </div>
   );
 }

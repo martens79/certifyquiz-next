@@ -3,9 +3,10 @@
 // ⚠️ Usare SOLO lato client. Per SEO (RSC/ISR) usare i fetcher server in src/lib/server/*
 
 export const API_PREFIX = "/api/backend";
+import { decodeApiJson, unavailableApiResponse, validateQuestionPayload } from '@/lib/api-response';
 
 /*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
-import { getToken, setToken, clearToken, setUser } from "@/lib/auth";
+import { getToken, setToken, clearToken, setUser, logout } from "@/lib/auth";
 
 
 /** Compat API: usata in giro nel codice */
@@ -21,8 +22,7 @@ export function setAccessToken(token: string | null, remember = true) {
 
 /** Pulisce token + user cache */
 export function clearAuth() {
-  clearToken();
-  setUser(null);
+  logout();
 }
 
 /*─────────────────────────────── TIPI BASE ───────────────────────────────*/
@@ -329,7 +329,7 @@ if (auth || withCredentials) init.credentials = "include";
 
   // 401 → tenta refresh una volta (solo se auth=true)
  // 401 → tenta refresh una volta (solo se auth=true)
-if (res.status === 401 && auth && retry) {
+if (res.status === 401 && (auth || !!token) && retry) {
   const { token: newTok, status: refreshStatus } = await refreshAccessToken();
 
   if (newTok) {
@@ -343,6 +343,10 @@ if (res.status === 401 && auth && retry) {
   // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato)
   if (refreshStatus === 401 || refreshStatus === 403) {
     clearAuth();
+  } else {
+    // A failed transport/5xx refresh does not establish that rights expired.
+    // Keep the session and distinguish it from a definitive auth rejection.
+    throw unavailableApiResponse('Authentication service temporarily unavailable');
   }
 }
 
@@ -351,14 +355,7 @@ if (res.status === 401 && auth && retry) {
 }
 
 async function parseJson<T>(res: Response): Promise<T> {
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return (await res.json()) as T;
-  const text = await res.text();
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return text as unknown as T;
-  }
+  return decodeApiJson<T>(res);
 }
 
 async function toApiError(res: Response) {
@@ -492,7 +489,7 @@ export const getQuestionsByTopic = (
 
   if (opts?.mode) params.set("mode", opts.mode);
 
-  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false);
+  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false).then(validateQuestionPayload);
 };
 
 export const getMixedQuestions = (
@@ -509,7 +506,7 @@ export const getMixedQuestions = (
   return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,
     false
-  );
+  ).then(validateQuestionPayload);
 };
 
 export type PurposeQuestionsResponse = {
@@ -523,16 +520,16 @@ export type PurposeQuestionsResponse = {
 // ASSESSMENT ("free test"): sempre FREE, il server decide conteggio (10),
 // shuffle e strict-per-lingua. Nessun limit/shuffle/strict/mode dal client.
 export const getAssessmentQuestions = (certificationId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/assessment/questions/${certificationId}?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/assessment/questions/${certificationId}?lang=${lang}`, false).then(validateQuestionPayload);
 
 // ASSESSMENT di topic: topic page in modalita' assessment, Review Module
 // Assessment e micro-quiz delle Review.
 export const getTopicAssessmentQuestions = (topicId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/assessment/topics/${topicId}/questions?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/assessment/topics/${topicId}/questions?lang=${lang}`, false).then(validateQuestionPayload);
 
 // MOCK EXAM: spec, conteggio, blueprint e selezione li decide il server.
 export const getMockExamQuestions = (certificationId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/mock-exam/questions/${certificationId}?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/mock-exam/questions/${certificationId}?lang=${lang}`, false).then(validateQuestionPayload);
 
 // Solo conteggio (nessun contenuto): sostituisce le "sonde" limit=1 sulle
 // route del question bank.
