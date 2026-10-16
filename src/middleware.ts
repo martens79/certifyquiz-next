@@ -84,6 +84,8 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/api") ||
     pathname === "/robots.txt" ||
     pathname === "/ads.txt" ||
+    // Digital Asset Links (app Android TWA): risposta statica, senza cookie ne' redirect.
+    pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/sitemap") ||
     pathname === "/favicon.ico"
   ) {

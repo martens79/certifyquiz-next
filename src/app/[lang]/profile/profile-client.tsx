@@ -9,6 +9,7 @@ import { getLabel } from "@/lib/i18n";
 import ReadinessCard from "@/components/profile/ReadinessCard";
 import PushNotificationCard from "@/components/push/PushNotificationCard";
 import MyPackages from "@/components/profile/MyPackages";
+import { useTwa } from "@/hooks/useTwa";
 import { reviewErrorsPath } from "@/lib/paths";
 
 // 📈 Grafico andamento
@@ -689,6 +690,7 @@ useEffect(() => {
 // —— Subscription status (trial / cancellazione programmata)
 const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
 const [portalLoading, setPortalLoading] = useState(false);
+const isTwa = useTwa();
 
 useEffect(() => {
   let alive = true;
@@ -1256,10 +1258,13 @@ const avatarBorderClass =
     </div>
   </div>
 </div>
-<PushNotificationCard lang={lang} />
-<div id="my-packages">
-  <MyPackages lang={lang} />
-</div>
+{/* App Android (TWA): niente push nella v1, niente pacchetti/acquisti (consumption-only) */}
+{!isTwa && <PushNotificationCard lang={lang} />}
+{!isTwa && (
+  <div id="my-packages">
+    <MyPackages lang={lang} />
+  </div>
+)}
 {/* Gestione abbonamento */}
 {user?.premium && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
@@ -1305,6 +1310,8 @@ const avatarBorderClass =
         )}
       </div>
 
+      {/* App Android (TWA): il portale Stripe non e' raggiungibile (consumption-only) */}
+      {!isTwa && (
       <button
         type="button"
         onClick={handleManageSubscription}
@@ -1322,6 +1329,7 @@ const avatarBorderClass =
           ? "Gestionar suscripción"
           : "Manage subscription"}
       </button>
+      )}
     </div>
   </div>
 )}

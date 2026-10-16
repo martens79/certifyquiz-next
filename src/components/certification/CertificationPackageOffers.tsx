@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useTwa } from "@/hooks/useTwa";
+import { detectTwa } from "@/lib/twa";
 import type { CertificationResources } from "@/lib/data";
 import { pricingPath, type Locale } from "@/lib/paths";
 import {
@@ -51,7 +53,19 @@ function errorMessage(code: string, t: (typeof TEXT)[Locale]) {
   return t.errors.generic;
 }
 
-export default function CertificationPackageOffers({ lang, certificationSlug, resources }: { lang: Locale; certificationSlug: string; resources: CertificationResources | null }) {
+type CertificationPackageOffersProps = { lang: Locale; certificationSlug: string; resources: CertificationResources | null };
+
+/**
+ * Nell'app Android (TWA) le offerte a pagamento non vengono ne' caricate ne'
+ * mostrate (app "consumption-only" per Google Play). Sul web non cambia nulla.
+ */
+export default function CertificationPackageOffers(props: CertificationPackageOffersProps) {
+  const isTwa = useTwa();
+  if (isTwa) return null;
+  return <CertificationPackageOffersInner {...props} />;
+}
+
+function CertificationPackageOffersInner({ lang, certificationSlug, resources }: CertificationPackageOffersProps) {
   const t = TEXT[lang];
   const { user, isAdmin } = useAuth();
   const router = useRouter();
@@ -61,6 +75,7 @@ export default function CertificationPackageOffers({ lang, certificationSlug, re
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (detectTwa()) return;
     let alive = true;
     apiFetch(`/packages/offers/${encodeURIComponent(certificationSlug)}${isAdmin ? "?include_inactive=1" : ""}`)
       .then((r) => (r.ok ? r.json() : null))

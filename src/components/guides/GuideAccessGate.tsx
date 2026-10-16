@@ -8,6 +8,8 @@ import { pricingPath } from "@/lib/paths";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useTwa } from "@/hooks/useTwa";
+import TwaNotice from "@/components/twa/TwaNotice";
 import {
   analyticsUserStateFrom,
   getAnonymousSessionId,
@@ -97,7 +99,18 @@ function formatPrice(lang: Locale, price: number) {
   }).format(price);
 }
 
-export default function GuideAccessGate({ lang, slug, price }: Props) {
+/**
+ * Nell'app Android (TWA) il gate non offre acquisto ne' link a Premium
+ * (app "consumption-only" per Google Play): resta solo l'accesso con l'account.
+ * Sul web non cambia nulla.
+ */
+export default function GuideAccessGate(props: Props) {
+  const isTwa = useTwa();
+  if (isTwa) return <TwaNotice lang={props.lang} variant="guide" />;
+  return <GuideAccessGateInner {...props} />;
+}
+
+function GuideAccessGateInner({ lang, slug, price }: Props) {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
