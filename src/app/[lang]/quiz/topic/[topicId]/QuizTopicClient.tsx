@@ -1,13 +1,18 @@
 // src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState,useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import QuizEngine from "@/components/quiz/QuizEngine";
 import ComingSoonBox from "@/components/ui/ComingSoonBox";
 import TopicPremiumRequired from "@/components/topics/TopicPremiumRequired";
 import { useAuth } from "@/components/auth/AuthProvider";
+import {apiFetch} from '@/lib/auth';
+import {loadProgress} from '@/lib/quiz-storage';
+import {createVersionedTrainingClient,versionedTrainingRequest} from '@/lib/ccst-versioned-training';
+import type {VersionedTrainingClient} from '@/lib/ccst-versioned-training';
+import {ccstOptInText,readCcstOptIn,saveCcstOptIn} from '@/lib/ccst-training-opt-in';
 
 import type { Question as UiQuestion, Locale, QuizSummary } from "@/lib/quiz-types";
 
@@ -50,8 +55,46 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   const numericId = topicId;
 
   // ✅ PREMIUM / ADMIN source-of-truth (Provider globale)  
-  const { isPremiumUser, premiumLocked, user } = useAuth();
+  const { isPremiumUser, premiumLocked, user,loading:authLoading } = useAuth();
+  const versionedClientRef=useRef<{scope:string;client:VersionedTrainingClient}|null>(null);
+  const [versionedSelected,setVersionedSelected]=useState(false);
+  const versionedEntry=process.env.NEXT_PUBLIC_CCST_VERSIONED_TRAINING==='1';
+  const versionedRead=versionedEntry||process.env.NEXT_PUBLIC_CCST_VERSIONED_TRAINING_READ==='1';
+  const [optIn,setOptIn]=useState<{scope:string;checked:boolean;waiting:boolean;error:boolean}|null>(null);
+  const optInDecision=useRef<{scope:string;promise:Promise<boolean>;resolve:(value:boolean)=>void}|null>(null);
+  const askOptIn=useCallback((scope:string)=>{
+    if(optInDecision.current?.scope===scope)return optInDecision.current.promise;
+    optInDecision.current?.resolve(false);
+    let resolve!:(value:boolean)=>void;
+    const promise=new Promise<boolean>(done=>{resolve=done;});
+    optInDecision.current={scope,promise,resolve};
+    setOptIn({scope,checked:readCcstOptIn(localStorage,scope),waiting:true,error:false});
+    return promise;
+  },[]);
+  useEffect(()=>()=>{optInDecision.current?.resolve(false);},[]);
+  const resolveVersionedTraining=useCallback(async()=>{
+    const legacy=()=>{setVersionedSelected(false);return null;};
+    if(!user?.id||isAssessmentMode)return legacy();
+    const uid=Number(user.id),scope=`${uid}:${numericId}:${L}`,handle=localStorage.getItem(`cq:ccst34:versioned:${scope}`);
+    if(!versionedRead&&!handle)return legacy();
+    const meta=await getTopicMetaById(numericId);if(meta?.topic?.certification_id!==34)return legacy();
+    if(!handle){
+      const base=`topic:${numericId}:${L}:training`;
+      if(loadProgress(`${base}:user:${uid}`)?.qIds?.length||loadProgress(`${base}:anon`)?.qIds?.length)return legacy();
+      const response=await apiFetch(`/me/quiz-progress/${numericId}?lang=${L}&mode=training`);if(!response.ok)throw Error('Unable to verify saved progress');const saved=await response.json();if(saved.row)return legacy();
+      // Discover archived attempts even when this browser has no preference/handle.
+      // Consent can change new entries, never the version of a saved session.
+      const latest=await apiFetch(`/ccst-versioned-training/latest?topicId=${numericId}&lang=${L}`);if(!latest.ok)throw Error('Unable to resume saved progress');
+      if(!(await latest.json()).attempt){
+        if(!versionedEntry||!await askOptIn(scope))return legacy();
+      }
+    }
+    if(versionedEntry)setOptIn(current=>current?.scope===scope?current:{scope,checked:readCcstOptIn(localStorage,scope),waiting:false,error:false});
+    if(versionedClientRef.current?.scope!==scope)versionedClientRef.current={scope,client:createVersionedTrainingClient({userId:uid,topicId:numericId,lang:L,storage:localStorage,request:versionedTrainingRequest(apiFetch)})};
+    setVersionedSelected(true);return versionedClientRef.current.client;
+  },[user?.id,numericId,L,isAssessmentMode,versionedEntry,versionedRead,askOptIn]);
   const isAuthenticated = !!user;
+  const versionedMode=versionedSelected&&versionedClientRef.current?.scope===`${Number(user?.id)}:${numericId}:${L}`;
 
   /* ─────────────────────────────────────────────────────────────
      STATE (core)
@@ -279,14 +322,39 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   /* ─────────────────────────────────────────────────────────────
      QUIZ ENGINE
   ───────────────────────────────────────────────────────────── */
+  if(versionedRead&&authLoading)return <div role="status" className="p-8">…</div>;
   return (
+    <>
+    {versionedEntry&&!isAssessmentMode&&user?.id&&optIn?.scope===`${Number(user.id)}:${numericId}:${L}`&&(
+      <section aria-label={ccstOptInText[L].title} className="mx-auto mb-4 max-w-4xl rounded-xl border border-blue-300 p-4">
+        <h2 className="font-semibold">{ccstOptInText[L].title}</h2>
+        <label className="my-3 flex items-center gap-3">
+          <input type="checkbox" checked={optIn.checked} onChange={e=>{
+            const checked=e.target.checked;
+            try{saveCcstOptIn(localStorage,optIn.scope,checked);setOptIn({...optIn,checked,error:false});}
+            catch{setOptIn({...optIn,error:true});}
+          }}/>
+          {ccstOptInText[L].label}
+        </label>
+        <p className="text-sm">{ccstOptInText[L].note}</p>
+        {optIn.error&&<p role="alert">{ccstOptInText[L].error}</p>}
+        {optIn.waiting&&<button type="button" className="mt-3 rounded bg-blue-800 px-4 py-2 text-white" onClick={()=>{
+          try{
+            saveCcstOptIn(localStorage,optIn.scope,optIn.checked);
+            setOptIn({...optIn,waiting:false,error:false});
+            optInDecision.current?.resolve(optIn.checked);
+          }catch{setOptIn({...optIn,error:true});}
+        }}>{ccstOptInText[L].start}</button>}
+      </section>
+    )}
     <QuizEngine
+      resolveVersionedTraining={resolveVersionedTraining}
       lang={L}
       storageScope={`topic:${numericId}:${L}`}
       categoryColor="from-blue-900 to-blue-700"
       backToHref={backToHref}
-      mode={isAssessmentMode ? "assessment" : certSlug === APPLE_DEVICE_SUPPORT_SLUG ? "training" : undefined}
-      hideModeSwitch={isAssessmentMode || certSlug === APPLE_DEVICE_SUPPORT_SLUG}
+      mode={isAssessmentMode ? "assessment" : versionedMode||certSlug === APPLE_DEVICE_SUPPORT_SLUG ? "training" : undefined}
+      hideModeSwitch={isAssessmentMode || versionedMode || certSlug === APPLE_DEVICE_SUPPORT_SLUG}
       blockSize={10}
       context={{
         kind: "topic",
@@ -394,5 +462,6 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         }
       }}
     />
+    </>
   );
 }
