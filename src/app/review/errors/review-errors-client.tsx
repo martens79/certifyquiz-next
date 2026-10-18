@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState,useCallback } from "react";
 import Link from "next/link";
 import QuizEngine from "@/components/quiz/QuizEngine";
+import VersionedMistakes from "@/components/quiz/VersionedMistakes";
+import type {ArchivedMistake} from "@/components/quiz/VersionedMistakes";
 import { pricingPath } from "@/lib/paths";
 import type { Locale } from "@/lib/i18n";
 import type { Question } from "@/lib/quiz-types";
@@ -91,6 +93,8 @@ export default function ReviewErrorsClient({
   // (401 anonimo, 403 senza Premium). La pagina riflette la risposta del
   // server invece di mostrare un errore generico; non e' lei la protezione.
   const [denied, setDenied] = useState<401 | 403 | null>(null);
+  const [versionedMistakes,setVersionedMistakes]=useState<ArchivedMistake[]>([]);
+  const [legacyCount,setLegacyCount]=useState<number|null>(null);
 
   const qs = useMemo(() => {
     const p = new URLSearchParams();
@@ -101,7 +105,7 @@ export default function ReviewErrorsClient({
     return p.toString();
   }, [certificationId, topicId, limit, lang]);
 
-  const fetchQuestions = async (): Promise<Question[]> => {
+  const fetchQuestions = useCallback(async (): Promise<Question[]> => {
     const token = typeof window !== "undefined" ? getAccessToken() : "";
 
     const r = await fetch(`/api/backend/user/error-review?${qs}`, {
@@ -121,6 +125,7 @@ export default function ReviewErrorsClient({
     if (!r.ok) throw new Error(data?.error || "Fetch error-review failed");
 
     const items: ApiQuestion[] = Array.isArray(data?.items) ? data.items : [];
+    setVersionedMistakes(Array.isArray(data?.versionedMistakes)?data.versionedMistakes:[]);setLegacyCount(items.length);
 
     const mapped: Question[] = items.map((q) => {
       const questionText = pickLangText(
@@ -169,7 +174,7 @@ export default function ReviewErrorsClient({
     });
 
     return mapped;
-  };
+  },[qs,lang]);
 
   const title =
     lang === "it"
@@ -251,7 +256,7 @@ export default function ReviewErrorsClient({
   }
 
   return (
-    <QuizEngine
+    <><VersionedMistakes items={versionedMistakes} lang={lang}/>{(legacyCount!==0||!versionedMistakes.length)&&<QuizEngine
       lang={lang}
       fetchQuestions={fetchQuestions}
       storageScope={`error-review:${lang}:${certificationId || "all"}:${topicId || "all"}`}
@@ -263,6 +268,6 @@ export default function ReviewErrorsClient({
         backHref: `/${lang}/profile`,
         backLabel,
       } as any}
-    />
+    />}</>
   );
 }

@@ -54,6 +54,7 @@ import {
   type AnswerCheckResult,
 } from "@/lib/apiClient";
 import { apiFetch } from "@/lib/auth";
+import {VersionedTrainingError,type VersionedTrainingClient} from '@/lib/ccst-versioned-training';
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
   getAnonymousSessionId,
@@ -302,6 +303,7 @@ type Props = {
 
   /** Carica IL POOL di domande (idealmente molte, es. 500 max). */
   fetchQuestions: () => Promise<Question[]>;
+  resolveVersionedTraining?: () => Promise<VersionedTrainingClient | null>;
 
   /** Chiave base per autosave locale (internamente separiamo per mode). */
   storageScope: string;
@@ -364,6 +366,7 @@ type Props = {
 export default function QuizEngine({
   lang,
   fetchQuestions,
+  resolveVersionedTraining,
   storageScope,
   categoryColor = 'from-blue-900 to-blue-700',
   initialMode = 'training',
@@ -383,6 +386,10 @@ export default function QuizEngine({
   const searchParams = useSearchParams();
   const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();
+  const versionedTrainingRef=useRef<VersionedTrainingClient|null>(null);
+  const versionedCheckingRef=useRef(new Set<string>());
+  const [versionedReload,setVersionedReload]=useState(0);
+  useEffect(()=>{const reconnect=()=>{if(versionedTrainingRef.current)setVersionedReload(n=>n+1);};window.addEventListener('online',reconnect);return()=>window.removeEventListener('online',reconnect);},[]);
 
   // i18n quiz microcopy
   const tQuiz = getDict(lang).quiz;
@@ -563,6 +570,7 @@ useEffect(() => {
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [versionedConflict,setVersionedConflict]=useState(false);
   const [, setActionsOpen] = useState(false);
 
 const [fbOpen, setFbOpen] = useState(false);
@@ -768,11 +776,25 @@ const openFeedback = () => {
     (async () => {
       setLoading(true);
       setErr(null);
+      setVersionedConflict(false);
       setAttemptClosed(false);
       attemptRef.current = null;
       attemptClockRef.current = null;
 
       try {
+        const transport=effectiveMode==='training'?await resolveVersionedTraining?.():null;
+        if(!alive)return;
+        versionedTrainingRef.current=transport||null;
+        if(transport){
+          const a=await transport.open();if(!alive)return;
+          const active=a.questions.map(q=>({...q,exhibit:q.exhibit as Question['exhibit']}));
+          const restored:Record<string,AnswerCheckResult>={...(a.state.evaluations||{})};
+          for(const [qid,aid]of Object.entries(a.state.marked)){if(aid!=null&&!restored[qid]){try{restored[qid]=await transport.checkAnswer(Number(qid),aid);}catch(e){console.warn('Pending versioned answer remains ungraded',e);}}}
+          if(!alive)return;
+          setPool(active);setQuestions(active);setMarked(a.state.marked);setResults(restored);setReviewLater(new Set(a.state.reviewLater));setIdx(Math.min(a.state.currentIndex,active.length-1));seedRef.current=a.seed;startedAtRef.current=a.startedAt;revRef.current=a.rev;setRemaining(null);
+          setFinished(a.state.completed===true);setLastSummary(a.state.summary?{...a.state.summary,marked:a.state.marked,durationSec:Math.max(0,Math.floor((Date.now()-a.startedAt)/1000)),mode:'training'}:null);setReviewMode(false);setBlockPaused(false);setBlockReview(null);
+          return;
+        }
         const storedAttempt = effectiveMode === 'exam' ? readExamAttempt(scopedKey) : { exists: false, attempt: null };
         if (storedAttempt.exists && (!storedAttempt.attempt || attemptRemaining(storedAttempt.attempt) <= 0)) {
           if (storedAttempt.attempt) {
@@ -1117,6 +1139,7 @@ const openFeedback = () => {
         setBlockReview(null);
       } catch (e: unknown) {
         if (!alive) return;
+        if(e instanceof VersionedTrainingError&&e.status===409&&e.server&&e.pending){setVersionedConflict(true);return;}
 
         // A rejected reload may follow an in-place account/scope change.
         // Drop the previous session before hydration enables autosave again.
@@ -1176,7 +1199,7 @@ const openFeedback = () => {
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId, loadGeneration]);
+  }, [fetchQuestions, resolveVersionedTraining, versionedReload, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId, loadGeneration]);
 
     // ✅ Analytics — traccia quando un assessment/free test viene realmente avviato.
   // Usiamo un ref per evitare eventi doppi causati da re-render o Strict Mode.
@@ -1456,6 +1479,11 @@ clearProgress(`${storageScope}:assessment`);
     // risorgere (un ripristino riaprirebbe un quiz gia' chiuso).
     if (finished || attemptClosed) return;
 
+    if(versionedTrainingRef.current){
+      if(finished)return;
+      void versionedTrainingRef.current.save({marked:Object.fromEntries(Object.entries(marked).map(([q,a])=>[q,a==null?null:Number(a)])),reviewLater:[...reviewLater].map(Number),currentIndex:idx}).catch(e=>console.warn('Versioned progress retained for retry',e));
+      return;
+    }
     // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
     // anche per i cambi innescati dal ripristino nel load effect (non solo
     // dalle azioni utente): non è un problema, resta monotono, che è
@@ -1503,7 +1531,7 @@ clearProgress(`${storageScope}:assessment`);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
     };
-  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, hydrated, finished, blockPaused, attemptClosed]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, loading, hydrated, finished, blockPaused, attemptClosed]);
 
   /* ------------------- SNAPSHOT DOMANDE CONSEGNATE ------------------- */
   // Effetto separato da quello sopra, di proposito: l'autosave gira a ogni
@@ -1513,7 +1541,7 @@ clearProgress(`${storageScope}:assessment`);
   // Contiene solo il payload gia' ricevuto dal browser (vedi lib/quiz-session):
   // mai correttezza, risposta corretta o spiegazione.
   useEffect(() => {
-    if (!hydratedRef.current || questions.length === 0 || finished) return;
+    if (versionedTrainingRef.current || !hydratedRef.current || questions.length === 0 || finished) return;
     const snapshot = buildSnapshot({
       scope: scopedKey,
       userKey: userKeyPart,
@@ -1543,9 +1571,11 @@ clearProgress(`${storageScope}:assessment`);
   useEffect(() => {
     const topicId = context?.topicId;
     const dbSyncEnabled = isLoggedIn && effectiveMode !== 'assessment' && !!topicId;
+    if(versionedTrainingRef.current)return;
     if (!dbSyncEnabled) return;
 
     const flushDb = async () => {
+      if(versionedTrainingRef.current)return;
       // Gate di idratazione: finché il load effect non ha concluso la
       // riconciliazione locale/DB, non scrivere — altrimenti una PUT con
       // seed fresco e rev 0 competerebbe con la riconciliazione stessa
@@ -1656,7 +1686,7 @@ clearProgress(`${storageScope}:assessment`);
   --------------------------------------------------------------------- */
   const recheckPosition = blockReview?.positions[blockReview.cursor] ?? idx;
   useEffect(() => {
-    if (!hydrated || finished || effectiveMode !== 'training') return;
+    if (versionedTrainingRef.current || !hydrated || finished || effectiveMode !== 'training') return;
     const q = questions[recheckPosition];
     if (!q) return;
     const key = String(q.id);
@@ -1779,6 +1809,7 @@ clearProgress(`${storageScope}:assessment`);
  const choose = async (q: Question, a: Answer) => {
   setActionsOpen(false);
   if (blockReview) return;
+  if(versionedTrainingRef.current){if(resultOf(q.id)||versionedCheckingRef.current.has(String(q.id))||(marked[q.id]!=null&&String(marked[q.id])!==String(a.id)))return;versionedCheckingRef.current.add(String(q.id));}
   // Una nuova scelta supera il re-check del ripristino: la verifica la fa
   // questo handler, una volta sola.
   restoredAnsweredRef.current.delete(String(q.id));
@@ -1792,7 +1823,7 @@ clearProgress(`${storageScope}:assessment`);
   let checked: AnswerCheckResult | null = resultOf(q.id) ?? null;
   if (!isTestLike && !checked) {
     try {
-      checked = await checkAnswer(q.id, a.id, lang);
+      checked = versionedTrainingRef.current?await versionedTrainingRef.current.checkAnswer(Number(q.id),Number(a.id)):await checkAnswer(q.id, a.id, lang);
       mergeResults([checked]);
       applyCheckedAccess(checked);
     } catch (err) {
@@ -1833,6 +1864,7 @@ clearProgress(`${storageScope}:assessment`);
     // sbagliata che sia.
     void recordPostGateQuestion(q.id);
   }
+  versionedCheckingRef.current.delete(String(q.id));
 };
 
   const next = () => {
@@ -1935,6 +1967,10 @@ const goToFirstUnanswered = () => {
   // include i dettagli per-question solo se il server autorizza mock_review.
   let evaluated = results;
   let serverCorrect: number | null = null;
+  if(versionedTrainingRef.current){try{
+    for(const q of questions){if(marked[q.id]!=null&&!evaluated[String(q.id)]){const r=await versionedTrainingRef.current.checkAnswer(Number(q.id),Number(marked[q.id]));evaluated={...evaluated,[String(q.id)]:r};}}
+    const completed=await versionedTrainingRef.current.complete();serverCorrect=completed.state.summary?.correct??null;setResults(evaluated);
+  }catch(e){setFinished(false);console.error('Versioned completion failed',e);return;}}
 
   if (isTestLike) {
     try {
@@ -2069,7 +2105,7 @@ const goToFirstUnanswered = () => {
   }
 
   try {
-    await onFinish?.(summary);
+    if(!versionedTrainingRef.current)await onFinish?.(summary);
   } catch {
     /* ignore */
   }
@@ -2174,7 +2210,8 @@ const submitAssessmentReport = async () => {
   }
 };
 
-  const restart = () => {
+  const restart = async () => {
+  if(versionedTrainingRef.current){try{await versionedTrainingRef.current.restart();setVersionedReload(n=>n+1);}catch(e){console.error('Versioned restart failed',e);}return;}
   clearProgress(scopedKey);
   if (effectiveMode === 'exam') {
     clearExamAttempt(scopedKey);
@@ -2290,6 +2327,7 @@ const submitAssessmentReport = async () => {
 
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
+  if(versionedConflict)return <div className="min-h-screen grid place-items-center"><div role="alert" className="max-w-lg p-6 space-y-4"><p>{({en:'This session changed on another device. Your unsent progress is retained locally. Continue with the saved session and keep a local backup of the unsent copy.',it:'La sessione è cambiata su un altro dispositivo. I progressi non inviati sono conservati localmente. Continua con la sessione salvata mantenendo una copia locale dei progressi non inviati.',fr:'La session a changé sur un autre appareil. Votre progression non envoyée est conservée localement. Continuez avec la session enregistrée en gardant une copie locale.',es:'La sesión cambió en otro dispositivo. El progreso no enviado se conserva localmente. Continúa con la sesión guardada manteniendo una copia local.'})[lang]}</p><button type="button" className="rounded bg-emerald-600 p-3" onClick={async()=>{try{await versionedTrainingRef.current?.useServerProgress();setVersionedReload(n=>n+1);}catch(e){setErr(e instanceof Error?e.message:'Retry failed');}}}>{({en:'Use saved session',it:'Usa la sessione salvata',fr:'Utiliser la session enregistrée',es:'Usar la sesión guardada'})[lang]}</button>{err&&<p>{err}</p>}</div></div>;
   if (err) return <div className="min-h-screen grid place-items-center p-6">
     <div className="space-y-4 text-center"><p className="text-red-600">{err}</p>
       <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={() => setLoadGeneration(n => n + 1)}>

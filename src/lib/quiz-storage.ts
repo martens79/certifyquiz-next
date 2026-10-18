@@ -166,7 +166,7 @@ export function clearAllProgressForUser(userId: number | string) {
     const toRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.startsWith(KEY_PREFIX) && k.endsWith(suffix)) toRemove.push(k);
+      if (k && ((k.startsWith(KEY_PREFIX) && k.endsWith(suffix))||k.startsWith(`cq:ccst34:versioned:${userId}:`))) toRemove.push(k);
     }
     toRemove.forEach((k) => localStorage.removeItem(k));
   } catch {

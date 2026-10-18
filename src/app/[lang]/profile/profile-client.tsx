@@ -36,7 +36,7 @@ type User = {
 };
 
 type QuizHistoryRow = {
-  id: number;
+  id: number|string;
   quiz_id: number | null;
   certification_id: number | null;
   certification_name?: string;
@@ -452,7 +452,7 @@ function normalizeHistory(data: any): QuizHistoryRow[] {
 const certIdNum = toNumFlexible(r?.certification_id, NaN);
 
 return {
-  id: toNumFlexible(r?.id, i + 1),
+  id: typeof r?.id==='string'&&r.id.startsWith('ccst-v2:')?r.id:toNumFlexible(r?.id,i+1),
   quiz_id: Number.isFinite(quizIdNum) ? quizIdNum : null,
   certification_id: Number.isFinite(certIdNum) ? certIdNum : null,
   certification_name:
