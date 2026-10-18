@@ -103,3 +103,67 @@ test('a perfect block has no block-review positions', () => {
     questions: pool, marked, nextQuestionIndex: 10, blockSize: 10,
   }), []);
 });
+
+test('LIVE regression: two graded answers in ten traversed public questions score 1/10', () => {
+  const pool = questions(100).map((q) => ({ ...q, answers: q.answers.map(({ isCorrect: _, ...a }) => a) }));
+  const marked = { 1: 2, 3: 1 };
+  const results = { '1': { correct_answer_id: 2 }, '3': { correct_answer_id: 2 } };
+  const before = JSON.stringify({ pool, marked, results });
+  assert.deepEqual(calculateCompletedBlock({ questions: pool, marked, results, nextQuestionIndex: 10, blockSize: 10 }), {
+    correct: 1, total: 10, percentage: 10, blockNumber: 1,
+  });
+  assert.deepEqual(getCompletedBlockWrongPositions({ questions: pool, marked, results, nextQuestionIndex: 10, blockSize: 10 }), [2]);
+  assert.equal(JSON.stringify({ pool, marked, results }), before, 'scoring must not mutate question, answer or evaluation state');
+});
+
+for (const session of ['legacy API', 'versioned resume']) {
+  test(`${session}: grades public questions from server results, independently for each block`, () => {
+    const pool = questions(23).map((q) => ({ ...q, answers: q.answers.map(({ isCorrect: _, ...a }) => a) }));
+    // Same results contract: legacy /answers/check and restored state.evaluations.
+    const state = JSON.parse(JSON.stringify({
+      marked: { 1: 2, 2: 1, 11: '2', 12: '1' },
+      evaluations: {
+        '1': { question_id: 1, correct: true, correct_answer_id: 2 },
+        '2': { question_id: 2, correct: false, correct_answer_id: 2 },
+        '11': { question_id: 11, correct: true, correct_answer_id: 2 },
+        '12': { question_id: 12, correct: false, correct_answer_id: 2 },
+      },
+    }));
+    for (const nextQuestionIndex of [10, 20]) {
+      const args = { questions: pool, marked: state.marked, results: state.evaluations, nextQuestionIndex, blockSize: 10 };
+      assert.equal(calculateCompletedBlock(args).correct, 1);
+      assert.equal(calculateCompletedBlock(args).total, 10);
+      assert.deepEqual(getCompletedBlockWrongPositions(args), [nextQuestionIndex - 9]);
+    }
+  });
+}
+
+test('server key overrides legacy payload flags and historical first-attempt correctness', () => {
+  const pool = questions(10);
+  const args = {
+    questions: pool, marked: { 1: 1 },
+    results: { '1': { correct: false, correct_answer_id: '1', first_attempt: { correct: false } } },
+    nextQuestionIndex: 10, blockSize: 10,
+  };
+  assert.equal(calculateCompletedBlock(args).correct, 1);
+  assert.deepEqual(getCompletedBlockWrongPositions(args), []);
+});
+
+test('pending or ungraded answers are not classified as confirmed mistakes', () => {
+  const pool = questions(10).map((q) => ({ ...q, answers: q.answers.map(({ isCorrect: _, ...a }) => a) }));
+  const args = { questions: pool, marked: { 1: 1, 2: null }, results: { '1': { correct_answer_id: null } }, nextQuestionIndex: 10, blockSize: 10 };
+  assert.equal(calculateCompletedBlock(args).correct, 0);
+  assert.deepEqual(getCompletedBlockWrongPositions(args), []);
+  const graded = { ...args, results: { '1': { correct_answer_id: 2 } } };
+  assert.equal(calculateCompletedBlock(graded).correct, 0);
+  assert.deepEqual(getCompletedBlockWrongPositions(graded), [0]);
+});
+
+test('late server grading updates the block without changing selected answers', () => {
+  const pool = questions(10).map((q) => ({ ...q, answers: q.answers.map(({ isCorrect: _, ...a }) => a) }));
+  const marked = { 1: '2' };
+  const args = { questions: pool, marked, nextQuestionIndex: 10, blockSize: 10 };
+  assert.equal(calculateCompletedBlock({ ...args, results: {} }).correct, 0);
+  assert.equal(calculateCompletedBlock({ ...args, results: { '1': { correct_answer_id: 2 } } }).correct, 1);
+  assert.deepEqual(marked, { 1: '2' });
+});
