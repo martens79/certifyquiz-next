@@ -20,7 +20,7 @@ import StructuredData from "@/components/StructuredData";
 import CertificationAnalytics from "@/components/analytics/CertificationAnalytics";
 import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
-import { practiceTopicCoverage } from "@/lib/practice-topic-coverage";
+import { practiceTopicCoverage, practiceTopicLimit } from "@/lib/practice-topic-coverage";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -466,6 +466,7 @@ const pageTopics =
           certificationTitle={pickLabel(data.practiceName, lang) || pageTitle}
           quizHref={quizHref}
           topics={practiceBoxTopics}
+          maxTopics={practiceTopicLimit(data.slug)}
         />)}
 
         {prioritySeoLinks && (

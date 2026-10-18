@@ -63,7 +63,7 @@ metaDescription: {
   fr: "Préparez l'examen ISC2 CC avec des questions gratuites type examen. Couvre risque, contrôles, conformité et réponse aux incidents. Commencez gratuitement.",
   es: "Prepárate para el examen ISC2 CC con preguntas gratuitas tipo examen. Cubre riesgo, controles, cumplimiento e incident response. Empieza gratis.",
 },
-  // ✅ Allineato ai topic reali del DB + slug reali
+  // ✅ Allineato ai topic reali del DB + slug reali (10 topic attivi al 2026-10-18; fallback quando l'API non risponde)
   topics: [
     {
       title: {
@@ -133,6 +133,76 @@ metaDescription: {
         en: "incident-response",
         fr: "reponse-aux-incidents",
         es: "respuesta-ante-incidentes",
+      },
+    },
+    {
+      title: {
+        it: "Controlli di accesso",
+        en: "Access Controls",
+        fr: "Concepts de contrôle d’accès",
+        es: "Conceptos de control de acceso",
+      },
+      slug: {
+        it: "controlli-di-accesso",
+        en: "access-controls-concepts",
+        fr: "concepts-controle-acces",
+        es: "conceptos-control-acceso",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza di rete",
+        en: "Network Security",
+        fr: "Sécurité réseau",
+        es: "Seguridad de red",
+      },
+      slug: {
+        it: "sicurezza-di-rete",
+        en: "network-security",
+        fr: "securite-reseau",
+        es: "seguridad-red",
+      },
+    },
+    {
+      title: {
+        it: "Operazioni di sicurezza",
+        en: "Security Operations",
+        fr: "Opérations de sécurité",
+        es: "Operaciones de seguridad",
+      },
+      slug: {
+        it: "operazioni-di-sicurezza",
+        en: "security-operations",
+        fr: "operations-securite",
+        es: "operaciones-seguridad",
+      },
+    },
+    {
+      title: {
+        it: "Sicurezza cloud",
+        en: "Cloud Security Concepts",
+        fr: "Concepts de sécurité cloud",
+        es: "Conceptos de seguridad en la nube",
+      },
+      slug: {
+        it: "sicurezza-cloud",
+        en: "cloud-security-concepts",
+        fr: "securite-cloud",
+        es: "seguridad-en-la-nube",
+      },
+    },
+    {
+      title: {
+        it: "Governance e GRC della sicurezza",
+        en: "Security Governance & GRC",
+        fr: "Gouvernance de la sécurité et GRC",
+        es: "Gobernanza de la seguridad y GRC",
+      },
+      slug: {
+        it: "governance-e-grc-della-sicurezza",
+        en: "security-governance-grc",
+        fr: "gouvernance-et-grc-de-la-securite",
+        es: "gobernanza-y-grc-de-la-seguridad",
       },
     },
   ],
