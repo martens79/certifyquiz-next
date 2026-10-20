@@ -24,8 +24,8 @@ export const BUSINESS_STEPS: { key: BusinessStep; label: string }[] = [
   { key: "email_captured", label: "Lead acquisiti" },
   { key: "study_started", label: "Studio avviato" },
   { key: "paywall_reached", label: "Paywall raggiunto" },
-  { key: "checkout_started", label: "Checkout avviati" },
-  { key: "purchase_completed", label: "Acquisti" },
+  { key: "checkout_started", label: "Sessioni checkout create" },
+  { key: "purchase_completed", label: "Eventi acquisto (storico non riconciliato)" },
 ];
 
 const CANONICAL_BY_STEP: Record<BusinessStep, Set<string>> = {
@@ -34,7 +34,7 @@ const CANONICAL_BY_STEP: Record<BusinessStep, Set<string>> = {
   email_captured: new Set(["email_captured"]),
   study_started: new Set(["study_started"]),
   paywall_reached: new Set(["paywall_viewed"]),
-  checkout_started: new Set(["checkout_started", "checkout_created"]),
+  checkout_started: new Set(["checkout_created"]),
   purchase_completed: new Set(["purchase_completed"]),
 };
 
@@ -45,7 +45,7 @@ const LEGACY_BY_STEP: Record<BusinessStep, Set<string>> = {
   study_started: new Set(),
   paywall_reached: new Set(["wrong_explanation_gate_shown", "gate_hit", "free_limit_reached"]),
   checkout_started: new Set(),
-  purchase_completed: new Set(["premium_converted", "guide_purchase_completed"]),
+  purchase_completed: new Set(),
 };
 
 const EVENT_CATEGORY: Record<string, "CORE KPI" | "FUNNEL" | "PRODUCT" | "COMMERCE" | "DEBUG/TECHNICAL" | "LEGACY"> = {

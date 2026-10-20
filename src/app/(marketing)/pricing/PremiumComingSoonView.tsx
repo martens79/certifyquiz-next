@@ -1,6 +1,9 @@
 // src/app/(marketing)/pricing/PremiumComingSoonView.tsx
 "use client";
 
+import { useConsent } from "@/components/analytics/ConsentProvider";
+import { checkoutAnalyticsContext, checkoutRequestId } from "@/lib/checkout-analytics";
+
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { authFetch } from "@/lib/auth";
@@ -9,6 +12,7 @@ import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 import {
   analyticsUserStateFrom,
   trackEvent,
+  trackCheckoutCreated,
   trackEventOnce,
   trackFunnelEvent,
   trackFunnelEventOnce,
@@ -610,6 +614,7 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
 
 function PremiumPricingView({ forceLang }: Props) {
   const pathname = usePathname();
+  const { status: consentStatus } = useConsent();
   const { user, loading: authLoading, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
@@ -648,7 +653,7 @@ function PremiumPricingView({ forceLang }: Props) {
       metadata: { source_page: params.get("source") || "direct" },
     });
     setIsPromoLink((params.get("promo") || "").toLowerCase() === "thanks1month");
-  }, [authLoading, lang, user]);
+  }, [authLoading, lang, user, consentStatus]);
 
   function selectPlan(plan: Plan) {
     setSelectedPlan(plan);
@@ -691,16 +696,17 @@ function PremiumPricingView({ forceLang }: Props) {
       // Certificazione e paywall da cui e' partito il percorso: restano separati
       // dal prodotto (il piano) lungo checkout_started -> checkout_created -> acquisto.
       const origin = resolveCommercialOrigin(window.location.search);
-      trackEvent("checkout_started", {
+      trackEvent("checkout_attempted", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
         plan_type: selectedPlan,
+        certification_slug: origin.originCertSlug,
         purchase_type: "subscription",
         source_page: "pricing",
         gate_instance_id: postGateCohort?.gateInstanceId ?? null,
       });
       trackFunnelEvent({
-        event: "checkout_started",
+        event: "checkout_attempted",
         cert_slug: origin.originCertSlug,
         lang,
         plan: selectedPlan,
@@ -727,10 +733,12 @@ function PremiumPricingView({ forceLang }: Props) {
           lang,
           plan: selectedPlan,
           skipTrial: isPromoLink,
+          checkout_request_id: checkoutRequestId(`premium:${selectedPlan}:${lang}:${isPromoLink}:${origin.originCertSlug || ""}`),
           // Identificatori analytics (non usati per autenticazione/entitlement):
           // permettono al webhook Stripe di riportare session_id/visitor_id/
           // gate_instance_id sui funnel_events di conversione. user_id resta
           // risolto server-side da authMiddleware, non da qui.
+          analytics: await checkoutAnalyticsContext(),
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: postGateCohort?.gateInstanceId ?? null,
@@ -744,16 +752,11 @@ function PremiumPricingView({ forceLang }: Props) {
         return;
       }
 
-      const data: { url?: string; error?: string } = await res.json();
+      const data: { url?: string; sessionId?: string; error?: string } = await res.json();
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
-      try {
-        sessionStorage.setItem(
-          "cq_pending_purchase",
-          JSON.stringify({ value: PREMIUM_PLAN_VALUES[selectedPlan], currency: "EUR", plan: selectedPlan })
-        );
-      } catch {}
 
+      trackCheckoutCreated(data.sessionId, {purchase_type:"subscription", plan_type:selectedPlan, certification_slug:origin.originCertSlug, language:lang});
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);

@@ -7,6 +7,7 @@
 // "use client" non serve qui: il file non ha side effect a livello di
 // modulo, il guard su typeof window basta a renderlo innocuo in SSR.
 
+import { analyticsConsentGranted } from "@/lib/checkout-analytics";
 import { getToken } from "@/lib/auth";
 import { isAutomatedClient } from "@/lib/automated-client";
 import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
@@ -39,7 +40,7 @@ function normalizeGa4Params(params: TrackParams): TrackParams {
 }
 
 export function getAnonymousSessionId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   try {
     let value = sessionStorage.getItem(SESSION_KEY);
     if (!value) {
@@ -53,7 +54,7 @@ export function getAnonymousSessionId(): string | undefined {
 }
 
 export function trackEvent(eventName: string, params: TrackParams = {}) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
   if (typeof w.gtag !== "function") {
@@ -69,7 +70,7 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
 
 /** Invia gli eventi partiti prima che lo script GA4 fosse pronto. */
 export function flushPendingAnalyticsEvents() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
   const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
   if (typeof w.gtag !== "function") return;
 
@@ -83,9 +84,21 @@ export function trackEventOnce(
   eventName: string,
   params: TrackParams = {}
 ) {
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
   if (onceKeys.has(dedupeKey)) return;
   onceKeys.add(dedupeKey);
   trackEvent(eventName, params);
+}
+
+/** A checkout exists only after the API returns its Stripe session. */
+export function trackCheckoutCreated(sessionId: string | undefined, params: TrackParams) {
+  if (!sessionId || typeof window === "undefined" || !analyticsConsentGranted()) return;
+  const key = `cq_checkout_created:${sessionId}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key,"1");
+  } catch {}
+  trackEventOnce(key,"begin_checkout",params);
 }
 
 /** user_status per gli eventi: mai id/email, solo lo stato d'accesso. */
@@ -141,7 +154,7 @@ type FunnelEventBody = {
 const VISITOR_KEY = "cq_analytics_visitor";
 
 export function getAnonymousVisitorId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   try {
     let value = localStorage.getItem(VISITOR_KEY);
     if (!value) {
@@ -161,7 +174,7 @@ function currentPathname(): string {
 }
 
 export function getPageViewId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   const pathname = currentPathname();
   if (!currentPageView || currentPageView.pathname !== pathname) {
     currentPageView = { pathname, id: crypto.randomUUID() };
@@ -207,9 +220,10 @@ function safeReferrer(): { referrer_origin: string | null; referrer_path: string
  */
 export function trackFunnelEvent(
   body: FunnelEventBody,
-  endpoint = "/api/backend/funnel-event"
+  endpoint = "/api/backend/funnel-event",
+  delivery?: {eventId: string; requireAck: boolean}
 ) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   // Crawler che eseguono JS e browser headless non scrivono in funnel_events:
   // gonfiano gli eventi di esposizione (vedi automated-client.ts). Il controllo
@@ -231,7 +245,7 @@ export function trackFunnelEvent(
     ...body,
     ...(paywallType ? { paywall_type: paywallType } : {}),
     metadata,
-    event_id: crypto.randomUUID(),
+    event_id: delivery?.eventId ?? crypto.randomUUID(),
     session_id: getAnonymousSessionId() ?? null,
     visitor_id: getAnonymousVisitorId() ?? null,
     pathname: currentPathname(),
@@ -247,12 +261,12 @@ export function trackFunnelEvent(
 
   // Authenticated events use fetch so the backend can resolve user_id from
   // the bearer token. Anonymous events keep the unload-safe beacon path.
-  if (!token && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+  if (!delivery?.requireAck && !token && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([payload], { type: "application/json" });
-    if (navigator.sendBeacon(endpoint, blob)) return;
+    if (navigator.sendBeacon(endpoint, blob)) return Promise.resolve(true);
   }
 
-  fetch(endpoint, {
+  return fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -268,8 +282,9 @@ export function trackFunnelEvent(
       if (!res.ok) {
         console.warn(`trackFunnelEvent: ${body.event} rejected (${res.status})`);
       }
+      return res.ok;
     })
-    .catch(() => {});
+    .catch(() => false);
 }
 
 /**
@@ -286,26 +301,28 @@ export function trackFunnelEventOnce(
   body: FunnelEventBody,
   endpoint = "/api/backend/funnel-event"
 ) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   // Prima del dedup: un client automatizzato non deve lasciare nemmeno la chiave.
   if (isAutomatedClient()) return;
 
   const storageKey = `cq_funnel_once:${dedupeKey}`;
-
+  const idKey = `cq_funnel_event_id:${dedupeKey}`;
   if (funnelOnceKeys.has(dedupeKey)) return;
-
+  let eventId = crypto.randomUUID();
   try {
-    if (sessionStorage.getItem(storageKey) === "1") {
-      funnelOnceKeys.add(dedupeKey);
-      return;
-    }
-
-    sessionStorage.setItem(storageKey, "1");
-  } catch {
-    // Se sessionStorage non è disponibile, resta comunque il guard in memoria.
-  }
-
+    if (sessionStorage.getItem(storageKey) === "1") return;
+    eventId = sessionStorage.getItem(idKey) || eventId;
+    sessionStorage.setItem(idKey,eventId);
+  } catch {}
   funnelOnceKeys.add(dedupeKey);
-  trackFunnelEvent(body, endpoint);
+  // Ack before persisting "done"; retries reuse the event_id, even after reload.
+  const delivery = trackFunnelEvent(body,endpoint,{eventId,requireAck:true});
+  void delivery?.then(accepted => {
+    if (accepted) {
+      try { sessionStorage.setItem(storageKey,"1"); } catch {}
+    } else {
+      funnelOnceKeys.delete(dedupeKey);
+    }
+  });
 }
