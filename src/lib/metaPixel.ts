@@ -11,7 +11,7 @@ export function trackMetaPixel(
   const fbq = (window as typeof window & { fbq?: (...args: any[]) => void }).fbq;
 
   if (typeof fbq === "function") {
-    fbq("track", eventName, params);
+    try { fbq("track", eventName, params); } catch {}
     return;
   }
 

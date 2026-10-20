@@ -13,6 +13,9 @@ Il contratto completo e il piano di rilascio sono in
 - checkout_attempted precede l'API; begin_checkout richiede il sessionId restituito.
 - Una richiesta checkout riusa una chiave per 30 minuti nel tab: Premium/guide la
   passano a Stripe lato server; i pacchetti conservano anche il lock ordini esistente.
+  I metadati opzionali sono congelati per richiesta, per evitare errori Stripe se
+  Google/Meta diventano disponibili durante un retry. Un cambio consenso crea una nuova chiave.
+  Un errore del tag non deve impedire studio o navigazione al checkout.
 - Le conferme Premium non emettono Purchase e non stimano un importo da sessionStorage.
   Il helper Meta blocca Purchase client: gli incassi sono di competenza del backend.
 - Le view certificazione sono collegate anche al funnel applicativo; le view prezzi

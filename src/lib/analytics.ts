@@ -12,7 +12,7 @@ import { getToken } from "@/lib/auth";
 import { isAutomatedClient } from "@/lib/automated-client";
 import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
 
-type TrackParams = Record<string, string | number | boolean | null | undefined>;
+type TrackParams = Record<string, string | number | boolean | null | undefined | Array<{item_id:string}>>;
 
 export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
 
@@ -62,10 +62,12 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
     return;
   }
 
-  w.gtag("event", eventName, {
-    anonymous_session_id: getAnonymousSessionId(),
-    ...normalizeGa4Params(params),
-  });
+  try {
+    w.gtag("event", eventName, {
+      anonymous_session_id: getAnonymousSessionId(),
+      ...normalizeGa4Params(params),
+    });
+  } catch { /* Tracking must never prevent study or checkout navigation. */ }
 }
 
 /** Invia gli eventi partiti prima che lo script GA4 fosse pronto. */
@@ -98,7 +100,9 @@ export function trackCheckoutCreated(sessionId: string | undefined, params: Trac
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key,"1");
   } catch {}
-  trackEventOnce(key,"begin_checkout",params);
+  const product = [params.plan_type,params.guide_slug,params.certification_slug,params.purchase_type]
+    .find((value): value is string => typeof value === "string" && value.length > 0) || "unclassified";
+  trackEventOnce(key,"begin_checkout",{...params,items:[{item_id:product}]});
 }
 
 /** user_status per gli eventi: mai id/email, solo lo stato d'accesso. */

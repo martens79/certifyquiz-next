@@ -1,6 +1,6 @@
 "use client";
 
-import { checkoutAnalyticsContext, checkoutRequestId } from "@/lib/checkout-analytics";
+import { checkoutRequest } from "@/lib/checkout-analytics";
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -160,13 +160,14 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "package_selected", offerCode: o.code, source: "certification_page" }),
       }).catch(() => {});
+      const checkoutContext = await checkoutRequest(`package:${o.code}:${lang}:${origin.paywallType || ""}:${gateInstanceId || ""}`);
       const r = await apiFetch("/packages/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          offerCode: o.code, lang, source: "certification_page", idempotencyKey: checkoutRequestId(`package:${o.code}:${lang}`),
+          offerCode: o.code, lang, source: "certification_page", idempotencyKey: checkoutContext.requestId,
           // Solo attribuzione funnel: il backend ricava offerta/prezzo/certificazione dal server.
-          analytics: await checkoutAnalyticsContext(),
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: gateInstanceId,
@@ -175,7 +176,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.error || "CHECKOUT_FAILED");
-      trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", certification_slug:certificationSlug, language:lang});
+      trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
       if (body.url) window.location.href = body.url;
     } catch (e) {
       setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));

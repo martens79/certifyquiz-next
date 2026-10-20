@@ -2,7 +2,7 @@
 "use client";
 
 import { useConsent } from "@/components/analytics/ConsentProvider";
-import { checkoutAnalyticsContext, checkoutRequestId } from "@/lib/checkout-analytics";
+import { checkoutRequest } from "@/lib/checkout-analytics";
 
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -726,6 +726,7 @@ function PremiumPricingView({ forceLang }: Props) {
         currency: "EUR",
       });
 
+      const checkoutContext = await checkoutRequest(`premium:${selectedPlan}:${lang}:${isPromoLink}:${origin.originCertSlug || ""}:${origin.paywallType || ""}:${postGateCohort?.gateInstanceId || ""}`);
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": lang },
@@ -733,12 +734,12 @@ function PremiumPricingView({ forceLang }: Props) {
           lang,
           plan: selectedPlan,
           skipTrial: isPromoLink,
-          checkout_request_id: checkoutRequestId(`premium:${selectedPlan}:${lang}:${isPromoLink}:${origin.originCertSlug || ""}`),
+          checkout_request_id: checkoutContext.requestId,
           // Identificatori analytics (non usati per autenticazione/entitlement):
           // permettono al webhook Stripe di riportare session_id/visitor_id/
           // gate_instance_id sui funnel_events di conversione. user_id resta
           // risolto server-side da authMiddleware, non da qui.
-          analytics: await checkoutAnalyticsContext(),
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: postGateCohort?.gateInstanceId ?? null,

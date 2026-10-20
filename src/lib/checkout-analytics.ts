@@ -4,9 +4,10 @@ export function checkoutRequestId(scope: string): string {
   const key = `cq_checkout_request:${scope}`;
   try {
     const previous = JSON.parse(sessionStorage.getItem(key) || "null");
-    if (previous?.id && previous.expires > Date.now()) return previous.id;
+    const consent = readStoredAnalyticsConsent();
+    if (previous?.id && previous.expires > Date.now() && previous.consent === consent) return previous.id;
     const id = crypto.randomUUID();
-    sessionStorage.setItem(key,JSON.stringify({id,expires:Date.now()+30*60*1000}));
+    sessionStorage.setItem(key,JSON.stringify({id,consent,expires:Date.now()+30*60*1000}));
     return id;
   } catch { return crypto.randomUUID(); }
 }
@@ -34,13 +35,29 @@ export async function checkoutAnalyticsContext(): Promise<Record<string, unknown
   const read = (field: string): Promise<string | null> => new Promise(resolve => {
     if (!gtag || !measurement) { resolve(null); return; }
     const timeout = setTimeout(() => resolve(null),400);
-    gtag("get",measurement,field,(value: unknown) => {clearTimeout(timeout);resolve(typeof value === "string" || typeof value === "number" ? String(value) : null);});
+    try {
+      gtag("get",measurement,field,(value: unknown) => {clearTimeout(timeout);resolve(typeof value === "string" || typeof value === "number" ? String(value) : null);});
+    } catch { clearTimeout(timeout);resolve(null); }
   });
   const [client,session] = await Promise.all([read("client_id"),read("session_id")]);
   // Consent may have changed while waiting for the Google tag.
   if (!analyticsConsentGranted()) return {analytics_consent:false,marketing_consent:false};
   const fbp = document.cookie.split(";").map(x=>x.trim()).find(x=>x.startsWith("_fbp="))?.slice(5) || null;
   return {consent_id:consentId,analytics_consent:true,marketing_consent:true,ga_client_id:client,ga_session_id:session,fbp};
+}
+
+/** Freeze optional analytics metadata too: Stripe rejects changed parameters
+ * under the same idempotency key (e.g. a Google tag that loads on a retry). */
+export async function checkoutRequest(scope: string) {
+  let requestId = checkoutRequestId(scope);
+  try {
+    const saved = sessionStorage.getItem(`cq_checkout_context:${requestId}`);
+    if (saved) return {requestId,analytics:JSON.parse(saved) as Record<string,unknown>};
+  } catch {}
+  const analytics = await checkoutAnalyticsContext();
+  requestId = checkoutRequestId(scope); // consent might change during async lookup
+  try { sessionStorage.setItem(`cq_checkout_context:${requestId}`,JSON.stringify(analytics)); } catch {}
+  return {requestId,analytics};
 }
 
 export function revokeConversionConsent() {

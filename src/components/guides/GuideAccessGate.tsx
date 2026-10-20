@@ -1,6 +1,6 @@
 "use client";
 
-import { checkoutAnalyticsContext, checkoutRequestId } from "@/lib/checkout-analytics";
+import { checkoutRequest } from "@/lib/checkout-analytics";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -201,12 +201,13 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
         paywall_type: "guide",
         metadata: { product_type: "guide", purchase_type: "single_guide", origin_cert_slug: slug },
       });
+      const checkoutContext = await checkoutRequest(`guide:${slug}:${lang}`);
       const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/checkout`, {
         method: "POST",
         body: JSON.stringify({
           lang,
-          checkout_request_id: checkoutRequestId(`guide:${slug}:${lang}`),
-          analytics: await checkoutAnalyticsContext(),
+          checkout_request_id: checkoutContext.requestId,
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           paywall_type: "guide",

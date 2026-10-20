@@ -47,12 +47,33 @@ test("a checkout retry retains its idempotency request key; another product has 
   assert.equal(checkoutRequestId("premium:monthly"),checkoutRequestId("premium:monthly"));
   assert.notEqual(checkoutRequestId("premium:monthly"),checkoutRequestId("package:ccna"));
 });
+test("checkout retries freeze optional metadata; changing consent creates a fresh intent",async()=>{
+  granted();const c=await checkout;
+  const first=await c.checkoutRequest("stable-parameters");
+  (globalThis as any).document.cookie="_fbp=fb.1.1792494000000.99999";
+  const second=await c.checkoutRequest("stable-parameters");
+  assert.deepEqual(second,first);
+  local.set("cq_cookie_consent",'{"accepted":false}');
+  const denied=await c.checkoutRequest("stable-parameters");
+  assert.notEqual(denied.requestId,first.requestId);assert.equal(denied.analytics.analytics_consent,false);
+  granted();
+});
+test("a broken analytics tag cannot prevent checkout context creation or product actions",async()=>{
+  granted();const c=await checkout;const a=await analytics;const m=await meta;
+  (globalThis as any).window.gtag=()=>{throw new Error('fixture tag failure');};
+  (globalThis as any).window.fbq=()=>{throw new Error('fixture pixel failure');};
+  const context=await c.checkoutAnalyticsContext();assert.equal(context.ga_client_id,null);
+  assert.doesNotThrow(()=>a.trackEvent("checkout_attempted"));assert.doesNotThrow(()=>m.trackMetaPixel("InitiateCheckout"));
+  (globalThis as any).window.gtag=gtag;
+  (globalThis as any).window.fbq=(...args:unknown[])=>calls.push(args);
+});
 test("begin_checkout requires a created session and survives a confirmation/retry reload without duplication",async()=>{
   granted();calls.length=0;const a=await analytics;
   a.trackCheckoutCreated(undefined,{purchase_type:"subscription"});assert.equal(calls.length,0);
   a.trackCheckoutCreated("cs_fixture",{purchase_type:"subscription"});
   a.trackCheckoutCreated("cs_fixture",{purchase_type:"subscription"});
   assert.equal(calls.length,1);assert.equal(calls[0][1],"begin_checkout");
+  assert.deepEqual((calls[0][2] as any).items,[{item_id:"subscription"}]);
 });
 test("a client Purchase cannot be sent even with consent and a loaded Meta Pixel",async()=>{
   granted();calls.length=0;const m=await meta;m.trackMetaPixel("Purchase",{value:9.99,currency:"EUR"});assert.equal(calls.length,0);
