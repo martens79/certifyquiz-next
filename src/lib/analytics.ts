@@ -105,6 +105,11 @@ export function trackCheckoutCreated(sessionId: string | undefined, params: Trac
   trackEventOnce(key,"begin_checkout",{...params,items:[{item_id:product}]});
 }
 
+/** A tab may stay open for a week: do not suppress a later day's real study. */
+export function studyEngagementKey(scope: string, mode: string, at = new Date()) {
+  return `study_engaged:${scope}:${mode}:${at.toISOString().slice(0,10)}`;
+}
+
 /** user_status per gli eventi: mai id/email, solo lo stato d'accesso. */
 export type UserStatus = "anonymous" | "free" | "premium";
 

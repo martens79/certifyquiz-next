@@ -79,6 +79,12 @@ test("a client Purchase cannot be sent even with consent and a loaded Meta Pixel
   granted();calls.length=0;const m=await meta;m.trackMetaPixel("Purchase",{value:9.99,currency:"EUR"});assert.equal(calls.length,0);
   m.trackMetaPixel("InitiateCheckout",{currency:"EUR"});assert.equal(calls.length,1);
 });
+test("a long-lived browser tab can record actual study on another day for retention",async()=>{
+  const {studyEngagementKey}=await analytics;
+  const first=studyEngagementKey("ccna","training",new Date("2026-10-20T10:00:00Z"));
+  assert.equal(first,studyEngagementKey("ccna","training",new Date("2026-10-20T18:00:00Z")));
+  assert.notEqual(first,studyEngagementKey("ccna","training",new Date("2026-10-21T10:00:00Z")));
+});
 test("failed funnel delivery can retry with the same event_id; only acknowledged delivery is marked done",async()=>{
   granted();const a=await analytics;const sent:Record<string,unknown>[]=[];let status=503;
   Object.defineProperty(globalThis,"fetch",{configurable:true,value:async(_url:string,init:RequestInit)=>{

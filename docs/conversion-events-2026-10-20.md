@@ -7,7 +7,8 @@ Il contratto completo e il piano di rilascio sono in
 - Un solo assessment_started; diagnostic_quiz_started resta solo nello storico.
 - quiz_loaded è il caricamento; study_started conserva la semantica storica.
 - study_engaged è la prima risposta al quiz o il primo check di un lab con risposta.
-  È deduplicato per scope/modalità/sessione browser: non è un conteggio di tentativi.
+  È deduplicato per scope/modalità/giorno UTC/sessione browser: non è un conteggio
+  di tentativi. Una scheda aperta per giorni non nasconde il ritorno allo studio.
 - registration_completed resta dopo risposta positiva; l'evento funnel è inviato
   dopo salvataggio del token quando presente, senza email nel payload aggiunto.
 - checkout_attempted precede l'API; begin_checkout richiede il sessionId restituito.

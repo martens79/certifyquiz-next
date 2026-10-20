@@ -1,7 +1,7 @@
 // src/components/quiz/QuizEngine.tsx
 'use client';
 
-import { trackEventOnce } from '@/lib/analytics';
+import { trackEventOnce, studyEngagementKey } from '@/lib/analytics';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -1821,10 +1821,11 @@ clearProgress(`${storageScope}:assessment`);
   // Una nuova scelta supera il re-check del ripristino: la verifica la fa
   // questo handler, una volta sola.
   restoredAnsweredRef.current.delete(String(q.id));
-  trackEventOnce(`study_engaged:${storageScope}:${effectiveMode}`, 'study_engaged', {
+  const engagementKey = studyEngagementKey(storageScope,effectiveMode);
+  trackEventOnce(engagementKey, 'study_engaged', {
     language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
   });
-  trackFunnelEventOnce(`study_engaged:${storageScope}:${effectiveMode}`, {
+  trackFunnelEventOnce(engagementKey, {
     event: 'study_engaged', cert_slug: context?.certificationSlug ?? null, topic_slug: context?.topicSlug ?? null,
     lang, metadata: { quiz_mode: effectiveMode },
   });
