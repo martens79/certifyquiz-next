@@ -6,7 +6,7 @@ import { checkoutRequest } from "@/lib/checkout-analytics";
 
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { authFetch } from "@/lib/auth";
+import { authFetch, getToken } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 import {
@@ -826,7 +826,10 @@ function PremiumPricingView({ forceLang }: Props) {
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
     const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
     setNotice(null);
-    if (!user) {
+    // "Anonimo" solo a stato di autenticazione risolto E senza token: durante il caricamento (o con un
+    // token gia' salvato ma utente non ancora letto) si procede come prima e decide il backend (401).
+    if (!user && !authLoading && !getToken()) {
+      inFlightRef.current = true; // un secondo click mentre si naviga al login non rifa' nulla
       goToAuth(plan, resolveCommercialOrigin(window.location.search));
       return;
     }

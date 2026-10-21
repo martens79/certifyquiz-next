@@ -19,6 +19,7 @@ type Mock = {
   loginOk: boolean;
   anonMeDelayMs: number; // ritardo della risposta 401 di /auth/me senza token (bootstrap anonimo che arriva "tardi")
   googleSetsCookie: boolean;
+  meDelayMs: number; // ritardo di /auth/me con token valido (utente non ancora caricato al primo click)
   meAlways401: boolean; // sessione realmente scaduta: nemmeno il token valido viene accettato
   refreshCookie: boolean; // come il cookie HttpOnly del backend: dopo un accesso la sessione si recupera con /auth/refresh
 };
@@ -27,7 +28,7 @@ async function setup(
   page: Page,
   { authed = false, checkoutStatus = 200 as Mock["checkoutStatus"], anonMeDelayMs = 0, googleSetsCookie = true } = {}
 ): Promise<Mock> {
-  const state: Mock = { checkoutPosts: [], funnel: [], unmocked: [], checkoutStatus, loginOk: true, refreshCookie: false, anonMeDelayMs, googleSetsCookie, meAlways401: false };
+  const state: Mock = { checkoutPosts: [], funnel: [], unmocked: [], checkoutStatus, loginOk: true, refreshCookie: false, anonMeDelayMs, googleSetsCookie, meAlways401: false, meDelayMs: 0 };
 
   await page.addInitScript(
     ({ authed, token }) => {
@@ -74,7 +75,10 @@ async function setup(
     })();
     if (path === "/funnel-event") return json(route, 200, { ok: true }); // registrato da page.on("request")
     if (path === "/auth/me") {
-      if (!state.meAlways401 && (req.headers()["authorization"] || "").includes(TOKEN)) return json(route, 200, { user: USER });
+      if (!state.meAlways401 && (req.headers()["authorization"] || "").includes(TOKEN)) {
+        if (state.meDelayMs) await new Promise((r) => setTimeout(r, state.meDelayMs));
+        return json(route, 200, { user: USER });
+      }
       if (state.anonMeDelayMs) await new Promise((r) => setTimeout(r, state.anonMeDelayMs));
       return json(route, 401, { error: "unauthorized" });
     }
@@ -265,6 +269,25 @@ test.describe("utente autenticato", () => {
     await page.waitForURL(STRIPE_URL);
     expect(m.checkoutPosts).toHaveLength(1);
     expect(events(m, "checkout_auth_required")).toHaveLength(0);
+  });
+
+  test("click subito dopo l'apertura, utente ancora in caricamento ma con token: nessun giro sul login", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    m.meDelayMs = 1500;
+    await page.goto(PRICING, { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: /start premium|log in or sign up/i }).first().dblclick();
+    await page.waitForURL(STRIPE_URL);
+    expect(m.checkoutPosts).toHaveLength(1);
+    expect(events(m, "checkout_auth_required")).toHaveLength(0);
+  });
+
+  test("anonimo: doppio click = un solo giro sul login e un solo evento", async ({ page }) => {
+    const m = await setup(page);
+    await page.goto(PRICING);
+    await page.getByRole("button", { name: /log in or sign up to continue/i }).first().dblclick();
+    await page.waitForURL(/\/login/);
+    expect(events(m, "checkout_auth_required")).toHaveLength(1);
+    expect(m.checkoutPosts).toHaveLength(0);
   });
 
   test("?resume=1 senza intenzione salvata (altra scheda / link copiato): nessun avvio automatico", async ({ page }) => {

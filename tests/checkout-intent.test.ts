@@ -150,9 +150,9 @@ test("pricing: nessuna chiamata di checkout prima del controllo di autenticazion
   const start = pricing.indexOf("async function startPremiumCheckout");
   assert.ok(start > 0);
   const fn = pricing.slice(start, pricing.indexOf("return (\n    <main", start));
-  const authGate = fn.indexOf("if (!user)");
+  const authGate = fn.indexOf("if (!user && !authLoading && !getToken())");
   const goAuth = fn.indexOf("goToAuth(plan");
-  const inFlight = fn.indexOf("inFlightRef.current = true");
+  const inFlight = fn.indexOf("inFlightRef.current = true", goAuth);
   const api = fn.indexOf("create-checkout-session");
   const attempted = fn.indexOf('event: "checkout_attempted"');
   assert.ok(authGate > 0 && goAuth > authGate, "il ramo anonimo esiste");
