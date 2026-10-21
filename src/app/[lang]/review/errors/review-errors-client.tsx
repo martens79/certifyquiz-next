@@ -229,7 +229,7 @@ export default function ReviewErrorsClient({
     const href =
       denied === 401
         ? `/${lang}/login?redirect=${encodeURIComponent(`/${lang}/review/errors`)}`
-        : `${pricingPath(lang)}?source=error_review_gate`;
+        : `${pricingPath(lang)}?source=error_review_gate&cta=error_review_gate`;
     return (
       <main className="mx-auto max-w-xl px-4 py-16">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

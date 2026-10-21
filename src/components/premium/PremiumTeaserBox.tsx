@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/quiz-types";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackFunnelEvent } from "@/lib/analytics";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 
 type Props = {
   lang?: Locale;
@@ -87,7 +88,7 @@ export default function PremiumTeaserBox({
       <p className="mb-3 text-xs text-gray-600">{COPY.note[L]}</p>
 
       <Link
-        href={pricingPath(L)}
+        href={withCtaParam(pricingPath(L), "teaser_box")}
         onClick={() => {
           if (clickedRef.current) return;
           clickedRef.current = true;
@@ -101,6 +102,7 @@ export default function PremiumTeaserBox({
             topic_slug: topicSlug ?? null,
             lang: L,
             score: score ?? null,
+            metadata: premiumClickMetadata("teaser_box"),
           });
         }}
         aria-disabled={clicked}

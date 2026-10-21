@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -168,6 +169,7 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
       cert_slug: slug,
       topic_slug: null,
       lang,
+      metadata: premiumClickMetadata("guide_gate"),
     });
   }
 
@@ -230,7 +232,7 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
 
   const redirect = encodeURIComponent(pathname ?? `/guide/${slug}`);
   const loginHref = withLang(lang, `/login?redirect=${redirect}`);
-  const premiumHref = `${pricingPath(lang)}?source=guide_preview&guide_slug=${encodeURIComponent(slug)}`;
+  const premiumHref = `${pricingPath(lang)}?source=guide_preview&guide_slug=${encodeURIComponent(slug)}&cta=guide_gate`;
 
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
@@ -269,7 +271,7 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
       ) : (
         <>
           <Link
-            href={pricingPath(lang)}
+            href={withCtaParam(pricingPath(lang), "guide_gate")}
             onClick={trackPremiumGateClick}
             className="mb-3 flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >

@@ -48,6 +48,7 @@ import {
   explanationPaywallParams,
 } from '@/lib/quiz-block-review-tracking';
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import {
   checkAnswer,
   evaluateAnswers,
@@ -2307,7 +2308,7 @@ const submitAssessmentReport = async () => {
               : "You've used up the free questions available after the explanation limit. Go Premium to keep going without limits."}
           </p>
           <Link
-            href={`${pricingPath(lang)}?source=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+            href={`${pricingPath(lang)}?source=post_gate_quiz_limit&cta=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
             onClick={() => {
               const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
               trackQuizEvent('premium_cta_clicked', {
@@ -2324,6 +2325,7 @@ const submitAssessmentReport = async () => {
                 lang,
                 paywall_type: "post_explanation_quiz_limit",
                 gate_instance_id: cohort?.gateInstanceId ?? null,
+                metadata: premiumClickMetadata("post_gate_quiz_limit"),
               });
             }}
             className="inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
@@ -2755,7 +2757,7 @@ const assessmentCopy =
                 </p>
                 <a
                   href={(() => {
-                    const q = new URLSearchParams({ source: 'mock_review' });
+                    const q = new URLSearchParams({ source: 'mock_review', cta: 'mock_review' });
                     if (context?.certificationSlug) q.set('certification_slug', context.certificationSlug);
                     return `${pricingPath(lang)}?${q.toString()}`;
                   })()}
@@ -2838,10 +2840,12 @@ const assessmentCopy =
     topic_slug: context?.topicSlug ?? null,
     lang,
     score: scorePct,
+    metadata: premiumClickMetadata("quiz_result_unlock"),
   });
 
   const pricing = new URL(pricingPath(lang), window.location.origin);
   pricing.searchParams.set("source", "quiz_result");
+  pricing.searchParams.set("cta", "quiz_result_unlock");
   if (context?.certificationSlug) pricing.searchParams.set("certification_slug", context.certificationSlug);
   router.push(`${pricing.pathname}${pricing.search}`);
 }}
@@ -2924,7 +2928,7 @@ const assessmentCopy =
     {showPremiumUpsell && (
       <button
         type="button"
-        onClick={() => router.push(pricingPath(lang))}
+        onClick={() => router.push(withCtaParam(pricingPath(lang), "quiz_result_upsell"))}
         className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
       >
         {lang === "it"
@@ -3532,7 +3536,7 @@ return (
                 : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
             <Link
-              href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+              href={`${pricingPath(lang)}?source=explanation_paywall&cta=wrong_explanation_locked${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {
                 const cohort = user?.id != null
                   ? getOrCreatePostGateCohort(user.id, q.id)
@@ -3553,6 +3557,7 @@ return (
                   topic_slug: context?.topicSlug ?? null,
                   lang,
                   gate_instance_id: cohort?.gateInstanceId ?? null,
+                  metadata: premiumClickMetadata("wrong_explanation_locked"),
                 });
               }}
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
