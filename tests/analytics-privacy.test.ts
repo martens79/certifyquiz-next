@@ -16,7 +16,8 @@ Object.defineProperty(globalThis, "crypto", { value: { randomUUID: () => `000000
 const beacons: Array<{ blob: Blob }> = [];
 const gtagCalls: unknown[][] = [];
 Object.defineProperty(globalThis, "navigator", { value: { sendBeacon: (_e: string, blob: Blob) => (beacons.push({ blob }), true) }, configurable: true });
-Object.defineProperty(globalThis, "localStorage", { configurable: true, value: { getItem: () => null, setItem: () => {} } });
+// Consenso accettato: serve alle versioni di trackEvent/trackFunnelEvent che lo controllano (#147); su main e' ininfluente.
+Object.defineProperty(globalThis, "localStorage", { configurable: true, value: { getItem: (key: string) => (key === "cq_cookie_consent" ? '{"accepted":true}' : null), setItem: () => {} } });
 
 const privacy = import("../src/lib/analytics-privacy.ts");
 const analytics = import("../src/lib/analytics.ts");
