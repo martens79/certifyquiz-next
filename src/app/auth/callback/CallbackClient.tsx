@@ -1,20 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { backendUrl, setToken, authHeader, setUser } from "@/lib/auth";
+import { safePostAuthRedirect } from "@/lib/conversion-context";
 
-function safeRedirectPath(p: string | null) {
-  if (!p) return "/";
-  if (!p.startsWith("/")) return "/";
-  if (p.startsWith("//")) return "/";
-
-  // ✅ alias profilo -> profile
-  if (p === "/it/profilo") return "/it/profile";
-  if (p === "/profilo") return "/profile";
-
-  return p;
-}
+const safeRedirectPath = safePostAuthRedirect;
 
 function loginPathFromRedirect(r: string) {
   const m = r.match(/^\/(it|fr|es)\b/);
@@ -24,8 +15,13 @@ function loginPathFromRedirect(r: string) {
 export default function CallbackClient() {
   const router = useRouter();
   const sp = useSearchParams();
+  // Il token viene tolto dall'URL (replaceState): senza guardia l'effetto ripartirebbe senza token
+  // e rimanderebbe al login mentre l'accesso e' gia' avvenuto. Una sola esecuzione per visita.
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     const token = sp.get("token");
     const redirect = safeRedirectPath(sp.get("redirect"));
     const remember = (sp.get("remember") ?? "1") === "1";
