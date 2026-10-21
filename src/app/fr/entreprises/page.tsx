@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { spaceGrotesk } from "@/fonts/space-grotesk";
 import {
   CheckCircle2,
   Users,
@@ -12,11 +12,7 @@ import {
 import TeamDashboardPreview from "@/components/team/TeamDashboardPreview";
 import FaqAccordion from "@/components/team/FaqAccordion";
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-display",
-});
+
 
 const CONTACT_EMAIL = "certifyquiz@gmail.com";
 
