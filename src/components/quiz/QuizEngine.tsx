@@ -2304,7 +2304,6 @@ const submitAssessmentReport = async () => {
               });
               trackFunnelEvent({
                 event: "premium_clicked_post_gate_quiz_limit",
-                email: user?.email || null,
                 cert_slug: context?.certificationSlug ?? null,
                 topic_slug: context?.topicSlug ?? null,
                 lang,
@@ -3534,7 +3533,6 @@ return (
                 // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
                 trackFunnelEvent({
                   event: "premium_clicked_locked_explanation",
-                  email: user?.email || null,
                   cert_slug: context?.certificationSlug ?? null,
                   topic_slug: context?.topicSlug ?? null,
                   lang,

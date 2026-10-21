@@ -96,7 +96,6 @@ export default function PremiumTeaserBox({
           // ✅ Tracking click Premium nel funnel
           trackFunnelEvent({
             event: "premium_clicked",
-            email: user?.email || null,
             cert_slug: certificationSlug ?? null,
             topic_slug: topicSlug ?? null,
             lang: L,
