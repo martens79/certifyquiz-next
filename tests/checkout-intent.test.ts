@@ -178,3 +178,34 @@ test("pacchetti: il flusso anonimo esistente (redirect al login, nessun checkout
   assert.match(offers.slice(i, i + 220), /router\.push\(`\$\{lang === "en" \? "" : `\/\$\{lang\}`\}\/login\?redirect=\$\{encodeURIComponent\(pathname \|\| "\/"\)\}`\);\s*return;/);
   assert.ok(offers.indexOf("apiFetch(\"/packages/checkout\"") > i, "checkout pacchetto solo dopo il controllo utente");
 });
+
+test("nessun dato personale nei nuovi eventi: i punti di invio non passano email, username o id utente", async () => {
+  const { readdirSync, statSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const walk = (dir: string, out: string[] = []): string[] => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) walk(full, out);
+      else if (/\.(ts|tsx)$/.test(name)) out.push(full);
+    }
+    return out;
+  };
+  const NEW_EVENTS = ["checkout_auth_required", "checkout_attempted", "pricing_viewed"];
+  let found = 0;
+  for (const file of walk(join(process.cwd(), "src"))) {
+    const text = readFileSync(file, "utf8");
+    for (const name of NEW_EVENTS) {
+      let at = text.indexOf(`event: "${name}"`);
+      while (at >= 0) {
+        found++;
+        // il blocco dell'evento: fino alla chiusura del trackFunnelEvent (finestra generosa)
+        const block = text.slice(at, at + 900);
+        const end = block.search(/\n\s*\}\);/);
+        const call = end > 0 ? block.slice(0, end) : block;
+        assert.equal(/\bemail\b|username|user_id|userId|\.email/.test(call), false, `${file}: ${name} passa un dato personale`);
+        at = text.indexOf(`event: "${name}"`, at + 1);
+      }
+    }
+  }
+  assert.ok(found >= 3, `trovati solo ${found} punti di invio`);
+});

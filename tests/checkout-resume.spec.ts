@@ -17,11 +17,17 @@ type Mock = {
   unmocked: string[];
   checkoutStatus: 200 | 401 | 500;
   loginOk: boolean;
+  anonMeDelayMs: number; // ritardo della risposta 401 di /auth/me senza token (bootstrap anonimo che arriva "tardi")
+  googleSetsCookie: boolean;
+  meAlways401: boolean; // sessione realmente scaduta: nemmeno il token valido viene accettato
   refreshCookie: boolean; // come il cookie HttpOnly del backend: dopo un accesso la sessione si recupera con /auth/refresh
 };
 
-async function setup(page: Page, { authed = false, checkoutStatus = 200 as Mock["checkoutStatus"] } = {}): Promise<Mock> {
-  const state: Mock = { checkoutPosts: [], funnel: [], unmocked: [], checkoutStatus, loginOk: true, refreshCookie: false };
+async function setup(
+  page: Page,
+  { authed = false, checkoutStatus = 200 as Mock["checkoutStatus"], anonMeDelayMs = 0, googleSetsCookie = true } = {}
+): Promise<Mock> {
+  const state: Mock = { checkoutPosts: [], funnel: [], unmocked: [], checkoutStatus, loginOk: true, refreshCookie: false, anonMeDelayMs, googleSetsCookie, meAlways401: false };
 
   await page.addInitScript(
     ({ authed, token }) => {
@@ -68,7 +74,9 @@ async function setup(page: Page, { authed = false, checkoutStatus = 200 as Mock[
     })();
     if (path === "/funnel-event") return json(route, 200, { ok: true }); // registrato da page.on("request")
     if (path === "/auth/me") {
-      return (req.headers()["authorization"] || "").includes(TOKEN) ? json(route, 200, { user: USER }) : json(route, 401, { error: "unauthorized" });
+      if (!state.meAlways401 && (req.headers()["authorization"] || "").includes(TOKEN)) return json(route, 200, { user: USER });
+      if (state.anonMeDelayMs) await new Promise((r) => setTimeout(r, state.anonMeDelayMs));
+      return json(route, 401, { error: "unauthorized" });
     }
     if (path === "/auth/refresh") return state.refreshCookie ? json(route, 200, { ok: true, token: TOKEN }) : json(route, 401, { error: "no refresh cookie" });
     if (path === "/auth/login" && method === "POST") { if (state.loginOk) state.refreshCookie = true; return state.loginOk ? json(route, 200, { token: TOKEN }) : json(route, 401, { error: "bad" }); }
@@ -93,7 +101,7 @@ async function setup(page: Page, { authed = false, checkoutStatus = 200 as Mock[
   await page.route("https://api.certifyquiz.com/api/auth/google**", async (route) => {
     const u = new URL(route.request().url());
     const redirect = u.searchParams.get("redirect") || "/";
-    state.refreshCookie = true; // il callback Google imposta il cookie di sessione
+    if (state.googleSetsCookie) state.refreshCookie = true; // il callback Google imposta il cookie di sessione
     await route.fulfill({
       status: 302,
       headers: { location: `${BASE}/auth/callback?token=${TOKEN}&remember=1&redirect=${encodeURIComponent(redirect)}` },
@@ -164,6 +172,11 @@ test.describe("visitatore anonimo", () => {
     expect(m.checkoutPosts[0].checkout_request_id).toBeTruthy();
     expect(events(m, "checkout_attempted")).toHaveLength(1);
     expect(m.unmocked).toEqual([]);
+    // Nessun dato personale negli eventi del percorso (l'utente di prova ha email e username riconoscibili).
+    const wire = JSON.stringify(m.funnel) + JSON.stringify(m.checkoutPosts);
+    expect(wire).not.toContain("example.test");
+    expect(wire).not.toContain("e2e-user");
+    for (const e of m.funnel) expect(Object.keys(e)).not.toContain("email");
 
     // Indietro da Stripe: la pricing torna senza parametri di ripresa e senza rilanciare il checkout.
     await page.goBack();
@@ -186,6 +199,22 @@ test.describe("visitatore anonimo", () => {
     expect(m.checkoutPosts[0].plan).toBe("premium_monthly");
     expect(m.unmocked).toEqual([]);
   });
+
+  // Gara sul callback Google: il bootstrap anonimo di AuthProvider (/auth/me senza token) puo' ricevere
+  // il suo 401 DOPO che il callback ha salvato il token. In produzione la sessione si salva col cookie
+  // di refresh; senza cookie (Preview su dominio diverso, cookie bloccati) il vecchio codice cancellava il token.
+  for (const [label, googleSetsCookie] of [["con cookie di refresh", true], ["senza cookie di refresh", false]] as const) {
+    test(`login con Google, 401 anonimo in ritardo, ${label}: la sessione sopravvive e il checkout riparte una volta`, async ({ page }) => {
+      const m = await setup(page, { anonMeDelayMs: 2500, googleSetsCookie });
+      await page.goto(PRICING);
+      await page.getByRole("button", { name: /log in or sign up to continue/i }).first().click();
+      await page.waitForURL(/\/login/);
+      await page.getByRole("link", { name: /continue with google/i }).click();
+      await page.waitForURL(STRIPE_URL);
+      expect(m.checkoutPosts).toHaveLength(1);
+      expect(m.unmocked).toEqual([]);
+    });
+  }
 
   test("registrazione: il contesto resta nel giro login -> registrazione e il checkout riparte", async ({ page }) => {
     const m = await setup(page);
@@ -267,6 +296,15 @@ test.describe("utente autenticato", () => {
     await page.waitForTimeout(1200);
     expect(m.checkoutPosts, "un solo tentativo, nessun ciclo").toHaveLength(1);
     await expect(page.getByRole("button", { name: /start premium/i }).first()).toBeEnabled();
+  });
+
+  test("sessione realmente scaduta: il token viene ancora cancellato (nessuna regressione del logout)", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    m.meAlways401 = true;
+    await page.goto(PRICING);
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("cq:access")), { timeout: 15000 }).toBeNull();
+    await expect(page.getByRole("button", { name: /log in or sign up to continue/i }).first()).toBeVisible();
+    expect(m.checkoutPosts).toHaveLength(0);
   });
 
   test("errore del server sul checkout: il pulsante si sblocca e si puo' riprovare", async ({ page }) => {
