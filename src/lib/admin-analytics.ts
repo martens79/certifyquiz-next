@@ -57,6 +57,7 @@ const EVENT_CATEGORY: Record<string, "CORE KPI" | "FUNNEL" | "PRODUCT" | "COMMER
   free_limit_reached: "FUNNEL",
   checkout_started: "COMMERCE",
   checkout_created: "COMMERCE",
+  checkout_auth_required: "COMMERCE",
   purchase_completed: "COMMERCE",
   result_viewed: "LEGACY",
   quiz_result_viewed: "LEGACY",

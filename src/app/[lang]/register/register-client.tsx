@@ -10,6 +10,7 @@ import { langFromPathname, getLabel } from '@/lib/i18n';
 import { setToken, backendUrl } from '@/lib/auth';
 import { trackEvent, trackEventOnce, trackFunnelEventOnce } from '@/lib/analytics';
 import { readConversionContext, withConversionContext } from '@/lib/conversion-context';
+import { CHECKOUT_SOURCE, checkoutAuthBanner } from '@/lib/checkout-intent';
 
 type FormDataState = {
   username: string;
@@ -292,6 +293,12 @@ export default function RegisterPageClient() {
         <h2 className="text-2xl font-bold text-blue-600 flex items-center gap-2 mb-6">
           🔐 {String(getLabel({ it: 'Registrati', en: 'Register' }, lang))}
         </h2>
+
+        {conversion.source === CHECKOUT_SOURCE && (
+          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" data-testid="checkout-auth-banner">
+            {checkoutAuthBanner(lang)}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Honeypot anti-bot: non rimuovere. */}
