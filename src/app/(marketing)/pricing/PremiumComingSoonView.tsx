@@ -650,7 +650,7 @@ function PremiumPricingView({ forceLang }: Props) {
       cert_slug: origin.originCertSlug,
       lang,
       paywall_type: origin.paywallType,
-      metadata: { source_page: params.get("source") || "direct" },
+      metadata: { source_page: params.get("source") || "direct", ...(origin.ctaId ? { cta_id: origin.ctaId } : {}) },
     });
     setIsPromoLink((params.get("promo") || "").toLowerCase() === "thanks1month");
   }, [authLoading, lang, user, consentStatus]);
@@ -718,6 +718,7 @@ function PremiumPricingView({ forceLang }: Props) {
           purchase_type: "subscription",
           source_page: "pricing",
           ...(origin.originCertSlug ? { origin_cert_slug: origin.originCertSlug } : {}),
+          ...(origin.ctaId ? { origin_cta_id: origin.ctaId } : {}),
         },
       });
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata } from "@/lib/commercial-origin";
 import type { MapOverviewItem } from "@/lib/data";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -147,6 +148,7 @@ function MapCard({
       cert_slug: item.certification_slug,
       topic_slug: null,
       lang,
+      metadata: premiumClickMetadata("map_locked"),
     });
   }
 
@@ -267,7 +269,7 @@ function MapCard({
           </button>
         ) : (
           <Link
-            href={`${pricingPath(lang)}?source=map_preview&certification_slug=${encodeURIComponent(item.certification_slug)}&map_slug=${encodeURIComponent(item.slug)}`}
+            href={`${pricingPath(lang)}?source=map_preview&cta=map_locked&certification_slug=${encodeURIComponent(item.certification_slug)}&map_slug=${encodeURIComponent(item.slug)}`}
             onClick={handleLockedClick}
             className={`${ACTION_BASE} border-transparent bg-amber-500 text-white hover:bg-amber-600`}
           >

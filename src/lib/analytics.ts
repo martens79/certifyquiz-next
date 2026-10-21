@@ -248,7 +248,7 @@ export function trackFunnelEvent(
   // non lo passa, cosi' ogni variante premium_clicked_* e' classificabile.
   const isPremiumClick = body.event.startsWith("premium_clicked");
   const paywallType = body.paywall_type ?? (isPremiumClick ? paywallTypeForEvent(body.event) : null);
-  if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType });
+  if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType, ctaId: metadata?.cta_id });
 
   const payload = JSON.stringify({
     ...body,

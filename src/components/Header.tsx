@@ -19,6 +19,7 @@ import HeaderAuthSlot from "@/components/layout/HeaderAuthSlot";
 import { certificationsPath, pricingPath, quizHomePath, guidesPath, mapsPath, gamesPath, interactiveLabsPath } from "@/lib/paths";
 import { getUser, onUserChange, type MinimalUser } from "@/lib/auth";
 import { trackFunnelEvent } from "@/lib/analytics";
+import { premiumClickMetadata } from "@/lib/commercial-origin";
 /* ------------------------------------------------------------------ */
 /* UI labels                                                           */
 /* ------------------------------------------------------------------ */
@@ -512,6 +513,7 @@ export default function Header({ lang }: Props) {
           cert_slug: null,
           topic_slug: null,
           lang,
+          metadata: premiumClickMetadata("header_pricing"),
         }),
     },
 

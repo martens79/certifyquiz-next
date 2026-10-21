@@ -232,7 +232,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
         <h3 className="font-black">Premium</h3>
         <p className="mt-2 text-sm text-blue-100">{t.premium}</p>
-        <a href={`${pricingPath(lang)}?source=package_offers&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
+        <a href={`${pricingPath(lang)}?source=package_offers&cta=package_offers_premium&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
       </article>
     </div>
     {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}
