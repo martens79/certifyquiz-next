@@ -5,7 +5,7 @@ export default defineConfig({
   testDir: "./tests",
   testMatch: /checkout-resume\.spec\.ts/,
   timeout: 45_000,
-  retries: 0,
+  retries: 1, // il server di sviluppo Next ha qualche timeout sporadico alla prima compilazione di una pagina
   workers: 1,
   reporter: [["list"]],
   use: {

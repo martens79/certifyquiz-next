@@ -11,6 +11,7 @@ import {
   clearCheckoutIntent,
   consumeCheckoutIntent,
   decideResume,
+  isCheckoutAllowedHost,
   normalizePlan,
   saveCheckoutIntent,
   stripResumeParams,
@@ -208,4 +209,15 @@ test("nessun dato personale nei nuovi eventi: i punti di invio non passano email
     }
   }
   assert.ok(found >= 3, `trovati solo ${found} punti di invio`);
+});
+
+test("il checkout parte solo da produzione e localhost, mai da Preview o host di prova", () => {
+  for (const ok of ["www.certifyquiz.com", "certifyquiz.com", "WWW.CERTIFYQUIZ.COM", "localhost", "127.0.0.1"]) assert.equal(isCheckoutAllowedHost(ok), true, ok);
+  for (const bad of ["certifyquiz-next-git-feat-x-lorenzos-projects.vercel.app", "evil.certifyquiz.com.attacker.test", "certifyquiz.com.evil.test", "127.0.0.2", "staging.certifyquiz.com", "", null, undefined, 1]) {
+    assert.equal(isCheckoutAllowedHost(bad as unknown), false, String(bad));
+  }
+  const start = pricing.indexOf("async function startPremiumCheckout");
+  const fn = pricing.slice(start, pricing.indexOf("return (\n    <main", start));
+  assert.ok(fn.indexOf("isCheckoutAllowedHost(window.location.hostname)") > fn.indexOf("goToAuth(plan"), "il blocco host viene dopo il ramo anonimo");
+  assert.ok(fn.indexOf("isCheckoutAllowedHost(window.location.hostname)") < fn.indexOf("create-checkout-session"), "e prima di qualsiasi chiamata di checkout");
 });

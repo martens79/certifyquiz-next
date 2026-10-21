@@ -23,6 +23,16 @@ export const CHECKOUT_PLANS = ["premium_monthly", "premium_quarterly", "premium_
 export type CheckoutPlan = (typeof CHECKOUT_PLANS)[number];
 
 export const CHECKOUT_SOURCE = "premium_checkout";
+
+// Le Preview Vercel e gli host di prova usano comunque il backend e Stripe LIVE (il rewrite verso
+// api.certifyquiz.com e' fisso): un click su "Start Premium" creerebbe una vera sessione di pagamento.
+// Il checkout si avvia solo dal sito di produzione e da localhost (sviluppo/E2E con mock).
+const CHECKOUT_ALLOWED_HOSTS = ["www.certifyquiz.com", "certifyquiz.com", "localhost", "127.0.0.1", "[::1]"];
+export function isCheckoutAllowedHost(hostname: unknown): boolean {
+  return typeof hostname === "string" && CHECKOUT_ALLOWED_HOSTS.includes(hostname.toLowerCase());
+}
+export const CHECKOUT_BLOCKED_NOTICE =
+  "Checkout disabled on preview/test deployments: it would use the LIVE payment backend. Test on localhost with mocks or on www.certifyquiz.com.";
 const STORAGE_KEY = "cq_checkout_intent";
 export const INTENT_TTL_MS = 30 * 60 * 1000;
 const LABEL_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/i;

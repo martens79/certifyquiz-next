@@ -290,6 +290,16 @@ test.describe("utente autenticato", () => {
     expect(m.checkoutPosts).toHaveLength(0);
   });
 
+  test("host di prova (Preview/altro host): nessuna sessione di pagamento, avviso chiaro", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    const previewLike = BASE.replace("localhost", "127.0.0.2"); // non e' tra gli host abilitati al checkout
+    await page.goto(`${previewLike}/pricing?source=guide_preview&certification_slug=ccna`);
+    await page.getByRole("button", { name: /start premium/i }).first().click();
+    await expect(page.getByRole("alert").filter({ hasText: /checkout disabled on preview/i })).toBeVisible();
+    await page.waitForTimeout(800);
+    expect(m.checkoutPosts, "nessuna richiesta di checkout da un host di prova").toHaveLength(0);
+  });
+
   test("?resume=1 senza intenzione salvata (altra scheda / link copiato): nessun avvio automatico", async ({ page }) => {
     const m = await setup(page, { authed: true });
     await page.goto("/pricing?resume=1&plan=premium_annual");

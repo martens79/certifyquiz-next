@@ -25,7 +25,9 @@ import {
   buildLoginHref,
   buildResumePath,
   consumeCheckoutIntent,
+  CHECKOUT_BLOCKED_NOTICE,
   decideResume,
+  isCheckoutAllowedHost,
   saveCheckoutIntent,
   stripResumeParams,
 } from "@/lib/checkout-intent";
@@ -831,6 +833,11 @@ function PremiumPricingView({ forceLang }: Props) {
     if (!user && !authLoading && !getToken()) {
       inFlightRef.current = true; // un secondo click mentre si naviga al login non rifa' nulla
       goToAuth(plan, resolveCommercialOrigin(window.location.search));
+      return;
+    }
+    if (!isCheckoutAllowedHost(window.location.hostname)) {
+      // Preview/host di prova: il backend e' quello LIVE. Nessuna sessione di pagamento.
+      setNotice(CHECKOUT_BLOCKED_NOTICE);
       return;
     }
     inFlightRef.current = true;
