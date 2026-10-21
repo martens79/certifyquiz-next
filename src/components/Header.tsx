@@ -509,7 +509,6 @@ export default function Header({ lang }: Props) {
       onClick: () =>
         trackFunnelEvent({
           event: "premium_clicked",
-          email: getUser()?.email || null,
           cert_slug: null,
           topic_slug: null,
           lang,

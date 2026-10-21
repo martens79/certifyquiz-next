@@ -2,12 +2,15 @@
 
 import Script from "next/script";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useConsent } from "@/components/analytics/ConsentProvider";
 import { flushPendingAnalyticsEvents } from "@/lib/analytics";
+import { isSensitiveAnalyticsPath, SENSITIVE_QUERY_KEYS } from "@/lib/analytics-privacy";
 
 export default function GoogleAnalytics() {
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
   const { status, ready } = useConsent();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!ready || status === "unknown") return;
@@ -30,6 +33,9 @@ export default function GoogleAnalytics() {
     return null;
   }
 
+  // Pagine con segreti nell'URL (reset password, ritorno da Google, esito pagamento): GA4 non parte.
+  if (isSensitiveAnalyticsPath(pathname)) return null;
+
   return (
     <>
       <Script id="ga4-init" strategy="afterInteractive">
@@ -45,7 +51,10 @@ export default function GoogleAnalytics() {
             wait_for_update: 500
           });
           gtag('js', new Date());
-          gtag('config', '${GA_ID}', { anonymize_ip: true, ads_data_redaction: true });
+          // page_location senza parametri sensibili (token, codici OAuth, email...): vedi lib/analytics-privacy.ts
+          var u = new URL(window.location.href);
+          ${JSON.stringify(SENSITIVE_QUERY_KEYS)}.forEach(function (k) { u.searchParams.delete(k); });
+          gtag('config', '${GA_ID}', { anonymize_ip: true, ads_data_redaction: true, page_location: u.toString() });
         `}
       </Script>
       <Script

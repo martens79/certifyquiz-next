@@ -118,7 +118,6 @@ export default function PremiumResourcesCta({
             // certificazione e non contribuiva mai a funnel_events.
             trackFunnelEvent({
               event: "premium_clicked",
-              email: user?.email || null,
               cert_slug: certificationSlug,
               topic_slug: null,
               lang,
