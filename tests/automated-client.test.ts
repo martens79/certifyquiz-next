@@ -13,8 +13,12 @@ const sessionStore = new Map<string, string>();
     sessionStore.set(key, value);
   },
 };
+// trackFunnelEvent scrive solo con consenso analytics esplicito (analyticsConsentGranted,
+// chiave "cq_cookie_consent"): senza, ogni test "scrive" fallirebbe e ogni test
+// "non scrive" passerebbe per il motivo sbagliato. Il consenso e' quindi esplicito.
+let storedConsent: string | null = '{"accepted":true}';
 (globalThis as any).localStorage = {
-  getItem: () => null,
+  getItem: (key: string) => (key === "cq_cookie_consent" ? storedConsent : null),
   setItem: () => undefined,
 };
 let uuidCounter = 0;
@@ -311,6 +315,25 @@ test("trackFunnelEvent: a known crawler user agent writes nothing", async () => 
   assert.equal(fetchCalls.length, 0);
 });
 
+test("trackFunnelEvent: a real browser without analytics consent (unknown or denied) writes nothing", async () => {
+  const { trackFunnelEvent, trackFunnelEventOnce } = await analyticsModule;
+  setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.chromeWindows });
+  const previous = storedConsent;
+  try {
+    for (const value of [null, '{"accepted":false}']) {
+      storedConsent = value;
+      beaconCalls.length = 0;
+      fetchCalls.length = 0;
+      trackFunnelEvent({ event: "study_started", lang: "en" });
+      trackFunnelEventOnce(`no-consent:${value}`, { event: "study_started", lang: "en" });
+      assert.equal(beaconCalls.length, 0, `consent ${value}`);
+      assert.equal(fetchCalls.length, 0, `consent ${value}`);
+    }
+  } finally {
+    storedConsent = previous;
+  }
+});
+
 test("trackFunnelEvent: a normal browser still writes every one of the four exposure events", async () => {
   const { trackFunnelEvent } = await analyticsModule;
   beaconCalls.length = 0;
@@ -352,6 +375,7 @@ test("trackFunnelEvent / trackFunnelEventOnce: a navigator that throws on read s
   const { trackFunnelEvent, trackFunnelEventOnce } = await analyticsModule;
   for (const property of ["webdriver", "userAgent", "userAgentData"]) {
     beaconCalls.length = 0;
+    fetchCalls.length = 0;
     sessionStore.clear();
     hostileNavigator(property);
 
@@ -361,24 +385,29 @@ test("trackFunnelEvent / trackFunnelEventOnce: a navigator that throws on read s
       property
     );
 
-    assert.equal(beaconCalls.length, 2, `${property}: both events must still be sent`);
+    // trackFunnelEvent anonimo usa sendBeacon; trackFunnelEventOnce usa fetch con ack (requireAck).
+    assert.equal(beaconCalls.length, 1, `${property}: the beacon event must still be sent`);
+    assert.equal(fetchCalls.length, 1, `${property}: the acknowledged once-event must still be sent`);
   }
 });
 
 test("trackFunnelEventOnce: the filter runs before the in-memory and storage dedupe", async () => {
   const { trackFunnelEventOnce } = await analyticsModule;
   beaconCalls.length = 0;
+  fetchCalls.length = 0;
   sessionStore.clear();
 
   // 1) un client automatizzato non "brucia" la chiave: un browser normale che usa
   //    la stessa chiave nello stesso processo deve ancora poter registrare.
+  //    Gli eventi one-shot viaggiano con fetch + ack (non sendBeacon).
   setNavigator({ webdriver: true });
   trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
-  assert.equal(beaconCalls.length, 0);
+  assert.equal(beaconCalls.length + fetchCalls.length, 0);
 
   setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.chromeWindows });
   trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
-  assert.equal(beaconCalls.length, 1);
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(beaconCalls.length, 0);
 });
 
 test("trackFunnelEventOnce: an automated client leaves no dedupe key and writes nothing", async () => {
@@ -398,11 +427,13 @@ test("trackFunnelEventOnce: an automated client leaves no dedupe key and writes 
 test("trackFunnelEventOnce: after an automated attempt a real browser session still records the event once", async () => {
   const { trackFunnelEventOnce } = await analyticsModule;
   beaconCalls.length = 0;
+  fetchCalls.length = 0;
   sessionStore.clear();
 
   setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.safariIphone });
   trackFunnelEventOnce("paywall_viewed:review:ccna", { event: "paywall_viewed", lang: "it" });
   trackFunnelEventOnce("paywall_viewed:review:ccna", { event: "paywall_viewed", lang: "it" });
 
-  assert.equal(beaconCalls.length, 1);
+  assert.equal(fetchCalls.length, 1);
+  assert.equal(beaconCalls.length, 0);
 });
