@@ -10,6 +10,7 @@
 import { getToken } from "@/lib/auth";
 import { isAutomatedClient } from "@/lib/automated-client";
 import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
+import { scrubAnalyticsPayload } from "@/lib/analytics-privacy";
 
 type TrackParams = Record<string, string | number | boolean | null | undefined>;
 
@@ -63,7 +64,7 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
 
   w.gtag("event", eventName, {
     anonymous_session_id: getAnonymousSessionId(),
-    ...normalizeGa4Params(params),
+    ...scrubAnalyticsPayload(normalizeGa4Params(params)),
   });
 }
 
@@ -125,9 +126,9 @@ export function trackReviewModuleEvent(
   trackEvent(eventName, params);
 }
 
+// Nessun campo email: i dati personali non entrano negli analytics (l'user_id lo ricava il backend dal token).
 type FunnelEventBody = {
   event: string;
-  email?: string | null;
   cert_slug?: string | null;
   topic_slug?: string | null;
   lang?: string | null;
@@ -217,7 +218,12 @@ export function trackFunnelEvent(
   if (isAutomatedClient()) return;
 
   const referrer = safeReferrer();
-  const metadata = body.metadata || (body.plan ? { plan: body.plan } : null);
+  // Difesa in profondita': anche se un chiamante passasse `email` (o un valore che sembra un indirizzo),
+  // il payload inviato al funnel non lo contiene mai.
+  const { email: _discardedEmail, ...safeBody } = body as FunnelEventBody & { email?: unknown };
+  void _discardedEmail;
+  const rawMetadata = safeBody.metadata || (safeBody.plan ? { plan: safeBody.plan } : null);
+  const metadata = rawMetadata ? scrubAnalyticsPayload(rawMetadata) : null;
 
   // I click Premium sono il punto in cui nasce il percorso commerciale: qui si
   // ricordano certificazione e paywall d'origine (letti poi da pricing/checkout,
@@ -228,7 +234,7 @@ export function trackFunnelEvent(
   if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType });
 
   const payload = JSON.stringify({
-    ...body,
+    ...safeBody,
     ...(paywallType ? { paywall_type: paywallType } : {}),
     metadata,
     event_id: crypto.randomUUID(),
