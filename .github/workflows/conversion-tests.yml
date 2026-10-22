@@ -1,0 +1,20 @@
+name: Conversion tracking contracts
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  conversions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: node --import tsx --test tests/conversion-tracking.test.ts tests/analytics-funnel-event.test.ts tests/analytics-commercial-origin.test.ts tests/admin-analytics.test.ts tests/commercial-packages.test.ts tests/commercial-origin.test.ts tests/post-gate-tracking.test.ts tests/guided-lab-enablement.test.tsx tests/topic-premium-required.test.tsx tests/automated-client.test.ts
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json

@@ -1,6 +1,7 @@
 // src/components/quiz/QuizEngine.tsx
 'use client';
 
+import { trackEventOnce, studyEngagementKey } from '@/lib/analytics';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -1221,7 +1222,8 @@ const openFeedback = () => {
       total_questions: questions.length,
     };
     trackQuizEvent('assessment_started', assessmentStartProperties);
-    trackQuizEvent('diagnostic_quiz_started', assessmentStartProperties);
+    // diagnostic_quiz_started was a duplicate alias; historical series stays intact.
+    trackQuizEvent('quiz_loaded', assessmentStartProperties);
     trackFunnelEventOnce(
       `assessment_started:${storageScope}`,
       {
@@ -1250,6 +1252,10 @@ const openFeedback = () => {
     if (loading || err || !questions.length || studyStartedTrackedRef.current) return;
     studyStartedTrackedRef.current = true;
 
+    trackQuizEvent('quiz_loaded', {
+      language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
+    });
+    // Legacy metric remains a content load; study_engaged measures the first answer.
     trackQuizEvent('study_started', {
       language: lang,
       quiz_mode: effectiveMode,
@@ -1815,6 +1821,14 @@ clearProgress(`${storageScope}:assessment`);
   // Una nuova scelta supera il re-check del ripristino: la verifica la fa
   // questo handler, una volta sola.
   restoredAnsweredRef.current.delete(String(q.id));
+  const engagementKey = studyEngagementKey(storageScope,effectiveMode);
+  trackEventOnce(engagementKey, 'study_engaged', {
+    language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
+  });
+  trackFunnelEventOnce(engagementKey, {
+    event: 'study_engaged', cert_slug: context?.certificationSlug ?? null, topic_slug: context?.topicSlug ?? null,
+    lang, metadata: { quiz_mode: effectiveMode },
+  });
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
 

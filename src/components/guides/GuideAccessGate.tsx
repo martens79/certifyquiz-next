@@ -1,5 +1,7 @@
 "use client";
 
+import { checkoutRequest } from "@/lib/checkout-analytics";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -15,6 +17,7 @@ import {
   getAnonymousSessionId,
   getAnonymousVisitorId,
   trackEvent,
+  trackCheckoutCreated,
   trackFunnelEvent,
   trackFunnelEventOnce,
 } from "@/lib/analytics";
@@ -181,7 +184,7 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
         guide_slug: slug,
         purchase_type: "single_guide",
       });
-      trackEvent("checkout_started", {
+      trackEvent("checkout_attempted", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
         source_page: "guide_preview",
@@ -191,17 +194,20 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
       // Percorso commerciale dell'acquisto singolo: stesso filo di identita'
       // del checkout Premium. La certificazione la risolve il backend dalla guida.
       trackFunnelEvent({
-        event: "checkout_started",
+        event: "checkout_attempted",
         cert_slug: slug,
         topic_slug: null,
         lang,
         paywall_type: "guide",
         metadata: { product_type: "guide", purchase_type: "single_guide", origin_cert_slug: slug },
       });
+      const checkoutContext = await checkoutRequest(`guide:${slug}:${lang}`);
       const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/checkout`, {
         method: "POST",
         body: JSON.stringify({
           lang,
+          checkout_request_id: checkoutContext.requestId,
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           paywall_type: "guide",
@@ -214,6 +220,7 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
         throw new Error("checkout_failed");
       }
 
+      trackCheckoutCreated(data.sessionId, {purchase_type:"single_guide", guide_slug:slug, language:lang});
       window.location.href = data.url;
     } catch {
       setError(COPY.error[lang]);

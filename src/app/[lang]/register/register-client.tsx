@@ -8,7 +8,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
 import { setToken, backendUrl } from '@/lib/auth';
-import { trackEvent, trackEventOnce } from '@/lib/analytics';
+import { trackEvent, trackEventOnce, trackFunnelEventOnce } from '@/lib/analytics';
 import { readConversionContext, withConversionContext } from '@/lib/conversion-context';
 
 type FormDataState = {
@@ -238,6 +238,10 @@ export default function RegisterPageClient() {
             /* noop */
           }
         }
+        trackFunnelEventOnce('registration_completed', {
+          event: 'registration_completed', cert_slug: conversion.certificationSlug,
+          topic_slug: conversion.topicSlug, lang,
+        });
         router.replace(redirectParam || `/${lang}/profile`);
         return;
       }
@@ -263,6 +267,10 @@ export default function RegisterPageClient() {
         topic_slug: conversion.topicSlug,
         assessment_score: conversion.score,
       });
+        trackFunnelEventOnce('registration_completed', {
+          event: 'registration_completed', cert_slug: conversion.certificationSlug,
+          topic_slug: conversion.topicSlug, lang,
+        });
       const loginHref = withConversionContext(`/${lang}/login`, conversion);
       setTimeout(() => router.replace(loginHref), 1200);
     } catch (err: unknown) {
