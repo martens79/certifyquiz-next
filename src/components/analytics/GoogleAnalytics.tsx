@@ -33,7 +33,11 @@ export default function GoogleAnalytics() {
     return null;
   }
 
-  // Pagine con segreti nell'URL (reset password, ritorno da Google, esito pagamento): GA4 non parte.
+  // Revocation still updates an already loaded tag in the effect above.
+  // Unmounting Script alone does not unload Google's runtime or block its traffic.
+  if (!ready || status !== "granted") return null;
+
+  // Pagine con segreti nell'URL: GA4 non parte.
   if (isSensitiveAnalyticsPath(pathname)) return null;
 
   return (
@@ -44,10 +48,10 @@ export default function GoogleAnalytics() {
           function gtag(){window.dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('consent', 'default', {
-            analytics_storage: 'denied',
-            ad_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied',
+            analytics_storage: 'granted',
+            ad_storage: 'granted',
+            ad_user_data: 'granted',
+            ad_personalization: 'granted',
             wait_for_update: 500
           });
           gtag('js', new Date());

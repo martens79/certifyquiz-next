@@ -15,6 +15,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run typecheck
+      - run: node --import tsx --test tests/package-success.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
       - run: node --import tsx --test tests/conversion-tracking.test.ts tests/analytics-funnel-event.test.ts tests/analytics-commercial-origin.test.ts tests/admin-analytics.test.ts tests/commercial-packages.test.ts tests/commercial-origin.test.ts tests/premium-click-origin.test.ts tests/checkout-intent.test.ts tests/post-gate-tracking.test.ts tests/guided-lab-enablement.test.tsx tests/topic-premium-required.test.tsx
         env:
           TSX_TSCONFIG_PATH: tsconfig.test.json
