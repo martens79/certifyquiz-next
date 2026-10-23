@@ -130,7 +130,7 @@ test("GA4 e Meta Pixel non partono sulle pagine con segreti nell'URL e GA4 invia
   const ga = readFileSync(join(ROOT, "components", "analytics", "GoogleAnalytics.tsx"), "utf8");
   const px = readFileSync(join(ROOT, "components", "analytics", "MetaPixel.tsx"), "utf8");
   assert.ok(ga.includes("isSensitiveAnalyticsPath(pathname)") && px.includes("isSensitiveAnalyticsPath(pathname)"));
-  assert.ok(/page_location:\s*u\.toString\(\)/.test(ga) && ga.includes("SENSITIVE_QUERY_KEYS"));
+  assert.ok(/page_location:\s*sanitizeAnalyticsUrl\(window\.location\.href\)/.test(ga));
   // l'early return sta dopo tutti gli hook (regole di React)
   assert.ok(ga.indexOf("useEffect(") < ga.indexOf("isSensitiveAnalyticsPath(pathname)) return null"));
 });

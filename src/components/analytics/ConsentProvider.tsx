@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 import { revokeConversionConsent, readStoredAnalyticsConsent } from "@/lib/checkout-analytics";
+import { googleConsentState } from "@/lib/consent-mode";
 
 const STORAGE_KEY = "cq_cookie_consent";
 const LEGACY_JSON_KEY = "cq:cookie-consent";
@@ -27,12 +28,7 @@ function updateGoogleConsent(status: Exclude<ConsentStatus, "unknown">) {
     gtag?: (...args: unknown[]) => void;
   }).gtag;
 
-  gtag?.("consent", "update", {
-    analytics_storage: status,
-    ad_storage: status,
-    ad_user_data: status,
-    ad_personalization: status,
-  });
+  gtag?.("consent", "update", googleConsentState(status));
 }
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
