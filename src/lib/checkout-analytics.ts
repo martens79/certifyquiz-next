@@ -1,13 +1,14 @@
 // Only pseudonymous identifiers, and only after the site's existing consent.
 const CONSENT_ID_KEY = "cq_conversion_consent_id";
+const CONSENT_POLICY = "analytics-only-v1";
 export function checkoutRequestId(scope: string): string {
   const key = `cq_checkout_request:${scope}`;
   try {
     const previous = JSON.parse(sessionStorage.getItem(key) || "null");
     const consent = readStoredAnalyticsConsent();
-    if (previous?.id && previous.expires > Date.now() && previous.consent === consent) return previous.id;
+    if (previous?.id && previous.expires > Date.now() && previous.consent === consent && previous.policy === CONSENT_POLICY) return previous.id;
     const id = crypto.randomUUID();
-    sessionStorage.setItem(key,JSON.stringify({id,consent,expires:Date.now()+30*60*1000}));
+    sessionStorage.setItem(key,JSON.stringify({id,consent,policy:CONSENT_POLICY,expires:Date.now()+30*60*1000}));
     return id;
   } catch { return crypto.randomUUID(); }
 }
@@ -42,8 +43,7 @@ export async function checkoutAnalyticsContext(): Promise<Record<string, unknown
   const [client,session] = await Promise.all([read("client_id"),read("session_id")]);
   // Consent may have changed while waiting for the Google tag.
   if (!analyticsConsentGranted()) return {analytics_consent:false,marketing_consent:false};
-  const fbp = document.cookie.split(";").map(x=>x.trim()).find(x=>x.startsWith("_fbp="))?.slice(5) || null;
-  return {consent_id:consentId,analytics_consent:true,marketing_consent:true,ga_client_id:client,ga_session_id:session,fbp};
+  return {consent_id:consentId,analytics_consent:true,marketing_consent:false,ga_client_id:client,ga_session_id:session,fbp:null};
 }
 
 /** Freeze optional analytics metadata too: Stripe rejects changed parameters
