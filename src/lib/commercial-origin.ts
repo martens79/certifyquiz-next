@@ -17,7 +17,72 @@ const SLUG_RE = /^[a-z0-9][a-z0-9._-]{0,99}$/;
 export type CommercialOrigin = {
   originCertSlug: string | null;
   paywallType: string | null;
+  // Punto di partenza del click Premium (vedi PREMIUM_CTA_IDS). null se la CTA
+  // non ne dichiara uno: non si inventa.
+  ctaId: string | null;
 };
+
+// Identificatori stabili dei punti da cui parte un click verso Premium/pricing.
+// Sono etichette fisse (mai testo libero, mai dati utente): l'elenco e' chiuso
+// cosi' un valore manipolato in query string o storage viene scartato. Non
+// rinominare un id gia' emesso: i report storici lo raggruppano per questo valore.
+export const PREMIUM_CTA_IDS = [
+  "certification_card", // card "Premium" nella pagina certificazione
+  "header_pricing", // voce Pricing dell'header
+  "teaser_box", // box teaser Premium nei contenuti
+  "quiz_result_unlock", // pulsante nel risultato del quiz
+  "quiz_result_upsell", // pulsante upsell a fine quiz (senza evento dedicato)
+  "post_gate_quiz_limit", // limite domande dopo il gate
+  "wrong_explanation_locked", // spiegazione risposta errata bloccata
+  "review_gate", // ripasso bloccato
+  "guide_gate", // anteprima guida
+  "map_locked", // mappa bloccata
+  "mock_review", // revisione simulazione bloccata
+  "error_review_gate", // ripasso errori bloccato
+  "package_offers_premium", // Premium dentro le offerte pacchetto
+] as const;
+export type PremiumCtaId = (typeof PREMIUM_CTA_IDS)[number];
+
+export function normalizeCtaId(value: unknown): PremiumCtaId | null {
+  return typeof value === "string" && (PREMIUM_CTA_IDS as readonly string[]).includes(value) ? (value as PremiumCtaId) : null;
+}
+
+// Tipo di pagina da cui parte il click, derivato dal solo percorso (nessun id,
+// nessuna query). Serve a leggere i click senza dover rianalizzare pathname.
+export function pageKindForPath(pathname: unknown): string {
+  if (typeof pathname !== "string") return "other";
+  const segments = pathname.split("?")[0].split("#")[0].split("/").filter(Boolean).map((x) => x.toLowerCase());
+  if (segments.length && /^(it|en|fr|es)$/.test(segments[0])) segments.shift();
+  const first = segments[0] ?? "";
+  if (!first) return "home";
+  if (/^(pricing|prezzi|prix|precios)$/.test(first)) return "pricing";
+  if (/^(certifications|certificazioni|certificaciones)$/.test(first)) return "certification";
+  if (/^(quiz|assessment)$/.test(first)) return "quiz";
+  if (/^(reviews?|ripassi|revisions|repasos|resumenes)$/.test(first)) return "review";
+  if (/^(guides?|guide|guias)$/.test(first)) return "guide";
+  if (/^(maps?|mappe|cartes|mapas)$/.test(first)) return "map";
+  if (/^(profile|profilo|profil|perfil)$/.test(first)) return "profile";
+  if (/^(interactive-labs?|labs?)$/.test(first)) return "lab";
+  if (/^(blog|roadmap|scenarios?|scenari|scenarios|escenarios)$/.test(first)) return first.startsWith("blog") ? "blog" : "content";
+  return "other";
+}
+
+// Metadati da accodare a un evento premium_clicked*: solo etichette fisse.
+export function premiumClickMetadata(ctaId: PremiumCtaId, pathname?: string): { cta_id: PremiumCtaId; page_kind: string } {
+  const path = pathname ?? (typeof window !== "undefined" ? window.location.pathname : "");
+  return { cta_id: ctaId, page_kind: pageKindForPath(path) };
+}
+
+// Accoda ?cta=<id> a un href verso la pricing, cosi' pricing_viewed e checkout
+// conservano il punto di partenza. Id non valido: href invariato.
+export function withCtaParam(href: string, ctaId: PremiumCtaId): string {
+  if (!normalizeCtaId(ctaId)) return href;
+  const hashAt = href.indexOf("#");
+  const base = hashAt >= 0 ? href.slice(0, hashAt) : href;
+  const hash = hashAt >= 0 ? href.slice(hashAt) : "";
+  if (/[?&]cta=/.test(base)) return href;
+  return `${base}${base.includes("?") ? "&" : "?"}cta=${ctaId}${hash}`;
+}
 
 // Stesso vocabolario di paywall_type gia' emesso da paywall_viewed
 // (wrong_explanation, post_explanation_quiz_limit, guide, review) piu' "map".
@@ -47,8 +112,14 @@ export function normalizeSlug(value: unknown): string | null {
   return SLUG_RE.test(trimmed) ? trimmed : null;
 }
 
+// Solo chiavi proprie: "?source=constructor" o "__proto__" non devono risolvere
+// a membri ereditati di Object.
+export function paywallTypeForSource(source: string | null): string | null {
+  return source && Object.prototype.hasOwnProperty.call(PAYWALL_TYPE_BY_SOURCE, source) ? PAYWALL_TYPE_BY_SOURCE[source] : null;
+}
+
 export function paywallTypeForEvent(event: string): string | null {
-  return PAYWALL_TYPE_BY_EVENT[event] ?? null;
+  return Object.prototype.hasOwnProperty.call(PAYWALL_TYPE_BY_EVENT, event) ? PAYWALL_TYPE_BY_EVENT[event] : null;
 }
 
 type StorageLike = Pick<Storage, "getItem" | "setItem">;
@@ -67,7 +138,7 @@ function defaultStorage(): StorageLike | null {
  * invece di lasciarne una vecchia e potenzialmente sbagliata.
  */
 export function rememberCommercialOrigin(
-  origin: { certSlug?: unknown; paywallType?: unknown },
+  origin: { certSlug?: unknown; paywallType?: unknown; ctaId?: unknown },
   { storage = defaultStorage(), now = Date.now() }: { storage?: StorageLike | null; now?: number } = {}
 ): void {
   if (!storage) return;
@@ -77,6 +148,7 @@ export function rememberCommercialOrigin(
       JSON.stringify({
         originCertSlug: normalizeSlug(origin.certSlug),
         paywallType: normalizeSlug(origin.paywallType),
+        ctaId: normalizeCtaId(origin.ctaId),
         recordedAt: now,
       })
     );
@@ -89,11 +161,12 @@ function readStored(storage: StorageLike, now: number): CommercialOrigin | null 
   try {
     const raw = storage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { originCertSlug?: unknown; paywallType?: unknown; recordedAt?: unknown };
+    const parsed = JSON.parse(raw) as { originCertSlug?: unknown; paywallType?: unknown; ctaId?: unknown; recordedAt?: unknown };
     if (typeof parsed.recordedAt !== "number" || now - parsed.recordedAt > TTL_MS) return null;
     return {
       originCertSlug: normalizeSlug(parsed.originCertSlug),
       paywallType: normalizeSlug(parsed.paywallType),
+      ctaId: normalizeCtaId(parsed.ctaId),
     };
   } catch {
     return null;
@@ -112,12 +185,18 @@ export function resolveCommercialOrigin(
   const params = new URLSearchParams(search);
   const fromUrl: CommercialOrigin = {
     // guide_slug: i link dalla guida usano lo slug della guida, che coincide con quello della certificazione.
-    originCertSlug: normalizeSlug(params.get("certification_slug")) ?? normalizeSlug(params.get("guide_slug")),
-    paywallType: PAYWALL_TYPE_BY_SOURCE[params.get("source") ?? ""] ?? null,
+    // cert_slug: il link del ripasso bloccato usa questo nome (prima veniva ignorato).
+    originCertSlug:
+      normalizeSlug(params.get("certification_slug")) ??
+      normalizeSlug(params.get("guide_slug")) ??
+      normalizeSlug(params.get("cert_slug")),
+    paywallType: paywallTypeForSource(params.get("source")),
+    ctaId: normalizeCtaId(params.get("cta")),
   };
   const stored = storage ? readStored(storage, now) : null;
   return {
     originCertSlug: fromUrl.originCertSlug ?? stored?.originCertSlug ?? null,
     paywallType: fromUrl.paywallType ?? stored?.paywallType ?? null,
+    ctaId: fromUrl.ctaId ?? stored?.ctaId ?? null,
   };
 }

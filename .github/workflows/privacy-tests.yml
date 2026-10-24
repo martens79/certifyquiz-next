@@ -1,0 +1,23 @@
+name: Analytics privacy guard
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  privacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: node --import tsx --test tests/google-analytics-consent.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+      - run: node --import tsx --test tests/analytics-privacy.test.ts tests/analytics-funnel-event.test.ts tests/analytics-commercial-origin.test.ts
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json

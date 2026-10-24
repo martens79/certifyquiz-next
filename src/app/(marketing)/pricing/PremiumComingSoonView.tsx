@@ -1,14 +1,18 @@
 // src/app/(marketing)/pricing/PremiumComingSoonView.tsx
 "use client";
 
+import { useConsent } from "@/components/analytics/ConsentProvider";
+import { checkoutRequest } from "@/lib/checkout-analytics";
+
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { authFetch } from "@/lib/auth";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { authFetch, getToken } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackMetaPixel, PREMIUM_PLAN_VALUES } from "@/lib/metaPixel";
 import {
   analyticsUserStateFrom,
   trackEvent,
+  trackCheckoutCreated,
   trackEventOnce,
   trackFunnelEvent,
   trackFunnelEventOnce,
@@ -16,13 +20,24 @@ import {
   getAnonymousVisitorId,
 } from "@/lib/analytics";
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
-import { resolveCommercialOrigin } from "@/lib/commercial-origin";
+import { resolveCommercialOrigin, type CommercialOrigin } from "@/lib/commercial-origin";
+import {
+  buildLoginHref,
+  buildResumePath,
+  consumeCheckoutIntent,
+  CHECKOUT_BLOCKED_NOTICE,
+  decideResume,
+  isCheckoutAllowedHost,
+  saveCheckoutIntent,
+  stripResumeParams,
+} from "@/lib/checkout-intent";
 import PackagesUpsell from "./PackagesUpsell";
 import { useTwa } from "@/hooks/useTwa";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
 
 type Lang = "it" | "es" | "en" | "fr";
+const RESUME_WAIT_MS = 6000;
 type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
 
 type Props = {
@@ -61,6 +76,11 @@ type CopyEntry = {
   promoNote: string;
   featuresTitle: string;
   checkoutError: string;
+  // Visitatore non autenticato: serve un account prima del pagamento.
+  ctaAnon: string;
+  anonNote: string;
+  resumeManual: string;
+  resumeExpired: string;
   pizzaLine: string;
   urgencyLine: string;
   finalLine: string;
@@ -120,6 +140,10 @@ const COPY: Record<Lang, CopyEntry> = {
     promoNote: "Sconto del 50% già applicato sul primo mese, addebitato subito — nessun periodo di prova.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
+    ctaAnon: "Accedi o registrati per continuare",
+    anonNote: "Serve un account gratuito (anche con Google): dopo l'accesso torni qui e prosegui.",
+    resumeManual: "Accesso eseguito! Premi il pulsante per proseguire al pagamento sicuro.",
+    resumeExpired: "La sessione è scaduta. Accedi di nuovo e premi il pulsante Premium.",
     pizzaLine: "Scegli il mensile per provare senza addebito per 7 giorni, oppure risparmia il 50% con l'annuale.",
     urgencyLine: "Tutti gli strumenti Premium lavorano insieme: pratica, comprensione degli errori e ripasso mirato.",
     finalLine: "Scegli il piano più adatto al tempo che ti separa dall'esame.",
@@ -190,6 +214,10 @@ const COPY: Record<Lang, CopyEntry> = {
     promoNote: "Descuento del 50% ya aplicado en el primer mes, cobrado ahora — sin periodo de prueba.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
+    ctaAnon: "Inicia sesión o regístrate para continuar",
+    anonNote: "Se necesita una cuenta gratuita (también con Google): después volverás aquí para continuar.",
+    resumeManual: "¡Sesión iniciada! Pulsa el botón para continuar al pago seguro.",
+    resumeExpired: "La sesión ha caducado. Inicia sesión de nuevo y pulsa el botón Premium.",
     pizzaLine: "Elige el plan mensual para probar 7 días sin cargo o ahorra un 50% con el anual.",
     urgencyLine: "Todas las herramientas Premium trabajan juntas: práctica, comprensión de errores y repaso específico.",
     finalLine: "Elige el plan que mejor se adapta al tiempo que falta para tu examen.",
@@ -260,6 +288,10 @@ const COPY: Record<Lang, CopyEntry> = {
     promoNote: "50% off your first month already applied, charged now — no free trial.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
+    ctaAnon: "Log in or sign up to continue",
+    anonNote: "A free account is required (Google works too): you'll come right back here to continue.",
+    resumeManual: "You're signed in! Press the button to continue to secure checkout.",
+    resumeExpired: "Your session expired. Log in again and press the Premium button.",
     pizzaLine: "Choose monthly to try Premium for 7 days with no charge, or save 50% with annual.",
     urgencyLine: "Every Premium tool works together: practice, mistake understanding, and focused review.",
     finalLine: "Choose the plan that best fits the time left before your exam.",
@@ -330,6 +362,10 @@ const COPY: Record<Lang, CopyEntry> = {
     promoNote: "Réduction de 50% déjà appliquée sur le premier mois, débité maintenant — aucun essai gratuit.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
+    ctaAnon: "Connectez-vous ou inscrivez-vous pour continuer",
+    anonNote: "Un compte gratuit est nécessaire (Google possible) : vous reviendrez ici pour continuer.",
+    resumeManual: "Vous êtes connecté ! Appuyez sur le bouton pour passer au paiement sécurisé.",
+    resumeExpired: "Votre session a expiré. Reconnectez-vous et appuyez sur le bouton Premium.",
     pizzaLine: "Choisissez le mensuel pour essayer 7 jours sans débit, ou économisez 50% avec l'annuel.",
     urgencyLine: "Tous les outils Premium fonctionnent ensemble : pratique, compréhension des erreurs et révision ciblée.",
     finalLine: "Choisissez l'offre adaptée au temps qu'il vous reste avant l'examen.",
@@ -610,8 +646,13 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
 
 function PremiumPricingView({ forceLang }: Props) {
   const pathname = usePathname();
+  const { status: consentStatus } = useConsent();
   const { user, loading: authLoading, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // Guardie sincrone: due click ravvicinati o una ripresa + click non creano due checkout.
+  const inFlightRef = useRef(false);
+  const resumeHandledRef = useRef(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan>("premium_monthly");
   const [explanationsUsed, setExplanationsUsed] = useState<{ used: number; limit: number } | null>(null);
   // Link di campagna (es. ?promo=thanks1month): parte subito allo sconto, niente trial 7gg
@@ -624,7 +665,12 @@ function PremiumPricingView({ forceLang }: Props) {
     return getLangFromPathname(pathname);
   }, [forceLang, pathname]);
 
-  const t = COPY[lang];
+  // Visitatore non autenticato: il pulsante dice chiaramente che serve un account.
+  const isAnonymous = !authLoading && !user;
+  const copy = COPY[lang];
+  const t: CopyEntry = isAnonymous
+    ? { ...copy, cta: copy.ctaAnon, subCta: `${copy.anonNote} ${copy.subCta}`, subCtaMonthly: `${copy.anonNote} ${copy.subCtaMonthly}` }
+    : copy;
   const activePlan = t.plans.find((p) => p.id === selectedPlan) ?? t.plans[t.plans.length - 1];
   const isMonthly = selectedPlan === "premium_monthly";
 
@@ -645,10 +691,10 @@ function PremiumPricingView({ forceLang }: Props) {
       cert_slug: origin.originCertSlug,
       lang,
       paywall_type: origin.paywallType,
-      metadata: { source_page: params.get("source") || "direct" },
+      metadata: { source_page: params.get("source") || "direct", ...(origin.ctaId ? { cta_id: origin.ctaId } : {}) },
     });
     setIsPromoLink((params.get("promo") || "").toLowerCase() === "thanks1month");
-  }, [authLoading, lang, user]);
+  }, [authLoading, lang, user, consentStatus]);
 
   function selectPlan(plan: Plan) {
     setSelectedPlan(plan);
@@ -659,6 +705,62 @@ function PremiumPricingView({ forceLang }: Props) {
       source_page: "pricing",
     });
   }
+
+  // Ritorno da login/registrazione (anche Google): riprende il checkout col piano scelto.
+  // Parte da solo SOLO se URL (?resume=1&plan=) e intenzione salvata in questa scheda
+  // coincidono; altrimenti preseleziona il piano e lascia premere il pulsante.
+  // I parametri vengono tolti dall'URL subito: "Indietro" dal pagamento Stripe non rilancia nulla.
+  // Subito dopo l'accesso l'utente puo' non essere ancora caricato (token appena salvato, sessione
+  // recuperata dal refresh cookie): si aspetta fino a RESUME_WAIT_MS, poi si rinuncia senza avviare nulla.
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (authLoading || resumeHandledRef.current || detectTwa()) return;
+    const search = window.location.search;
+    if (new URLSearchParams(search).get("resume") !== "1") return;
+    const finish = () => window.history.replaceState(null, "", `${window.location.pathname}${stripResumeParams(search)}${window.location.hash}`);
+    if (!user) {
+      if (!resumeTimerRef.current) {
+        resumeTimerRef.current = setTimeout(() => {
+          if (resumeHandledRef.current) return;
+          resumeHandledRef.current = true;
+          consumeCheckoutIntent();
+          finish();
+        }, RESUME_WAIT_MS);
+      }
+      return;
+    }
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    }
+    resumeHandledRef.current = true;
+    const intent = consumeCheckoutIntent();
+    const { decision, plan } = decideResume({ search, authenticated: true, alreadyPremium: !!authPremium, intent });
+    finish();
+    if (decision === "none" || !plan) return;
+    setSelectedPlan(plan);
+    if (decision === "auto") void startPremiumCheckout({ plan, auto: true });
+    else setNotice(t.resumeManual);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, authPremium]);
+  useEffect(
+    () => () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+      resumeTimerRef.current = null;
+    },
+    []
+  );
+
+  // Tornando indietro da Stripe la pagina puo' riapparire dalla cache con il pulsante bloccato.
+  useEffect(() => {
+    const onShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      inFlightRef.current = false;
+      setIsLoading(false);
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
 
   // Leva costo-sommerso: mostra quante spiegazioni gratuite l'utente free ha già usato.
   // Solo dato reale (via /me/explanation-status), niente stime o numeri inventati.
@@ -683,54 +785,113 @@ function PremiumPricingView({ forceLang }: Props) {
     };
   }, [user, authPremium]);
 
-  async function startPremiumCheckout() {
-    if (isLoading) return;
+  // Visitatore anonimo: nessuna chiamata a Stripe e nessun checkout. Si conserva
+  // l'intenzione e si va al login (che offre anche registrazione e Google) con
+  // ritorno qui: al ritorno la pagina riprende da sola (vedi useEffect di ripresa).
+  function goToAuth(plan: Plan, origin: CommercialOrigin) {
+    const params = new URLSearchParams(window.location.search);
+    trackEvent("checkout_auth_required", {
+      language: lang,
+      user_state: analyticsUserStateFrom(user),
+      plan_type: plan,
+      purchase_type: "subscription",
+      source_page: "pricing",
+    });
+    trackFunnelEvent({
+      event: "checkout_auth_required",
+      cert_slug: origin.originCertSlug,
+      lang,
+      plan,
+      paywall_type: origin.paywallType,
+      metadata: {
+        plan,
+        purchase_type: "subscription",
+        source_page: "pricing",
+        ...(origin.originCertSlug ? { origin_cert_slug: origin.originCertSlug } : {}),
+        ...(origin.ctaId ? { origin_cta_id: origin.ctaId } : {}),
+      },
+    });
+    saveCheckoutIntent({
+      plan,
+      promo: params.get("promo"),
+      originCertSlug: origin.originCertSlug,
+      paywallSource: params.get("source"),
+      ctaId: origin.ctaId,
+    });
+    const resumePath = buildResumePath(pathname || "/pricing", window.location.search, plan);
+    window.location.assign(buildLoginHref(lang, resumePath));
+  }
+
+  async function startPremiumCheckout(opts: { plan?: Plan; auto?: boolean } = {}) {
+    if (isLoading || inFlightRef.current) return;
+    const plan: Plan = opts.plan ?? selectedPlan;
+    // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
+    const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
+    setNotice(null);
+    // "Anonimo" solo a stato di autenticazione risolto E senza token: durante il caricamento (o con un
+    // token gia' salvato ma utente non ancora letto) si procede come prima e decide il backend (401).
+    if (!user && !authLoading && !getToken()) {
+      inFlightRef.current = true; // un secondo click mentre si naviga al login non rifa' nulla
+      goToAuth(plan, resolveCommercialOrigin(window.location.search));
+      return;
+    }
+    if (!isCheckoutAllowedHost(window.location.hostname)) {
+      // Preview/host di prova: il backend e' quello LIVE. Nessuna sessione di pagamento.
+      setNotice(CHECKOUT_BLOCKED_NOTICE);
+      return;
+    }
+    inFlightRef.current = true;
     try {
       setIsLoading(true);
       const postGateCohort = user?.id != null ? readPostGateCohort(user.id) : null;
       // Certificazione e paywall da cui e' partito il percorso: restano separati
       // dal prodotto (il piano) lungo checkout_started -> checkout_created -> acquisto.
       const origin = resolveCommercialOrigin(window.location.search);
-      trackEvent("checkout_started", {
+      trackEvent("checkout_attempted", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
-        plan_type: selectedPlan,
+        plan_type: plan,
+        certification_slug: origin.originCertSlug,
         purchase_type: "subscription",
         source_page: "pricing",
         gate_instance_id: postGateCohort?.gateInstanceId ?? null,
       });
       trackFunnelEvent({
-        event: "checkout_started",
+        event: "checkout_attempted",
         cert_slug: origin.originCertSlug,
         lang,
-        plan: selectedPlan,
+        plan: plan,
         paywall_type: origin.paywallType,
         gate_instance_id: postGateCohort?.gateInstanceId ?? null,
         metadata: {
-          plan: selectedPlan,
-          product_type: selectedPlan,
+          plan: plan,
+          product_type: plan,
           purchase_type: "subscription",
           source_page: "pricing",
           ...(origin.originCertSlug ? { origin_cert_slug: origin.originCertSlug } : {}),
+          ...(origin.ctaId ? { origin_cta_id: origin.ctaId } : {}),
         },
       });
 
       trackMetaPixel("InitiateCheckout", {
-        value: PREMIUM_PLAN_VALUES[selectedPlan],
+        value: PREMIUM_PLAN_VALUES[plan],
         currency: "EUR",
       });
 
+      const checkoutContext = await checkoutRequest(`premium:${plan}:${lang}:${promoActive}:${origin.originCertSlug || ""}:${origin.paywallType || ""}:${postGateCohort?.gateInstanceId || ""}`);
       const res = await authFetch("/api/backend/billing/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-lang": lang },
         body: JSON.stringify({
           lang,
-          plan: selectedPlan,
-          skipTrial: isPromoLink,
+          plan: plan,
+          skipTrial: promoActive,
+          checkout_request_id: checkoutContext.requestId,
           // Identificatori analytics (non usati per autenticazione/entitlement):
           // permettono al webhook Stripe di riportare session_id/visitor_id/
           // gate_instance_id sui funnel_events di conversione. user_id resta
           // risolto server-side da authMiddleware, non da qui.
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: postGateCohort?.gateInstanceId ?? null,
@@ -740,24 +901,28 @@ function PremiumPricingView({ forceLang }: Props) {
       });
 
       if (res.status === 401) {
-        window.location.href = `/login?redirect=${encodeURIComponent(`${pathname || "/pricing"}${window.location.search}`)}`;
+        // Sessione scaduta mentre la pagina era aperta. Dopo una ripresa automatica
+        // NON si rimanda al login (niente giro infinito): si avvisa e basta.
+        inFlightRef.current = false;
+        setIsLoading(false);
+        if (opts.auto) {
+          setNotice(t.resumeExpired);
+          return;
+        }
+        goToAuth(plan, origin);
         return;
       }
 
-      const data: { url?: string; error?: string } = await res.json();
+      const data: { url?: string; sessionId?: string; error?: string } = await res.json();
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
-      try {
-        sessionStorage.setItem(
-          "cq_pending_purchase",
-          JSON.stringify({ value: PREMIUM_PLAN_VALUES[selectedPlan], currency: "EUR", plan: selectedPlan })
-        );
-      } catch {}
 
+      trackCheckoutCreated(data.sessionId, {purchase_type:"subscription", plan_type:plan, certification_slug:origin.originCertSlug, language:lang});
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);
       alert(t.checkoutError);
+      inFlightRef.current = false;
       setIsLoading(false);
     }
   }
@@ -792,12 +957,18 @@ function PremiumPricingView({ forceLang }: Props) {
           {/* Selettore piani */}
           <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
 
+          {notice && (
+            <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+              {notice}
+            </p>
+          )}
+
           {explanationsUsed && (
             <ExplanationsUsedNote t={t} used={explanationsUsed.used} limit={explanationsUsed.limit} />
           )}
 
           {/* CTA principale */}
-          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startPremiumCheckout} />
+          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
 
           <div className="mt-4 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
             <p className="text-sm font-semibold text-amber-900">{t.urgencyLine}</p>
@@ -815,7 +986,7 @@ function PremiumPricingView({ forceLang }: Props) {
             <div className="rounded-2xl border border-gray-200 p-6">
               <div className="text-lg font-semibold text-gray-900">{t.title}</div>
               <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
-              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startPremiumCheckout} />
+              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
               <p className="mt-4 text-sm font-medium text-gray-900">{t.finalLine}</p>
             </div>
 
@@ -830,7 +1001,7 @@ function PremiumPricingView({ forceLang }: Props) {
             </div>
           </section>
 
-          <ComparisonTable t={t} onCta={startPremiumCheckout} isLoading={isLoading} activePlan={activePlan} isPromoLink={isPromoLink} />
+          <ComparisonTable t={t} onCta={() => startPremiumCheckout()} isLoading={isLoading} activePlan={activePlan} isPromoLink={isPromoLink} />
 
           <PricingFaq t={t} />
 
@@ -848,7 +1019,7 @@ function PremiumPricingView({ forceLang }: Props) {
               )}
               <button
                 type="button"
-                onClick={startPremiumCheckout}
+                onClick={() => startPremiumCheckout()}
                 disabled={isLoading}
                 className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
               >

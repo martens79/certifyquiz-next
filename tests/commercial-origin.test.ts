@@ -44,7 +44,7 @@ test("i parametri della pricing hanno la precedenza sull'origine ricordata", () 
     storage,
     now: now + 1000,
   });
-  assert.deepEqual(origin, { originCertSlug: "ccna", paywallType: "wrong_explanation" });
+  assert.deepEqual(origin, { originCertSlug: "ccna", paywallType: "wrong_explanation", ctaId: null });
 });
 
 test("senza parametri (header, card certificazione, teaser) si usa l'ultimo click ricordato", () => {
@@ -53,6 +53,7 @@ test("senza parametri (header, card certificazione, teaser) si usa l'ultimo clic
   assert.deepEqual(resolveCommercialOrigin("", { storage, now: 2000 }), {
     originCertSlug: "ccna",
     paywallType: "review",
+    ctaId: null,
   });
 });
 
@@ -62,6 +63,7 @@ test("l'origine ricordata scade dopo il TTL e non compare piu'", () => {
   assert.deepEqual(resolveCommercialOrigin("", { storage, now: 2 * 60 * 60 * 1000 + 1 }), {
     originCertSlug: null,
     paywallType: null,
+    ctaId: null,
   });
 });
 
@@ -76,6 +78,7 @@ test("valori ostili in query string o nello storage vengono scartati", () => {
   assert.deepEqual(resolveCommercialOrigin("?certification_slug=x'; DROP--&source=unknown", { storage }), {
     originCertSlug: null,
     paywallType: null,
+    ctaId: null,
   });
   const tampered = memoryStorage({
     cq_commercial_origin: JSON.stringify({ originCertSlug: "<b>", paywallType: "review", recordedAt: Date.now() }),
@@ -83,6 +86,7 @@ test("valori ostili in query string o nello storage vengono scartati", () => {
   assert.deepEqual(resolveCommercialOrigin("", { storage: tampered }), {
     originCertSlug: null,
     paywallType: "review",
+    ctaId: null,
   });
 });
 
@@ -99,6 +103,7 @@ test("storage assente o che lancia eccezioni non rompe mai il checkout", () => {
   assert.deepEqual(resolveCommercialOrigin("?certification_slug=ccna", { storage: throwing }), {
     originCertSlug: "ccna",
     paywallType: null,
+    ctaId: null,
   });
-  assert.deepEqual(resolveCommercialOrigin("", { storage: null }), { originCertSlug: null, paywallType: null });
+  assert.deepEqual(resolveCommercialOrigin("", { storage: null }), { originCertSlug: null, paywallType: null, ctaId: null });
 });

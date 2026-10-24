@@ -2,6 +2,9 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
+import { revokeConversionConsent, readStoredAnalyticsConsent } from "@/lib/checkout-analytics";
+import { googleConsentState } from "@/lib/consent-mode";
+
 const STORAGE_KEY = "cq_cookie_consent";
 const LEGACY_JSON_KEY = "cq:cookie-consent";
 const LEGACY_TEXT_KEY = "cookie-consent";
@@ -20,40 +23,12 @@ const ConsentContext = createContext<ConsentContextValue>({
   setConsent: () => {},
 });
 
-function readStoredConsent(): ConsentStatus {
-  const current = localStorage.getItem(STORAGE_KEY);
-  if (current) {
-    const parsed = JSON.parse(current) as { accepted?: boolean };
-    if (typeof parsed.accepted === "boolean") {
-      return parsed.accepted ? "granted" : "denied";
-    }
-  }
-
-  const legacyJson = localStorage.getItem(LEGACY_JSON_KEY);
-  if (legacyJson) {
-    const parsed = JSON.parse(legacyJson) as { status?: string };
-    if (parsed.status === "accepted") return "granted";
-    if (parsed.status === "rejected") return "denied";
-  }
-
-  const legacyText = localStorage.getItem(LEGACY_TEXT_KEY);
-  if (legacyText === "accepted") return "granted";
-  if (legacyText === "rejected") return "denied";
-
-  return "unknown";
-}
-
 function updateGoogleConsent(status: Exclude<ConsentStatus, "unknown">) {
   const gtag = (window as typeof window & {
     gtag?: (...args: unknown[]) => void;
   }).gtag;
 
-  gtag?.("consent", "update", {
-    analytics_storage: status,
-    ad_storage: status,
-    ad_user_data: status,
-    ad_personalization: status,
-  });
+  gtag?.("consent", "update", googleConsentState(status));
 }
 
 export function ConsentProvider({ children }: { children: ReactNode }) {
@@ -62,13 +37,17 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      setStatus(readStoredConsent());
+      setStatus(readStoredAnalyticsConsent());
     } catch {
       setStatus("denied");
     } finally {
       setReady(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (ready && status === "denied") revokeConversionConsent();
+  }, [ready, status]);
 
   function setConsent(accepted: boolean) {
     const nextStatus = accepted ? "granted" : "denied";
@@ -80,6 +59,13 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
       );
       localStorage.setItem(LEGACY_TEXT_KEY, accepted ? "accepted" : "rejected");
     } catch {}
+    if (!accepted) {
+      revokeConversionConsent();
+      try {
+        localStorage.removeItem("cq_analytics_visitor");
+        sessionStorage.removeItem("cq_analytics_session");
+      } catch {}
+    }
     updateGoogleConsent(nextStatus);
     setStatus(nextStatus);
   }

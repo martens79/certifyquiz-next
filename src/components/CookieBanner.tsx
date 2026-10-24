@@ -4,10 +4,10 @@ import { langFromPathname } from "@/lib/i18n";
 import { useConsent } from "@/components/analytics/ConsentProvider";
 
 const COPY = {
-  it: { message: "Usiamo cookie tecnici e opzionali per migliorare l’esperienza.", reject: "Rifiuta", accept: "Accetta" },
-  en: { message: "We use essential and optional cookies to improve your experience.", reject: "Reject", accept: "Accept" },
-  fr: { message: "Nous utilisons des cookies essentiels et facultatifs pour améliorer votre expérience.", reject: "Refuser", accept: "Accepter" },
-  es: { message: "Usamos cookies esenciales y opcionales para mejorar tu experiencia.", reject: "Rechazar", accept: "Aceptar" },
+  it: { message: "Usiamo cookie tecnici e, con il tuo consenso, cookie Analytics. Questa scelta non autorizza finalità pubblicitarie.", reject: "Rifiuta", accept: "Accetta Analytics" },
+  en: { message: "We use essential cookies and, with your consent, analytics cookies. This choice does not authorize advertising purposes.", reject: "Reject", accept: "Accept analytics" },
+  fr: { message: "Nous utilisons des cookies essentiels et, avec votre consentement, des cookies de mesure d’audience. Ce choix n’autorise pas les finalités publicitaires.", reject: "Refuser", accept: "Accepter les statistiques" },
+  es: { message: "Usamos cookies esenciales y, con tu consentimiento, cookies de analítica. Esta elección no autoriza fines publicitarios.", reject: "Rechazar", accept: "Aceptar analítica" },
 };
 
 export default function CookieBanner() {

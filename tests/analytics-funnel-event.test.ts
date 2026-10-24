@@ -50,6 +50,11 @@ Object.defineProperty(globalThis, "fetch", {
   configurable: true,
 });
 
+Object.defineProperty(globalThis, "localStorage", { configurable:true, value:{
+  getItem:(key:string)=>key === "cq_cookie_consent" ? '{"accepted":true}' : null,
+  setItem:()=>{},
+}});
+
 const analyticsModule = import("../src/lib/analytics.ts");
 
 test("getAnonymousSessionId: generates and persists a UUID in sessionStorage", async () => {
