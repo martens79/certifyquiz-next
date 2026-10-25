@@ -18,6 +18,6 @@ jobs:
       - run: node --import tsx --test tests/google-analytics-consent.test.tsx
         env:
           TSX_TSCONFIG_PATH: tsconfig.test.json
-      - run: node --import tsx --test tests/analytics-privacy.test.ts tests/analytics-funnel-event.test.ts tests/analytics-commercial-origin.test.ts
+      - run: node --import tsx --test tests/analytics-privacy.test.ts tests/analytics-funnel-event.test.ts tests/analytics-commercial-origin.test.ts tests/automated-client.test.ts
         env:
           TSX_TSCONFIG_PATH: tsconfig.test.json

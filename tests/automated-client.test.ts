@@ -14,7 +14,7 @@ const sessionStore = new Map<string, string>();
   },
 };
 (globalThis as any).localStorage = {
-  getItem: () => null,
+  getItem: (key: string) => (key === "cq_cookie_consent" ? '{"accepted":true}' : null),
   setItem: () => undefined,
 };
 let uuidCounter = 0;
@@ -30,6 +30,8 @@ Object.defineProperty(globalThis, "crypto", {
 
 const beaconCalls: string[] = [];
 const fetchCalls: string[] = [];
+// trackFunnelEventOnce consegna via fetch con ack (requireAck), trackFunnelEvent via sendBeacon.
+const delivered = () => beaconCalls.length + fetchCalls.length;
 function setNavigator(value: Record<string, unknown>) {
   Object.defineProperty(globalThis, "navigator", {
     value: {
@@ -352,6 +354,7 @@ test("trackFunnelEvent / trackFunnelEventOnce: a navigator that throws on read s
   const { trackFunnelEvent, trackFunnelEventOnce } = await analyticsModule;
   for (const property of ["webdriver", "userAgent", "userAgentData"]) {
     beaconCalls.length = 0;
+    fetchCalls.length = 0;
     sessionStore.clear();
     hostileNavigator(property);
 
@@ -361,24 +364,25 @@ test("trackFunnelEvent / trackFunnelEventOnce: a navigator that throws on read s
       property
     );
 
-    assert.equal(beaconCalls.length, 2, `${property}: both events must still be sent`);
+    assert.equal(delivered(), 2, `${property}: both events must still be sent`);
   }
 });
 
 test("trackFunnelEventOnce: the filter runs before the in-memory and storage dedupe", async () => {
   const { trackFunnelEventOnce } = await analyticsModule;
   beaconCalls.length = 0;
+  fetchCalls.length = 0;
   sessionStore.clear();
 
   // 1) un client automatizzato non "brucia" la chiave: un browser normale che usa
   //    la stessa chiave nello stesso processo deve ancora poter registrare.
   setNavigator({ webdriver: true });
   trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
-  assert.equal(beaconCalls.length, 0);
+  assert.equal(delivered(), 0);
 
   setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.chromeWindows });
   trackFunnelEventOnce("pricing_viewed:/pricing:shared-key", { event: "pricing_viewed", lang: "it" });
-  assert.equal(beaconCalls.length, 1);
+  assert.equal(delivered(), 1);
 });
 
 test("trackFunnelEventOnce: an automated client leaves no dedupe key and writes nothing", async () => {
@@ -398,11 +402,12 @@ test("trackFunnelEventOnce: an automated client leaves no dedupe key and writes 
 test("trackFunnelEventOnce: after an automated attempt a real browser session still records the event once", async () => {
   const { trackFunnelEventOnce } = await analyticsModule;
   beaconCalls.length = 0;
+  fetchCalls.length = 0;
   sessionStore.clear();
 
   setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.safariIphone });
   trackFunnelEventOnce("paywall_viewed:review:ccna", { event: "paywall_viewed", lang: "it" });
   trackFunnelEventOnce("paywall_viewed:review:ccna", { event: "paywall_viewed", lang: "it" });
 
-  assert.equal(beaconCalls.length, 1);
+  assert.equal(delivered(), 1);
 });
