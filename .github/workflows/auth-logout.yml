@@ -1,0 +1,42 @@
+name: Auth logout isolation
+on:
+  pull_request:
+    paths: ['src/lib/auth*', 'src/lib/apiClient.ts', 'src/components/auth/**', 'src/components/layout/HeaderAuthSlot.tsx', 'src/app/**/login-client.tsx', 'src/app/**/register-client.tsx', 'src/app/auth/callback/**', 'tests/auth-logout*', 'playwright.auth-logout.config.ts', '.github/workflows/auth-logout.yml']
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API_BASE_URL: http://127.0.0.1:8498/api
+      API_BASE_URL_DEV: http://127.0.0.1:8498/api
+      NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3347
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      NEXT_TELEMETRY_DISABLED: '1'
+      E2E_BASE_URL: http://127.0.0.1:3347
+      TSX_TSCONFIG_PATH: tsconfig.test.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: node --import tsx --test tests/auth-logout.test.ts tests/api-response.test.ts tests/quiz-session.test.ts tests/exam-attempt.test.ts tests/quiz-explanation-access.test.ts tests/mock-exam-errors.test.ts tests/analytics-privacy.test.ts tests/conversion-tracking.test.ts tests/package-success.test.tsx
+      - run: npx eslint src/lib/auth-session.ts src/lib/auth.ts src/lib/apiClient.ts src/components/auth/AuthProvider.tsx src/components/layout/HeaderAuthSlot.tsx 'src/app/[lang]/login/login-client.tsx' 'src/app/[lang]/register/register-client.tsx' src/app/auth/callback/CallbackClient.tsx tests/auth-logout.test.ts tests/auth-logout.spec.ts playwright.auth-logout.config.ts scripts/verify-logout-cookie-contract.mjs
+      - name: Isolated production build and browser regression
+        run: |
+          SPRINT2A_FIXTURE_PORT=8498 node tests/helpers/sprint2a-ssr.cjs > /tmp/fixture.log 2>&1 &
+          node -e "require('fs').writeFileSync('/tmp/isolation.json', JSON.stringify({testRunId:'ccst-r02-logoutboundaryci20261025',backendOrigin:'http://127.0.0.1:8498'}))"
+          export CCST_E2E_CONFIG=/tmp/isolation.json
+          npm run build
+          npx next start -H 127.0.0.1 -p 3347 > /tmp/frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3347/es/login >/dev/null && break; sleep 1; done
+          npx playwright test -c playwright.auth-logout.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: auth-logout-evidence, path: '.tmp/session-results*', include-hidden-files: true}

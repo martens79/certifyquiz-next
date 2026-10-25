@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { backendUrl, setToken, authHeader, setUser } from "@/lib/auth";
+import { backendUrl, acceptLoginToken, setUser } from "@/lib/auth";
+import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
 import { safePostAuthRedirect } from "@/lib/conversion-context";
 
 const safeRedirectPath = safePostAuthRedirect;
@@ -33,7 +34,7 @@ export default function CallbackClient() {
         return;
       }
 
-      setToken(token, remember);
+      const generation = authGeneration();
 
       // ✅ pulisci URL (evita token in history)
       window.history.replaceState(null, "", "/auth/callback");
@@ -41,17 +42,21 @@ export default function CallbackClient() {
       try {
         const meRes = await fetch(backendUrl("/auth/me"), {
           method: "GET",
-          headers: { Accept: "application/json", ...authHeader() },
+          headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
           credentials: "include",
           cache: "no-store",
         });
         if (meRes.ok) {
           const me = await meRes.json();
-          setUser(me, remember);
+          assertAuthGeneration(generation, true);
+          acceptLoginToken(token, remember, generation);
+          setUser(me.user ?? me, remember);
+          router.replace(redirect);
+          return;
         }
       } catch {}
 
-      router.replace(redirect);
+      if (generation === authGeneration()) router.replace(loginPathFromRedirect(redirect));
     })();
   }, [router, sp]);
 

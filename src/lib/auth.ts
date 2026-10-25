@@ -1,6 +1,7 @@
 // src/lib/auth.ts
 
 import { clearAllProgressForUser } from "./quiz-storage";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, acceptExplicitLogin } from './auth-session';
 
 /** Chiave token principale (stessa usata da apiClient) */
 export const AUTH_KEY = "cq:access";
@@ -27,7 +28,7 @@ function isBrowser(): boolean {
 
 /** ------- TOKEN ------- */
 export function getToken(): string | null {
-  if (!isBrowser()) return null;
+  if (!isBrowser() || isExplicitlyLoggedOut()) return null;
   try {
     return (
       sessionStorage.getItem(AUTH_KEY) ??
@@ -54,7 +55,7 @@ export function isTokenRemembered(): boolean {
   }
 }
 export function setToken(token: string, persist: boolean = true) {
-  if (!isBrowser()) return;
+  if (!isBrowser() || isExplicitlyLoggedOut()) return;
   try {
     if (persist) {
       localStorage.setItem(AUTH_KEY, token);
@@ -65,6 +66,11 @@ export function setToken(token: string, persist: boolean = true) {
     }
     window.dispatchEvent(new CustomEvent("cq:token", { detail: token }));
   } catch {}
+}
+
+export function acceptLoginToken(token: string, persist = true, generation = authGeneration()) {
+  acceptExplicitLogin(generation);
+  setToken(token, persist);
 }
 
 export function clearToken() {
@@ -90,7 +96,7 @@ export function authHeader(): Record<string, string> {
 /** ------- USER (cache locale) ------- */
 /** NEW */
 export function getUser(): MinimalUser | null {
-  if (!isBrowser()) return null;
+  if (!isBrowser() || isExplicitlyLoggedOut()) return null;
   try {
     const raw = localStorage.getItem(USER_KEY) ?? sessionStorage.getItem(USER_KEY);
     return raw ? (JSON.parse(raw) as MinimalUser) : null;
@@ -102,6 +108,7 @@ export function getUser(): MinimalUser | null {
 /** NEW */
 export function setUser(u: MinimalUser | null, persist: boolean = true) {
   if (!isBrowser()) return;
+  if (u && isExplicitlyLoggedOut()) return;
   try {
     // pulizia preventiva
     localStorage.removeItem(USER_KEY);
@@ -131,6 +138,7 @@ export async function authFetch(
   input: string,
   init: RequestInit & { auth?: boolean } = {}
 ) {
+  const generation = authGeneration();
   const { auth = true, headers, body, ...rest } = init;
 
   const baseHeaders: Record<string, string> =
@@ -144,13 +152,15 @@ export async function authFetch(
 
   const mergedHeaders = auth ? { ...baseHeaders, ...authHeader() } : baseHeaders;
 
-  return fetch(input, {
+  const response = await fetch(input, {
     ...rest,
     headers: mergedHeaders,
-    credentials: "include",
+    credentials: auth && isExplicitlyLoggedOut() ? "omit" : "include",
     cache: init.cache ?? "no-store",
     body,
   });
+  assertAuthGeneration(generation, true);
+  return response;
 }
 
 /**
@@ -175,8 +185,8 @@ export function logout() {
 }
 
 /** Logout + redirect immediato (client-side) */
-export function logoutAndRedirect(url: string = "/it/login") {
-  logout();
+export async function logoutAndRedirect(url: string = "/it/login") {
+  await (await import('./apiClient')).authLogout();
   if (isBrowser()) window.location.href = url;
 }
 
@@ -190,11 +200,15 @@ export async function apiFetch(
   init: RequestInit = {},
   { redirectOnUnauthorized = true }: { redirectOnUnauthorized?: boolean } = {}
 ) {
+  const generation = authGeneration();
+  const readOnly = !init.method || /^(GET|HEAD)$/i.test(init.method);
+  if (isExplicitlyLoggedOut() && !readOnly) return new Response(null, { status: 401 });
   const url = backendUrl(path);
   const hadToken = !!getToken();
   let res = await authFetch(url, init);
+  assertAuthGeneration(generation, true);
 
-  if (res.status === 401) {
+  if (res.status === 401 && !isExplicitlyLoggedOut()) {
     // Prova prima a rinnovare l'access token tramite il refresh cookie HttpOnly.
     // Questo wrapper legacy e' ancora usato da diversi componenti globali
     // (tra cui NotificationBell), quindi non deve distruggere una sessione
@@ -204,12 +218,15 @@ export async function apiFetch(
         method: "POST",
         auth: false,
       });
+      assertAuthGeneration(generation);
 
       if (refreshRes.ok) {
         const data = (await refreshRes.json()) as { token?: string };
+        assertAuthGeneration(generation);
         if (data.token) {
           setToken(data.token, isTokenRemembered());
           res = await authFetch(url, init);
+          assertAuthGeneration(generation);
         } else if (!redirectOnUnauthorized) {
           throw new Error("Refresh did not return an access token");
         }
@@ -235,6 +252,7 @@ export async function apiFetch(
     }
   }
 
+  assertAuthGeneration(generation, true);
   return res;
 }
 

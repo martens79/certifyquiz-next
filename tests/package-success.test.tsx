@@ -112,7 +112,7 @@ test("the actual login component returns to the existing order after login", asy
     "next/navigation": { usePathname: () => "/it/login", useRouter: () => router, useSearchParams: () => query },
     "lucide-react": { Eye: () => null, EyeOff: () => null },
     "@/lib/i18n": { langFromPathname: () => "it", getLabel: (labels: any) => labels.it, withLang: (_: string, p: string) => "/it" + p },
-    "@/lib/auth": { getToken: () => null, backendUrl: (p: string) => "/api/backend" + p, setToken: () => {}, setUser: () => {}, authHeader: () => ({}) },
+    "@/lib/auth": { getToken: () => null, backendUrl: (p: string) => "/api/backend" + p, acceptLoginToken: () => {}, setUser: () => {}, authHeader: () => ({}) },
     "@/lib/apiClient": { authMe: async () => ({ user: { id: 876 } }) },
     "@/lib/conversion-context": { readConversionContext, withConversionContext: (p: string) => p },
     "@/lib/checkout-intent": { CHECKOUT_SOURCE: "premium_checkout", checkoutAuthBanner: () => "" },
