@@ -24,6 +24,15 @@ const CCNA = {
     relatedArticleUrl:
       "https://www.certifyquiz.com/blog/ccna-practice-questions-200-301",
     relatedArticleTitle: "CCNA Practice Questions (200-301)",
+    // L'articolo esiste in EN e ES; per IT e FR non c'è una traduzione equivalente,
+    // quindi il link EN resta come fallback dichiarato ("in inglese" / "en anglais").
+    relatedArticleLang: "en",
+    relatedArticleByLang: {
+      es: {
+        url: "https://www.certifyquiz.com/es/blog/preguntas-ccna-200-301-2026-test-de-practica",
+        title: "Preguntas CCNA 200-301 2026: Test de Práctica",
+      },
+    },
     domains: [
       { name: "Network Fundamentals", percentage: 20 },
       { name: "Network Access", percentage: 20 },
@@ -53,8 +62,8 @@ const CCNA = {
   description: {
     it: "Preparati al Cisco CCNA 200-301 v1.1 con oltre 1300 practice question, mock exam bilanciato sui sei domini, 10 Reviews e 18 lab interattivi, inclusi routing, IPv6, switching, security e automazione.",
     en: "This CCNA practice test prepares you for the Cisco 200-301 v1.1 exam with {questionCount|1,400+} CCNA practice questions and exam questions organized by topic, a six-domain CCNA mock exam balanced on the official blueprint, explanations for every answer, 10 Reviews, and 18 interactive labs covering routing, IPv6, switching, security, and automation. Start practicing for free; full access depends on your plan.",
-    fr: "Préparez l’examen Cisco CCNA 200-301 avec des quiz type examen, un mode entraînement et des séries mixtes. Réseaux, routage/commutation, adressage IP, sécurité et automatisation de base.",
-    es: "Prepárate para el examen Cisco CCNA 200-301 con quizzes tipo examen, modo entrenamiento y cuestionarios mixtos. Redes, routing/switching, direccionamiento IP, seguridad y automatización básica.",
+    fr: "Préparez l’examen Cisco CCNA 200-301 v1.1 avec {questionCount|1400+} questions en 10 thèmes, un mock exam équilibré sur les six domaines officiels, 10 Reviews et 18 labs interactifs : routage, IPv6, switching, sécurité et automatisation.",
+    es: "Prepárate para el examen Cisco CCNA 200-301 v1.1 con {questionCount|1400+} preguntas en 10 temas, un mock exam equilibrado sobre los seis dominios oficiales, 10 Reviews y 18 labs interactivos: routing, IPv6, switching, seguridad y automatización.",
   },
   practiceName: { it: "CCNA 200-301", en: "CCNA 200-301", fr: "CCNA 200-301", es: "CCNA 200-301" },
   metaTitle: {
@@ -66,8 +75,8 @@ const CCNA = {
 metaDescription: {
   it: "CCNA 200-301 v1.1: oltre 1300 domande, 10 Reviews, mock exam blueprint-based e 18 lab interattivi, di cui 4 gratuiti.",
   en: "Practice CCNA 200-301 exam questions: 1,400+ questions with explanations, a full CCNA mock test and 18 interactive labs. Start free.",
-  fr: "Préparez le Cisco CCNA 200-301 avec des quiz type examen : routage, switching, subnetting, VLAN, OSPF et sécurité. Commencez gratuitement.",
-  es: "Prepárate para el Cisco CCNA 200-301 con quizzes tipo examen: routing, switching, subnetting, VLAN, OSPF y seguridad. Empieza gratis.",
+  fr: "CCNA 200-301 : plus de 1 400 questions en 10 thèmes, mock exam sur les 6 domaines officiels et 18 labs. Routage, switching, VLAN, OSPF, sécurité. Gratuit.",
+  es: "CCNA 200-301: más de 1.400 preguntas en 10 temas, mock exam con los 6 dominios oficiales y 18 labs. Routing, switching, VLAN, OSPF, seguridad. Gratis.",
 },
  topics: [
   { title:{it:"Dispositivi e hardware di rete Cisco",en:"Cisco Networking Devices and Hardware",fr:"Équipements et matériel réseau Cisco",es:"Dispositivos y hardware de red Cisco"}, slug:{it:"dispositivi-hardware-cisco",en:"cisco-network-devices-hardware",fr:"equipements-materiel-cisco",es:"dispositivos-hardware-cisco"} },
@@ -208,10 +217,10 @@ metaDescription: {
   },
 
   quizRoute: {
-    it: "/it/quiz/cisco-ccna",
-    en: "/en/quiz/cisco-ccna",
-    fr: "/fr/quiz/cisco-ccna",
-    es: "/es/quiz/cisco-ccna",
+    it: "/it/quiz/ccna",
+    en: "/en/quiz/ccna",
+    fr: "/fr/quiz/ccna",
+    es: "/es/quiz/ccna",
   },
   backRoute: {
     it: "/it/certificazioni",
