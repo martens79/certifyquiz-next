@@ -92,7 +92,7 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for CEH 312-50 with 1,800+ exam-style questions, a timed 125-question simulation and offensive labs. Covers recon, network and web attacks. Start free.",
   },
   "microsoft-ai": {
-    title: "Microsoft AI-901 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
+    title: "Microsoft AI-901 Practice Test 2026 | Azure AI Fundamentals",
     description:
       "Prepare for the Microsoft AI-901 exam (formerly AI-900) with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
   },
