@@ -36,7 +36,7 @@ for (const variant of ["absent", "dark", "blocked", "unavailable", "error", "twa
     const Component = clientComponent("../../src/components/quiz/MockCompleteLink.tsx", {
       "@/components/auth/AuthProvider": { useAuth: () => ({ loading: variant === "auth-loading", user: null }) },
       "@/hooks/useTwa": { useTwa: () => variant === "twa" }, "@/lib/twa": { detectTwa: () => false },
-      "@/lib/auth": { apiFetch: async () => { calls++; if (variant === "error") throw Error("fixture"); return new Response(JSON.stringify({ darkLaunch: variant === "dark", offers: variant === "absent" ? [] : [{ productCode: "octopus-complete", checkoutAvailable: variant !== "unavailable", blockedReason: variant === "blocked" ? "owned" : null }] })); } },
+      "@/lib/auth": { apiFetch: async () => { calls++; if (variant === "error") throw Error("fixture"); return new Response(JSON.stringify({ darkLaunch: variant === "dark", offers: variant === "absent" ? [] : [{ code: "fixture-complete", productCode: "octopus-complete", checkoutAvailable: variant !== "unavailable", blockedReason: variant === "blocked" ? "owned" : null }] })); } },
       "@/lib/analytics": {}, "@/lib/commercial-packages": { packageKind }, "@/lib/paths": { certPath },
     });
     let r!: ReactTestRenderer;

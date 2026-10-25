@@ -22,6 +22,8 @@ for (const slug of ["ccna", "cisco-ccst-cybersecurity"]) {
     const cta = page.getByRole("link", { name: "Choose Complete for this certification" });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", `/certifications/${slug}?source=mock_review&cta=mock_review&certification_slug=${slug}&package_offer=fixture-complete#package-offer-fixture-complete`);
+    await cta.scrollIntoViewIfNeeded();
+    await expect(cta).toBeInViewport();
     await page.screenshot({ path: test.info().outputPath(`${slug}-mock-complete.png`) });
     await cta.click();
     await expect(page.locator("#package-offer-fixture-complete")).toBeAttached({ timeout: 30000 });
@@ -29,5 +31,6 @@ for (const slug of ["ccna", "cisco-ccst-cybersecurity"]) {
     expect(new URL(page.url()).searchParams.get("certification_slug")).toBe(slug);
     const top = await page.locator("#package-offer-fixture-complete").evaluate(el => el.getBoundingClientRect().top);
     expect(top).toBeGreaterThanOrEqual(0); expect(top).toBeLessThan(250);
+    await page.screenshot({ path: test.info().outputPath(`${slug}-complete-offer.png`) });
   });
 }
