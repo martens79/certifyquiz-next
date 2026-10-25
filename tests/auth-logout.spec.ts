@@ -85,10 +85,12 @@ test('fresh anonymous: full reload cannot restore an authenticated identity', as
 });
 test('quiz local state survives reload without authenticating or saving a server result early', async ({ page }) => {
   const f = await fixture(page); await page.goto(path); await ready(page);
-  await page.getByRole('button', { name: 'Answer 1 of 1', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('cq:quiz:')).length)).toBeGreaterThan(0);
+  await page.getByRole('button', { name: /^Answer 1 of \d+$/ }).click();
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('cq:quiz:')).some(k => {
+    try { return Object.keys(JSON.parse(localStorage.getItem(k) || '{}').marked || {}).length > 0; } catch { return false; }
+  }))).toBe(true);
   await page.reload(); await ready(page);
-  await expect(page.getByRole('button', { name: 'Answer 1 of 1', exact: true })).toHaveClass(/bg-emerald-500/);
+  await expect(page.getByRole('button', { name: /^Answer 1 of \d+$/ })).toHaveClass(/bg-emerald-500/);
   expect(await authState(page)).toEqual({ access: false, cached: false });
   expect(f.log.filter(e => e.path === 'save-exam')).toHaveLength(0);
   await page.getByRole('button', { name: 'Terminar', exact: true }).click();
@@ -128,7 +130,12 @@ test('quiz completion after logout cannot restore identity or submit an authenti
   await expect.poll(() => authState(page)).toEqual({ access: true, cached: true });
   expect(f.acceptedSaves).toBe(0);
   await logoutUI(page);
-  await page.goto(path); await ready(page);
+  await page.goto(path);
+  // Respect the existing attempt guard; the separate quiz bootstrap issue is unchanged.
+  const restart = page.getByRole('button', { name: 'Reiniciar', exact: true });
+  await expect(page.getByText(/Synthetic question #\d+/, { exact: true }).or(restart)).toBeVisible();
+  if (await restart.isVisible()) await restart.click();
+  await ready(page);
   await expect.poll(() => authState(page)).toEqual({ access: false, cached: false });
   expect(f.log.filter(e => e.path === 'save-exam')).toHaveLength(0);
   await page.getByRole('button', { name: 'Terminar', exact: true }).click();

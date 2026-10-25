@@ -19,13 +19,14 @@ jobs:
       NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
       NEXT_TELEMETRY_DISABLED: '1'
       E2E_BASE_URL: http://127.0.0.1:3347
+      TSX_TSCONFIG_PATH: tsconfig.test.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: '22', cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
-      - run: node --import tsx --test tests/auth-logout.test.ts tests/api-response.test.ts tests/quiz-session.test.ts tests/exam-attempt.test.ts tests/quiz-explanation-access.test.ts tests/mock-exam-errors.test.ts tests/analytics-privacy.test.ts tests/conversion-tracking.test.ts
+      - run: node --import tsx --test tests/auth-logout.test.ts tests/api-response.test.ts tests/quiz-session.test.ts tests/exam-attempt.test.ts tests/quiz-explanation-access.test.ts tests/mock-exam-errors.test.ts tests/analytics-privacy.test.ts tests/conversion-tracking.test.ts tests/package-success.test.tsx
       - run: npx eslint src/lib/auth-session.ts src/lib/auth.ts src/lib/apiClient.ts src/components/auth/AuthProvider.tsx src/components/layout/HeaderAuthSlot.tsx 'src/app/[lang]/login/login-client.tsx' 'src/app/[lang]/register/register-client.tsx' src/app/auth/callback/CallbackClient.tsx tests/auth-logout.test.ts tests/auth-logout.spec.ts playwright.auth-logout.config.ts scripts/verify-logout-cookie-contract.mjs
       - name: Isolated production build and browser regression
         run: |

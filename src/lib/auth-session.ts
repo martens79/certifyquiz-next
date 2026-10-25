@@ -1,13 +1,21 @@
 // Functional logout boundary only: no identity, credentials or analytics data.
 export const AUTH_SESSION_KEY = 'cq:auth-session';
-type Boundary = { generation: string; loggedOut: boolean; pending: boolean };
+type Boundary = { generation: string; loggedOut: boolean; pending: boolean; at: number };
 let fallback = '';
 let serial = 0;
 function read(): Boundary | null {
-  let raw = fallback;
-  try { raw = localStorage.getItem(AUTH_SESSION_KEY) || ''; }
-  catch { try { raw = sessionStorage.getItem(AUTH_SESSION_KEY) || fallback; } catch {} }
-  try { return raw ? JSON.parse(raw) as Boundary : null; } catch { return null; }
+  const values = [fallback];
+  try { values.push(localStorage.getItem(AUTH_SESSION_KEY) || ''); } catch {}
+  try { values.push(sessionStorage.getItem(AUTH_SESSION_KEY) || ''); } catch {}
+  const boundaries: Boundary[] = [];
+  for (const raw of values) {
+    try {
+      const value = JSON.parse(raw) as Boundary;
+      if (typeof value.generation === 'string' && Number.isFinite(value.at) && typeof value.loggedOut === 'boolean') boundaries.push(value);
+    } catch {}
+  }
+  // A readable but full localStorage must not override a newer session fallback.
+  return boundaries.sort((a, b) => b.at - a.at || Number(b.loggedOut) - Number(a.loggedOut))[0] || null;
 }
 function write(value: Boundary) {
   fallback = JSON.stringify(value);
@@ -25,19 +33,23 @@ export class AuthSessionChangedError extends Error {
 export function assertAuthGeneration(generation: string, allowLoggedOut = false) {
   if (generation !== authGeneration() || (!allowLoggedOut && isExplicitlyLoggedOut())) throw new AuthSessionChangedError();
 }
-function nextGeneration() { return `${Date.now()}:${++serial}:${Math.random().toString(36).slice(2)}`; }
+function nextGeneration() {
+  const at = Math.max(Date.now(), (read()?.at || 0) + 1);
+  return { at, generation: `${at}:${++serial}:${Math.random().toString(36).slice(2)}` };
+}
 export function beginExplicitLogout(): string {
-  const generation = nextGeneration();
-  write({ generation, loggedOut: true, pending: true });
-  return generation;
+  const next = nextGeneration();
+  write({ ...next, loggedOut: true, pending: true });
+  return next.generation;
 }
 export function confirmServerLogout(generation: string) {
-  if (generation === authGeneration() && isExplicitlyLoggedOut()) write({ generation, loggedOut: true, pending: false });
+  const current = read();
+  if (generation === current?.generation && current.loggedOut) write({ ...current, pending: false });
 }
 // Only a successful explicit password/register/OAuth flow may reopen the boundary.
 export function acceptExplicitLogin(generation: string) {
   assertAuthGeneration(generation, true);
-  write({ generation: nextGeneration(), loggedOut: false, pending: false });
+  write({ ...nextGeneration(), loggedOut: false, pending: false });
 }
 export function onAuthBoundaryChange(callback: () => void) {
   if (typeof window === 'undefined') return () => {};

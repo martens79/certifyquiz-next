@@ -18,7 +18,7 @@ import * as api from '../src/lib/apiClient';
 import * as boundary from '../src/lib/auth-session';
 const fakeUser = { id: 990001, email: 'diagnosis@example.test', username: 'synthetic-diagnosis', role: 'user', premium: false };
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
-function seed() { local.clear(); session.clear(); auth.setToken('synthetic-initial'); auth.setUser(fakeUser); }
+function seed() { local.clear(); session.clear(); boundary.acceptExplicitLogin(boundary.authGeneration()); auth.setToken('synthetic-initial'); auth.setUser(fakeUser); }
 
 test('local logout clears all token stores and outgoing quiz cache but does not call server logout', async () => {
   seed(); let calls = 0;
@@ -56,7 +56,7 @@ test('late refresh cannot republish a token or retry /me after explicit logout',
   assert.equal(auth.getToken(), null);
 });
 test('normal refresh-cookie recovery and authenticated quiz retry still work before explicit logout', async () => {
-  local.clear(); session.clear(); const calls: string[] = [];
+  seed(); auth.logout(); const calls: string[] = [];
   globalThis.fetch = async (input, init) => {
     const p = String(input); const bearer = new Headers(init?.headers).get('authorization');
     if (p.endsWith('/auth/refresh')) { calls.push('refresh:200'); return json(200, { token: 'synthetic-result-refresh' }); }
@@ -170,4 +170,14 @@ test('public offer reads remain available after logout without sending credentia
   assert.equal((await auth.apiFetch('/packages/offers/ccna')).status, 200);
   await api.getCertificationBySlug('ccna');
   assert.deepEqual(calls, [{ url: '/api/backend/packages/offers/ccna', credentials: 'omit' }, { url: '/api/backend/certifications/by-slug/ccna', credentials: 'omit' }]);
+});
+
+test('quota-full localStorage cannot hide a newer logout stored in sessionStorage', () => {
+  seed();
+  Object.assign(globalThis, { localStorage: { getItem: (key: string) => local.getItem(key), setItem: () => { throw new Error('quota full'); } } });
+  try {
+    boundary.beginExplicitLogout();
+    assert.equal(boundary.isExplicitlyLoggedOut(), true);
+    assert.equal(JSON.parse(session.getItem(boundary.AUTH_SESSION_KEY)!).loggedOut, true);
+  } finally { Object.assign(globalThis, { localStorage: local }); session.clear(); }
 });
