@@ -50,8 +50,10 @@ export const EXAM_SPECS_BY_CERT_ID: Record<number, ExamSpec> = {
   33: { questions: 50, durationSec: 60 * 60 },
 
   // 34 — Cisco CCST – Cybersecurity (era erroneamente mappato su id 12,
-  // certification_id inesistente: la mock-exam cadeva sul fallback generico)
-  34: { questions: 50, durationSec: 60 * 60 },
+  // certification_id inesistente: la mock-exam cadeva sul fallback generico).
+  // Durata: 50 minuti (esame Cisco 100-160). Cisco non dichiara il numero di
+  // domande: 50 e' una scelta di prodotto, non una specifica ufficiale.
+  34: { questions: 50, durationSec: 50 * 60 },
 
   /* ===================== SECURITY ADVANCED ===================== */
 
