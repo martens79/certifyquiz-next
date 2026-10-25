@@ -91,6 +91,14 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
   const certificationId = data?.certificationId ?? resources?.certificationId ?? null;
   const certificationName = resources?.certificationName || null;
 
+  // Offers load after hydration, so native fragment scrolling can run too early.
+  useEffect(() => {
+    const target = offers.find(o => window.location.hash === `#package-offer-${o.code}`);
+    if (target) {
+      document.getElementById(`package-offer-${target.code}`)?.scrollIntoView({ block: "start" });
+    }
+  }, [offers]);
+
   // package_viewed: evento esistente package_offer_viewed, ora anche nel funnel V2
   // (visitor/session/pathname) oltre che in GA4. Una volta per sessione e cert.
   useEffect(() => {
@@ -217,6 +225,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
         return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
+          <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
           <p className="text-sm text-slate-600">{packageTagline(o.productCode, lang)}</p>

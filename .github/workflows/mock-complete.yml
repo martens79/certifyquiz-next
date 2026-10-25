@@ -1,0 +1,39 @@
+name: Mock Complete purchase path
+on:
+  pull_request:
+    paths: ['src/components/quiz/**', 'src/components/certification/CertificationPackageOffers.tsx', 'tests/mock-complete*', 'tests/helpers/sprint2a-ssr.cjs', 'playwright.mock-complete.config.ts', '.github/workflows/mock-complete.yml']
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      API_BASE_URL: http://127.0.0.1:8298/api
+      API_BASE_URL_DEV: http://127.0.0.1:8298/api
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+      E2E_BASE_URL: http://127.0.0.1:3116
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: node --import tsx --test tests/mock-complete-link.test.tsx tests/analytics-funnel-event.test.ts tests/analytics-privacy.test.ts tests/automated-client.test.ts tests/conversion-tracking.test.ts
+      - run: npx eslint src/components/quiz/MockCompleteLink.tsx src/components/certification/CertificationPackageOffers.tsx tests/mock-complete-link.test.tsx tests/mock-complete.spec.ts playwright.mock-complete.config.ts
+      - name: Isolated production build and browser tests
+        run: |
+          node tests/helpers/sprint2a-ssr.cjs > /tmp/fixture.log 2>&1 &
+          node -e "require('fs').writeFileSync('/tmp/isolation.json', JSON.stringify({testRunId:'ccst-r02-sprint2amockcompleteci',backendOrigin:'http://127.0.0.1:8298'}))"
+          export CCST_E2E_CONFIG=/tmp/isolation.json
+          npm run build
+          npx next start -H 127.0.0.1 -p 3116 > /tmp/frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3116/en/quiz/ccna/mock-exam >/dev/null && break; sleep 1; done
+          npx playwright test -c playwright.mock-complete.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: mock-complete-evidence, path: 'test-results/'}
