@@ -54,11 +54,13 @@ export default function CertificationPracticeBox({
   certificationTitle,
   quizHref,
   topics = [],
+  maxTopics = 6,
 }: {
   lang: Lang;
   certificationTitle: string;
   quizHref: string;
   topics?: ReadonlyArray<Topic>; // ✅ invece di Topic[]
+  maxTopics?: number;
 }) {
 
   const c = COPY[lang] ?? COPY.en;
@@ -66,7 +68,7 @@ export default function CertificationPracticeBox({
   const topicLabels = topics
     .map((t) => pickTopicLabel(t, lang))
     .filter(Boolean)
-    .slice(0, 6);
+    .slice(0, maxTopics);
   const assessmentHref = quizHref.includes("?")
     ? `${quizHref}&mode=assessment`
     : `${quizHref}?mode=assessment`;
