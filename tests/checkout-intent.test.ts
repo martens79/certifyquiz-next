@@ -172,11 +172,16 @@ test("pricing: la ripresa automatica non rimanda mai al login (nessun giro infin
   assert.ok(pricing.includes('"pageshow"'), "ritorno da Stripe dalla cache");
 });
 
-test("pacchetti: il flusso anonimo esistente (redirect al login, nessun checkout) non e' stato alterato", () => {
+test("pacchetti: la scelta anonima resta dietro login, senza checkout", () => {
   const offers = readFileSync(new URL("../src/components/certification/CertificationPackageOffers.tsx", import.meta.url), "utf8");
   const i = offers.indexOf("if (!user) {");
   assert.ok(i > 0);
-  assert.match(offers.slice(i, i + 220), /router\.push\(`\$\{lang === "en" \? "" : `\/\$\{lang\}`\}\/login\?redirect=\$\{encodeURIComponent\(pathname \|\| "\/"\)\}`\);\s*return;/);
+  const guestBlock = offers.slice(i, offers.indexOf("if (!o.checkoutAvailable", i));
+  assert.match(guestBlock, /savePackageIntent/);
+  assert.match(guestBlock, /packageReturnPath/);
+  assert.match(guestBlock, /router\.push/);
+  assert.match(guestBlock, /return;/);
+  assert.ok(!guestBlock.includes("/packages/checkout"));
   assert.ok(offers.indexOf("apiFetch(\"/packages/checkout\"") > i, "checkout pacchetto solo dopo il controllo utente");
 });
 

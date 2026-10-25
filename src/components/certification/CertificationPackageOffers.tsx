@@ -2,7 +2,7 @@
 
 import { checkoutRequest } from "@/lib/checkout-analytics";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -22,6 +22,8 @@ import {
 } from "@/lib/analytics";
 import { resolveCommercialOrigin } from "@/lib/commercial-origin";
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
+import { packageReturnPath, readPackageIntent, savePackageIntent } from "@/lib/package-intent";
+import { isCheckoutAllowedHost, CHECKOUT_BLOCKED_NOTICE } from "@/lib/checkout-intent";
 import {
   accessValidityLabel,
   activeUntilLabel,
@@ -70,22 +72,25 @@ export default function CertificationPackageOffers(props: CertificationPackageOf
 
 function CertificationPackageOffersInner({ lang, certificationSlug, resources }: CertificationPackageOffersProps) {
   const t = TEXT[lang];
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [data, setData] = useState<Payload | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+  const inFlight = useRef(false);
 
   useEffect(() => {
-    if (detectTwa()) return;
+    if (detectTwa() || authLoading) return;
+    setData(null); // Reload ownership and offer availability after authentication.
     let alive = true;
     apiFetch(`/packages/offers/${encodeURIComponent(certificationSlug)}${isAdmin ? "?include_inactive=1" : ""}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((v) => { if (alive) setData(v); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [certificationSlug, isAdmin]);
+  }, [certificationSlug, isAdmin, user?.id, authLoading]);
 
   const offers = useMemo(() => data?.offers || [], [data]);
   const certificationId = data?.certificationId ?? resources?.certificationId ?? null;
@@ -98,6 +103,19 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       document.getElementById(`package-offer-${target.code}`)?.scrollIntoView({ block: "start" });
     }
   }, [offers]);
+
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("package_offer");
+    const saved = readPackageIntent(certificationSlug, lang);
+    // A copied URL can highlight a public offer, never authorize or start checkout.
+    const code = fromUrl || saved;
+    const offer = offers.find(o => o.code === code);
+    setSelectedOffer(offer?.code ?? null);
+  }, [offers, certificationSlug, lang]);
+
+  useEffect(() => {
+    if (selectedOffer) document.getElementById("package-resume")?.scrollIntoView({ block: "start" });
+  }, [selectedOffer, offers]);
 
   // package_viewed: evento esistente package_offer_viewed, ora anche nel funnel V2
   // (visitor/session/pathname) oltre che in GA4. Una volta per sessione e cert.
@@ -125,6 +143,9 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       .format((o.effectiveAmountMinor ?? o.amountMinor) / 100);
 
   const checkout = async (o: Offer) => {
+    if (authLoading || inFlight.current || o.blockedReason) return;
+    inFlight.current = true;
+    setBusy(o.code);
     setError(null);
     const purchaseType = o.purchaseType || "purchase";
     const gateInstanceId = user?.id != null ? readPostGateCohort(user.id)?.gateInstanceId ?? null : null;
@@ -149,11 +170,17 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       product_type: o.productCode, purchase_type: purchaseType, source_page: "certification_page",
     });
     if (!user) {
-      router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(pathname || "/")}`);
+      savePackageIntent({ offerCode: o.code, certificationSlug, lang });
+      const returnPath = packageReturnPath(pathname || "/", window.location.search, o.code);
+      router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(returnPath || pathname || "/")}`);
       return;
     }
-    if (!o.checkoutAvailable) { setError(t.inactive); return; }
-    setBusy(o.code);
+    if (!o.checkoutAvailable || !isCheckoutAllowedHost(window.location.hostname)) {
+      setError(o.checkoutAvailable ? CHECKOUT_BLOCKED_NOTICE : t.inactive);
+      inFlight.current = false;
+      setBusy(null);
+      return;
+    }
     try {
       trackFunnelEvent({
         event: "checkout_attempted", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
@@ -183,12 +210,20 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         }),
       });
       const body = await r.json().catch(() => ({}));
+      if (r.status === 401) {
+        savePackageIntent({ offerCode: o.code, certificationSlug, lang });
+        const returnPath = packageReturnPath(pathname || "/", window.location.search, o.code);
+        router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(returnPath || pathname || "/")}`);
+        return;
+      }
       if (!r.ok) throw new Error(body.error || "CHECKOUT_FAILED");
+      if (!body.url || typeof body.url !== "string") throw new Error("CHECKOUT_FAILED");
       trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
       if (body.url) window.location.href = body.url;
     } catch (e) {
       setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));
       setBusy(null);
+      inFlight.current = false;
     }
   };
 
@@ -224,10 +259,16 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           : data?.premium ? t.buyAnyway
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
-        return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
+        return <article key={o.code} id={selectedOffer === o.code ? "package-resume" : undefined} className={`relative scroll-mt-24 rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"} ${selectedOffer === o.code ? "ring-2 ring-indigo-600" : ""}`}>
           <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
+          {selectedOffer === o.code ? <p role="status" className="mt-2 text-sm font-semibold text-indigo-900">{{
+            it: "Pacchetto selezionato. Verifica l'offerta e conferma per continuare.",
+            en: "Selected package. Review the offer and confirm to continue.",
+            fr: "Pack sélectionné. Vérifiez l'offre et confirmez pour continuer.",
+            es: "Paquete seleccionado. Revisa la oferta y confirma para continuar.",
+          }[lang]}</p> : null}
           <p className="text-sm text-slate-600">{packageTagline(o.productCode, lang)}</p>
           <p className="mt-3 text-2xl font-black">{money(o)}</p>
           <p className="text-xs font-bold uppercase text-slate-500">{oneTimePaymentLabel(lang)}</p>
@@ -235,7 +276,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang).map((f) => <li key={f}>✓ {f}</li>)}</ul>
           {activeUntil ? <p className="mt-3 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{activeUntil}</p> : null}
           {renewal ? <p className="mt-1 text-xs text-slate-500">{t.renewNote}</p> : null}
-          <button type="button" disabled={blocked || busy === o.code} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
+          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
         </article>;
       })}
       <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
