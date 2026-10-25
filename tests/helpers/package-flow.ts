@@ -8,7 +8,14 @@ export async function packageFlow(page: Page, consent = false) {
     localStorage.setItem("cq_cookie_consent", JSON.stringify({ accepted: consent, ts: Date.now() }));
     localStorage.setItem("lang_banner_dismissed", "1");
     Object.defineProperty(navigator, "webdriver", { get: () => false });
+    Object.defineProperty(navigator, "userAgentData", { get: () => undefined });
   }, { consent });
+  // Observe beacon intent at request creation, including navigations that cancel delivery.
+  page.on("request", request => {
+    if (request.method() === "POST" && new URL(request.url()).pathname === "/api/backend/funnel-event") {
+      state.funnel.push(request.postDataJSON());
+    }
+  });
   await page.route("**/*", async route => {
     const req = route.request(), url = new URL(req.url());
     if (url.hostname === "challenges.cloudflare.com") return route.fulfill({ contentType: "application/javascript", body: "window.turnstile={render:(_e,o)=>{setTimeout(()=>o.callback('synthetic'),20);return 'w'},reset:()=>{},remove:()=>{},getResponse:()=> 'synthetic',isExpired:()=>false};if(window.onloadTurnstileCallback)window.onloadTurnstileCallback();" });
@@ -16,7 +23,7 @@ export async function packageFlow(page: Page, consent = false) {
     if (!url.pathname.startsWith("/api/backend/")) return route.continue();
     const p = url.pathname.replace("/api/backend", "");
     const json = (body: unknown, status = 200) => route.fulfill({ status, json: body });
-    if (p === "/funnel-event") { state.funnel.push(req.postDataJSON()); return json({ ok: true }); }
+    if (p === "/funnel-event") return json({ ok: true });
     if (p === "/auth/me") return state.authenticated ? json({ user: { id: 90001, username: "fixture", email: "fixture@example.test", premium: false, role: "user" } }) : json({}, 401);
     if (p === "/auth/refresh") return state.authenticated ? json({ token: "synthetic" }) : json({}, 401);
     if (p === "/auth/login" || p === "/auth/register") {

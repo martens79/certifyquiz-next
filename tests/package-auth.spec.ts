@@ -46,7 +46,7 @@ test("checkout error is retryable; consented attempt has one event per request",
   await expect(page.getByRole("heading", { name: "Synthetic checkout" })).toBeVisible();
   expect(m.checkoutPosts).toHaveLength(2);
   expect(m.checkoutPosts[0].idempotencyKey).toBe(m.checkoutPosts[1].idempotencyKey);
-  expect(m.funnel.filter(e => e.event === "checkout_attempted")).toHaveLength(2);
+  await expect.poll(() => m.funnel.filter(e => e.event === "checkout_attempted").length).toBe(2);
 });
 test("owned Complete cannot create another checkout even on a copied return URL", async ({ page }) => {
   const m = await packageFlow(page); m.authenticated = true; m.blocked = true;
