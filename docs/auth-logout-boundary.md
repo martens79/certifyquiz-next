@@ -40,4 +40,4 @@ Already-issued stateless JWTs are not globally revoked by this change and retain
 
 ## Release boundary
 
-This is a dedicated Draft change. `vercel.json` disables deployment only for `fix/logout-session-boundary`, preventing Preview autodeployment during preparation. Remove this temporary file as an explicit pre-release step and revalidate the final head before any merge. It does not disable deployment of main or other branches. No merge or deploy is authorized in this task. PR #162 is unchanged.
+The temporary branch-only Vercel deployment guard was removed for authorized release validation. Main originally had no vercel.json, so deleting that temporary file restores the original Vercel configuration without changing project settings or other branches. The release head must pass all checks before the authorized squash merge and Production smoke test. PR #162 is unchanged.
