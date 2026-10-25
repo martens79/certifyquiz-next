@@ -78,8 +78,8 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   },
   "cisco-ccst-cybersecurity": {
     title: "Cisco CCST Cybersecurity – Practice Test 2026 | CertifyQuiz",
-    description:
-      "Prepare for Cisco CCST Cybersecurity with practice questions covering threats, malware, network security and social engineering. Start free.",
+    // Keep the reviewed description in the registry as the single source.
+    description: getRegistryCertBySlug("cisco-ccst-cybersecurity")?.metaDescription?.en,
   },
   "ccst": {
     title: "Cisco CCST Certification – Networking & Cybersecurity Practice Test | CertifyQuiz",

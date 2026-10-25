@@ -58,6 +58,11 @@ export type ExamBlueprint = Readonly<{
   /** Articolo del blog CertifyQuiz collegato a questa certificazione (es. guida alle domande d'esame). */
   relatedArticleUrl?: string | null;
   relatedArticleTitle?: string | null;
+  /** Lingua dell'articolo di `relatedArticleUrl`. Se diversa dalla lingua della pagina,
+   *  il link dichiara esplicitamente la lingua del contenuto (fallback senza traduzione). */
+  relatedArticleLang?: "it" | "en" | "fr" | "es";
+  /** Versioni tradotte dell'articolo, solo dove esistono davvero (URL verificati). */
+  relatedArticleByLang?: Partial<Record<"it" | "en" | "fr" | "es", Readonly<{ url: string; title: string }>>>;
   domains: ReadonlyArray<ExamDomain>;
   /** Sotto-esami quando la certificazione richiede più esami separati
    *  (es. CompTIA A+ Core 1 + Core 2, Cisco CCNP core + concentrazione).

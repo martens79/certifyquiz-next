@@ -1,5 +1,14 @@
 import type { Question } from '@/lib/quiz-types';
 
+// Training APIs (including restored versioned attempts) omit public answer keys.
+// Use their existing evaluation; retain keyed legacy payloads as a fallback.
+type BlockResults = Readonly<Record<string, { correct_answer_id?: number | string | null }>>;
+
+function correctAnswerId(question: Question, results?: BlockResults) {
+  return results?.[String(question.id)]?.correct_answer_id
+    ?? question.answers.find((answer) => !!answer.isCorrect)?.id;
+}
+
 export function shouldPauseAtBlockBoundary({
   mode,
   blockSize,
@@ -22,11 +31,13 @@ export function shouldPauseAtBlockBoundary({
 export function calculateCompletedBlock({
   questions,
   marked,
+  results,
   nextQuestionIndex,
   blockSize,
 }: {
   questions: Question[];
   marked: Record<string | number, string | number | null>;
+  results?: BlockResults;
   nextQuestionIndex: number;
   blockSize: number;
 }) {
@@ -36,8 +47,8 @@ export function calculateCompletedBlock({
 
   for (const question of completedQuestions) {
     const chosen = marked[question.id];
-    const right = question.answers.find((answer) => !!answer.isCorrect)?.id;
-    if (chosen != null && right != null && Number(chosen) === Number(right)) correct++;
+    const right = correctAnswerId(question, results);
+    if (chosen != null && right != null && String(chosen) === String(right)) correct++;
   }
 
   const total = completedQuestions.length;
@@ -64,11 +75,13 @@ export function getNextBlockQuestionCount({
 export function getCompletedBlockWrongPositions({
   questions,
   marked,
+  results,
   nextQuestionIndex,
   blockSize,
 }: {
   questions: Question[];
   marked: Record<string | number, string | number | null>;
+  results?: BlockResults;
   nextQuestionIndex: number;
   blockSize: number;
 }) {
@@ -77,8 +90,8 @@ export function getCompletedBlockWrongPositions({
     .slice(start, nextQuestionIndex)
     .map((question, offset) => {
       const chosen = marked[question.id];
-      const right = question.answers.find((answer) => !!answer.isCorrect)?.id;
-      return chosen != null && right != null && Number(chosen) !== Number(right)
+      const right = correctAnswerId(question, results);
+      return chosen != null && right != null && String(chosen) !== String(right)
         ? start + offset
         : -1;
     })

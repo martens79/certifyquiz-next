@@ -1767,20 +1767,22 @@ clearProgress(`${storageScope}:assessment`);
     return calculateCompletedBlock({
       questions,
       marked,
+      results,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
 
   const blockWrongPositions = useMemo(() => {
     if (!blockPaused || effectiveMode !== 'training' || !blockSize) return [];
     return getCompletedBlockWrongPositions({
       questions,
       marked,
+      results,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
 
   /* ----------------------------- HANDLER ------------------------------ */
   // Aggiorna quota e limite spiegazioni dalla risposta del server. Usata sia

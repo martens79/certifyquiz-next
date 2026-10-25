@@ -114,6 +114,13 @@ function toLocalizedText(topic: CertificationTopic): LocalizedText {
   };
 }
 
+const startQuizLabels = {
+  it: { cta: "Inizia il quiz gratuito", note: "Puoi iniziare gratis; l'accesso completo dipende dal tuo piano." },
+  en: { cta: "Start the free quiz", note: "You can start for free; full access depends on your plan." },
+  fr: { cta: "Commencer le quiz gratuit", note: "Vous pouvez commencer gratuitement ; l'accès complet dépend de votre formule." },
+  es: { cta: "Empezar el quiz gratis", note: "Puedes empezar gratis; el acceso completo depende de tu plan." },
+} as const;
+
 /* -------------------- componente -------------------- */
 export default function CertificationPage({
   lang,
@@ -383,6 +390,20 @@ const pageTopics =
           </aside>
         ) : null}
 
+        {/* Su mobile il blueprint spinge la prima azione oltre la seconda schermata:
+            il pulsante di avvio sta sopra, la card "Quiz" resta nel materiale di studio. */}
+        {hasQuestions && (
+          <div className="mb-5">
+            <Link
+              href={quizHref}
+              className="flex min-h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-base font-extrabold text-white shadow hover:bg-blue-700 sm:inline-flex sm:w-auto"
+            >
+              {startQuizLabels[lang].cta}
+            </Link>
+            <p className="mt-2 text-xs text-slate-600">{startQuizLabels[lang].note}</p>
+          </div>
+        )}
+
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
@@ -444,10 +465,10 @@ const pageTopics =
             <h2 className="text-lg font-semibold text-blue-800 mb-2">
               {extraContent?.currentCertificationHeading?.[lang] ??
                 ({
-                  it: 'Qual è la certificazione SQL "attuale"?',
-                  en: "What is the current SQL certification?",
-                  fr: 'Quelle est la certification SQL "actuelle" ?',
-                  es: '¿Cuál es la certificación SQL "actual"?',
+                  it: "Certificazione attuale",
+                  en: "Current certification",
+                  fr: "Certification actuelle",
+                  es: "Certificación actual",
                 } as const)[lang] ??
                 "Current certification"}
             </h2>

@@ -16,6 +16,7 @@ const COPY = {
     verified: "Ultimo controllo",
     external: "link esterno",
     article: "Approfondimento",
+    articleLang: "in inglese",
     noWeights:
       "L’ente certificatore pubblica gli argomenti ufficiali dell’esame, ma non indica un peso percentuale per ciascun dominio.",
     note: "I quiz di CertifyQuiz sono organizzati attorno ai domini ufficiali dell’esame.",
@@ -33,6 +34,7 @@ const COPY = {
     verified: "Last verified",
     external: "external link",
     article: "Related article",
+    articleLang: "in English",
     noWeights:
       "The certification provider publishes the official exam topics but does not specify a percentage weight for each domain.",
     note: "CertifyQuiz quizzes are organized around the official exam domains.",
@@ -50,6 +52,7 @@ const COPY = {
     verified: "Dernière vérification",
     external: "lien externe",
     article: "Article associé",
+    articleLang: "en anglais",
     noWeights:
       "L’organisme certificateur publie les sujets officiels de l’examen, mais n’indique pas de pondération pour chaque domaine.",
     note: "Les quiz CertifyQuiz sont organisés autour des domaines officiels de l’examen.",
@@ -67,6 +70,7 @@ const COPY = {
     verified: "Última comprobación",
     external: "enlace externo",
     article: "Artículo relacionado",
+    articleLang: "en inglés",
     noWeights:
       "La entidad certificadora publica los temas oficiales del examen, pero no indica un peso porcentual para cada dominio.",
     note: "Los cuestionarios de CertifyQuiz se organizan en torno a los dominios oficiales del examen.",
@@ -147,6 +151,21 @@ function DomainList({
   );
 }
 
+/** Versione tradotta se esiste; altrimenti l'articolo di default con la sua lingua dichiarata. */
+function resolveRelatedArticle(
+  blueprint: ExamBlueprint,
+  lang: Lang
+): { url: string; title: string; lang: Lang } | null {
+  const localized = blueprint.relatedArticleByLang?.[lang];
+  if (localized) return { ...localized, lang };
+  if (!blueprint.relatedArticleUrl) return null;
+  return {
+    url: blueprint.relatedArticleUrl,
+    title: blueprint.relatedArticleTitle ?? blueprint.relatedArticleUrl,
+    lang: blueprint.relatedArticleLang ?? lang,
+  };
+}
+
 export default function ExamBlueprintCard({
   blueprint,
   lang,
@@ -158,6 +177,7 @@ export default function ExamBlueprintCard({
   if (!blueprint || (blueprint.domains.length === 0 && !hasExams)) return null;
 
   const t = COPY[lang];
+  const article = resolveRelatedArticle(blueprint, lang);
 
   return (
     <section
@@ -188,15 +208,18 @@ export default function ExamBlueprintCard({
         </div>
       </div>
 
-      {blueprint.relatedArticleUrl && (
+      {article && (
         <p className="mt-3 text-sm">
           <a
-            href={blueprint.relatedArticleUrl}
+            href={article.url}
             target="_blank"
             rel="noopener noreferrer"
+            hrefLang={article.lang}
             className="font-medium text-blue-700 underline decoration-blue-300 underline-offset-2 hover:text-blue-900"
           >
-            📘 {t.article}: {blueprint.relatedArticleTitle ?? blueprint.relatedArticleUrl} <span aria-hidden="true">↗</span>
+            📘 {t.article}: {article.title}
+            {article.lang !== lang && <span> ({t.articleLang})</span>}{" "}
+            <span aria-hidden="true">↗</span>
             <span className="sr-only"> ({t.external})</span>
           </a>
         </p>

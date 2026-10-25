@@ -79,7 +79,7 @@ const LABELS = {
     scenarios: "Scénarios pratiques",
     scenariosDesc: "Simulations type examen",
     questions: (n: number) => `${n.toLocaleString("fr-FR")} questions`,
-    topics: (n: number) => `${n} domaines`,
+    topics: (n: number) => `${n} thèmes`,
     pages: (n: number) => `${n} pages`,
     scenarioCount: (n: number) => `${n} scénarios`,
     labCount: (n: number) => `${n} labs`,

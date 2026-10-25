@@ -47,139 +47,45 @@ const CISCO_CCST_CYBERSECURITY = {
   es: "Cisco CCST Cybersecurity en Español — Quiz y Examen de Práctica",
 },
 metaDescription: {
-  en: "Prepare for the Cisco CCST Cybersecurity exam with 1,000+ practice questions. Realistic simulations, detailed explanations. Start for free!",
-  it: "Preparati all'esame Cisco CCST Cybersecurity con +1.000 domande di pratica in italiano. Simulazioni reali, spiegazioni dettagliate. Inizia gratis!",
-  fr: "Préparez l'examen Cisco CCST Cybersecurity avec +1 000 questions de pratique en français. Simulations réelles, explications détaillées. Commencez gratuitement !",
-  es: "Prepárate para el examen Cisco CCST Cybersecurity con +1.000 preguntas de práctica en español. Simulaciones reales, explicaciones detalladas. ¡Empieza gratis!",
+  en: "Prepare for Cisco CCST Cybersecurity 100-160 with exam-style quizzes on security principles, networks, endpoints, risk and incident handling. Start free.",
+  it: "Preparati al Cisco CCST Cybersecurity 100-160 con quiz su sicurezza, reti, endpoint, rischi e gestione degli incidenti. Inizia gratis in italiano.",
+  fr: "Préparez le Cisco CCST Cybersecurity 100-160 avec des quiz sur la sécurité, les réseaux, les terminaux, les risques et les incidents. Commencez gratuitement.",
+  es: "Prepárate para Cisco CCST Cybersecurity 100-160 con quizzes sobre seguridad, redes, endpoints, riesgos e incidentes. Empieza gratis en español.",
 },
- topics: [
-  {
-    title: {
-      it: "Raccolta informazioni e footprinting",
-      en: "Information Gathering and Footprinting",
-      fr: "Collecte d'informations et footprinting",
-      es: "Recopilación de información y footprinting",
-    },
-    slug: {
-      it: "raccolta-informazioni-e-footprinting",
-      en: "information-gathering-and-footprinting",
-      fr: "collecte-dinformations-et-footprinting",
-      es: "recopilacion-de-informacion-y-footprinting",
-    },
-  },
-  {
-    title: {
-      it: "Tecniche di scansione di rete e porte",
-      en: "Network and Port Scanning Techniques",
-      fr: "Techniques de scan de réseau et de port",
-      es: "Técnicas de escaneo de red y puertos",
-    },
-    slug: {
-      it: "tecniche-di-scansione-di-rete-e-porte",
-      en: "network-and-port-scanning-techniques",
-      fr: "techniques-de-scan-de-reseau-et-de-port",
-      es: "tecnicas-de-escaneo-de-red-y-puertos",
-    },
-  },
-  {
-    title: {
-      it: "Enumerazione di servizi e utenti",
-      en: "Service and User Enumeration",
-      fr: "Énumération de services et d'utilisateurs",
-      es: "Enumeración de servicios y usuarios",
-    },
-    slug: {
-      it: "enumerazione-di-servizi-e-utenti",
-      en: "service-and-user-enumeration",
-      fr: "enumeration-de-services-et-dutilisateurs",
-      es: "enumeracion-de-servicios-y-usuarios",
-    },
-  },
-  {
-    title: {
-      it: "Identificazione delle vulnerabilità",
-      en: "Vulnerability Identification",
-      fr: "Identification des vulnérabilités",
-      es: "Identificación de vulnerabilidades",
-    },
-    slug: {
-      it: "identificazione-delle-vulnerabilita",
-      en: "vulnerability-identification",
-      fr: "identification-des-vulnerabilites",
-      es: "identificacion-de-vulnerabilidades",
-    },
-  },
-  {
-    title: {
-      it: "Accesso e mantenimento sui sistemi",
-      en: "Access and Maintenance on Systems",
-      fr: "Accès et maintenance sur les systèmes",
-      es: "Acceso y mantenimiento en sistemas",
-    },
-    slug: {
-      it: "accesso-e-mantenimento-sui-sistemi",
-      en: "access-and-maintenance-on-systems",
-      fr: "acces-et-maintenance-sur-les-systemes",
-      es: "acceso-y-mantenimiento-en-sistemas",
-    },
-  },
-  {
-    title: {
-      it: "Tipi e comportamenti dei malware",
-      en: "Types and Behaviors of Malware",
-      fr: "Types et comportements des malwares",
-      es: "Tipos y comportamientos de malware",
-    },
-    slug: {
-      it: "tipi-e-comportamenti-dei-malware",
-      en: "types-and-behaviors-of-malware",
-      fr: "types-et-comportements-des-malwares",
-      es: "tipos-y-comportamientos-de-malware",
-    },
-  },
-  {
-    title: {
-      it: "Intercettazione e dirottamento sessioni",
-      en: "Session Interception and Hijacking",
-      fr: "Interception et détournement de sessions",
-      es: "Intercepción y secuestro de sesiones",
-    },
-    slug: {
-      it: "intercettazione-e-dirottamento-sessioni",
-      en: "session-interception-and-hijacking",
-      fr: "interception-et-detournement-de-sessions",
-      es: "intercepcion-y-secuestro-de-sesiones",
-    },
-  },
-  {
-    title: {
-      it: "Tecniche di ingegneria sociale",
-      en: "Social Engineering Techniques",
-      fr: "Techniques d'ingénierie sociale",
-      es: "Técnicas de ingeniería social",
-    },
-    slug: {
-      it: "tecniche-di-ingegneria-sociale",
-      en: "social-engineering-techniques",
-      fr: "techniques-dingenierie-sociale",
-      es: "tecnicas-de-ingenieria-social",
-    },
-  },
-  {
-    title: {
-      it: "Attacchi alle applicazioni web",
-      en: "Web Application Attacks",
-      fr: "Attaques sur les applications web",
-      es: "Ataques a aplicaciones web",
-    },
-    slug: {
-      it: "attacchi-alle-applicazioni-web",
-      en: "web-application-attacks",
-      fr: "attaques-sur-les-applications-web",
-      es: "ataques-a-aplicaciones-web",
-    },
-  },
-],
+  // Descriptive fallback only. Topic links continue to come from the backend.
+  // These five areas follow the published 100-160 objective domains above.
+  topics: [
+    { title: {
+      it: "Principi essenziali di sicurezza",
+      en: "Essential Security Principles",
+      fr: "Principes essentiels de sécurité",
+      es: "Principios esenciales de seguridad",
+    } },
+    { title: {
+      it: "Concetti di base della sicurezza di rete",
+      en: "Basic Network Security Concepts",
+      fr: "Concepts de base de la sécurité réseau",
+      es: "Conceptos básicos de seguridad de red",
+    } },
+    { title: {
+      it: "Concetti di sicurezza degli endpoint",
+      en: "Endpoint Security Concepts",
+      fr: "Concepts de sécurité des terminaux",
+      es: "Conceptos de seguridad de endpoints",
+    } },
+    { title: {
+      it: "Valutazione delle vulnerabilità e gestione dei rischi",
+      en: "Vulnerability Assessment and Risk Management",
+      fr: "Évaluation des vulnérabilités et gestion des risques",
+      es: "Evaluación de vulnerabilidades y gestión de riesgos",
+    } },
+    { title: {
+      it: "Gestione degli incidenti di sicurezza",
+      en: "Incident Handling",
+      fr: "Gestion des incidents de sécurité",
+      es: "Gestión de incidentes de seguridad",
+    } },
+  ],
 
   extraContent: {
     learn: {
@@ -243,28 +149,28 @@ metaDescription: {
         "Ideale per chi desidera iniziare una carriera nella sicurezza informatica.",
         "Certificazione ufficiale Cisco, riconosciuta a livello internazionale.",
         "Accessibile anche senza esperienza tecnica pregressa.",
-        "Ottimo primo passo verso percorsi come CCNA Security e CEH.",
+        "Una base per approfondire la sicurezza di reti ed endpoint e la gestione degli incidenti.",
         "Supportata da Cisco con risorse didattiche di qualità.",
       ],
       en: [
         "Ideal for starting a career in cybersecurity.",
         "Official Cisco certification, internationally recognized.",
         "Accessible even without prior technical experience.",
-        "Great first step toward paths like CCNA Security and CEH.",
+        "A foundation for further study of network and endpoint security and incident handling.",
         "Backed by Cisco with quality learning resources.",
       ],
       fr: [
         "Idéal pour débuter en cybersécurité.",
         "Certification Cisco officielle reconnue internationalement.",
         "Accessible sans expérience technique préalable.",
-        "Excellent point de départ vers CCNA Security et CEH.",
+        "Une base pour approfondir la sécurité des réseaux et des terminaux et la gestion des incidents.",
         "Soutenue par Cisco avec des ressources de qualité.",
       ],
       es: [
         "Ideal para comenzar en ciberseguridad.",
         "Certificación oficial de Cisco reconocida internacionalmente.",
         "Accesible incluso sin experiencia técnica previa.",
-        "Excelente primer paso hacia CCNA Security y CEH.",
+        "Una base para profundizar en la seguridad de redes y endpoints y la gestión de incidentes.",
         "Respaldada por Cisco con recursos de calidad.",
       ],
     },
