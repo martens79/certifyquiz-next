@@ -45,7 +45,7 @@ const CCNA = {
 
   // ✅ EN: numero reale (600). Altre lingue: no numeri falsi, ma intent “exam practice”.
   title: {
-    it: "Cisco CCNA 200-301 – 1300+ domande e 18 lab",
+    it: "Cisco CCNA 200-301 – {questionCount|1400+} domande e 18 lab",
     en: "CCNA 200-301 Practice Test: {questionCount|1,400+} Questions and 18 Labs",
     fr: "Cisco CCNA – Quiz et Simulation Examen 200-301",
     es: "Cisco CCNA – Quiz y Simulación de Examen 200-301",
@@ -60,7 +60,7 @@ const CCNA = {
 
   // ✅ Spostiamo il focus: pratica + exam-style + simulation
   description: {
-    it: "Preparati al Cisco CCNA 200-301 v1.1 con oltre 1300 practice question, mock exam bilanciato sui sei domini, 10 Reviews e 18 lab interattivi, inclusi routing, IPv6, switching, security e automazione.",
+    it: "Preparati al Cisco CCNA 200-301 v1.1 con {questionCount|1400+} practice question, mock exam bilanciato sui sei domini, 10 Reviews e 18 lab interattivi, inclusi routing, IPv6, switching, security e automazione.",
     en: "This CCNA practice test prepares you for the Cisco 200-301 v1.1 exam with {questionCount|1,400+} CCNA practice questions and exam questions organized by topic, a six-domain CCNA mock exam balanced on the official blueprint, explanations for every answer, 10 Reviews, and 18 interactive labs covering routing, IPv6, switching, security, and automation. Start practicing for free; full access depends on your plan.",
     fr: "Préparez l’examen Cisco CCNA 200-301 v1.1 avec {questionCount|1400+} questions en 10 thèmes, un mock exam équilibré sur les six domaines officiels, 10 Reviews et 18 labs interactifs : routage, IPv6, switching, sécurité et automatisation.",
     es: "Prepárate para el examen Cisco CCNA 200-301 v1.1 con {questionCount|1400+} preguntas en 10 temas, un mock exam equilibrado sobre los seis dominios oficiales, 10 Reviews y 18 labs interactivos: routing, IPv6, switching, seguridad y automatización.",
@@ -73,7 +73,7 @@ const CCNA = {
   es: "CCNA 200-301 – Quiz y Simulacro Examen Cisco 2026 | CertifyQuiz",
 },
 metaDescription: {
-  it: "CCNA 200-301 v1.1: oltre 1300 domande, 10 Reviews, mock exam blueprint-based e 18 lab interattivi, di cui 4 gratuiti.",
+  it: "CCNA 200-301 v1.1: oltre 1.400 domande, 10 Reviews, mock exam blueprint-based e 18 lab interattivi, di cui 4 gratuiti.",
   en: "Practice CCNA 200-301 exam questions: 1,400+ questions with explanations, a full CCNA mock test and 18 interactive labs. Start free.",
   fr: "CCNA 200-301 : plus de 1 400 questions en 10 thèmes, mock exam sur les 6 domaines officiels et 18 labs. Routage, switching, VLAN, OSPF, sécurité. Gratuit.",
   es: "CCNA 200-301: más de 1.400 preguntas en 10 temas, mock exam con los 6 dominios oficiales y 18 labs. Routing, switching, VLAN, OSPF, seguridad. Gratis.",
