@@ -79,6 +79,7 @@ import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 
 
 import RegistrationGate from '@/components/quiz/RegistrationGate';
+import MockCompleteLink from '@/components/quiz/MockCompleteLink';
 import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
 import { useQuizTutor } from '@/components/quiz/QuizTutorContext';
 
@@ -2754,6 +2755,7 @@ const assessmentCopy =
                     ? 'Revisa cada pregunta de la simulación con tu respuesta y la correcta. Incluido en el pase Complete de la certificación y en Premium.'
                     : 'Review every simulation question with your answer and the correct one. Included in the certification Complete pass and in Premium.'}
                 </p>
+                {context?.certificationSlug && <MockCompleteLink lang={lang} certificationSlug={context.certificationSlug} />}
                 <a
                   href={(() => {
                     const q = new URLSearchParams({ source: 'mock_review', cta: 'mock_review' });
