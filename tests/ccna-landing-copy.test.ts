@@ -61,3 +61,21 @@ test("every {questionCount} token in the registry declares a non-empty fallback"
   for (const cert of CERTS) walk(cert, cert.slug);
   assert.ok(tokens.length > 0, "the scan must find the CCNA tokens");
 });
+
+test("CCNA Italian landing copy follows the live question count like the other languages", () => {
+  const body = [CCNA.title.it, CCNA.description.it, ...CCNA.extraContent.currentCertification.it];
+  for (const s of body) assert.doesNotMatch(s, /1\.?300/, `stale "1300" claim in: ${s.slice(0, 60)}`);
+  assert.match(CCNA.title.it, /\{questionCount\|1400\+\}/);
+  assert.match(CCNA.description.it, /\{questionCount\|1400\+\}/);
+  assert.equal(resolveQuestionCountTokens(CCNA.title.it, 1453, "it"), "Cisco CCNA 200-301 – 1453 domande e 18 lab");
+  assert.equal(resolveQuestionCountTokens(CCNA.title.it, undefined, "it"), "Cisco CCNA 200-301 – 1400+ domande e 18 lab");
+});
+
+test("CCNA meta descriptions are static (tokens are not resolved there) and never claim fewer than the real floor", () => {
+  for (const lang of LANGS) {
+    const meta = CCNA.metaDescription[lang];
+    assert.doesNotMatch(meta, /\{questionCount/, `${lang}: unresolved token in meta description`);
+    assert.doesNotMatch(meta, /1\.?300/, `${lang}: stale 1300 claim`);
+  }
+  assert.match(CCNA.metaDescription.it, /oltre 1\.400 domande/);
+});
