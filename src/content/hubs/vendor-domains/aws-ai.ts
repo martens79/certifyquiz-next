@@ -39,7 +39,7 @@ export const awsAiHub: HubData = {
     {
       slug: "microsoft-ai",
       badge: "AI Fundamentals",
-      examCode: "AI-900",
+      examCode: "AI-901",
       popularity: 82,
     },
   ],
