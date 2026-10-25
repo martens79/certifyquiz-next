@@ -1,5 +1,7 @@
 "use client";
 
+import { checkoutRequest } from "@/lib/checkout-analytics";
+
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
@@ -13,6 +15,7 @@ import {
   getAnonymousSessionId,
   getAnonymousVisitorId,
   trackEvent,
+  trackCheckoutCreated,
   trackEventOnce,
   trackFunnelEvent,
   trackFunnelEventOnce,
@@ -145,11 +148,11 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
     setBusy(o.code);
     try {
       trackFunnelEvent({
-        event: "checkout_started", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
+        event: "checkout_attempted", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
         gate_instance_id: gateInstanceId, metadata: commercialMeta,
       });
-      trackEvent("checkout_started", {
-        language: lang, user_state: analyticsUserStateFrom(user), plan_type: o.productCode,
+      trackEvent("checkout_attempted", {
+        language: lang, certification_slug: certificationSlug, user_state: analyticsUserStateFrom(user), plan_type: o.productCode,
         purchase_type: "certification_package", source_page: "certification_page", gate_instance_id: gateInstanceId,
       });
       // Ledger commerce esistente (commerce_events).
@@ -157,12 +160,14 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "package_selected", offerCode: o.code, source: "certification_page" }),
       }).catch(() => {});
+      const checkoutContext = await checkoutRequest(`package:${o.code}:${lang}:${origin.paywallType || ""}:${gateInstanceId || ""}`);
       const r = await apiFetch("/packages/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          offerCode: o.code, lang, source: "certification_page", idempotencyKey: crypto.randomUUID(),
+          offerCode: o.code, lang, source: "certification_page", idempotencyKey: checkoutContext.requestId,
           // Solo attribuzione funnel: il backend ricava offerta/prezzo/certificazione dal server.
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: gateInstanceId,
@@ -171,6 +176,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body.error || "CHECKOUT_FAILED");
+      trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
       if (body.url) window.location.href = body.url;
     } catch (e) {
       setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));
@@ -226,7 +232,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
         <h3 className="font-black">Premium</h3>
         <p className="mt-2 text-sm text-blue-100">{t.premium}</p>
-        <a href={`${pricingPath(lang)}?source=package_offers&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
+        <a href={`${pricingPath(lang)}?source=package_offers&cta=package_offers_premium&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
       </article>
     </div>
     {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}

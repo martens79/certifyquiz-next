@@ -185,7 +185,11 @@ export function logoutAndRedirect(url: string = "/it/login") {
  * - Usa backendUrl() + authFetch()
  * - Auto-logout su 401 con redirect alla /[lang]/login
  */
-export async function apiFetch(path: string, init: RequestInit = {}) {
+export async function apiFetch(
+  path: string,
+  init: RequestInit = {},
+  { redirectOnUnauthorized = true }: { redirectOnUnauthorized?: boolean } = {}
+) {
   const url = backendUrl(path);
   const hadToken = !!getToken();
   let res = await authFetch(url, init);
@@ -206,6 +210,8 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         if (data.token) {
           setToken(data.token, isTokenRemembered());
           res = await authFetch(url, init);
+        } else if (!redirectOnUnauthorized) {
+          throw new Error("Refresh did not return an access token");
         }
       } else if (refreshRes.status === 401 || refreshRes.status === 403) {
         clearOutgoingUserProgressCache();
@@ -213,14 +219,19 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
         setUser(null);
         // Un visitatore guest puo' legittimamente ricevere 401 dagli endpoint
         // opzionali: il redirect serve solo quando una sessione esisteva.
-        if (hadToken && isBrowser()) {
+        if (redirectOnUnauthorized && hadToken && isBrowser()) {
           const m = location.pathname.match(/^\/(it|en|fr|es)(?:\/|$)/i);
           const lang = (m?.[1]?.toLowerCase() || "it") as "it" | "en" | "fr" | "es";
           location.href = `/${lang}/login?redirect=${encodeURIComponent(location.pathname)}`;
         }
+      } else if (!redirectOnUnauthorized) {
+        // A failed refresh due to rate limiting or a server error is retryable,
+        // not evidence that the original session has definitively expired.
+        return refreshRes;
       }
-    } catch {
+    } catch (error) {
       // Errori di rete/5xx non devono cancellare una sessione locale valida.
+      if (!redirectOnUnauthorized) throw error;
     }
   }
 

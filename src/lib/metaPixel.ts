@@ -1,13 +1,17 @@
+import { marketingConsentGranted } from "./consent-mode";
+
 export function trackMetaPixel(
   eventName: string,
   params?: Record<string, unknown>,
   attempt = 0
 ) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !marketingConsentGranted()) return;
+  // Cash purchases are emitted server-side from verified receipts only.
+  if (eventName === "Purchase") return;
   const fbq = (window as typeof window & { fbq?: (...args: any[]) => void }).fbq;
 
   if (typeof fbq === "function") {
-    fbq("track", eventName, params);
+    try { fbq("track", eventName, params); } catch {}
     return;
   }
 

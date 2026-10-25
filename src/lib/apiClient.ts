@@ -330,6 +330,17 @@ if (auth || withCredentials) init.credentials = "include";
   // 401 → tenta refresh una volta (solo se auth=true)
  // 401 → tenta refresh una volta (solo se auth=true)
 if (res.status === 401 && (auth || !!token) && retry) {
+  // Il token puo' essere cambiato mentre la richiesta era in volo (tipico: ritorno da Google, dove il
+  // callback salva il token mentre il bootstrap anonimo ha gia' chiesto /auth/me senza). Quel 401 e'
+  // "vecchio": si riprova con il token attuale invece di cancellare la sessione appena creata.
+  const currentToken = getAccessToken();
+  if (currentToken && currentToken !== token) {
+    const hCurrent = new Headers(h);
+    hCurrent.set("authorization", `Bearer ${currentToken}`);
+    const resCurrent = await fetch(url, { ...init, headers: hCurrent });
+    if (!resCurrent.ok) throw await toApiError(resCurrent);
+    return parseJson<T>(resCurrent);
+  }
   const { token: newTok, status: refreshStatus } = await refreshAccessToken();
 
   if (newTok) {
@@ -340,9 +351,11 @@ if (res.status === 401 && (auth || !!token) && retry) {
     return parseJson<T>(res2);
   }
 
-  // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato)
+  // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato) e nel frattempo
+  // non e' arrivato un token nuovo (non si cancella una sessione appena creata).
   if (refreshStatus === 401 || refreshStatus === 403) {
-    clearAuth();
+    if (getAccessToken() === token) clearAuth();
+    else throw await toApiError(res);
   } else {
     // A failed transport/5xx refresh does not establish that rights expired.
     // Keep the session and distinguish it from a definitive auth rejection.

@@ -17,6 +17,7 @@ import {
 } from "@/lib/auth";
 import { authMe } from "@/lib/apiClient";
 import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
+import { CHECKOUT_SOURCE, checkoutAuthBanner } from "@/lib/checkout-intent";
 
 type Props = {
   initialLang: Locale;
@@ -200,6 +201,12 @@ export default function LoginPageClient({ initialLang }: Props) {
         <h2 className="text-2xl font-bold text-center text-blue-700">
           🔑 {String(getLabel({ it: "Accedi", en: "Login" }, lang))}
         </h2>
+
+        {conversion.source === CHECKOUT_SOURCE && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" data-testid="checkout-auth-banner">
+            {checkoutAuthBanner(lang)}
+          </p>
+        )}
 
    <a
   href={googleHref}

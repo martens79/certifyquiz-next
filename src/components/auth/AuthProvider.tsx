@@ -81,6 +81,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     refreshInFlight.current = (async () => {
       const hadToken = !!getToken();
+      const tokenAtStart = getToken();
+      let rerunWithNewToken = false;
       try {
         const t = getToken();
 
@@ -115,7 +117,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err: any) {
         const status = err?.status ?? err?.response?.status;
 
-        if (status === 401 || status === 403) {
+        if ((status === 401 || status === 403) && getToken() !== tokenAtStart) {
+          // Un token nuovo e' arrivato mentre la richiesta era in volo (es. ritorno da Google):
+          // questo 401 riguarda lo stato precedente e non deve cancellare la sessione appena creata.
+          // Il refreshMe() del cambio di token e' stato assorbito da questa richiesta in volo: si rifa' qui.
+          rerunWithNewToken = true;
+        } else if (status === 401 || status === 403) {
           // Per un visitatore senza token e senza refresh cookie e' normale
           // ricevere 401: resta guest e non forzare il redirect al login.
           clearToken();
@@ -130,6 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } finally {
         refreshInFlight.current = null;
       }
+      if (rerunWithNewToken) await refreshMe();
     })();
 
     return refreshInFlight.current;

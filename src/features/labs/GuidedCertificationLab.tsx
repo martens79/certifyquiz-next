@@ -7,7 +7,7 @@ import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import type { GuidedLabEvidence, GuidedLabPayload, GuidedLabStep } from "./types";
 import QuestionExhibit from "@/components/quiz/QuestionExhibit";
-import { trackEvent, trackFunnelEventOnce } from "@/lib/analytics";
+import { studyEngagementKey, trackEventOnce, trackEvent, trackFunnelEventOnce } from "@/lib/analytics";
 
 type Preview = { title:string; description:string; difficulty:string; estimatedMinutes:number; locked:boolean; accessReason:string };
 // Etichetta della certificazione mostrata nell'header del lab sbloccato: punto di
@@ -76,7 +76,11 @@ export default function GuidedCertificationLab({lang,slug}:{lang:Locale;slug:str
   },[busy,fatal,lab,preview,lang,slug]);
 
   async function ensureAttempt(){if(attempt)return attempt;const r=await apiFetch(`/labs/${slug}/attempts?lang=${lang}`,{method:"POST",body:"{}"});if(r.status===401)throw new AuthRequiredError();if(!r.ok)throw new Error();const j=await r.json();setAttempt(j.attemptId);return Number(j.attemptId);}
-  async function check(){if(!step||!answered)return;setBusy(true);setAuthRequired(false);try{const id=await ensureAttempt();const r=await apiFetch(`/labs/${slug}/attempts/${id}/check?lang=${lang}`,{method:"POST",body:JSON.stringify({stepId:step.id,response:answers[step.id]})});if(r.status===401)throw new AuthRequiredError();if(!r.ok)throw new Error();const j=await r.json();setFeedback(j.correct?"correct":"wrong");}catch(e){if(e instanceof AuthRequiredError)setAuthRequired(true);else setFatal(true);}finally{setBusy(false);}}
+  async function check(){if(!step||!answered)return;
+    const engagementKey=studyEngagementKey(`lab:${lang}:${slug}`,"interactive_lab");
+    trackEventOnce(engagementKey,"study_engaged",{language:lang,study_type:"interactive_lab",certification_slug:lab?.certificationSlug ?? null,lab_slug:slug});
+    trackFunnelEventOnce(engagementKey,{event:"study_engaged",cert_slug:lab?.certificationSlug ?? null,lang,metadata:{study_type:"interactive_lab",lab_slug:slug}});
+setBusy(true);setAuthRequired(false);try{const id=await ensureAttempt();const r=await apiFetch(`/labs/${slug}/attempts/${id}/check?lang=${lang}`,{method:"POST",body:JSON.stringify({stepId:step.id,response:answers[step.id]})});if(r.status===401)throw new AuthRequiredError();if(!r.ok)throw new Error();const j=await r.json();setFeedback(j.correct?"correct":"wrong");}catch(e){if(e instanceof AuthRequiredError)setAuthRequired(true);else setFatal(true);}finally{setBusy(false);}}
   async function advance(){if(!lab||!step)return;if(index<lab.content.steps.length-1){setIndex(x=>x+1);setFeedback(null);return;}setBusy(true);try{const id=await ensureAttempt();const r=await apiFetch(`/labs/${slug}/attempts/${id}/complete?lang=${lang}`,{method:"POST",body:"{}"});if(r.status===401)throw new AuthRequiredError();if(!r.ok)throw new Error();setResult(await r.json());}catch(e){if(e instanceof AuthRequiredError)setAuthRequired(true);else setFatal(true);}finally{setBusy(false);}}
   function restart(){setAttempt(null);setIndex(0);setAnswers({});setFeedback(null);setResult(null);setFatal(false);setAuthRequired(false);}
 

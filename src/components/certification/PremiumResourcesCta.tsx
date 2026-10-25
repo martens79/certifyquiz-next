@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackEvent, trackFunnelEvent, userStatusFrom } from "@/lib/analytics";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 
 type Props = {
   lang: Locale;
@@ -101,7 +102,7 @@ export default function PremiumResourcesCta({
         </div>
 
         <Link
-          href={pricingPath(lang)}
+          href={withCtaParam(pricingPath(lang), "certification_card")}
           onClick={() => {
             trackEvent("certification_premium_card_clicked", {
               certification_id: certificationId,
@@ -117,10 +118,10 @@ export default function PremiumResourcesCta({
             // certificazione e non contribuiva mai a funnel_events.
             trackFunnelEvent({
               event: "premium_clicked",
-              email: user?.email || null,
               cert_slug: certificationSlug,
               topic_slug: null,
               lang,
+              metadata: premiumClickMetadata("certification_card"),
             });
           }}
           className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600"
