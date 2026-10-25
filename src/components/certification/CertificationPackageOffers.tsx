@@ -104,19 +104,6 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
     }
   }, [offers]);
 
-  useEffect(() => {
-    const fromUrl = new URLSearchParams(window.location.search).get("package_offer");
-    const saved = readPackageIntent(certificationSlug, lang);
-    // A copied URL can highlight a public offer, never authorize or start checkout.
-    const code = fromUrl || saved;
-    const offer = offers.find(o => o.code === code);
-    setSelectedOffer(offer?.code ?? null);
-  }, [offers, certificationSlug, lang]);
-
-  useEffect(() => {
-    if (selectedOffer) document.getElementById("package-resume")?.scrollIntoView({ block: "start" });
-  }, [selectedOffer, offers]);
-
   // package_viewed: evento esistente package_offer_viewed, ora anche nel funnel V2
   // (visitor/session/pathname) oltre che in GA4. Una volta per sessione e cert.
   useEffect(() => {
@@ -135,6 +122,19 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       certification_id: certificationId, source_page: "certification_page",
     });
   }, [offers, certificationSlug, certificationId, lang, user]);
+
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("package_offer");
+    const saved = readPackageIntent(certificationSlug, lang);
+    // A copied URL can highlight a public offer, never authorize or start checkout.
+    const code = fromUrl || saved;
+    const offer = offers.find(o => o.code === code);
+    setSelectedOffer(offer?.code ?? null);
+  }, [offers, certificationSlug, lang]);
+
+  useEffect(() => {
+    if (selectedOffer) document.getElementById("package-resume")?.closest("article")?.scrollIntoView({ block: "start" });
+  }, [selectedOffer, offers]);
 
   if (!offers.length) return null;
 
@@ -236,7 +236,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
   };
   const ownsTier = (o: Offer) => data?.owned?.tier === o.productCode;
 
-  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6" aria-labelledby="package-title">
+  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <h2 id="package-title" className="text-xl font-black text-slate-950">{t.title}</h2>
       {data?.darkLaunch && isAdmin ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{t.inactive}</span> : null}
@@ -259,11 +259,11 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           : data?.premium ? t.buyAnyway
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
-        return <article key={o.code} id={selectedOffer === o.code ? "package-resume" : undefined} className={`relative scroll-mt-24 rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"} ${selectedOffer === o.code ? "ring-2 ring-indigo-600" : ""}`}>
+        return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
           <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
-          {selectedOffer === o.code ? <p role="status" className="mt-2 text-sm font-semibold text-indigo-900">{{
+          {selectedOffer === o.code ? <p id="package-resume" data-package-selected role="status" className="mt-2 text-sm font-semibold text-indigo-900">{{
             it: "Pacchetto selezionato. Verifica l'offerta e conferma per continuare.",
             en: "Selected package. Review the offer and confirm to continue.",
             fr: "Pack sélectionné. Vérifiez l'offre et confirmez pour continuer.",

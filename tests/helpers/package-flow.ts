@@ -3,7 +3,8 @@ import type { Page } from "@playwright/test";
 export const complete = { code: "fixture-complete", productCode: "octopus-complete", name: "Complete", amountMinor: 2490,
   currency: "EUR", status: "active", checkoutAvailable: true, blockedReason: null, accessDurationDays: 90 };
 export async function packageFlow(page: Page, consent = false) {
-  const state = { authenticated: false, checkoutStatus: 200, checkoutPosts: [] as Record<string, unknown>[], funnel: [] as Record<string, unknown>[], blocked: false, loginOk: true };
+  const state = { authenticated: false, checkoutStatus: 200, checkoutPosts: [] as Record<string, unknown>[], funnel: [] as Record<string, unknown>[], blocked: false, loginOk: true,
+    offerCode: complete.code, withStudy: false };
   await page.addInitScript(({ consent }) => {
     localStorage.setItem("cq_cookie_consent", JSON.stringify({ accepted: consent, ts: Date.now() }));
     localStorage.setItem("lang_banner_dismissed", "1");
@@ -31,7 +32,19 @@ export async function packageFlow(page: Page, consent = false) {
       state.authenticated = true;
       return json({ token: "synthetic", user: { id: 90001, username: "fixture", email: "fixture@example.test", role: "user", premium: false } });
     }
-    if (p.startsWith("/packages/offers/")) return json({ offers: [{ ...complete, blockedReason: state.blocked ? "already_owned" : null }], owned: state.blocked ? { tier: "octopus-complete" } : null });
+    if (p.startsWith("/certifications/by-slug/")) return json({ id: 34, slug: p.split("/").pop(), name: "Fixture certification" });
+    if (p.startsWith("/question-pool/certifications/")) return json({ poolTotal: 100 });
+    if (p.startsWith("/mock-exam/questions/")) return json({
+      poolTotal: 100, purpose: "mock_exam", spec: { questions: 2, served: 2, durationSec: 3600 },
+      questions: [1, 2].map(id => ({ id, question: `Synthetic question #${id}`, answers: [1, 2, 3, 4].map(n => ({ id: id * 10 + n, text: `Answer ${n} of ${id}` })) })),
+    });
+    if (p.startsWith("/mock-exam/evaluate/")) return json({
+      summary: { total: 2, answered: 0, correct: 0, wrong: 0, percentage: 0, passed: false }, reviewAvailable: false, details: [],
+    });
+    if (p.startsWith("/packages/offers/")) return json({ offers: [
+      ...(state.withStudy ? [{ ...complete, code: "fixture-study", productCode: "dolphin-study", amountMinor: 1290 }] : []),
+      { ...complete, code: state.offerCode, blockedReason: state.blocked ? "already_owned" : null },
+    ], owned: state.blocked ? { tier: "octopus-complete" } : null });
     if (p === "/packages/checkout") {
       state.checkoutPosts.push(req.postDataJSON());
       if (!state.authenticated) return json({}, 401);

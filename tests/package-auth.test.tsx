@@ -32,7 +32,7 @@ function fixture({ authed = false, blocked = false, status = 200, loading = fals
       if (path === "/packages/checkout") return new Response(JSON.stringify(responseStatus === 200 ? { url: "https://checkout.stripe.test/stub", sessionId: "cs_stub" } : { error: "CHECKOUT_FAILED" }), { status: responseStatus });
       return new Response("{}");
     } },
-  }, { window: { location: { search: "?source=mock_review&package_offer=ccna-complete", hostname: "localhost", href: "" } }, document: { getElementById: () => ({ scrollIntoView: () => {} }) } });
+  }, { window: { location: { search: "?source=mock_review&package_offer=ccna-complete", hostname: "localhost", href: "" } }, document: { getElementById: () => ({ closest: () => ({ scrollIntoView: () => {} }), scrollIntoView: () => {} }) } });
   let r!: ReactTestRenderer;
   return { state, posts, redirects, events, setStatus: (s: number) => { responseStatus = s; },
     root: () => r.root, mount: async () => { await act(async () => { r = create(<Component lang="es" certificationSlug="ccna" resources={null} />); }); },
@@ -52,6 +52,10 @@ test("guest choice goes to login with exact offer and mock context, no checkout"
 test("restored choice is highlighted but never starts checkout automatically", async () => {
   const f = fixture({ authed: true }); await f.mount();
   assert.equal(f.posts.length, 0); assert.equal(f.root().findAllByProps({ role: "status" }).length, 1);
+  // A's exact-offer fragment and B's selected-card fragment must coexist.
+  const anchor = f.root().findByProps({ id: "package-offer-ccna-complete" });
+  const selected = f.root().findByProps({ id: "package-resume" });
+  assert.equal(anchor.parent, selected.parent);
   await f.unmount();
 });
 test("two synchronous clicks produce one checkout and one attempted event", async () => {
