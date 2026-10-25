@@ -39,4 +39,4 @@ jobs:
           npx playwright test -c playwright.auth-logout.config.ts
       - uses: actions/upload-artifact@v4
         if: always()
-        with: {name: auth-logout-evidence, path: '.tmp/session-results*'}
+        with: {name: auth-logout-evidence, path: '.tmp/session-results*', include-hidden-files: true}
