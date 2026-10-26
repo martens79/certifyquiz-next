@@ -101,7 +101,10 @@ for(const lang of ['it','en','fr','es'] as const){
   for(const role of ['free','premium'] as const){
     test(`${lang}: synthetic ${role} login returns to quiz and respects explanation access`,async({page})=>{
       const counters=await fixture(page,role);const target=`/${lang}/quiz/eipass/mixed`;
-      await page.goto(`/${lang}/login?redirect=${encodeURIComponent(target)}`);
+      // English login is canonical at /login. Avoid the /en/login alias,
+      // whose local Next redirect changes 127.0.0.1 to localhost (blocked by isolation).
+      const loginPath=lang==='en'?'/login':`/${lang}/login`;
+      await page.goto(`${loginPath}?redirect=${encodeURIComponent(target)}`);
       const loginForm=page.locator('form').filter({has:page.locator('input[type="password"]')});
       await loginForm.locator('#email').fill('eipass@example.test');
       await loginForm.locator('#password').fill('synthetic-not-a-real-password');
