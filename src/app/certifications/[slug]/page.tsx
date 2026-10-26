@@ -191,6 +191,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const description =
     override.description ||
+    (canonicalSlug === "apple-device-support" ? registryCert?.description?.en : undefined) ||
     data?.description_en ||
     data?.description ||
     `Prepare for ${certName} with realistic quizzes, exam-style questions and clear explanations.`;
