@@ -1,5 +1,6 @@
 // src/app/[lang]/quiz/[slug]/mixed/page.tsx
 'use client';
+import { EIPASS_USER_COPY } from '@/lib/eipass-user-release';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -185,7 +186,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   // rifarebbe il fetch del pool (un nuovo set casuale) a sessione gia' avviata.
   const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
-  const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
+  const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const copy = COPY[currentLang] ?? COPY.it;
 const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
@@ -410,7 +411,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
   context={{
   kind: 'mixed',
-  certificationName: currentSlug.toUpperCase(),
+  certificationName: currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.toUpperCase(),
   certificationSlug: currentSlug,
   certificationId: certId,
   backHref: withLang(currentLang, `/quiz/${currentSlug}`),

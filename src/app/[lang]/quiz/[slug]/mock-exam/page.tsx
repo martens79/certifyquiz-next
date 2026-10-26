@@ -21,6 +21,7 @@ import {
 import { getExamSpecForCert } from "@/lib/exam-specs";
 import { getMockExamLoadError } from "@/lib/mock-exam-errors";
 import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
+import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 
 /* --------------------------- normalize API → UI -------------------------- */
 function normalizeMixedQuestion(q: ApiQuestion): UiQuestion {
@@ -54,7 +55,7 @@ export default function MockExamPage() {
   // rifarebbe il fetch del mock (un nuovo esame casuale) a sessione avviata.
   const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
-  const certName = useMemo(() => currentSlug.replace(/-/g, " "), [currentSlug]);
+  const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const isAuthenticated = !!getAccessToken();
 
   useEffect(() => {
@@ -127,7 +128,13 @@ export default function MockExamPage() {
     },
   } as const;
 
-  const t = mockCopy[currentLang] ?? mockCopy.en;
+  const baseCopy = mockCopy[currentLang] ?? mockCopy.en;
+  const t = currentSlug === "eipass" ? { ...baseCopy,
+    badge: EIPASS_USER_COPY.practiceTitle[currentLang],
+    title: `${EIPASS_USER_COPY.practiceTitle[currentLang]} — ${certName}`,
+    desc: EIPASS_USER_COPY.practiceNotice[currentLang],
+    note: EIPASS_USER_COPY.practiceNotice[currentLang],
+  } : baseCopy;
 
   useEffect(() => {
     if (!certId) return;

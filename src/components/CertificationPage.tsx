@@ -21,6 +21,7 @@ import CertificationAnalytics from "@/components/analytics/CertificationAnalytic
 import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 import { practiceTopicCoverage, practiceTopicLimit } from "@/lib/practice-topic-coverage";
+import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -404,6 +405,7 @@ const pageTopics =
           </div>
         )}
 
+        {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
@@ -443,7 +445,7 @@ const pageTopics =
 
         <PremiumResourcesCta
           lang={lang}
-          certificationName={resources?.certificationName || pageTitle}
+          certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
           certificationId={resources?.certificationId ?? null}
           certificationSlug={data.slug}
           hasGuide={!!resources?.guide.available}

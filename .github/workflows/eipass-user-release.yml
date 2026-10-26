@@ -1,0 +1,39 @@
+name: EIPASS User editorial contracts
+on:
+  pull_request:
+    paths:
+      - 'src/lib/eipass-user-release.ts'
+      - 'src/lib/server/topic-page.ts'
+      - 'src/certifications/data/EIPASS.ts'
+      - 'src/components/certification/PremiumResourcesCta.tsx'
+      - 'tests/eipass-user-release.test.tsx'
+      - 'tests/fixtures/eipass-user/**'
+      - 'docs/eipass-release1/**'
+      - '.github/workflows/eipass-user-release.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editorial-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Editorial, SEO, access and navigation regressions
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+          NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+        run: >-
+          node --import tsx --test tests/eipass-user-release.test.tsx
+          tests/quiz-explanation-access.test.ts tests/topic-premium-required.test.tsx
+          tests/topic-indexability-language.test.ts tests/mock-complete-link.test.tsx
+          tests/premium-click-origin.test.ts tests/checkout-intent.test.ts
+          tests/auth-logout.test.ts tests/isc2-practice-coverage.test.ts
+          tests/pmp-practice-coverage.test.ts
