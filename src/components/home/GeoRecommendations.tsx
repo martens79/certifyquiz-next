@@ -55,7 +55,7 @@ export default function GeoRecommendations({ lang }: { lang: Locale }) {
       <p className="mt-2 min-h-10 text-sm text-slate-600">{copy.note}</p>
       <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {GEO_CERTS[country].map(slug => <li key={slug}>
-          <a href={certPath(lang, slug)} className="flex min-h-16 items-center rounded-xl border border-slate-200 bg-white p-4 font-semibold text-blue-700 hover:underline" onClick={() => trackEvent('home_geo_clicked', { country, language: lang, certification_slug: slug, source_page: 'home' })}>{TITLES[slug]}</a>
+          <a href={certPath(lang, slug)} className="flex h-24 items-center rounded-xl border border-slate-200 bg-white p-4 font-semibold text-blue-700 hover:underline" onClick={() => trackEvent('home_geo_clicked', { country, language: lang, certification_slug: slug, source_page: 'home' })}>{TITLES[slug]}</a>
         </li>)}
       </ul>
     </section>
