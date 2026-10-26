@@ -2,7 +2,9 @@ import {test,expect,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';
 import {EIPASS_USER_COPY,EIPASS_USER_MODULES} from '../src/lib/eipass-user-release';
 const topics=JSON.parse(readFileSync('tests/fixtures/eipass-user/topics-before.json','utf8'));
-const origin='http://127.0.0.1:3459';
+// Next normalizes local redirect destinations to localhost. Keep the browser
+// and its strict origin allowlist on that host, including desktop prefetches.
+const origin='http://localhost:3459';
 const roots={it:'/it/certificazioni',en:'/certifications',fr:'/fr/certifications',es:'/es/certificaciones'};
 const badCopy=/official-like question count|nombre de questions proche de l.officiel|número de preguntas similar al oficial|numero domande realistico/;
 type Role='anonymous'|'free'|'premium';
