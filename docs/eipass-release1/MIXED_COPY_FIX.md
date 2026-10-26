@@ -12,7 +12,7 @@ Lo smoke SSR include ora anche mixed e mock nelle quattro lingue: 44 route compl
 
 ## Browser isolato, senza preview pubblica o deploy
 
-Il job `browser` del workflow EIPASS installa Chromium nel runner GitHub Actions, avvia Next e il backend di fixture nello stesso runner e usa `playwright.eipass.config.ts`. I progetti sono Chromium desktop 1440×1000 e Chromium con emulazione Pixel 7. Non vengono esposti servizi, porte, tunnel, credenziali o dati privati.
+Il job `browser` del workflow EIPASS usa Google Chrome già presente nel runner GitHub Actions Ubuntu 24.04, ne registra la versione, avvia Next e il backend di fixture nello stesso runner e usa `playwright.eipass.config.ts`. I progetti sono Chrome desktop 1440×1000 e Chrome con emulazione Pixel 7. Non vengono esposti servizi, porte, tunnel, credenziali o dati privati. Per riprodurre il browser localmente serve Google Chrome installato; non è previsto un download implicito di browser.
 
 Le 32 prove previste coprono, per ciascuna lingua e ciascun dispositivo:
 

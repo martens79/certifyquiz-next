@@ -42,7 +42,7 @@ jobs:
           tests/auth-logout.test.ts tests/isc2-practice-coverage.test.ts
           tests/pmp-practice-coverage.test.ts
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       API_BASE_URL: http://127.0.0.1:8459/api
@@ -61,7 +61,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: '22', cache: npm}
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - run: npx --no-install playwright install --with-deps chromium
+      - name: Use the runner's preinstalled Google Chrome
+        run: google-chrome --version
       - name: Isolated build, SSR and desktop/mobile browsers (no deployment)
         run: |
           node -e "require('fs').writeFileSync('/tmp/eipass-isolation.json', JSON.stringify({testRunId:'ccst-r02-eipassbrowserci20261026',backendOrigin:'http://127.0.0.1:8459'}))"
