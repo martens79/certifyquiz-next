@@ -1,0 +1,19 @@
+name: EIPASS Phase 2 offline editorial QA
+on:
+  pull_request:
+    paths:
+      - 'docs/eipass-phase2/**'
+      - 'scripts/eipass-phase2/**'
+      - 'tests/eipass-phase2/**'
+      - '.github/workflows/eipass-phase2-editorial.yml'
+permissions:
+  contents: read
+jobs:
+  offline-qa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python3 -m unittest discover -s tests/eipass-phase2 -v

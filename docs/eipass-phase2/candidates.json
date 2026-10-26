@@ -1,0 +1,1704 @@
+{
+  "schema_version": 1,
+  "audit_main_commit": "a9155fcdf017bb33ba22da96c2d2e7e9c44ab5ec",
+  "database_read": false,
+  "ready_for_approval": 0,
+  "blocked_items": 19,
+  "editorial_decisions": 8,
+  "source_kind": "MAIN_AUDIT_NOT_DATABASE_EXPORT",
+  "items": [
+    {
+      "question_id": 1015,
+      "topic_id": 23,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P2: distinguere fine paragrafo da interruzione di riga",
+      "audit_proposal": "In Word, quale struttura termina in corrispondenza del segno ¶ mostrato con i caratteri non stampabili?",
+      "audit_it": {
+        "question": "In un documento Word, cosa indica il simbolo ¶ visibile attivando la formattazione?",
+        "answers": [
+          {
+            "id": 3823,
+            "text": "Un errore ortografico"
+          },
+          {
+            "id": 3824,
+            "text": "Un'interruzione di pagina"
+          },
+          {
+            "id": 3825,
+            "text": "Un segno di paragrafo (a capo)"
+          },
+          {
+            "id": 3826,
+            "text": "Un campo nascosto"
+          }
+        ]
+      },
+      "audit_sha256": "5a308ae6a1ae5abbd7c1db9686007ddeb9933967ef955d2211106300a5de6a87",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 3825,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Word per Microsoft 365 per Windows, quale struttura termina con il segno non stampabile ¶?",
+        "answers": [
+          {
+            "id": 3823,
+            "text": "Un errore di ortografia"
+          },
+          {
+            "id": 3824,
+            "text": "Una pagina del documento"
+          },
+          {
+            "id": 3825,
+            "text": "Un paragrafo"
+          },
+          {
+            "id": 3826,
+            "text": "Un campo nascosto"
+          }
+        ],
+        "explanation": "¶ indica la fine di un paragrafo; non identifica una semplice interruzione di riga."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-gb/word/word-options-display",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 1050,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: specificare riferimenti relativi; distinguere assoluti e misti",
+      "audit_proposal": "Una cella contiene =A1+B1 con riferimenti relativi. Che cosa accade trascinando la maniglia di riempimento di una riga verso il basso?",
+      "audit_it": {
+        "question": "Cosa succede se trasciniamo il quadratino nell’angolo di una cella con una formula verso il basso?",
+        "answers": [
+          {
+            "id": 3963,
+            "text": "Copia il contenuto come testo"
+          },
+          {
+            "id": 3964,
+            "text": "Duplica la formula senza modificarla"
+          },
+          {
+            "id": 3965,
+            "text": "Applica la formula adattando i riferimenti"
+          },
+          {
+            "id": 3966,
+            "text": "Elimina la formula originaria"
+          }
+        ]
+      },
+      "audit_sha256": "ce0e01f953960a4413f2a2f6efda132eef076dc1f5b978627edccebc2a4d4ae9",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 3965,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop per Windows, C1 contiene =A1+B1. Trascini la maniglia di riempimento da C1 a C2: quale formula ottieni?",
+        "answers": [
+          {
+            "id": 3963,
+            "text": "Il testo A1+B1, senza formula"
+          },
+          {
+            "id": 3964,
+            "text": "=A1+B1"
+          },
+          {
+            "id": 3965,
+            "text": "=A2+B2"
+          },
+          {
+            "id": 3966,
+            "text": "=A1+B2"
+          }
+        ],
+        "explanation": "Entrambi i riferimenti sono relativi: spostando la formula una riga in basso aumentano entrambi i numeri di riga."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/excel/switch-between-relative-and-absolute-references",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 1080,
+      "topic_id": 17,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: assoluto «ROM non modificabile»: precisare tecnologia e contesto",
+      "audit_proposal": "Quale caratteristica descrive la ROM tradizionale, distinguendola dalla RAM e dalle memorie flash riscrivibili?",
+      "audit_it": {
+        "question": "Che cos’è la ROM in un computer?",
+        "answers": [
+          {
+            "id": 4083,
+            "text": "Una memoria volatile"
+          },
+          {
+            "id": 4084,
+            "text": "Una memoria di sola lettura, non modificabile"
+          },
+          {
+            "id": 4085,
+            "text": "Un programma antivirus"
+          },
+          {
+            "id": 4086,
+            "text": "Un componente della tastiera"
+          }
+        ]
+      },
+      "audit_sha256": "5d59617bc86c40bd6879fc7cd78c5e236dd589e61882691c583b2e54ca25aeb1",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 4084,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "Quale caratteristica descrive una ROM a maschera, programmata durante la fabbricazione?",
+        "answers": [
+          {
+            "id": 4083,
+            "text": "Perde tutti i dati quando manca alimentazione"
+          },
+          {
+            "id": 4084,
+            "text": "Conserva i dati senza alimentazione e non permette di riscriverli durante il normale utilizzo"
+          },
+          {
+            "id": 4085,
+            "text": "Memorizza soltanto dati temporanei riscrivibili a ogni operazione"
+          },
+          {
+            "id": 4086,
+            "text": "È sempre una memoria flash cancellabile elettricamente"
+          }
+        ],
+        "explanation": "La ROM a maschera contiene dati definiti in fabbrica. EEPROM e flash sono tecnologie non volatili riscrivibili: la loro esistenza impedisce di estendere il divieto di modifica a ogni memoria della famiglia ROM."
+      },
+      "sources": [
+        {
+          "url": "https://www.renesas.com/en/products/rom-ordering",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://www.ibm.com/think/topics/eeprom-vs-flash",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 1169,
+      "topic_id": 18,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: due metodi non garantiscono due fattori distinti",
+      "audit_proposal": "Quale procedura usa due fattori di autenticazione distinti, ad esempio password e chiave di sicurezza fisica?",
+      "audit_it": {
+        "question": "Cosa rappresenta l'autenticazione a due fattori (2FA)?",
+        "answers": [
+          {
+            "id": 4439,
+            "text": "Un sistema di backup"
+          },
+          {
+            "id": 4440,
+            "text": "Una password composta da due parole"
+          },
+          {
+            "id": 4441,
+            "text": "Una procedura che richiede due metodi di verifica dell'identità"
+          },
+          {
+            "id": 4442,
+            "text": "Un firewall avanzato"
+          }
+        ]
+      },
+      "audit_sha256": "117e8d201d4f347d3186499f90432fb0591c142f4e206c3abf5292b2899332ec",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 4441,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "Quale procedura usa due fattori di autenticazione di categorie diverse?",
+        "answers": [
+          {
+            "id": 4439,
+            "text": "Inserire due password diverse"
+          },
+          {
+            "id": 4440,
+            "text": "Inserire una password e un PIN memorizzato"
+          },
+          {
+            "id": 4441,
+            "text": "Inserire una password e usare una chiave di sicurezza fisica"
+          },
+          {
+            "id": 4442,
+            "text": "Inserire due volte la stessa password"
+          }
+        ],
+        "explanation": "Password e chiave fisica combinano conoscenza e possesso; due segreti memorizzati restano entrambi fattori di conoscenza."
+      },
+      "sources": [
+        {
+          "url": "https://pages.nist.gov/800-63-4/sp800-63b.html",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 13093,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: specificare riferimenti relativi; distinguere assoluti e misti",
+      "audit_proposal": "Copiando verso il basso di una riga una formula con soli riferimenti relativi, come cambiano i riferimenti?",
+      "audit_it": {
+        "question": "Cosa succede se trasciniamo il quadratino nell'angolo di una cella con una formula verso il basso?",
+        "answers": [
+          {
+            "id": 53044,
+            "text": "Elimina la formula originaria e lascia la cella vuota"
+          },
+          {
+            "id": 53045,
+            "text": "Duplica la formula in modo identico senza alcuna modifica ai riferimenti"
+          },
+          {
+            "id": 53046,
+            "text": "Copia il contenuto della cella come testo semplice nelle celle sottostanti"
+          },
+          {
+            "id": 53047,
+            "text": "Applica la formula adattando i riferimenti riga per riga"
+          }
+        ]
+      },
+      "audit_sha256": "709c7564e69a551d13d3c9d7080495c5aa282b7aeaf476e335b2d3858f713216",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 53047,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop, D4 contiene =B4*C4 con riferimenti relativi. Copi D4 in D5: quale formula contiene D5?",
+        "answers": [
+          {
+            "id": 53044,
+            "text": "=B3*C3"
+          },
+          {
+            "id": 53045,
+            "text": "=B4*C4"
+          },
+          {
+            "id": 53046,
+            "text": "=C4*D4"
+          },
+          {
+            "id": 53047,
+            "text": "=B5*C5"
+          }
+        ],
+        "explanation": "Lo spostamento è verticale di una riga: cambiano i numeri di riga, mentre le colonne dei riferimenti restano B e C."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/excel/switch-between-relative-and-absolute-references",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 13110,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: specificare riferimenti relativi; distinguere assoluti e misti",
+      "audit_proposal": "Copiando =A1+$B$1 dalla riga1 alla riga2 con la maniglia di riempimento, quale formula si ottiene?",
+      "audit_it": {
+        "question": "Cosa accade trascinando verso il basso la maniglia di riempimento di una cella contenente una formula?",
+        "answers": [
+          {
+            "id": 53112,
+            "text": "La formula viene eliminata dalle celle originali"
+          },
+          {
+            "id": 53113,
+            "text": "Excel copia la formula aggiornando automaticamente i riferimenti"
+          },
+          {
+            "id": 53114,
+            "text": "Il contenuto viene trasformato in testo semplice"
+          },
+          {
+            "id": 53115,
+            "text": "Le celle sottostanti vengono bloccate automaticamente"
+          }
+        ]
+      },
+      "audit_sha256": "d7a881ee98138d0a7e0cd92ea29c7e4b6a25e0fbacf42442730fad8f829b9eb6",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 53113,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop, C1 contiene =A1+$B$1. Copi C1 in C2: quale formula ottieni?",
+        "answers": [
+          {
+            "id": 53112,
+            "text": "=A1+$B$2"
+          },
+          {
+            "id": 53113,
+            "text": "=A2+$B$1"
+          },
+          {
+            "id": 53114,
+            "text": "=A2+$B$2"
+          },
+          {
+            "id": 53115,
+            "text": "=B1+$C$1"
+          }
+        ],
+        "explanation": "A1 è relativo e diventa A2. $B$1 è assoluto e resta invariato. La formula combina un riferimento relativo e uno assoluto; non usa un riferimento misto come B$1."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/excel/switch-between-relative-and-absolute-references",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25218,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: comando icone senza testo non dimostrato; verificare versione Excel",
+      "audit_proposal": "Dove configuri i comandi visualizzati nella barra multifunzione di Excel nella versione desktop dichiarata?",
+      "audit_it": {
+        "question": "Come si può personalizzare la barra multifunzione di Excel per mostrare solo le icone senza il testo dei comandi?",
+        "answers": [
+          {
+            "id": 101672,
+            "text": "Non è possibile modificare l'aspetto della barra multifunzione"
+          },
+          {
+            "id": 101673,
+            "text": "Tramite le opzioni di visualizzazione della barra multifunzione"
+          },
+          {
+            "id": 101674,
+            "text": "Solo reinstallando Excel"
+          },
+          {
+            "id": 101675,
+            "text": "Modificando le impostazioni di Windows Update"
+          }
+        ]
+      },
+      "audit_sha256": "38d1527b1c812f6267f06fdadb72d8f29532fd0c80e67ddf72d8008b9c3229eb",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 101673,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel per Microsoft 365 desktop per Windows, dove aggiungi una nuova scheda personalizzata alla barra multifunzione?",
+        "answers": [
+          {
+            "id": 101672,
+            "text": "In File > Opzioni > Barra di accesso rapido"
+          },
+          {
+            "id": 101673,
+            "text": "In File > Opzioni > Personalizzazione barra multifunzione"
+          },
+          {
+            "id": 101674,
+            "text": "In Visualizza > Zoom"
+          },
+          {
+            "id": 101675,
+            "text": "In File > Opzioni > Lingua"
+          }
+        ],
+        "explanation": "La personalizzazione permette di organizzare schede, gruppi e comandi. Non coincide con il comando per mostrare o nascondere la barra."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/office/foundations-experiences/customize-the-ribbon-in-office",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25228,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: modalità compatta da verificare nella versione Excel dichiarata",
+      "audit_proposal": "Quale impostazione modifica la visualizzazione della barra multifunzione nella versione Excel indicata?",
+      "audit_it": {
+        "question": "Come si passa da uno stile di visualizzazione dettagliato a uno compatto per i comandi della barra multifunzione di Excel?",
+        "answers": [
+          {
+            "id": 101712,
+            "text": "Tramite le opzioni di personalizzazione della barra multifunzione"
+          },
+          {
+            "id": 101713,
+            "text": "Disinstallando e reinstallando Excel"
+          },
+          {
+            "id": 101714,
+            "text": "Modificando la risoluzione dello schermo"
+          },
+          {
+            "id": 101715,
+            "text": "Non è possibile personalizzare lo stile dei comandi"
+          }
+        ]
+      },
+      "audit_sha256": "24cf10ab9a3f5e7abfc7b048688f3d7d1f9e089950354b53ea7850e4d521ca31",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 101712,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop per Windows, quale scorciatoia alterna la visualizzazione dei comandi della barra multifunzione?",
+        "answers": [
+          {
+            "id": 101712,
+            "text": "Ctrl+F1"
+          },
+          {
+            "id": 101713,
+            "text": "Ctrl+S"
+          },
+          {
+            "id": 101714,
+            "text": "Ctrl+P"
+          },
+          {
+            "id": 101715,
+            "text": "Ctrl+Z"
+          }
+        ],
+        "explanation": "Ctrl+F1 espande o comprime la barra; non modifica le dimensioni delle icone né definisce uno stile compatto universale."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/it-it/accessibility/excel/keyboard-shortcuts-in-excel",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-us/office/foundations-experiences/show-or-hide-the-ribbon-in-office",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25267,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: confusione tra foglio e intervallo di celle",
+      "audit_proposal": "Come sposti un intervallo di celle in un’altra posizione del foglio Excel usando soltanto la tastiera?",
+      "audit_it": {
+        "question": "Come si può spostare un intero foglio di dati in una posizione diversa della stessa riga o colonna senza usare il mouse?",
+        "answers": [
+          {
+            "id": 101868,
+            "text": "Selezionando, tagliando con CTRL+X, spostandosi con le frecce e incollando con CTRL+V"
+          },
+          {
+            "id": 101869,
+            "text": "Non è possibile spostare dati senza il mouse"
+          },
+          {
+            "id": 101870,
+            "text": "Solo riscrivendo manualmente ogni valore"
+          },
+          {
+            "id": 101871,
+            "text": "Chiudendo e riaprendo Excel"
+          }
+        ]
+      },
+      "audit_sha256": "baadac7718d64c3e202f0d391b65585bd072e9483407d009eebd76a970a2a0b5",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 101868,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop per Windows, un intervallo di celle è selezionato. Quale sequenza lo sposta in un intervallo di destinazione vuoto usando la tastiera?",
+        "answers": [
+          {
+            "id": 101868,
+            "text": "Ctrl+X, selezione della cella di destinazione con le frecce, Ctrl+V"
+          },
+          {
+            "id": 101869,
+            "text": "Ctrl+C, selezione della destinazione, Ctrl+V"
+          },
+          {
+            "id": 101870,
+            "text": "Canc, selezione della destinazione, Ctrl+V"
+          },
+          {
+            "id": 101871,
+            "text": "Ctrl+S, selezione della destinazione, Ctrl+P"
+          }
+        ],
+        "explanation": "Taglia e incolla spostano le celle selezionate. Copia e incolla ne producono una copia; un intervallo non è un intero foglio di lavoro."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/it-it/accessibility/excel/keyboard-shortcuts-in-excel",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25367,
+      "topic_id": 22,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: esportazione PDF non garantisce immodificabilità dei dati",
+      "audit_proposal": "Come esporti una cartella Excel in PDF per distribuire una versione impaginata dei dati?",
+      "audit_it": {
+        "question": "Come si esporta una cartella di lavoro Excel in formato PDF, ad esempio per condividerla senza permettere modifiche ai dati?",
+        "answers": [
+          {
+            "id": 102268,
+            "text": "Non è possibile esportare un file Excel in PDF"
+          },
+          {
+            "id": 102269,
+            "text": "Solo tramite uno scanner"
+          },
+          {
+            "id": 102270,
+            "text": "Facendo uno screenshot di ogni foglio"
+          },
+          {
+            "id": 102271,
+            "text": "Da File > Esporta o Salva con nome, scegliendo PDF come tipo di file"
+          }
+        ]
+      },
+      "audit_sha256": "5fe7fb5001eaea232bd1e766588af1af5b9d7cb55c4f260bc6054caced215e19",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 102271,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Excel desktop per Windows, come crei una copia PDF impaginata di una cartella di lavoro?",
+        "answers": [
+          {
+            "id": 102268,
+            "text": "Modificando soltanto l’estensione del nome da .xlsx a .pdf"
+          },
+          {
+            "id": 102269,
+            "text": "Salvando la cartella come file CSV"
+          },
+          {
+            "id": 102270,
+            "text": "Attivando la protezione del foglio senza esportare"
+          },
+          {
+            "id": 102271,
+            "text": "Usando File > Esporta o Salva con nome e scegliendo PDF, con l’ambito desiderato"
+          }
+        ],
+        "explanation": "Il PDF è una copia di distribuzione; verifica nelle opzioni quali fogli includere. Il formato da solo non impedisce successive modifiche."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-gb/office/collab-files/save-or-convert-to-pdf-or-xps-in-office-desktop-apps",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-us/word/training/edit-a-pdf",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25465,
+      "topic_id": 20,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P2: home page/pagina iniziale ambigue; specificare browser e impostazione",
+      "audit_proposal": "In un browser e una versione specificati, come differiscono le pagine aperte all’avvio e la pagina richiamata dal pulsante Home?",
+      "audit_it": {
+        "question": "Qual è la differenza tra la \"pagina iniziale\" e la \"home page\" impostata su un browser?",
+        "answers": [
+          {
+            "id": 102660,
+            "text": "Sono sempre esattamente la stessa cosa in ogni browser"
+          },
+          {
+            "id": 102661,
+            "text": "La home page si apre solo su dispositivi mobili"
+          },
+          {
+            "id": 102662,
+            "text": "Sono impostazioni distinte: una si apre all'avvio, l'altra tramite il pulsante Home"
+          },
+          {
+            "id": 102663,
+            "text": "La pagina iniziale esiste solo in modalità incognito"
+          }
+        ]
+      },
+      "audit_sha256": "1b5e25825e02bf54c18210a7f486a10f65622fd2cc65cef6be3b66deaf6c20d7",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 102662,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Google Chrome per computer, come si distinguono le pagine configurate in All’avvio dalla pagina del pulsante Home?",
+        "answers": [
+          {
+            "id": 102660,
+            "text": "Sono obbligatoriamente sempre uguali"
+          },
+          {
+            "id": 102661,
+            "text": "Il pulsante Home apre soltanto pagine su dispositivi mobili"
+          },
+          {
+            "id": 102662,
+            "text": "Le prime si aprono avviando Chrome; la seconda viene richiamata dal pulsante Home, se abilitato"
+          },
+          {
+            "id": 102663,
+            "text": "All’avvio funziona soltanto in modalità in incognito"
+          }
+        ],
+        "explanation": "Chrome gestisce separatamente l’apertura iniziale e la destinazione del pulsante Home: le due impostazioni possono coincidere, ma non sono equivalenti."
+      },
+      "sources": [
+        {
+          "url": "https://support.google.com/chrome/answer/95314?co=GENIE.Platform%3DDesktop&hl=en",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25508,
+      "topic_id": 20,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: licenza di riuso non significa assenza di copyright",
+      "audit_proposal": "Come individui immagini con una licenza che consente il riuso previsto e quali condizioni controlli prima di pubblicarle?",
+      "audit_it": {
+        "question": "Come si esegue una ricerca di immagini utilizzabili e condivisibili (cioè non protette da diritto d'autore) su Google Immagini?",
+        "answers": [
+          {
+            "id": 102832,
+            "text": "Tutte le immagini trovate online possono sempre essere riutilizzate liberamente"
+          },
+          {
+            "id": 102833,
+            "text": "Filtrando i risultati per \"diritti di utilizzo\" nella ricerca avanzata di Google Immagini"
+          },
+          {
+            "id": 102834,
+            "text": "Non esiste alcun modo per verificare i diritti di un'immagine"
+          },
+          {
+            "id": 102835,
+            "text": "Solo scaricando immagini da siti a pagamento"
+          }
+        ]
+      },
+      "audit_sha256": "bd30f73d12b732b3b88cc25dac4d7d14eca77292f1d50f99c2d7ae7d3c68e159",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 102833,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "Su Google Immagini, quale procedura aiuta a trovare un’immagine riutilizzabile e a verificarne le condizioni prima della pubblicazione?",
+        "answers": [
+          {
+            "id": 102832,
+            "text": "Usare qualsiasi risultato purché la risoluzione sia bassa"
+          },
+          {
+            "id": 102833,
+            "text": "Usare Diritti di utilizzo e verificare licenza e condizioni presso la fonte"
+          },
+          {
+            "id": 102834,
+            "text": "Scaricare l’immagine e rimuovere il nome dell’autore"
+          },
+          {
+            "id": 102835,
+            "text": "Considerare la presenza su Google una licenza di pubblicazione"
+          }
+        ],
+        "explanation": "Il filtro segnala informazioni di licenza. Controlla fonte, attribuzione ed eventuali limiti su modifiche e uso previsto; riutilizzabile non significa privo di copyright."
+      },
+      "sources": [
+        {
+          "url": "https://support.google.com/websearch/answer/29508?co=GENIE.Platform%3DDesktop&hl=en",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25551,
+      "topic_id": 20,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: Posta di Windows fuori supporto e non operativa dal 31/12/2024",
+      "audit_proposal": "Come aggiungi un account email esistente a un client attualmente supportato, nella versione indicata?",
+      "audit_it": {
+        "question": "Come si aggiunge un account di posta elettronica esistente (ad esempio Gmail) all'app \"Posta\" di Windows, per gestirlo direttamente dal computer?",
+        "answers": [
+          {
+            "id": 103004,
+            "text": "Non è possibile collegare account esterni all'app Posta di Windows"
+          },
+          {
+            "id": 103005,
+            "text": "Da \"Aggiungi account\" nell'app Posta, scegliendo il provider e accedendo con le credenziali"
+          },
+          {
+            "id": 103006,
+            "text": "Solo reinstallando Windows da zero"
+          },
+          {
+            "id": 103007,
+            "text": "Cambiando la password dell'account Google ogni volta"
+          }
+        ]
+      },
+      "audit_sha256": "a02dc8a1276a66325adeae5e6e865a382ae7cce8077729f1b1db82ce76f5d64d",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 103005,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "Nel nuovo Outlook per Windows, quale procedura avvia l’aggiunta di un account Gmail esistente?",
+        "answers": [
+          {
+            "id": 103004,
+            "text": "Cambiare soltanto il nome visualizzato del profilo"
+          },
+          {
+            "id": 103005,
+            "text": "Aprire le impostazioni account, scegliere Aggiungi account e seguire l’accesso e le autorizzazioni Google"
+          },
+          {
+            "id": 103006,
+            "text": "Modificare l’estensione dei messaggi salvati in .gmail"
+          },
+          {
+            "id": 103007,
+            "text": "Creare un contatto con il proprio indirizzo Gmail"
+          }
+        ],
+        "explanation": "Il nuovo Outlook supporta l’aggiunta di Gmail tramite gestione account. Le schermate variano con gli aggiornamenti; il vecchio client Posta di Windows non è il prodotto di riferimento."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-gb/outlook/outlook-for-windows-the-future-of-mail-calendar-and-people-on-windows-11",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-gb/outlook/getstarted/add-a-gmail-account-to-outlook-for-windows",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25634,
+      "topic_id": 17,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P2: spiegare backup cartelle OneDrive, sincronizzazione e ripristino",
+      "audit_proposal": "Quale funzione OneDrive consente di proteggere le cartelle supportate e quali limiti devi conoscere?",
+      "audit_it": {
+        "question": "Come si archivia una copia di sicurezza (backup) dei propri file importanti direttamente su OneDrive da Windows 11?",
+        "answers": [
+          {
+            "id": 103336,
+            "text": "Non è possibile fare il backup su OneDrive da Windows"
+          },
+          {
+            "id": 103337,
+            "text": "Solo stampando ogni file su carta"
+          },
+          {
+            "id": 103338,
+            "text": "Formattando il computer prima del backup"
+          },
+          {
+            "id": 103339,
+            "text": "Dalle impostazioni dell'app OneDrive, attivando il backup delle cartelle desiderate"
+          }
+        ]
+      },
+      "audit_sha256": "58f37556e08326116fc554989fd59d0986cd46f0e9572ba169a5c741c8a71390",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 103339,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In OneDrive per Windows, quale funzione configura la protezione delle cartelle supportate, come Desktop e Documenti?",
+        "answers": [
+          {
+            "id": 103336,
+            "text": "La sola opzione File su richiesta"
+          },
+          {
+            "id": 103337,
+            "text": "La sola pausa della sincronizzazione"
+          },
+          {
+            "id": 103338,
+            "text": "La sola selezione delle cartelle visibili tramite Scegli cartelle"
+          },
+          {
+            "id": 103339,
+            "text": "Sincronizzazione e backup > Gestisci backup, scegliendo le cartelle supportate"
+          }
+        ],
+        "explanation": "Gestisci backup integra le cartelle supportate con OneDrive. Le modifiche si sincronizzano: controlla recupero, conservazione e disponibilità; non è una copia indipendente immutabile."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/onedrive/back-up-your-folders-with-onedrive",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-gb/onedrive/delete-files-or-folders-in-onedrive",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25741,
+      "topic_id": 18,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P2: chiarire limiti del backup tramite sincronizzazione OneDrive",
+      "audit_proposal": "Qual è la differenza tra sincronizzare una cartella con OneDrive e conservare una copia indipendente recuperabile?",
+      "audit_it": {
+        "question": "Come si esegue una copia di backup dei propri dati direttamente su OneDrive, sfruttando la sincronizzazione automatica del cloud?",
+        "answers": [
+          {
+            "id": 103764,
+            "text": "Non è possibile eseguire backup automatici su OneDrive"
+          },
+          {
+            "id": 103765,
+            "text": "Solo copiando manualmente ogni file uno per uno ogni giorno"
+          },
+          {
+            "id": 103766,
+            "text": "Formattando il computer prima di ogni backup"
+          },
+          {
+            "id": 103767,
+            "text": "Attivando l'opzione \"Backup\" nelle impostazioni dell'app OneDrive"
+          }
+        ]
+      },
+      "audit_sha256": "b890592ebe509357e8fd60f9cb677a74787a7d9e537c17366b71337c341795dd",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 103767,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "Perché la sincronizzazione di una cartella con OneDrive non equivale a conservare una copia indipendente immutabile?",
+        "answers": [
+          {
+            "id": 103764,
+            "text": "Perché ogni sincronizzazione converte i documenti in PDF"
+          },
+          {
+            "id": 103765,
+            "text": "Perché le versioni precedenti sono conservate senza alcun limite"
+          },
+          {
+            "id": 103766,
+            "text": "Perché le eliminazioni vengono sempre ignorate dalla sincronizzazione"
+          },
+          {
+            "id": 103767,
+            "text": "Perché anche modifiche e cancellazioni possono propagarsi; il recupero dipende dagli strumenti e dai limiti disponibili"
+          }
+        ],
+        "explanation": "Il backup delle cartelle OneDrive esiste. Per recuperare dati eliminati o versioni precedenti occorre rispettare le condizioni del servizio; serve una strategia di conservazione adeguata."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/onedrive/back-up-your-folders-with-onedrive",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-gb/onedrive/delete-files-or-folders-in-onedrive",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-us/onedrive/restore-a-previous-version-of-a-file-stored-in-onedrive",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25753,
+      "topic_id": 23,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: comando icone senza testo non dimostrato; verificare versione Word",
+      "audit_proposal": "Come personalizzi una scheda della barra multifunzione di Word nella versione desktop indicata?",
+      "audit_it": {
+        "question": "Come si può personalizzare la barra multifunzione di Word per mostrare solo le icone senza il testo dei comandi?",
+        "answers": [
+          {
+            "id": 103812,
+            "text": "Tramite le opzioni di visualizzazione della barra multifunzione"
+          },
+          {
+            "id": 103813,
+            "text": "Non è possibile modificare l'aspetto della barra multifunzione"
+          },
+          {
+            "id": 103814,
+            "text": "Solo reinstallando Word"
+          },
+          {
+            "id": 103815,
+            "text": "Modificando le impostazioni di Windows Update"
+          }
+        ]
+      },
+      "audit_sha256": "c2ab855faed04cfefedbd2883b80a5fcbe8a07308836480d7d78e75af1eef099",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 103812,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Word per Microsoft 365 desktop per Windows, quale percorso permette di aggiungere una scheda personalizzata alla barra multifunzione?",
+        "answers": [
+          {
+            "id": 103812,
+            "text": "File > Opzioni > Personalizzazione barra multifunzione"
+          },
+          {
+            "id": 103813,
+            "text": "File > Opzioni > Barra di accesso rapido"
+          },
+          {
+            "id": 103814,
+            "text": "Layout > Margini"
+          },
+          {
+            "id": 103815,
+            "text": "Visualizza > Zoom"
+          }
+        ],
+        "explanation": "Il comando organizza schede e gruppi; non rende automaticamente tutti i comandi icone senza testo e non coincide con il collasso della barra."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/office/foundations-experiences/customize-the-ribbon-in-office",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25754,
+      "topic_id": 23,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: opzioni interfaccia da verificare nella versione Word dichiarata",
+      "audit_proposal": "Quale procedura permette di mostrare o nascondere la barra multifunzione di Word nella versione indicata?",
+      "audit_it": {
+        "question": "Come si può scegliere lo stile con cui vengono descritti i comandi nella barra multifunzione di Word (icone grandi, compatte, con o senza testo)?",
+        "answers": [
+          {
+            "id": 103816,
+            "text": "Non è possibile personalizzare lo stile dei comandi"
+          },
+          {
+            "id": 103817,
+            "text": "Solo modificando la risoluzione dello schermo"
+          },
+          {
+            "id": 103818,
+            "text": "Dal menu di personalizzazione della barra multifunzione"
+          },
+          {
+            "id": 103819,
+            "text": "Disinstallando e reinstallando Word"
+          }
+        ]
+      },
+      "audit_sha256": "7eee3ab0abc1c7bcc3169c9e970b59bb4b7a94fa940511269622948d9e6aeca8",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 103818,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Word desktop per Windows, come mostri solo le schede della barra multifunzione, senza lasciare sempre visibili i comandi?",
+        "answers": [
+          {
+            "id": 103816,
+            "text": "Disinstallando Word"
+          },
+          {
+            "id": 103817,
+            "text": "Modificando soltanto la risoluzione del monitor"
+          },
+          {
+            "id": 103818,
+            "text": "Usando l’opzione di visualizzazione Mostra solo schede della barra multifunzione"
+          },
+          {
+            "id": 103819,
+            "text": "Attivando il controllo ortografico"
+          }
+        ],
+        "explanation": "Mostrare solo le schede comprime i comandi, richiamabili selezionando una scheda. Non equivale a cambiare le dimensioni delle icone o a personalizzare tutti i testi dei comandi."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/office/foundations-experiences/show-or-hide-the-ribbon-in-office",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    },
+    {
+      "question_id": 25828,
+      "topic_id": 23,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": false,
+      "issue": "P1: esportazione PDF non garantisce immodificabilità",
+      "audit_proposal": "Come esporti un documento Word in PDF mantenendo una presentazione adatta alla condivisione?",
+      "audit_it": {
+        "question": "Come si esporta un documento Word in formato PDF, per condividerlo senza permettere modifiche dirette al testo?",
+        "answers": [
+          {
+            "id": 104112,
+            "text": "Da File > Esporta o Salva con nome, scegliendo PDF come tipo di file"
+          },
+          {
+            "id": 104113,
+            "text": "Non è possibile esportare un documento Word in PDF"
+          },
+          {
+            "id": 104114,
+            "text": "Solo tramite uno scanner"
+          },
+          {
+            "id": 104115,
+            "text": "Facendo uno screenshot di ogni pagina"
+          }
+        ]
+      },
+      "audit_sha256": "c803021851389ef628c52464c9c16c226e798f7f5790c872f401439cf75bb2de",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 104112,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In Word desktop per Windows, come crei una copia PDF del documento per distribuirne l’impaginazione?",
+        "answers": [
+          {
+            "id": 104112,
+            "text": "Da File > Esporta o Salva con nome, scegliendo il formato PDF"
+          },
+          {
+            "id": 104113,
+            "text": "Rinominando soltanto l’estensione .docx in .pdf"
+          },
+          {
+            "id": 104114,
+            "text": "Salvando come testo semplice .txt"
+          },
+          {
+            "id": 104115,
+            "text": "Abilitando il rilevamento delle modifiche senza esportare"
+          }
+        ],
+        "explanation": "L’esportazione produce una copia PDF del documento. Un PDF può essere convertito o modificato con strumenti appositi: l’esportazione da sola non garantisce l’immodificabilità."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-gb/office/collab-files/save-or-convert-to-pdf-or-xps-in-office-desktop-apps",
+          "checked_on": "2026-10-26"
+        },
+        {
+          "url": "https://support.microsoft.com/en-us/word/training/edit-a-pdf",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review"
+      ]
+    },
+    {
+      "question_id": 25853,
+      "topic_id": 21,
+      "certification_id": 3,
+      "status": "BLOCKED_DB_BASELINE",
+      "editorial_decision_required": true,
+      "issue": "P1: comando icone senza testo non dimostrato; verificare versione PowerPoint",
+      "audit_proposal": "Come mostri o nascondi la barra multifunzione di PowerPoint nella versione indicata?",
+      "audit_it": {
+        "question": "Come si può personalizzare la barra multifunzione di PowerPoint per mostrare solo le icone senza il testo dei comandi?",
+        "answers": [
+          {
+            "id": 104212,
+            "text": "Tramite le opzioni di visualizzazione della barra multifunzione"
+          },
+          {
+            "id": 104213,
+            "text": "Non è possibile modificare l'aspetto della barra multifunzione"
+          },
+          {
+            "id": 104214,
+            "text": "Solo reinstallando PowerPoint"
+          },
+          {
+            "id": 104215,
+            "text": "Modificando le impostazioni di Windows Update"
+          }
+        ]
+      },
+      "audit_sha256": "f16bd8de066d36de87bf992871564255246d15612b916ef11f853f972c1905bf",
+      "db_before": null,
+      "db_correct_answer_ids": null,
+      "candidate_semantic_answer_id": 104212,
+      "key_status": "UNVERIFIED_NOT_A_KEY_CHANGE",
+      "candidate_it": {
+        "question": "In PowerPoint desktop per Windows, quale opzione lascia visibili le schede della barra multifunzione ma nasconde normalmente i comandi?",
+        "answers": [
+          {
+            "id": 104212,
+            "text": "Mostra solo schede nelle opzioni di visualizzazione della barra multifunzione"
+          },
+          {
+            "id": 104213,
+            "text": "Ordina diapositive"
+          },
+          {
+            "id": 104214,
+            "text": "Nascondi diapositiva"
+          },
+          {
+            "id": 104215,
+            "text": "Visualizzazione Presentatore"
+          }
+        ],
+        "explanation": "L’opzione riguarda la visibilità della barra, non un comando universale per trasformare tutti i comandi in icone senza testo."
+      },
+      "sources": [
+        {
+          "url": "https://support.microsoft.com/en-us/office/foundations-experiences/show-or-hide-the-ribbon-in-office",
+          "checked_on": "2026-10-26"
+        }
+      ],
+      "languages": {
+        "it": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "DRAFT"
+        },
+        "en": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "fr": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        },
+        "es": {
+          "before_status": "NOT_READ_FROM_DB",
+          "after_status": "NOT_PREPARED_PENDING_BASELINE"
+        }
+      },
+      "gates": [
+        "DB snapshot and original hashes",
+        "Compare persisted key without automatic changes",
+        "Verify all available translations without fallback",
+        "Technical and linguistic review",
+        "Approve changed task / product / UI version; reproduce version with screenshot"
+      ]
+    }
+  ]
+}
