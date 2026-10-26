@@ -1,6 +1,12 @@
 // src/certifications/data/pekit.ts
 // ✅ Pagina certificazione PEKIT aggiornata in ottica SEO.
-// ✅ Focus Italia: competenze digitali, scuola, docenti, ATA e concorsi.
+// ✅ Claim allineati alle fonti ufficiali (verificate il 2026-10-26):
+//    - Schema di certificazione PEKIT Expert rev. 3.0 (novembre 2024) e Syllabus rev. 4.0
+//    - Allegato CSACI al certificato di accreditamento Accredia 02266 Persons (rev. 000, 09/04/2025)
+//    - O.M. 27/2026 e FAQ MIM sulle certificazioni informatiche GPS
+//    Nessun punteggio GPS/ATA viene attribuito da CertifyQuiz: vale il bando.
+// ⚠️ I 4 topic dei quiz NON corrispondono alle 4 fasi ufficiali (vedi FAQ "Cosa copre"): non
+//    presentarli come copertura integrale del programma.
 // ✅ Data-only: nessun JSX/router.
 
 const PEKIT = {
@@ -30,14 +36,14 @@ const PEKIT = {
   },
 
   metaDescription: {
-    it: "Preparati alla certificazione PEKIT con quiz e simulazioni sulle competenze digitali. Utile per scuola, docenti, ATA, concorsi e formazione informatica di base.",
+    it: "Preparati a PEKIT Expert con quiz e simulazioni su computer, file, Office, Internet e sicurezza di base. Preparazione indipendente, non ufficiale.",
     en: "Prepare for PEKIT with quizzes and practice tests on digital skills. Useful for basic ICT training, school and professional development.",
     fr: "Préparez la certification PEKIT avec des quiz et simulations sur les compétences numériques de base.",
     es: "Prepárate para PEKIT con quizzes y simulaciones sobre competencias digitales básicas.",
   },
 
   description: {
-    it: "La certificazione PEKIT è un percorso dedicato allo sviluppo delle competenze digitali: uso del computer, strumenti online, sicurezza, produttività, comunicazione e lavoro digitale. È particolarmente interessante per chi vuole rafforzare il proprio curriculum, prepararsi a concorsi pubblici, graduatorie scolastiche, profili ATA o percorsi formativi dove le competenze informatiche sono sempre più richieste.",
+    it: "PEKIT Expert, rilasciata da Fondazione Sviluppo Europa, certifica le competenze digitali secondo il DigComp 2.2 con 4 esami da 36 domande e un livello di padronanza da 1 a 8 per ciascuna delle 5 aree. È accreditata Accredia dal 9 aprile 2025. CertifyQuiz offre una preparazione indipendente sugli argomenti di base (computer, file, Office, Internet e sicurezza) ma non copre ancora tutto il programma ufficiale: audio e video, e-learning e reti avanzate sono poco o per nulla coperti. Per graduatorie e concorsi controlla sempre che il titolo sia richiesto dal bando e che il certificato riporti il marchio Accredia.",
     en: "The PEKIT certification is focused on digital skills: computer use, online tools, security, productivity, communication and digital work. It is useful for learners and professionals who want to strengthen their ICT profile.",
     fr: "La certification PEKIT est axée sur les compétences numériques : utilisation de l’ordinateur, outils en ligne, sécurité, productivité, communication et travail numérique.",
     es: "La certificación PEKIT se centra en competencias digitales: uso del ordenador, herramientas online, seguridad, productividad, comunicación y trabajo digital.",
@@ -140,11 +146,11 @@ const PEKIT = {
 
     whyChoose: {
       it: [
-        "È una certificazione digitale molto cercata da chi prepara concorsi, graduatorie e percorsi scolastici.",
-        "Aiuta a dimostrare competenze informatiche pratiche e spendibili nel curriculum.",
-        "È adatta anche a chi parte da zero e vuole costruire una base digitale solida.",
+        "È allineata al DigComp 2.2 ed è accreditata Accredia dal 9 aprile 2025.",
+        "Prevede 4 esami da 36 domande: ogni esame si supera con almeno il 70% del punteggio massimo.",
+        "Il percorso parte dalle basi dell’uso del computer e arriva a reti, testi e fogli di calcolo avanzati.",
         "I quiz permettono di allenarsi in modo più concreto rispetto al semplice studio teorico.",
-        "È utile per studenti, docenti, personale ATA, candidati ai concorsi e lavoratori che vogliono aggiornarsi.",
+        "Lo schema ufficiale si rivolge a utenti generici, studenti, docenti e professionisti.",
       ],
       en: [
         "It helps demonstrate practical digital and ICT skills.",
@@ -172,42 +178,58 @@ const PEKIT = {
     examReference: {
       it: [
         {
-          text: "Catalogo ufficiale certificazioni PEKIT",
-          url: "https://www.pekitproject.it",
+          text: "PEKIT Expert — pagina ufficiale",
+          url: "https://www.pekitproject.it/studenti/certificazione-pekit-expert/",
         },
         {
-          text: "PEKIT Expert — Percorso base",
-          url: "https://www.pekitproject.it",
+          text: "Schema di certificazione e syllabus PEKIT Expert (rev. 3.0, novembre 2024)",
+          url: "https://www.pekitproject.it/wordpress/wp-content/uploads/2025/06/Schema-cert.-Pekit-Expert-rev_3-Novembre-2024.pdf",
+        },
+        {
+          text: "Verifica certificazioni PEKIT",
+          url: "https://www.pekitproject.it/verifica-certificazioni/",
         },
       ],
       en: [
         {
-          text: "Official PEKIT certifications catalog",
-          url: "https://www.pekitproject.it",
+          text: "PEKIT Expert — official page",
+          url: "https://www.pekitproject.it/studenti/certificazione-pekit-expert/",
         },
         {
-          text: "PEKIT Expert — Core path",
-          url: "https://www.pekitproject.it",
+          text: "PEKIT Expert certification scheme and syllabus (rev. 3.0, November 2024, Italian)",
+          url: "https://www.pekitproject.it/wordpress/wp-content/uploads/2025/06/Schema-cert.-Pekit-Expert-rev_3-Novembre-2024.pdf",
+        },
+        {
+          text: "PEKIT certificate verification",
+          url: "https://www.pekitproject.it/verifica-certificazioni/",
         },
       ],
       fr: [
         {
-          text: "Catalogue officiel des certifications PEKIT",
-          url: "https://www.pekitproject.it",
+          text: "PEKIT Expert — page officielle",
+          url: "https://www.pekitproject.it/studenti/certificazione-pekit-expert/",
         },
         {
-          text: "PEKIT Expert — Parcours de base",
-          url: "https://www.pekitproject.it",
+          text: "Schéma de certification et syllabus PEKIT Expert (rév. 3.0, novembre 2024, en italien)",
+          url: "https://www.pekitproject.it/wordpress/wp-content/uploads/2025/06/Schema-cert.-Pekit-Expert-rev_3-Novembre-2024.pdf",
+        },
+        {
+          text: "Vérification des certificats PEKIT",
+          url: "https://www.pekitproject.it/verifica-certificazioni/",
         },
       ],
       es: [
         {
-          text: "Catálogo oficial de certificaciones PEKIT",
-          url: "https://www.pekitproject.it",
+          text: "PEKIT Expert — página oficial",
+          url: "https://www.pekitproject.it/studenti/certificazione-pekit-expert/",
         },
         {
-          text: "PEKIT Expert — Ruta base",
-          url: "https://www.pekitproject.it",
+          text: "Esquema de certificación y syllabus PEKIT Expert (rev. 3.0, noviembre de 2024, en italiano)",
+          url: "https://www.pekitproject.it/wordpress/wp-content/uploads/2025/06/Schema-cert.-Pekit-Expert-rev_3-Novembre-2024.pdf",
+        },
+        {
+          text: "Verificación de certificados PEKIT",
+          url: "https://www.pekitproject.it/verifica-certificazioni/",
         },
       ],
     },
@@ -215,20 +237,28 @@ const PEKIT = {
     faq: {
       it: [
         {
-          q: "PEKIT è utile per docenti, ATA e concorsi?",
-          a: "Sì, PEKIT è spesso scelta da chi vuole certificare competenze digitali per scuola, graduatorie e concorsi. Il valore preciso e l’eventuale punteggio dipendono sempre dal bando, dalla tabella titoli e dal profilo specifico.",
+          q: "PEKIT vale per docenti, ATA e concorsi?",
+          a: "Dipende dal bando e dal tuo certificato. PEKIT indica la certificazione Expert, accreditata Accredia dal 9 aprile 2025, come CIAD per il personale ATA (esclusi i collaboratori scolastici). Per le GPS 2026/28 il Ministero valuta solo certificazioni di enti accreditati Accredia e conformi a DigComp 2.2 o DigCompEdu, una per framework: verifica con l’ente emittente e nella banca dati Accredia prima di sostenere l’esame. CertifyQuiz non assegna punteggi e non garantisce la validità di un titolo.",
         },
         {
           q: "CertifyQuiz rilascia la certificazione PEKIT ufficiale?",
-          a: "No. CertifyQuiz offre quiz, simulazioni e materiali di preparazione. La certificazione ufficiale va sostenuta tramite enti, piattaforme o centri autorizzati.",
+          a: "No. CertifyQuiz offre quiz ed esercitazioni di preparazione indipendente. La certificazione ufficiale va sostenuta tramite un centro PEKIT o una sessione online autorizzata.",
         },
         {
           q: "PEKIT è adatta anche a principianti?",
-          a: "Sì. È adatta anche a chi parte da zero e vuole costruire competenze digitali di base per studio, lavoro o concorsi.",
+          a: "Il percorso parte dalle basi (computer, sistema operativo, testi e fogli di calcolo), ma l’esame comprende anche reti e uso avanzato di Word ed Excel. I quiz di CertifyQuiz sono adatti a ripassare soprattutto gli argomenti di base.",
         },
         {
           q: "Perché prepararsi con i quiz?",
           a: "Perché i quiz ti costringono a verificare davvero quello che sai. Leggere la teoria è utile, ma allenarsi sulle domande aiuta a scoprire errori, lacune e argomenti da ripassare.",
+        },
+        {
+          q: "Cosa copre questo percorso rispetto al programma ufficiale?",
+          a: "I quiz di CertifyQuiz riguardano soprattutto computer e sistema operativo, gestione dei file, strumenti Office di base e Internet. Il programma ufficiale ha 4 fasi (Cominciare le operazioni, Vivere in connessione, Esperienza multimediale, Diventare esperti): audio e video, e-learning e reti avanzate sono poco o per nulla coperti. Consulta schema e syllabus ufficiali per l’elenco completo degli argomenti.",
+        },
+        {
+          q: "Come si supera l’esame PEKIT Expert?",
+          a: "La certificazione richiede 4 esami da 36 domande ciascuno; ogni esame si supera con almeno il 70% del punteggio massimo. Il certificato ha durata di 4 anni (fonte: schema di certificazione PEKIT Expert rev. 3.0, novembre 2024).",
         },
       ],
       en: [
