@@ -102,9 +102,10 @@ for(const lang of ['it','en','fr','es'] as const){
     test(`${lang}: synthetic ${role} login returns to quiz and respects explanation access`,async({page})=>{
       const counters=await fixture(page,role);const target=`/${lang}/quiz/eipass/mixed`;
       await page.goto(`/${lang}/login?redirect=${encodeURIComponent(target)}`);
-      await page.locator('input[type="email"]').fill('eipass@example.test');
-      await page.locator('input[type="password"]').fill('synthetic-not-a-real-password');
-      await page.locator('form').filter({has:page.locator('input[type="password"]')}).locator('button[type="submit"]').click();
+      const loginForm=page.locator('form').filter({has:page.locator('input[type="password"]')});
+      await loginForm.locator('#email').fill('eipass@example.test');
+      await loginForm.locator('#password').fill('synthetic-not-a-real-password');
+      await loginForm.locator('button[type="submit"]').click();
       await expect(page).toHaveURL(`${origin}${target}`);await readyQuestion(page);expect(counters.logins).toBe(1);
       await page.getByRole('button',{name:'Fixture answer 2',exact:true}).click();
       if(role==='premium')await expect(page.getByText(/Fixture explanation \d+/)).toBeVisible();
