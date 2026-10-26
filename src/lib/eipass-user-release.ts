@@ -4,6 +4,12 @@ export const EIPASS_USER_ID = 3;
 export const EIPASS_USER_SLUG = "eipass";
 export const EIPASS_USER_OFFICIAL_URL = "https://it.eipass.com/certificazioni-informatiche/7-moduli-user/";
 export const EIPASS_USER_COPY = {
+  "mixedDescription": {
+    "it": "Esercitazione con domande miste dai moduli disponibili di EIPASS 7 Moduli User. Il percorso comprende sette moduli; le domande disponibili variano per lingua.",
+    "en": "Practise mixed questions from the available modules of EIPASS 7 Moduli User. The path has seven modules; question availability varies by language.",
+    "fr": "Entraînez-vous avec des questions mixtes issues des modules disponibles d’EIPASS 7 Moduli User. Le parcours comporte sept modules ; les questions disponibles varient selon la langue.",
+    "es": "Practica con preguntas mixtas de los módulos disponibles de EIPASS 7 Moduli User. El itinerario tiene siete módulos; las preguntas disponibles varían según el idioma."
+  },
   "name": {
     "it": "EIPASS 7 Moduli User",
     "en": "EIPASS 7 Moduli User",
