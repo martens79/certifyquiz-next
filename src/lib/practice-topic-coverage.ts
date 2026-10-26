@@ -8,7 +8,7 @@ const API_ALIGNED_COVERAGE = new Set(["pmp", "isc2-cc"]);
 // The practice box shows at most 6 topics; ISC2 CC needs all 10 so the Network
 // Security, Security Operations, Cloud and GRC banks are not hidden.
 const DEFAULT_COVERAGE_LIMIT = 6;
-const COVERAGE_LIMITS: Readonly<Record<string, number>> = { "isc2-cc": 10 };
+const COVERAGE_LIMITS: Readonly<Record<string, number>> = { "isc2-cc": 10, eipass: 7 };
 
 export function practiceTopicLimit(certificationSlug: string): number {
   return COVERAGE_LIMITS[certificationSlug] ?? DEFAULT_COVERAGE_LIMIT;

@@ -1,3 +1,4 @@
+import { EIPASS_USER_COPY, getEipassUserModule, orderEipassTopics } from "@/lib/eipass-user-release";
 // src/lib/data.ts
 import "server-only";
 import { internalApiHeaders } from "@/lib/server/internal-api";
@@ -444,10 +445,10 @@ const MOCK: Cert[] = [
   {
     slug: "eipass",
     locale: "it",
-    title: "EIPASS",
-    h1: "EIPASS",
-    intro: "Quiz e spiegazioni per EIPASS.",
-    seoDescription: "Allenati per EIPASS con domande aggiornate.",
+    title: "EIPASS 7 Moduli User",
+    h1: "EIPASS 7 Moduli User",
+    intro: EIPASS_USER_COPY.description.it,
+    seoDescription: EIPASS_USER_COPY.description.it,
     faq: [],
     imageUrl: "/og/cert-default.png",
   },
@@ -540,7 +541,7 @@ export async function getCertBySlug(slug: string, locale: Locale = "it"): Promis
   };
 
   const toCert = (obj: Record<string, unknown>): Cert => {
-    const title = pickNameByLocale(obj, locale) || canonSlug;
+    const title = canonSlug === "eipass" ? EIPASS_USER_COPY.name[locale] : pickNameByLocale(obj, locale) || canonSlug;
 
     return {
   id: getNumber(obj, "id"),
@@ -635,7 +636,7 @@ export async function getCertList(locale: Locale = "it"): Promise<Cert[]> {
       const slug = normalizeSlug(rawSlug);
       if (!slug || !LIVE.has(slug)) continue; // 👈 gate su canonico
 
-      const title = pickNameByLocale(raw, locale) || slug;
+      const title = slug === "eipass" ? EIPASS_USER_COPY.name[locale] : pickNameByLocale(raw, locale) || slug;
       const h1 = title;
       const intro = getString(raw, "intro") ?? getString(raw, "description") ?? "";
       const seoDescription =
@@ -719,10 +720,11 @@ export async function getTopicsByCertSlug(
       ? raw.topics
       : [];
 
-    return arr
+    const rows = canonSlug === "eipass" ? orderEipassTopics(arr.filter(isRecord).map((t) => ({ ...t, id: Number(t.id) }))) : arr;
+    return rows
       .filter(isRecord)
       .map((t) => ({
-        title: pickTopicTitleByLocale(t, locale),
+        title: canonSlug === "eipass" ? (getEipassUserModule(Number(t.id))?.title[locale] ?? pickTopicTitleByLocale(t, locale)) : pickTopicTitleByLocale(t, locale),
         slug: pickTopicSlugByLocale(t, locale),
       }))
       .filter((t) => t.title && t.slug);
