@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { createVersionedTrainingClient, VersionedTrainingError } from '../src/lib/ccst-versioned-training';
 
 const topicId = 365;
-const versions = ['legacy-v1', 'release-02-v2', 'release-03-v3', 'release-04-v4', 'release-05-v5', 'release-06-v6', 'release-07-v7', 'release-08-v8', 'release-09-v9'] as const;
+const versions = ['legacy-v1', 'release-02-v2', 'release-03-v3', 'release-04-v4', 'release-05-v5', 'release-06-v6', 'release-07-v7', 'release-08-v8', 'release-09-v9', 'release-11-v11'] as const;
 
 function attempt(questionVersions: string[]) {
   return {
@@ -36,7 +36,7 @@ function client(questionVersions: string[]) {
   });
 }
 
-test('CCST R09 accepts mixed legacy/R02/R03/R04/R05/R06/R07/R08/R09 training attempts', async () => {
+test('CCST W1 accepts mixed legacy/R02/R03/R04/R05/R06/R07/R08/R09/W1 training attempts', async () => {
   const result = await client([...versions]).open();
   assert.equal(result.contentVersion, 'release-09-v9');
   assert.deepEqual(result.questions.map(q => q.contentVersion), [...versions]);
