@@ -3,7 +3,12 @@ import { notFound, redirect } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
-import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
+import { isCertificationOfferedInLang, isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
+import {
+  EIPASS_STANDARD_DEMO_BANNER,
+  getEipassStandardDemoTopicLinks,
+  isEipassStandardSlug,
+} from "@/lib/eipass-standard";
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
 import { getSapPlaceholderCertification } from "@/features/business-applications/data";
@@ -118,6 +123,27 @@ export async function CertificationDetailView({
   // Planned certifications are 404 publicly; only a local developer preview renders them
   // (still noindex through the rollout guard).
   if (isPlannedCertification(reg) && !isPlannedPreviewEnabled()) return notFound();
+  // Language routes outside the certification launch scope do not exist (EIPASS Standard: Italian only).
+  if (reg && !isCertificationOfferedInLang(reg, lang)) return notFound();
+  // EIPASS Standard has no DB certification yet: a developer preview renders the registry contract
+  // with clearly labelled demo topics and zero questions, with no backend call at all.
+  if (reg && isEipassStandardSlug(reg.slug)) {
+    const demoData: DynamicCertData = { ...reg, questionCount: 0, questionCountByLang: { [lang]: 0 } };
+    return (
+      <>
+        <p role="note" className="mx-auto mt-4 max-w-5xl rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          {EIPASS_STANDARD_DEMO_BANNER}
+        </p>
+        <CertificationPage
+          lang={lang}
+          data={demoData}
+          dbTopics={getEipassStandardDemoTopicLinks()}
+          hasScenarios={false}
+          resources={null}
+        />
+      </>
+    );
+  }
   // PLC Fundamentals is offered in English and Italian only: no FR/ES landing.
   if (reg?.slug === INDUSTRIAL_AUTOMATION_CERT_SLUG && !INDUSTRIAL_AUTOMATION_LANGS.includes(lang)) return notFound();
 

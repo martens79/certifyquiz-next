@@ -1,5 +1,6 @@
 import "server-only";
 import { internalApiHeaders } from "./internal-api";
+import { getEipassStandardDemoTopicPage, isEipassStandardDemoVisible, isEipassStandardSlug } from "@/lib/eipass-standard";
 import { EIPASS_USER_COPY, eipassLocalizedText, getEipassUserModule, orderEipassTopics } from "@/lib/eipass-user-release";
 
 export type Lang = "it" | "en" | "fr" | "es";
@@ -71,6 +72,12 @@ export async function getTopicPageData({
   lang: Lang;
 }): Promise<TopicPageData | null> {
   const normalizedCertSlug = normalizeCertSlug(certSlug);
+
+  // EIPASS Standard is planned and Italian-only: fail closed with no backend call. Only a local
+  // developer preview gets the labelled demo topics.
+  if (isEipassStandardSlug(normalizedCertSlug)) {
+    return isEipassStandardDemoVisible(lang) ? getEipassStandardDemoTopicPage(topicSlug) : null;
+  }
 
   const res = await fetch(
     `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,

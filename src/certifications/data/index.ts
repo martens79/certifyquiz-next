@@ -90,6 +90,7 @@ import CompTIA_ITF_Plus from "./CompTIA_ITF_Plus";
 import CSharpCertification from "./CSharpCertification";
 import ICDL from "./ICDL";
 import EIPASS from "./EIPASS";
+import EipassStandard from "./eipass-standard";
 import F5 from "./F5";
 import GoogleCloud from "./GoogleCloud";
 import GoogleTensorFlowDeveloper from "./GoogleTensorFlowDeveloper";
@@ -208,6 +209,7 @@ const RAW_CERTS = [
   LFS101,                     // slug: "lfs101" — publicationStatus: "planned"
   AppleDeviceSupport,         // slug: "apple-device-support" — publicationStatus: "planned"
   PLCFundamentals,            // slug: "plc-fundamentals" — launched in EN/IT (id 75), still ROLLOUT_NOINDEX
+  EipassStandard,             // slug: "eipass-standard" — publicationStatus: "planned", IT only, no DB id yet
 ] as const;
 
 /**

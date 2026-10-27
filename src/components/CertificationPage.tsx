@@ -10,6 +10,7 @@ import type {
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
 import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
@@ -409,7 +410,8 @@ const pageTopics =
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
-        <StudyMaterialGrid
+        {/* EIPASS Standard (planned): no study material exists yet, so the generic grid (which always offers the reviews index) is not rendered. */}
+        {!isEipassStandardSlug(data.slug) && <StudyMaterialGrid
           quizQuestionCount={inventory.state === "available" ? inventory.count : inventory.state === "zero" ? 0 : undefined}
           quizTopicCount={inventory.state === "zero" ? 0 : dbTopics.length > 0 ? dbTopics.length : undefined}
           lang={lang}
@@ -425,7 +427,7 @@ const pageTopics =
           }
           mapsHref={mapsPath(lang)}
           labsHref={`${interactiveLabsPath(lang)}?certification=${encodeURIComponent(data.slug)}`}
-        />
+        />}
 
         {/* Acquisition primaria: il test viene prima delle offerte e chiede
             l'email solo dopo aver mostrato il risultato. */}

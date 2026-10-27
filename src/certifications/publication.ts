@@ -26,3 +26,12 @@ export function isPubliclyListed(
 ): boolean {
   return !isPlannedCertification(registry[slug]);
 }
+
+/** Language routes of a certification: only the languages in its launch scope exist (default: all). */
+export function isCertificationOfferedInLang(
+  cert: CertificationData | null | undefined,
+  lang: string
+): boolean {
+  const languages = cert?.launchScope?.languages;
+  return !languages || (languages as ReadonlyArray<string>).includes(lang);
+}

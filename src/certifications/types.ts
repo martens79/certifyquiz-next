@@ -176,6 +176,16 @@ export type CertificationData = {
   slug: string;
   /** Planned entries are registry contracts only: they must not render or be indexed. */
   publicationStatus?: "published" | "planned";
+  /**
+   * Where the certification is offered. Language and country are separate axes:
+   * `languages` decides which language routes exist (the others are 404),
+   * `countries` is the target market (ISO 3166-1 alpha-2) and never drives routing.
+   * Absent = no restriction (historical behaviour).
+   */
+  launchScope?: Readonly<{
+    languages: ReadonlyArray<Lang>;
+    countries: ReadonlyArray<string>;
+  }>;
   imageUrl: string;
   officialUrl: string;
   companyProductsUrl?: string;

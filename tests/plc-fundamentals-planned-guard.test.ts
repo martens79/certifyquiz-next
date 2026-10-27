@@ -34,7 +34,7 @@ test("registry: plc-fundamentals is launched (not planned), has its production i
   assert.equal(IDS_BY_SLUG[SLUG], 75);
   assert.equal(reg.id, 75);
   const planned = Object.values(CERTS_BY_SLUG).filter((c) => c && isPlannedCertification(c)).map((c) => c.slug);
-  assert.deepEqual([...new Set(planned)], [], "no certification is hidden by the planned filter");
+  assert.deepEqual([...new Set(planned)], ["eipass-standard"], "only EIPASS Standard (not launched) is hidden by the planned filter");
 });
 
 test("registry: 12 topics with EN/IT slugs matching the backend import catalog; not presented as official", () => {
