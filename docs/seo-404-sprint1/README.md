@@ -38,3 +38,5 @@ Workflow riproducibile: `.github/workflows/seo-404-sprint1.yml`. Contratti: `nod
 - [ ] I 18 esclusi e i 31 casi editoriali restano fuori dalla patch.
 - [ ] Nessuna modifica a backend, database, domande, pagamenti o autenticazione.
 - [ ] Autorizzazione esplicita dell’utente per il rilascio. Nessun merge/deploy manuale eseguito da questa attività.
+
+Nota test: dopo navigazione client Next.js può mantenere temporaneamente metadata della landing nel body mentre inserisce quelli della destinazione nell’head. Il test della CTA legge head canonical/robots; i controlli delle landing leggono anche la risposta HTTP diretta.

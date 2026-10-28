@@ -1,11 +1,21 @@
 import { expect, test, type Page } from '@playwright/test';
 import { SEO_404_SPRINT1_REDIRECTS } from '../src/lib/legacyRedirects';
 
+const diagnostics = new WeakMap<Page, { seen: string[]; errors: string[] }>();
+test.afterEach(async ({ page }, info) => {
+  const data = diagnostics.get(page);
+  if (data) await info.attach('isolated-api-calls', { body: JSON.stringify(data, null, 2), contentType: 'application/json' });
+});
+
 // Browser API calls are intercepted, including every write. Never send an answer
 // or a synthetic session to Railway/production; SSR uses a loopback read-only fixture.
 async function installQuizApi(page: Page) {
   const seen: string[] = [];
   let checks = 0;
+  const errors: string[] = [];
+  diagnostics.set(page, { seen, errors });
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('requestfailed', request => errors.push(`${request.url()}: ${request.failure()?.errorText}`));
   await page.route(/^https?:\/\/(?!localhost(?::|\/)|127\.0\.0\.1(?::|\/))/, route => route.abort());
   await page.route('**/api/backend/**', async route => {
     const url = new URL(route.request().url());
@@ -69,8 +79,8 @@ test('CTA della landing: assessment mixed conserva query, certificazione e endpo
   await expect(page.getByText(/^Domanda sintetica Data Analytics \d+$/)).toBeVisible({ timeout: 40_000 });
   expect(api.seen.some(url => url === '/api/backend/assessment/questions/50?lang=it')).toBe(true);
   expect(api.seen.some(url => url.includes('/questions-mixed/'))).toBe(false);
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, follow');
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://www.certifyquiz.com/it/quiz/data-analytics-foundations/mixed');
+  await expect(page.locator('head meta[name="robots"]')).toHaveAttribute('content', 'noindex, follow');
+  await expect(page.locator('head link[rel="canonical"]')).toHaveAttribute('href', 'https://www.certifyquiz.com/it/quiz/data-analytics-foundations/mixed');
 });
 
 test('mock-exam IT: conserva la route e usa il mock dedicato, senza training', async ({ page }) => {
