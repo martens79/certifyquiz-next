@@ -217,9 +217,10 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         return;
       }
       if (!r.ok) throw new Error(body.error || "CHECKOUT_FAILED");
-      if (!body.url || typeof body.url !== "string") throw new Error("CHECKOUT_FAILED");
+      const checkoutUrl = typeof body.url === "string" ? body.url.trim() : "";
+      if (!checkoutUrl) throw new Error("CHECKOUT_FAILED");
       trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
-      if (body.url) window.location.href = body.url;
+      window.location.href = checkoutUrl;
     } catch (e) {
       setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));
       setBusy(null);

@@ -11,6 +11,9 @@ import { isCheckoutAllowedHost, CHECKOUT_BLOCKED_NOTICE } from "../src/lib/check
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 const offer = { code: "ccna-complete", productCode: "octopus-complete", amountMinor: 2490, currency: "EUR", checkoutAvailable: true, blockedReason: null, status: "active" };
 function fixture({ authed = false, blocked = false, status = 200, loading = false } = {}) {
+  const bodies: Array<Record<string, unknown>> = []; const created: unknown[] = [];
+  const win = { location: { search: "?source=mock_review&package_offer=ccna-complete", hostname: "localhost", href: "" } };
+  let okBody: unknown = { url: "https://checkout.stripe.test/stub", sessionId: "cs_stub" };
   const state = { user: authed ? { id: 123, premium: false } : null, isAdmin: false, loading };
   const posts: string[] = []; const redirects: string[] = []; const events: unknown[] = [];
   let responseStatus = status;
@@ -25,16 +28,16 @@ function fixture({ authed = false, blocked = false, status = 200, loading = fals
     "@/lib/post-gate-tracking": { readPostGateCohort: () => null },
     "@/lib/commercial-origin": { resolveCommercialOrigin: () => ({ paywallType: "mock_review" }) },
     "@/lib/analytics": { analyticsUserStateFrom: () => "free", getAnonymousSessionId: () => undefined, getAnonymousVisitorId: () => undefined,
-      trackEvent: () => {}, trackEventOnce: () => {}, trackCheckoutCreated: () => {}, trackFunnelEventOnce: () => {}, trackFunnelEvent: (v: unknown) => events.push(v) },
+      trackEvent: () => {}, trackEventOnce: () => {}, trackCheckoutCreated: (id: unknown) => { created.push(id); }, trackFunnelEventOnce: () => {}, trackFunnelEvent: (v: unknown) => events.push(v) },
     "@/lib/auth": { apiFetch: async (path: string, init?: RequestInit) => {
       if (!init) return new Response(JSON.stringify({ offers: [{ ...offer, blockedReason: blocked ? "already_owned" : null }] }));
       posts.push(path);
-      if (path === "/packages/checkout") return new Response(JSON.stringify(responseStatus === 200 ? { url: "https://checkout.stripe.test/stub", sessionId: "cs_stub" } : { error: "CHECKOUT_FAILED" }), { status: responseStatus });
+      if (path === "/packages/checkout") { bodies.push(JSON.parse(String(init.body))); return new Response(JSON.stringify(responseStatus === 200 ? okBody : { error: "CHECKOUT_FAILED" }), { status: responseStatus }); }
       return new Response("{}");
     } },
-  }, { window: { location: { search: "?source=mock_review&package_offer=ccna-complete", hostname: "localhost", href: "" } }, document: { getElementById: () => ({ closest: () => ({ scrollIntoView: () => {} }), scrollIntoView: () => {} }) } });
+  }, { window: win, document: { getElementById: () => ({ closest: () => ({ scrollIntoView: () => {} }), scrollIntoView: () => {} }) } });
   let r!: ReactTestRenderer;
-  return { state, posts, redirects, events, setStatus: (s: number) => { responseStatus = s; },
+  return { state, posts, redirects, events, bodies, created, href: () => win.location.href, setBody: (b: unknown) => { okBody = b; }, setStatus: (s: number) => { responseStatus = s; },
     root: () => r.root, mount: async () => { await act(async () => { r = create(<Component lang="es" certificationSlug="ccna" resources={null} />); }); },
     unmount: async () => { await act(async () => r.unmount()); } };
 }
@@ -89,4 +92,25 @@ test("owned offer cannot initiate checkout", async () => {
 test("no offer or purchase action is available during auth bootstrap", async () => {
   const f = fixture({ loading: true }); await f.mount();
   assert.equal(f.root().findAllByType("button").length, 0); assert.equal(f.posts.length, 0); await f.unmount();
+});
+
+for (const [label, body] of [["null", { url: null, sessionId: "cs_stub", reused: true }], ["empty", { url: "", sessionId: "cs_stub" }], ["whitespace", { url: "   ", sessionId: "cs_stub" }], ["number", { url: 42, sessionId: "cs_stub" }], ["missing", { sessionId: "cs_stub" }], ["array", { url: ["https://x.test"] }]] as const) {
+  test(`200 with ${label} checkout URL: no navigation, no created event, busy reset, same idempotency key on retry`, async () => {
+    const f = fixture({ authed: true }); f.setBody(body); await f.mount();
+    await act(async () => f.root().findByType("button").props.onClick());
+    assert.equal(f.href(), ""); assert.equal(f.created.length, 0);
+    assert.equal(f.root().findByType("button").props.disabled, false);
+    assert.equal(f.root().findAllByProps({ role: "alert" }).length > 0, true);
+    f.setBody({ url: "https://checkout.stripe.test/stub", sessionId: "cs_stub" });
+    await act(async () => f.root().findByType("button").props.onClick());
+    assert.equal(f.href(), "https://checkout.stripe.test/stub"); assert.equal(f.created.length, 1);
+    assert.equal(f.bodies.length, 2); assert.equal(f.bodies[0].idempotencyKey, f.bodies[1].idempotencyKey);
+    assert.equal(f.bodies[0].offerCode, "ccna-complete");
+    await f.unmount();
+  });
+}
+test("URL with surrounding whitespace is trimmed before navigation", async () => {
+  const f = fixture({ authed: true }); f.setBody({ url: "  https://checkout.stripe.test/stub \n", sessionId: "cs_stub" }); await f.mount();
+  await act(async () => f.root().findByType("button").props.onClick());
+  assert.equal(f.href(), "https://checkout.stripe.test/stub"); await f.unmount();
 });
