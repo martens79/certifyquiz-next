@@ -1,0 +1,26 @@
+{
+  "base_commit": "d98a3a2",
+  "url_originali_riverificati": 299,
+  "http_finali": {
+    "404": 105,
+    "200": 194
+  },
+  "variazioni_rispetto_audit": 0,
+  "proposte": 43,
+  "implementati": 25,
+  "esclusi": {
+    "noindex": 15,
+    "certificazione_diversa": 2,
+    "canonical_assente": 1
+  },
+  "editoriali_invariati": 31,
+  "sitemap_loc": 438,
+  "404_originali_in_sitemap": [],
+  "robots_googlebot_destinazioni_consentite": true,
+  "eipass_cluster_reciproco_4_lingue": true,
+  "data_analytics_pool_it": 120,
+  "training_GET_domande": 2,
+  "assessment_GET_domande": 10,
+  "scritture_backend_live": 0,
+  "soft404_diagnosi": "nessun nuovo redirect generico; risultati HTTP non provano indicizzazione"
+}
