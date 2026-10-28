@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
-      "fix/eipass-user-release1-20261026": false
+      "fix/eipass-user-release1-20261026": false,
+      "feat/eipass-standard-landing-v1-20261027": false
     }
   }
 }
