@@ -6,7 +6,8 @@ export const API_PREFIX = "/api/backend";
 import { decodeApiJson, unavailableApiResponse, validateQuestionPayload } from '@/lib/api-response';
 
 /*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
-import { getToken, setToken, clearToken, setUser, logout } from "@/lib/auth";
+import { getToken, setToken, clearToken, setUser, logout, acceptLoginToken } from "@/lib/auth";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, beginExplicitLogout, confirmServerLogout } from './auth-session';
 
 
 /** Compat API: usata in giro nel codice */
@@ -240,27 +241,33 @@ import { isTokenRemembered } from "@/lib/auth";
 
 // Evita refresh concorrenti: se più fetch autenticate scadono nello stesso istante,
 // condividono la stessa richiesta POST /auth/refresh invece di spararne una a testa.
-let refreshInFlight: Promise<{ token: string | null; status: number | null }> | null = null;
+let refreshInFlight: { generation: string; promise: Promise<{ token: string | null; status: number | null }> } | null = null;
 
 async function refreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
-  if (refreshInFlight) return refreshInFlight;
-  refreshInFlight = doRefreshAccessToken().finally(() => {
-    refreshInFlight = null;
+  const generation = authGeneration();
+  assertAuthGeneration(generation);
+  if (refreshInFlight?.generation === generation) return refreshInFlight.promise;
+  const promise = doRefreshAccessToken(generation).finally(() => {
+    if (refreshInFlight?.promise === promise) refreshInFlight = null;
   });
-  return refreshInFlight;
+  refreshInFlight = { generation, promise };
+  return promise;
 }
 
-async function doRefreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
+async function doRefreshAccessToken(generation: string): Promise<{ token: string | null; status: number | null }> {
   const attempt = async () => {
+    assertAuthGeneration(generation);
     const res = await fetch(joinUrl(API_PREFIX, "/auth/refresh"), {
       method: "POST",
       credentials: "include",
       headers: { accept: "application/json" },
     });
+    assertAuthGeneration(generation);
 
     if (!res.ok) return { ok: false as const, status: res.status };
 
     const data = (await res.json()) as { ok?: boolean; token?: string };
+    assertAuthGeneration(generation);
     return { ok: true as const, status: res.status, token: data?.token ?? null };
   };
 
@@ -295,6 +302,7 @@ async function doRefreshAccessToken(): Promise<{ token: string | null; status: n
 }
 
 async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const generation = authGeneration();
   const {
     method = "GET",
     body,
@@ -304,6 +312,13 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
     withCredentials = false,
     headers = {},
   } = opts;
+  const ensureCurrent = () => assertAuthGeneration(generation, !auth);
+  ensureCurrent();
+  const parseCurrent = async (response: Response) => {
+    const value = await parseJson<T>(response);
+    ensureCurrent();
+    return value;
+  };
 
   const url = joinUrl(API_PREFIX, path);
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
@@ -323,9 +338,11 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
 // ✅ Se auth=true, includi SEMPRE i cookie (rt) per refresh/rotate/sessione stabile
 // Se vuoi forzare include anche su endpoint pubblici, puoi passare withCredentials=true.
 if (auth || withCredentials) init.credentials = "include";
+  if (isExplicitlyLoggedOut() && !withCredentials) init.credentials = 'omit';
   if (body != null) init.body = isForm ? body : JSON.stringify(body);
 
   const res = await fetch(url, init);
+  ensureCurrent();
 
   // 401 → tenta refresh una volta (solo se auth=true)
  // 401 → tenta refresh una volta (solo se auth=true)
@@ -338,17 +355,20 @@ if (res.status === 401 && (auth || !!token) && retry) {
     const hCurrent = new Headers(h);
     hCurrent.set("authorization", `Bearer ${currentToken}`);
     const resCurrent = await fetch(url, { ...init, headers: hCurrent });
+    ensureCurrent();
     if (!resCurrent.ok) throw await toApiError(resCurrent);
-    return parseJson<T>(resCurrent);
+    return parseCurrent(resCurrent);
   }
   const { token: newTok, status: refreshStatus } = await refreshAccessToken();
+  ensureCurrent();
 
   if (newTok) {
     const h2 = new Headers(h);
     h2.set("authorization", `Bearer ${newTok}`);
     const res2 = await fetch(url, { ...init, headers: h2 });
+    ensureCurrent();
     if (!res2.ok) throw await toApiError(res2);
-    return parseJson<T>(res2);
+    return parseCurrent(res2);
   }
 
   // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato) e nel frattempo
@@ -364,7 +384,7 @@ if (res.status === 401 && (auth || !!token) && retry) {
 }
 
   if (!res.ok) throw await toApiError(res);
-  return parseJson<T>(res);
+  return parseCurrent(res);
 }
 
 async function parseJson<T>(res: Response): Promise<T> {
@@ -410,6 +430,7 @@ export type LoginResponse = {
 };
 
 export async function authLogin(email: string, password: string, remember = false) {
+  const generation = authGeneration();
   const data = await apiPost<LoginResponse>(
     "/auth/login",
     { email, password, remember },
@@ -418,7 +439,7 @@ export async function authLogin(email: string, password: string, remember = fals
   );
 
   // ✅ token + user cache (stabile per header)
-  if (data?.token) setAccessToken(data.token, remember);
+  if (data?.token) acceptLoginToken(data.token, remember, generation);
   if (data?.user) {
     setUser(
       {
@@ -435,12 +456,22 @@ export async function authLogin(email: string, password: string, remember = fals
   return data;
 }
 
-export async function authLogout() {
-  try {
-    await apiPost<{ ok: true }>("/auth/logout", {}, false, true);
-  } finally {
-    clearAuth();
-  }
+let logoutInFlight: Promise<void> | null = null;
+export function authLogout(): Promise<void> {
+  if (logoutInFlight) return logoutInFlight;
+  // Clear the outgoing user's cache before masking identity; anonymous study survives.
+  clearAuth();
+  const generation = beginExplicitLogout();
+  const promise = (async () => {
+    const response = await fetch(`${API_PREFIX}/auth/logout`, {
+      method: 'POST', credentials: 'include', cache: 'no-store',
+      headers: { 'content-type': 'application/json' }, body: '{}', signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error('Server logout failed');
+    confirmServerLogout(generation);
+  })().finally(() => { if (logoutInFlight === promise) logoutInFlight = null; });
+  logoutInFlight = promise;
+  return promise;
 }
 
 export const authRegister = (payload: { email: string; password: string; username: string; role?: string }) =>

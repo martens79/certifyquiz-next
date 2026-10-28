@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -142,6 +144,8 @@ export async function generateTopicReviewMetadata({
   topicSlug,
 }: Props): Promise<Metadata> {
   const t = labels[lang];
+  // EIPASS Standard is coming soon: no topic reviews exist (404 in every language).
+  if (isEipassStandardSlug(slug)) return { robots: { index: false, follow: false } };
 
   const review = await getTopicReviewPage({
     certSlug: slug,
@@ -202,6 +206,7 @@ export default async function TopicReviewPageShell({
   topicSlug,
 }: Props) {
   const t = labels[lang];
+  if (isEipassStandardSlug(slug)) notFound();
 
   const review = await getTopicReviewPage({
     certSlug: slug,

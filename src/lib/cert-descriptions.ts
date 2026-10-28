@@ -1,3 +1,4 @@
+import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 // src/lib/cert-descriptions.ts
 // Centralized short, technical card descriptions for certification boxes inside category pages.
 // Goals: better UX + "non-empty" SEO perception, without DB/API/parse.
@@ -180,12 +181,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
   },
 
   /* --------------------------- Base / Digital --------------------------- */
-  "eipass": {
-    it: "Competenze digitali: internet, produttività, sicurezza e strumenti essenziali per studio e lavoro.",
-    en: "Digital literacy: internet, productivity, security and essential tools for study and work.",
-    fr: "Compétences numériques : internet, productivité, sécurité et outils essentiels.",
-    es: "Alfabetización digital: internet, productividad, seguridad y herramientas esenciales.",
-  },
+  "eipass": EIPASS_USER_COPY.description,
   "pekit": {
     it: "Alfabetizzazione digitale: operazioni al PC, gestione file, internet, sicurezza e produttività.",
     en: "Digital literacy: PC operations, file management, internet, security and productivity.",

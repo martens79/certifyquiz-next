@@ -10,9 +10,10 @@ export function clientComponent(file: string, mocks: Record<string, unknown>, gl
 }
 
 export function clientModule(file: string, mocks: Record<string, unknown>, globals: Record<string, unknown> = {}) {
-  const require = createRequire(import.meta.url);
+  const sourceUrl = new URL(file, import.meta.url);
+  const require = createRequire(sourceUrl);
   const cjsModule = { exports: {} as Record<string, any> };
-  const code = ts.transpileModule(readFileSync(new URL(file, import.meta.url), "utf8"), {
+  const code = ts.transpileModule(readFileSync(sourceUrl, "utf8"), {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, esModuleInterop: true },
   }).outputText;
   runInNewContext(code, {

@@ -1,5 +1,6 @@
 // src/app/[lang]/quiz/[slug]/mixed/page.tsx
 'use client';
+import { EIPASS_USER_COPY } from '@/lib/eipass-user-release';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -185,8 +186,9 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   // rifarebbe il fetch del pool (un nuovo set casuale) a sessione gia' avviata.
   const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
-  const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
+  const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const copy = COPY[currentLang] ?? COPY.it;
+  const isEipassUser = currentSlug === "eipass";
 const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
@@ -336,7 +338,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
           </h1>
 
           <p className="mt-2 text-sm md:text-base text-slate-700">
-            {copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}
+            {isEipassUser ? EIPASS_USER_COPY.mixedDescription[currentLang] : <>{copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}</>}
           </p>
 
           <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
@@ -344,7 +346,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
               {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
               {currentLang === 'en' ? '' : '.'}
             </li>
-            {currentSlug !== APPLE_DEVICE_SUPPORT_SLUG && <li>
+            {!isEipassUser && currentSlug !== APPLE_DEVICE_SUPPORT_SLUG && <li>
               {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{' '}
               <strong>{copy.bullets.k_timer}</strong>.
             </li>}
@@ -367,7 +369,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
             </span>{' '}
             · {copy.stats.trainingCap}:{' '}
             <span className="font-semibold">{trainingCap.toLocaleString()}</span>{' '}
-            · {copy.stats.exam}:{' '}
+            · {isEipassUser ? EIPASS_USER_COPY.practiceTitle[currentLang] : copy.stats.exam}:{' '}
             <span className="font-semibold">
               {examSpec.questions.toLocaleString()} {copy.stats.questions}
             </span>
@@ -410,7 +412,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
   context={{
   kind: 'mixed',
-  certificationName: currentSlug.toUpperCase(),
+  certificationName: currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.toUpperCase(),
   certificationSlug: currentSlug,
   certificationId: certId,
   backHref: withLang(currentLang, `/quiz/${currentSlug}`),

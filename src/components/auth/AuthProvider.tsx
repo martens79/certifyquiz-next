@@ -11,6 +11,7 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import { authMe } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, onAuthBoundaryChange } from '@/lib/auth-session';
 import {
   getToken,
   getUser as getCachedUser,
@@ -80,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (refreshInFlight.current) return refreshInFlight.current;
 
     refreshInFlight.current = (async () => {
+      const generation = authGeneration();
       const hadToken = !!getToken();
       const tokenAtStart = getToken();
       let rerunWithNewToken = false;
@@ -96,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // se ho già user cache, non devo per forza chiamare /me ogni volta
         // (ma la facciamo comunque in bootstrap e quando token cambia)
         const me = await authMe();
+        assertAuthGeneration(generation);
         const refreshedToken = getToken();
         const normalized = toUser(me.user);
 
@@ -115,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           true
         );
       } catch (err: any) {
+        if (generation !== authGeneration() || isExplicitlyLoggedOut()) return;
         const status = err?.status ?? err?.response?.status;
 
         if ((status === 401 || status === 403) && getToken() !== tokenAtStart) {
@@ -136,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } finally {
         refreshInFlight.current = null;
+        if (generation !== authGeneration() && !isExplicitlyLoggedOut() && getToken()) queueMicrotask(() => { void refreshMe(); });
       }
       if (rerunWithNewToken) await refreshMe();
     })();
@@ -144,6 +149,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // ✅ bootstrap una sola volta
+  useEffect(() => onAuthBoundaryChange(() => {
+    if (isExplicitlyLoggedOut()) {
+      clearToken();
+      setCachedUser(null);
+      setTokenState(null);
+      setUserState(null);
+      setLostSession(false);
+    }
+  }), []);
+
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;

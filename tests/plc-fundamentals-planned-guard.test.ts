@@ -95,7 +95,7 @@ test("discovery: planned certifications are not listed; published ones (PLC incl
   const list = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");
   assert.match(list, /isPubliclyListed\(c\.slug, CERTS_BY_SLUG\)/, "certifications list + its JSON-LD filter planned slugs");
   const category = read("../src/app/[lang]/categorie/[cat]/page.tsx");
-  assert.match(category, /publicationStatus !== "planned"/, "category pages filter planned slugs");
+  assert.match(category, /isPubliclyListed\(s, CERTS_BY_SLUG\)/, "category pages filter planned (and coming-soon) slugs");
 });
 
 test("page: a planned landing is 404 publicly; a local developer preview may render it", () => {

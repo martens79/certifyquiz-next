@@ -1,5 +1,7 @@
 import "server-only";
 import { internalApiHeaders } from "./internal-api";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
+import { EIPASS_USER_COPY, eipassLocalizedText, getEipassUserModule, orderEipassTopics } from "@/lib/eipass-user-release";
 
 export type Lang = "it" | "en" | "fr" | "es";
 
@@ -39,6 +41,8 @@ export type TopicPageData = {
   }>;
 
   questionCount: number | null;
+  /** Release 1: no dedicated EIPASS reviews have been verified. */
+  reviewAvailable?: boolean;
 };
 
 const API_BASE_URL = process.env.API_BASE_URL!;
@@ -69,6 +73,9 @@ export async function getTopicPageData({
 }): Promise<TopicPageData | null> {
   const normalizedCertSlug = normalizeCertSlug(certSlug);
 
+  // EIPASS Standard is "coming soon": it has NO topic pages, in any language. Fail closed with no backend call.
+  if (isEipassStandardSlug(normalizedCertSlug)) return null;
+
   const res = await fetch(
     `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,
     {
@@ -97,5 +104,21 @@ export async function getTopicPageData({
     }
   }
 
+  if (normalizedCertSlug === "eipass" && data?.certification?.id === 3) {
+    const userModule = getEipassUserModule(Number(data.topic?.id));
+    if (userModule) {
+      data.reviewAvailable = false;
+      data.topic.title = userModule.title[lang];
+      // Normalize the real localized payload; use editorial copy for missing text.
+      data.topic.description = eipassLocalizedText(data.topic.description, lang) || userModule.description[lang];
+      data.topic.seoTitle = `${userModule.title[lang]} | ${EIPASS_USER_COPY.name[lang]} | CertifyQuiz`;
+      data.topic.seoDescription = userModule.description[lang];
+      data.certification.title = EIPASS_USER_COPY.name[lang];
+      data.relatedTopics = orderEipassTopics<TopicPageData["relatedTopics"][number]>(data.relatedTopics ?? []).map((topic) => {
+        const related = getEipassUserModule(Number(topic.id));
+        return related ? { ...topic, title: related.title[lang], description: eipassLocalizedText(topic.description, lang) || related.description[lang] } : topic;
+      });
+    }
+  }
   return data;
 }

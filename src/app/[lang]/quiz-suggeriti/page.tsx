@@ -107,7 +107,7 @@ const SUGGESTED: SuggestedItem[] = [
     },
   },
   {
-    slug: "eipass-basic",
+    slug: "eipass",
     icon: "office",
     badge: {
       it: "Utente office",
@@ -116,10 +116,10 @@ const SUGGESTED: SuggestedItem[] = [
       es: "Competencias digitales",
     },
     title: {
-      it: "EIPASS Basic",
-      en: "EIPASS Basic",
-      fr: "EIPASS Basic",
-      es: "EIPASS Basic",
+      it: "EIPASS 7 Moduli User",
+      en: "EIPASS 7 Moduli User",
+      fr: "EIPASS 7 Moduli User",
+      es: "EIPASS 7 Moduli User",
     },
     subtitle: {
       it: "Competenze digitali di base per la scuola e il lavoro.",

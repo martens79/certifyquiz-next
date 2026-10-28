@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
-import { setToken, backendUrl } from '@/lib/auth';
+import { acceptLoginToken, backendUrl } from '@/lib/auth';
+import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
 import { trackEvent, trackEventOnce, trackFunnelEventOnce } from '@/lib/analytics';
 import { readConversionContext, withConversionContext } from '@/lib/conversion-context';
 import { CHECKOUT_SOURCE, checkoutAuthBanner } from '@/lib/checkout-intent';
@@ -177,6 +178,7 @@ export default function RegisterPageClient() {
     setSubmitting(true);
     setError('');
     setMessage('');
+    const generation = authGeneration();
 
     try {
       const res = await fetch(backendUrl('/auth/register'), {
@@ -192,6 +194,7 @@ export default function RegisterPageClient() {
       });
 
       const data = await safeJson<RegisterSuccess & RegisterError>(res);
+      assertAuthGeneration(generation, true);
 
       if (!res.ok) {
         const status = res.status;
@@ -230,15 +233,7 @@ export default function RegisterPageClient() {
           topic_slug: conversion.topicSlug,
           assessment_score: conversion.score,
         });
-        try {
-          setToken?.(data.token, true); // persistente
-        } catch {
-          try {
-            localStorage.setItem('cq_token', data.token);
-          } catch {
-            /* noop */
-          }
-        }
+        acceptLoginToken(data.token, true, generation);
         trackFunnelEventOnce('registration_completed', {
           event: 'registration_completed', cert_slug: conversion.certificationSlug,
           topic_slug: conversion.topicSlug, lang,
