@@ -3,12 +3,14 @@ import { notFound, redirect } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
-import { isCertificationOfferedInLang, isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
 import {
-  EIPASS_STANDARD_DEMO_BANNER,
-  getEipassStandardDemoTopicLinks,
-  isEipassStandardSlug,
-} from "@/lib/eipass-standard";
+  isCertificationOfferedInLang,
+  isComingSoonCertification,
+  isPlannedCertification,
+  isPlannedPreviewEnabled,
+} from "@/certifications/publication";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
+import { EipassStandardComingSoonPanel } from "@/components/certification/EipassStandardComingSoon";
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
 import { getSapPlaceholderCertification } from "@/features/business-applications/data";
@@ -125,22 +127,16 @@ export async function CertificationDetailView({
   if (isPlannedCertification(reg) && !isPlannedPreviewEnabled()) return notFound();
   // Language routes outside the certification launch scope do not exist (EIPASS Standard: Italian only).
   if (reg && !isCertificationOfferedInLang(reg, lang)) return notFound();
-  // EIPASS Standard has no DB certification yet: a developer preview renders the registry contract
-  // with clearly labelled demo topics and zero questions, with no backend call at all.
+  // EIPASS Standard is "coming soon": ONLY this Italian landing is public. It has no DB certification and
+  // no quiz, so it is rendered from the registry alone, with no backend call at all and no link to any
+  // module, topic or quiz page.
   if (reg && isEipassStandardSlug(reg.slug)) {
-    const demoData: DynamicCertData = { ...reg, questionCount: 0, questionCountByLang: { [lang]: 0 } };
+    if (!isComingSoonCertification(reg)) return notFound();
+    const landing: DynamicCertData = { ...reg, questionCount: 0, questionCountByLang: { [lang]: 0 } };
     return (
       <>
-        <p role="note" className="mx-auto mt-4 max-w-5xl rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
-          {EIPASS_STANDARD_DEMO_BANNER}
-        </p>
-        <CertificationPage
-          lang={lang}
-          data={demoData}
-          dbTopics={getEipassStandardDemoTopicLinks()}
-          hasScenarios={false}
-          resources={null}
-        />
+        <EipassStandardComingSoonPanel />
+        <CertificationPage lang={lang} data={landing} dbTopics={[]} hasScenarios={false} resources={null} />
       </>
     );
   }

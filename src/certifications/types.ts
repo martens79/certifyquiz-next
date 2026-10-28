@@ -175,7 +175,12 @@ export type CertificationData = {
 
   slug: string;
   /** Planned entries are registry contracts only: they must not render or be indexed. */
-  publicationStatus?: "published" | "planned";
+  /**
+   * "planned" = registry contract only (404, unlisted). "coming_soon" = ONLY the landing is public (HTTP 200,
+   * indexable) with no quiz, topic pages or practice: it never declares the preparation available.
+   * Absent / "published" = fully public.
+   */
+  publicationStatus?: "published" | "planned" | "coming_soon";
   /**
    * Where the certification is offered. Language and country are separate axes:
    * `languages` decides which language routes exist (the others are 404),

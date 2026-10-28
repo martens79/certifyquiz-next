@@ -1,6 +1,6 @@
 // Quiz surfaces (topic list, mixed quiz, timed practice) of a certification that is not launched do not exist.
-// EIPASS Standard has no question inventory and no DB certification yet: its quiz routes stay 404 even in
-// a developer preview (the landing and demo topic pages are the only preview surfaces).
+// EIPASS Standard has no question inventory and no DB certification: its quiz routes answer 404 in every mode.
+// The Italian landing is the only public Standard page.
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 

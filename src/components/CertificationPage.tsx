@@ -11,6 +11,7 @@ import type {
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
 import { isEipassStandardSlug } from "@/lib/eipass-standard";
+import { EipassStandardPointer } from "@/components/certification/EipassStandardComingSoon";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
 import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
@@ -407,6 +408,7 @@ const pageTopics =
         )}
 
         {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
+        {data.slug === "eipass" && lang === "it" && <EipassStandardPointer />}
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
@@ -439,21 +441,27 @@ const pageTopics =
           className="mb-8"
         />)}
 
-        <CertificationPackageOffers
-          lang={lang}
-          certificationSlug={data.slug}
-          resources={resources}
-        />
+        {/* EIPASS Standard (coming soon): nothing is for sale or available, so no package offer and no Premium CTA
+            (its client-rendered copy would otherwise promise "complete preparation"). */}
+        {!isEipassStandardSlug(data.slug) && (
+          <>
+            <CertificationPackageOffers
+              lang={lang}
+              certificationSlug={data.slug}
+              resources={resources}
+            />
 
-        <PremiumResourcesCta
-          lang={lang}
-          certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
-          certificationId={resources?.certificationId ?? null}
-          certificationSlug={data.slug}
-          hasGuide={!!resources?.guide.available}
-          hasMaps={!!resources?.maps.available}
-          hasScenarios={hasScenarios}
-        />
+            <PremiumResourcesCta
+              lang={lang}
+              certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
+              certificationId={resources?.certificationId ?? null}
+              certificationSlug={data.slug}
+              hasGuide={!!resources?.guide.available}
+              hasMaps={!!resources?.maps.available}
+              hasScenarios={hasScenarios}
+            />
+          </>
+        )}
 
         {/* fallback: se l'endpoint aggregato non risponde, il conteggio dal
             registry evita di lasciare la pagina senza alcun numero */}

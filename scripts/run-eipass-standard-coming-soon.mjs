@@ -10,7 +10,7 @@ try {
   await ready('http://127.0.0.1:8459/api/test-status');
   start(['node_modules/next/dist/bin/next', 'start', '-H', '127.0.0.1', '-p', '3460']);
   await ready('http://127.0.0.1:3460/it/certificazioni/eipass');
-  const t = spawn(process.execPath, ['scripts/verify-eipass-standard-isolation.mjs'], { env, stdio: 'inherit' });
+  const t = spawn(process.execPath, ['scripts/verify-eipass-standard-coming-soon.mjs'], { env, stdio: 'inherit' });
   const [code] = await once(t, 'exit');
   const state = await (await fetch('http://127.0.0.1:8459/api/test-status')).json();
   if (state.forbiddenWrites !== 0) throw Error(`forbidden writes: ${state.forbiddenWrites}`);

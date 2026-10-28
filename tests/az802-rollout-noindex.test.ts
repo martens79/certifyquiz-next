@@ -19,8 +19,8 @@ const richTopic = {
   faq: [{ q: "q1", a: "a1" }, { q: "q2", a: "a2" }],
 };
 
-test("AZ-802 and PLC are published without rollout guards; only the unlaunched EIPASS Standard is guarded", () => {
-  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], ["eipass-standard"]);
+test("AZ-802 and PLC are published without rollout guards", () => {
+  assert.deepEqual([...ROLLOUT_NOINDEX_CERTIFICATION_SLUGS], []);
   assert.equal(isRolloutNoindexCertification("az-802"), false);
   assert.equal(isRolloutNoindexCertification("ccna"), false);
   assert.equal(isRolloutNoindexCertification("plc-fundamentals"), false);

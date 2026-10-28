@@ -1,6 +1,6 @@
-# EIPASS Standard — requisiti mancanti per il lancio
+# EIPASS Standard — requisiti mancanti per il lancio dei quiz
 
-Data: 27/10/2026. **La certificazione non è disponibile e non va dichiarata tale finché la pubblicazione non è autorizzata.** Ogni voce è un gate: finché è aperta, `publicationStatus: "planned"` e la guardia `ROLLOUT_NOINDEX_CERTIFICATION_SLUGS` restano.
+Data: 28/10/2026. La **landing "coming soon"** è pubblicata (autorizzazione del proprietario); **la preparazione non è disponibile e non va dichiarata tale** finché i quiz non sono autorizzati. Ogni voce sotto è un gate per i quiz: finché è aperta, lo stato resta `coming_soon` e le route quiz/topic restano 404.
 
 ## Bloccanti
 
@@ -26,14 +26,13 @@ Data: 27/10/2026. **La certificazione non è disponibile e non va dichiarata tal
 | V5 | Gate FREE (10 spiegazioni poi 5 domande) e livello Premium per i topic Standard | Da definire in `topics.access_tier` |
 | V6 | Mock / esercitazione a tempo | Nessuna route: non va introdotta una "simulazione" finché il livello non è modellato; vietata la dicitura "replica dell'esame ufficiale" |
 
-## Passi di lancio (ciascuno in una modifica propria, dopo gli esiti sopra)
+## Passi di lancio dei quiz (ciascuno in una modifica propria, dopo gli esiti sopra)
 
-1. Rimuovere `publicationStatus: "planned"` da `src/certifications/data/eipass-standard.ts`.
-2. Sostituire `getEipassStandardDemoTopicLinks/Page` con la lettura reale dei topic (e rimuovere il banner demo, il ramo senza backend in `CertificationDetailView`, il `notFound()` per Standard in `quiz/[slug]/layout.tsx` e la guardia di `topic-page.ts`).
-3. Smoke di produzione in anonimo, FREE e Premium; solo dopo, rimuovere `eipass-standard` da `ROLLOUT_NOINDEX_CERTIFICATION_SLUGS`.
-4. Verifica sitemap e Search Console. Nessun miglioramento di ranking è garantito.
-5. Aggiornare le due pagine EIPASS con un rimando incrociato (User ↔ Standard) solo a lancio avvenuto.
+1. Backend (PR #149 e successive): migrazione approvata e applicata da Lorenzo, certificazione e topic creati inattivi, collegamenti approvati per modulo.
+2. Frontend: passare da `coming_soon` a `published`; sostituire il ramo "solo registry" di `CertificationDetailView` con la lettura reale di topic e inventario; rimuovere il `notFound()` per Standard in `quiz/[slug]/layout.tsx`, nelle quattro pagine scenari e in `topic-page.ts`; aggiungere i moduli come link; aggiornare sitemap (topic indexabili solo con contenuto reale) e rimuovere il banner "in arrivo".
+3. Free/Premium: i quiz Standard usano il normale meccanismo di allenamento (spiegazione gratuita sulle risposte corrette, quota sugli errori, gate attuale, Premium/trial/pacchetti): **nessuna divisione in Free/Premium dei moduli o delle domande**.
+4. Smoke di produzione (anonimo, FREE, Premium) prima di annunciare. Nessun miglioramento di ranking è garantito.
 
-## Cosa questa PR non fa
+## Cosa questa PR fa e non fa
 
-Non crea la certificazione né i topic nel DB; non collega domande; non modifica EIPASS 7 Moduli User né le sue route, domande, associazioni, copy o test; non tocca le 19 domande in revisione né le 34 coppie; non cambia sitemap, catalogo, home o categorie; non esegue migrazioni, import, merge o deploy.
+Pubblica la sola landing italiana "coming soon". Non crea la certificazione né i topic nel DB; non collega domande; non modifica il backend né EIPASS 7 Moduli User (salvo il link contestuale "In preparazione" sulla sua landing italiana); non tocca le 19 domande in revisione né le 34 coppie; non cambia le regole di indicizzazione delle altre certificazioni; non esegue migrazioni, import o altri deploy.

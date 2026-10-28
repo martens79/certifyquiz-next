@@ -53,14 +53,14 @@ Domande **nuove** scritte per Standard: inserite direttamente in `questions` con
 
 Nessun campo di difficoltà esiste oggi e la banca non identifica Avanzato/Altamente specializzato. `level` nel link è nullable e **non** deve essere popolato da euristiche: serve etichettatura umana su campione con due revisori prima di costruire qualunque esame a livelli.
 
-## Fasi (nessuna è autorizzata da questa PR)
+## Fasi (oltre alla landing "coming soon", nessuna è autorizzata)
 
-0. **Questa PR** — solo frontend: contratto di registry `planned`, landing e topic demo in anteprima locale, guardie e test. Nessun DB.
+0. **Landing coming soon (questa PR)** — solo frontend: stato `coming_soon`, sola landing italiana pubblica, quiz/topic 404. Nessun DB.
 1. Backend, PR separata — migrazione additiva (tabella vuota + vista) e passaggio delle letture al pool, con test di identità sui topic esistenti. Applicazione al DB solo da Lorenzo, via Workbench.
 2. Creazione della certificazione e dei 7 topic Standard con `is_active = 0`, generata dagli strumenti di import (non scritta a mano).
 3. Popolamento dei link `proposed` dalla matrice; revisione indipendente per modulo; approvazione per modulo.
 4. Nuove domande native per gli argomenti scoperti (MVP stimato 185).
-5. Lancio: rimozione di `publicationStatus: "planned"` e dello slug da `ROLLOUT_NOINDEX_CERTIFICATION_SLUGS`, ciascuno in una modifica propria dopo smoke di produzione.
+5. Lancio dei quiz: passaggio da `coming_soon` a `published` e attivazione dei topic, ciascuno in una modifica propria dopo smoke di produzione.
 
 ## Rollback
 

@@ -34,7 +34,7 @@ test("registry: plc-fundamentals is launched (not planned), has its production i
   assert.equal(IDS_BY_SLUG[SLUG], 75);
   assert.equal(reg.id, 75);
   const planned = Object.values(CERTS_BY_SLUG).filter((c) => c && isPlannedCertification(c)).map((c) => c.slug);
-  assert.deepEqual([...new Set(planned)], ["eipass-standard"], "only EIPASS Standard (not launched) is hidden by the planned filter");
+  assert.deepEqual([...new Set(planned)], [], "no certification is hidden by the planned filter");
 });
 
 test("registry: 12 topics with EN/IT slugs matching the backend import catalog; not presented as official", () => {
@@ -95,7 +95,7 @@ test("discovery: planned certifications are not listed; published ones (PLC incl
   const list = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");
   assert.match(list, /isPubliclyListed\(c\.slug, CERTS_BY_SLUG\)/, "certifications list + its JSON-LD filter planned slugs");
   const category = read("../src/app/[lang]/categorie/[cat]/page.tsx");
-  assert.match(category, /publicationStatus !== "planned"/, "category pages filter planned slugs");
+  assert.match(category, /isPubliclyListed\(s, CERTS_BY_SLUG\)/, "category pages filter planned (and coming-soon) slugs");
 });
 
 test("page: a planned landing is 404 publicly; a local developer preview may render it", () => {

@@ -15,16 +15,25 @@ export function isPlannedCertification(cert: CertificationData | null | undefine
   return cert?.publicationStatus === "planned";
 }
 
+/** Landing-only publication: the landing is public, everything else of the certification stays 404. */
+export function isComingSoonCertification(cert: CertificationData | null | undefined): boolean {
+  return cert?.publicationStatus === "coming_soon";
+}
+
 export function isPlannedPreviewEnabled(env: Env = process.env): boolean {
   return env[PLANNED_PREVIEW_ENV] === "1" && env.VERCEL_ENV !== "production" && env.NODE_ENV !== "production";
 }
 
-/** Public discovery surfaces (lists, category pages) never show planned certifications. */
+/**
+ * Public discovery surfaces (lists, category pages, home) never show planned or coming-soon certifications:
+ * a coming-soon landing is reachable by its URL, the sitemap and one contextual link, not by the catalogue.
+ */
 export function isPubliclyListed(
   slug: string,
   registry: Readonly<Record<string, CertificationData | undefined>>
 ): boolean {
-  return !isPlannedCertification(registry[slug]);
+  const cert = registry[slug];
+  return !isPlannedCertification(cert) && !isComingSoonCertification(cert);
 }
 
 /** Language routes of a certification: only the languages in its launch scope exist (default: all). */
