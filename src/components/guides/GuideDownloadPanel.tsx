@@ -117,7 +117,7 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
     );
 
     if (!res.ok) {
-      if (res.status === 403) { setError(COPY.trialBlocked[lang]); return; }
+      if (res.status === 403 && (await res.json().catch(() => null))?.error === "trial_pdf_restricted") { setError(COPY.trialBlocked[lang]); return; }
       throw new Error("download_failed");
     }
 
