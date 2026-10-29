@@ -7,7 +7,7 @@ permissions:
 jobs:
   isolated:
     name: sequential-integration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       API_BASE_URL: http://127.0.0.1:8298/api
