@@ -163,7 +163,7 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
   }
 
   if (!hasAccess) {
-    return <GuideAccessGate lang={lang} slug={slug} price={price} />;
+    return <GuideAccessGate lang={lang} slug={slug} price={price} trialRestricted={accessReason === "trial_pdf_restricted"} />;
   }
 
   const badgeCopy =
