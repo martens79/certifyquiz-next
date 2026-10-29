@@ -13,12 +13,16 @@ const offer = { code: "ccna-complete", productCode: "octopus-complete", amountMi
 function fixture({ authed = false, blocked = false, status = 200, loading = false } = {}) {
   const bodies: Array<Record<string, unknown>> = []; const created: unknown[] = [];
   const win = { location: { search: "?source=mock_review&package_offer=ccna-complete", hostname: "localhost", href: "" } };
+  let epoch = 0, discards = 0, failureCode = "CHECKOUT_FAILED";
   let okBody: unknown = { url: "https://checkout.stripe.test/stub", sessionId: "cs_stub" };
   const state = { user: authed ? { id: 123, premium: false } : null, isAdmin: false, loading };
   const posts: string[] = []; const redirects: string[] = []; const events: unknown[] = [];
   let responseStatus = status;
   const Component = clientComponent("../../src/components/certification/CertificationPackageOffers.tsx", {
-    "@/lib/checkout-analytics": { checkoutRequest: async () => ({ requestId: "stable-request", analytics: { analytics_consent: false } }) },
+    "@/lib/checkout-analytics": {
+      checkoutRequest: async () => ({ requestId: `request-${epoch}`, analytics: { analytics_consent: false } }),
+      discardCheckoutRequest: () => { epoch++; discards++; },
+    },
     "next/navigation": { useRouter: () => ({ push: (p: string) => redirects.push(p) }), usePathname: () => "/es/certificaciones/ccna" },
     "@/components/auth/AuthProvider": { useAuth: () => state },
     "@/hooks/useTwa": { useTwa: () => false }, "@/lib/twa": { detectTwa: () => false },
@@ -32,12 +36,12 @@ function fixture({ authed = false, blocked = false, status = 200, loading = fals
     "@/lib/auth": { apiFetch: async (path: string, init?: RequestInit) => {
       if (!init) return new Response(JSON.stringify({ offers: [{ ...offer, blockedReason: blocked ? "already_owned" : null }] }));
       posts.push(path);
-      if (path === "/packages/checkout") { bodies.push(JSON.parse(String(init.body))); return new Response(JSON.stringify(responseStatus === 200 ? okBody : { error: "CHECKOUT_FAILED" }), { status: responseStatus }); }
+      if (path === "/packages/checkout") { bodies.push(JSON.parse(String(init.body))); return new Response(JSON.stringify(responseStatus === 200 ? okBody : { error: failureCode }), { status: responseStatus }); }
       return new Response("{}");
     } },
   }, { window: win, document: { getElementById: () => ({ closest: () => ({ scrollIntoView: () => {} }), scrollIntoView: () => {} }) } });
   let r!: ReactTestRenderer;
-  return { state, posts, redirects, events, bodies, created, href: () => win.location.href, setBody: (b: unknown) => { okBody = b; }, setStatus: (s: number) => { responseStatus = s; },
+  return { state, posts, redirects, events, bodies, created, href: () => win.location.href, setBody: (b: unknown) => { okBody = b; }, fail: (status: number, code: string) => { responseStatus = status; failureCode = code; }, discards: () => discards, setStatus: (s: number) => { responseStatus = s; },
     root: () => r.root, mount: async () => { await act(async () => { r = create(<Component lang="es" certificationSlug="ccna" resources={null} />); }); },
     unmount: async () => { await act(async () => r.unmount()); } };
 }
@@ -114,3 +118,43 @@ test("URL with surrounding whitespace is trimmed before navigation", async () =>
   await act(async () => f.root().findByType("button").props.onClick());
   assert.equal(f.href(), "https://checkout.stripe.test/stub"); await f.unmount();
 });
+
+const text = (f: ReturnType<typeof fixture>) => JSON.stringify(f.root().findByProps({ role: "alert" }).children);
+test("NOT_REUSABLE: key discarded, no automatic checkout, next explicit click uses a new request id", async () => {
+  const f = fixture({ authed: true }); await f.mount();
+  f.fail(409, "CHECKOUT_SESSION_NOT_REUSABLE");
+  await act(async () => f.root().findByType("button").props.onClick());
+  assert.equal(f.discards(), 1);
+  assert.equal(f.posts.filter(p => p === "/packages/checkout").length, 1, "no automatic resend");
+  assert.equal(f.href(), ""); assert.equal(f.created.length, 0);
+  assert.equal(f.root().findByType("button").props.disabled, false);
+  assert.match(text(f), /caducado/);
+  f.setStatus(200);
+  await act(async () => f.root().findByType("button").props.onClick());
+  assert.equal(f.bodies.length, 2); assert.notEqual(f.bodies[0].idempotencyKey, f.bodies[1].idempotencyKey);
+  assert.equal(f.href(), "https://checkout.stripe.test/stub");
+  await f.unmount();
+});
+test("NOT_REUSABLE with a double click still sends one request before and one after", async () => {
+  const f = fixture({ authed: true }); await f.mount();
+  f.fail(409, "CHECKOUT_SESSION_NOT_REUSABLE");
+  const click = f.root().findByType("button").props.onClick;
+  await act(async () => { await Promise.all([click(), click()]); });
+  assert.equal(f.posts.filter(p => p === "/packages/checkout").length, 1);
+  assert.equal(f.discards(), 1);
+  await f.unmount();
+});
+for (const [status, code, pattern] of [[409, "CHECKOUT_ALREADY_COMPLETED", /ya está completado/], [503, "CHECKOUT_STATE_UNCERTAIN", /verificando/], [409, "CHECKOUT_ALREADY_IN_PROGRESS", /pago en curso/], [500, "CHECKOUT_FAILED", /No se pudo iniciar/]] as const) {
+  test(`${code}: key kept, no new checkout, explicit retry reuses the same request id`, async () => {
+    const f = fixture({ authed: true }); await f.mount();
+    f.fail(status, code);
+    await act(async () => f.root().findByType("button").props.onClick());
+    assert.equal(f.discards(), 0);
+    assert.equal(f.posts.filter(p => p === "/packages/checkout").length, 1, "no automatic resend");
+    assert.equal(f.href(), ""); assert.equal(f.root().findByType("button").props.disabled, false);
+    assert.match(text(f), pattern);
+    await act(async () => f.root().findByType("button").props.onClick());
+    assert.equal(f.bodies[0].idempotencyKey, f.bodies[1].idempotencyKey);
+    await f.unmount();
+  });
+}

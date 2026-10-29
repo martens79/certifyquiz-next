@@ -1,6 +1,6 @@
 "use client";
 
-import { checkoutRequest } from "@/lib/checkout-analytics";
+import { checkoutRequest, discardCheckoutRequest } from "@/lib/checkout-analytics";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -45,15 +45,18 @@ type Payload = {
 };
 
 const TEXT = {
-  it: { title: "Scegli come prepararti", free: "Free", freeBody: "Inizia gratis: quiz, assessment e Mock Exam con punteggio.", premium: "Accesso completo a tutto il catalogo CertifyQuiz, per chi prepara più certificazioni.", premiumCta: "Scopri Premium", buy: "Ottieni l'accesso", renew: "Estendi l'accesso", upgrade: "Passa a Complete", owned: "Già attivo", recommended: "Consigliato", inactive: "Dark launch — solo anteprima admin", warning: "Questo contenuto è già incluso nel tuo Premium. Acquista il pass solo se vuoi mantenere l'accesso a questa certificazione indipendentemente dall'abbonamento.", buyAnyway: "Acquista comunque", renewNote: "Il nuovo periodo si somma a quello attuale.", errors: { generic: "Non è stato possibile avviare il pagamento. Riprova tra poco.", unavailable: "Questa offerta non è ancora disponibile.", inProgress: "Hai già un pagamento in corso per questa offerta.", owned: "Hai già accesso a questo pacchetto." } },
-  en: { title: "Choose how to prepare", free: "Free", freeBody: "Start free: quizzes, assessment and a scored Mock Exam.", premium: "Full access to the whole CertifyQuiz catalog, for learners preparing several certifications.", premiumCta: "Explore Premium", buy: "Get access", renew: "Extend access", upgrade: "Upgrade to Complete", owned: "Already active", recommended: "Recommended", inactive: "Dark launch — admin preview only", warning: "This content is already included in your Premium. Buy the pass only if you want to keep access to this certification regardless of your subscription.", buyAnyway: "Buy anyway", renewNote: "The new period is added to your current one.", errors: { generic: "We could not start the payment. Please try again shortly.", unavailable: "This offer is not available yet.", inProgress: "You already have a payment in progress for this offer.", owned: "You already have access to this package." } },
-  fr: { title: "Choisissez votre préparation", free: "Gratuit", freeBody: "Commencez gratuitement : quiz, évaluation et Mock Exam noté.", premium: "Accès complet à tout le catalogue CertifyQuiz, pour préparer plusieurs certifications.", premiumCta: "Découvrir Premium", buy: "Obtenir l'accès", renew: "Prolonger l'accès", upgrade: "Passer à Complete", owned: "Déjà actif", recommended: "Recommandé", inactive: "Lancement privé — aperçu administrateur", warning: "Ce contenu est déjà inclus dans votre Premium. Achetez le pass uniquement pour conserver cette certification indépendamment de l'abonnement.", buyAnyway: "Acheter quand même", renewNote: "La nouvelle période s'ajoute à la période en cours.", errors: { generic: "Impossible de lancer le paiement. Réessayez dans un instant.", unavailable: "Cette offre n'est pas encore disponible.", inProgress: "Un paiement est déjà en cours pour cette offre.", owned: "Vous avez déjà accès à ce pack." } },
-  es: { title: "Elige cómo prepararte", free: "Gratis", freeBody: "Empieza gratis: cuestionarios, evaluación y Mock Exam con puntuación.", premium: "Acceso completo a todo el catálogo de CertifyQuiz, para quien prepara varias certificaciones.", premiumCta: "Ver Premium", buy: "Obtener acceso", renew: "Ampliar acceso", upgrade: "Pasar a Complete", owned: "Ya activo", recommended: "Recomendado", inactive: "Lanzamiento privado — vista admin", warning: "Este contenido ya está incluido en tu Premium. Compra el pase solo si quieres conservar esta certificación independientemente de la suscripción.", buyAnyway: "Comprar igualmente", renewNote: "El nuevo periodo se suma al actual.", errors: { generic: "No se pudo iniciar el pago. Inténtalo de nuevo en breve.", unavailable: "Esta oferta aún no está disponible.", inProgress: "Ya tienes un pago en curso para esta oferta.", owned: "Ya tienes acceso a este paquete." } },
+  it: { title: "Scegli come prepararti", free: "Free", freeBody: "Inizia gratis: quiz, assessment e Mock Exam con punteggio.", premium: "Accesso completo a tutto il catalogo CertifyQuiz, per chi prepara più certificazioni.", premiumCta: "Scopri Premium", buy: "Ottieni l'accesso", renew: "Estendi l'accesso", upgrade: "Passa a Complete", owned: "Già attivo", recommended: "Consigliato", inactive: "Dark launch — solo anteprima admin", warning: "Questo contenuto è già incluso nel tuo Premium. Acquista il pass solo se vuoi mantenere l'accesso a questa certificazione indipendentemente dall'abbonamento.", buyAnyway: "Acquista comunque", renewNote: "Il nuovo periodo si somma a quello attuale.", errors: { generic: "Non è stato possibile avviare il pagamento. Riprova tra poco.", unavailable: "Questa offerta non è ancora disponibile.", inProgress: "Hai già un pagamento in corso per questa offerta.", owned: "Hai già accesso a questo pacchetto.", expired: "La sessione di pagamento è scaduta. Premi di nuovo il pulsante per avviarne una nuova.", completed: "Questo pagamento risulta già completato. Controlla nel tuo profilo se l'accesso è attivo: l'attivazione può richiedere qualche istante.", verifying: "Stiamo ancora verificando lo stato del pagamento. Riprova tra poco." } },
+  en: { title: "Choose how to prepare", free: "Free", freeBody: "Start free: quizzes, assessment and a scored Mock Exam.", premium: "Full access to the whole CertifyQuiz catalog, for learners preparing several certifications.", premiumCta: "Explore Premium", buy: "Get access", renew: "Extend access", upgrade: "Upgrade to Complete", owned: "Already active", recommended: "Recommended", inactive: "Dark launch — admin preview only", warning: "This content is already included in your Premium. Buy the pass only if you want to keep access to this certification regardless of your subscription.", buyAnyway: "Buy anyway", renewNote: "The new period is added to your current one.", errors: { generic: "We could not start the payment. Please try again shortly.", unavailable: "This offer is not available yet.", inProgress: "You already have a payment in progress for this offer.", owned: "You already have access to this package.", expired: "The payment session has expired. Press the button again to start a new one.", completed: "This payment is already completed. Check your profile to see whether your access is active: activation can take a few moments.", verifying: "We are still verifying the payment status. Please try again shortly." } },
+  fr: { title: "Choisissez votre préparation", free: "Gratuit", freeBody: "Commencez gratuitement : quiz, évaluation et Mock Exam noté.", premium: "Accès complet à tout le catalogue CertifyQuiz, pour préparer plusieurs certifications.", premiumCta: "Découvrir Premium", buy: "Obtenir l'accès", renew: "Prolonger l'accès", upgrade: "Passer à Complete", owned: "Déjà actif", recommended: "Recommandé", inactive: "Lancement privé — aperçu administrateur", warning: "Ce contenu est déjà inclus dans votre Premium. Achetez le pass uniquement pour conserver cette certification indépendamment de l'abonnement.", buyAnyway: "Acheter quand même", renewNote: "La nouvelle période s'ajoute à la période en cours.", errors: { generic: "Impossible de lancer le paiement. Réessayez dans un instant.", unavailable: "Cette offre n'est pas encore disponible.", inProgress: "Un paiement est déjà en cours pour cette offre.", owned: "Vous avez déjà accès à ce pack.", expired: "La session de paiement a expiré. Appuyez à nouveau sur le bouton pour en démarrer une nouvelle.", completed: "Ce paiement est déjà terminé. Vérifiez dans votre profil si l'accès est actif : l'activation peut prendre quelques instants.", verifying: "Nous vérifions encore l'état du paiement. Réessayez dans un instant." } },
+  es: { title: "Elige cómo prepararte", free: "Gratis", freeBody: "Empieza gratis: cuestionarios, evaluación y Mock Exam con puntuación.", premium: "Acceso completo a todo el catálogo de CertifyQuiz, para quien prepara varias certificaciones.", premiumCta: "Ver Premium", buy: "Obtener acceso", renew: "Ampliar acceso", upgrade: "Pasar a Complete", owned: "Ya activo", recommended: "Recomendado", inactive: "Lanzamiento privado — vista admin", warning: "Este contenido ya está incluido en tu Premium. Compra el pase solo si quieres conservar esta certificación independientemente de la suscripción.", buyAnyway: "Comprar igualmente", renewNote: "El nuevo periodo se suma al actual.", errors: { generic: "No se pudo iniciar el pago. Inténtalo de nuevo en breve.", unavailable: "Esta oferta aún no está disponible.", inProgress: "Ya tienes un pago en curso para esta oferta.", owned: "Ya tienes acceso a este paquete.", expired: "La sesión de pago ha caducado. Pulsa de nuevo el botón para iniciar una nueva.", completed: "Este pago ya está completado. Comprueba en tu perfil si el acceso está activo: la activación puede tardar unos instantes.", verifying: "Aún estamos verificando el estado del pago. Inténtalo de nuevo en breve." } },
 } as const;
 
 function errorMessage(code: string, t: (typeof TEXT)[Locale]) {
   if (code === "OFFER_NOT_AVAILABLE" || code === "OFFER_NOT_CONFIGURED" || code === "PACKAGE_BILLING_DISABLED") return t.errors.unavailable;
   if (code === "CHECKOUT_ALREADY_IN_PROGRESS") return t.errors.inProgress;
+  if (code === "CHECKOUT_SESSION_NOT_REUSABLE") return t.errors.expired;
+  if (code === "CHECKOUT_ALREADY_COMPLETED") return t.errors.completed;
+  if (code === "CHECKOUT_STATE_UNCERTAIN") return t.errors.verifying;
   if (code === "already_owned" || code === "downgrade_not_allowed") return t.errors.owned;
   return t.errors.generic;
 }
@@ -181,6 +184,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       setBusy(null);
       return;
     }
+    const checkoutScope = `package:${o.code}:${lang}:${origin.paywallType || ""}:${gateInstanceId || ""}`;
     try {
       trackFunnelEvent({
         event: "checkout_attempted", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
@@ -195,7 +199,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "package_selected", offerCode: o.code, source: "certification_page" }),
       }).catch(() => {});
-      const checkoutContext = await checkoutRequest(`package:${o.code}:${lang}:${origin.paywallType || ""}:${gateInstanceId || ""}`);
+      const checkoutContext = await checkoutRequest(checkoutScope);
       const r = await apiFetch("/packages/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -222,7 +226,11 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
       window.location.href = checkoutUrl;
     } catch (e) {
-      setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));
+      const code = e instanceof Error ? e.message : "CHECKOUT_FAILED";
+      // Only a backend-proven dead session lets the next explicit click use a new
+      // request id. Completed/uncertain/other errors keep the key (no duplicate order).
+      if (code === "CHECKOUT_SESSION_NOT_REUSABLE") discardCheckoutRequest(checkoutScope);
+      setError(errorMessage(code, t));
       setBusy(null);
       inFlight.current = false;
     }

@@ -56,3 +56,27 @@ test("owned Complete cannot create another checkout even on a copied return URL"
   expect(m.checkoutPosts).toHaveLength(0);
 });
 
+
+test("expired session rotates the request id only after an explicit second click; completed keeps it", async ({ page }) => {
+  const m = await packageFlow(page); m.authenticated = true;
+  await page.addInitScript(() => localStorage.setItem("cq:access", "synthetic"));
+  await page.goto(landing, { waitUntil: "domcontentloaded" });
+  const button = page.getByRole("button", { name: "Obtener acceso" });
+  m.checkoutStatus = 409; m.checkoutError = "CHECKOUT_ALREADY_COMPLETED";
+  await button.click();
+  await expect(page.locator("#packages").getByRole("alert")).toContainText("ya está completado");
+  await button.click();
+  await expect(page.locator("#packages").getByRole("alert")).toBeVisible();
+  expect(m.checkoutPosts).toHaveLength(2);
+  expect(m.checkoutPosts[0].idempotencyKey).toBe(m.checkoutPosts[1].idempotencyKey);
+  m.checkoutError = "CHECKOUT_SESSION_NOT_REUSABLE";
+  await button.click();
+  await expect(page.locator("#packages").getByRole("alert")).toContainText("caducado");
+  await page.waitForTimeout(500);
+  expect(m.checkoutPosts).toHaveLength(3); // no automatic resend
+  m.checkoutStatus = 200;
+  await button.click();
+  await expect(page.getByRole("heading", { name: "Synthetic checkout" })).toBeVisible();
+  expect(m.checkoutPosts).toHaveLength(4);
+  expect(m.checkoutPosts[3].idempotencyKey).not.toBe(m.checkoutPosts[2].idempotencyKey);
+});

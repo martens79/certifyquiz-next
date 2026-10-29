@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test";
 export const complete = { code: "fixture-complete", productCode: "octopus-complete", name: "Complete", amountMinor: 2490,
   currency: "EUR", status: "active", checkoutAvailable: true, blockedReason: null, accessDurationDays: 90 };
 export async function packageFlow(page: Page, consent = false) {
-  const state = { authenticated: false, checkoutStatus: 200, checkoutPosts: [] as Record<string, unknown>[], funnel: [] as Record<string, unknown>[], blocked: false, loginOk: true,
+  const state = { authenticated: false, checkoutStatus: 200, checkoutError: "CHECKOUT_FAILED", checkoutPosts: [] as Record<string, unknown>[], funnel: [] as Record<string, unknown>[], blocked: false, loginOk: true,
     offerCode: complete.code, withStudy: false };
   await page.addInitScript(({ consent }) => {
     localStorage.setItem("cq_cookie_consent", JSON.stringify({ accepted: consent, ts: Date.now() }));
@@ -48,7 +48,7 @@ export async function packageFlow(page: Page, consent = false) {
     if (p === "/packages/checkout") {
       state.checkoutPosts.push(req.postDataJSON());
       if (!state.authenticated) return json({}, 401);
-      return json(state.checkoutStatus === 200 ? { url: "/__stripe_fixture", sessionId: "cs_synthetic" } : { error: "CHECKOUT_FAILED" }, state.checkoutStatus);
+      return json(state.checkoutStatus === 200 ? { url: "/__stripe_fixture", sessionId: "cs_synthetic" } : { error: state.checkoutError }, state.checkoutStatus);
     }
     return json({});
   });
