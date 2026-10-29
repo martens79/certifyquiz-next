@@ -167,7 +167,7 @@ function MapCard({
       );
 
       if (!res.ok) {
-        if (res.status === 403) { setError(t.trialBlocked); return; }
+        if (res.status === 403 && (await res.json().catch(() => null))?.error === "trial_pdf_restricted") { setError(t.trialBlocked); return; }
         throw new Error("download_failed");
       }
 
