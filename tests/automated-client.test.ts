@@ -13,8 +13,10 @@ const sessionStore = new Map<string, string>();
     sessionStore.set(key, value);
   },
 };
+// Stored analytics consent; most tests run with consent granted, one flips it to prove the gate.
+let storedConsent: string | null = '{"accepted":true}';
 (globalThis as any).localStorage = {
-  getItem: (key: string) => (key === "cq_cookie_consent" ? '{"accepted":true}' : null),
+  getItem: (key: string) => (key === "cq_cookie_consent" ? storedConsent : null),
   setItem: () => undefined,
 };
 let uuidCounter = 0;
@@ -311,6 +313,25 @@ test("trackFunnelEvent: a known crawler user agent writes nothing", async () => 
 
   assert.equal(beaconCalls.length, 0);
   assert.equal(fetchCalls.length, 0);
+});
+
+test("trackFunnelEvent: a real browser without analytics consent (unknown or denied) writes nothing", async () => {
+  const { trackFunnelEvent, trackFunnelEventOnce } = await analyticsModule;
+  setNavigator({ webdriver: false, userAgent: REAL_BROWSER_USER_AGENTS.chromeWindows });
+  const previous = storedConsent;
+  try {
+    for (const value of [null, '{"accepted":false}']) {
+      storedConsent = value;
+      beaconCalls.length = 0;
+      fetchCalls.length = 0;
+      trackFunnelEvent({ event: "study_started", lang: "en" });
+      trackFunnelEventOnce(`no-consent:${value}`, { event: "study_started", lang: "en" });
+      assert.equal(beaconCalls.length, 0, `consent ${value}`);
+      assert.equal(fetchCalls.length, 0, `consent ${value}`);
+    }
+  } finally {
+    storedConsent = previous;
+  }
 });
 
 test("trackFunnelEvent: a normal browser still writes every one of the four exposure events", async () => {
