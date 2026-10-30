@@ -1021,6 +1021,44 @@ function PremiumPricingView({ forceLang }: Props) {
         <div className="px-6 py-6">
           <Guarantee t={t} isPromoLink={isPromoLink} />
 
+          {/* Percorso di valore: mostra il beneficio prima di chiedere l'acquisto. */}
+          <section className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-7 sm:px-7" aria-labelledby="premium-how-it-works">
+            <h2 id="premium-how-it-works" className="text-2xl font-semibold tracking-tight text-gray-900">
+              {{ it: "Da ogni simulazione a un ripasso più mirato", es: "De cada simulacro a un repaso más preciso", en: "From every mock exam to more focused revision", fr: "De chaque examen blanc à une révision plus ciblée" }[lang]}
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-700">
+              {{ it: "Non devi indovinare cosa ripassare: usa i risultati per concentrarti sui tuoi punti deboli.", es: "No tienes que adivinar qué repasar: usa tus resultados para centrarte en tus puntos débiles.", en: "No need to guess what to revise: use your results to focus on weaker areas.", fr: "Plus besoin de deviner quoi réviser : utilisez vos résultats pour cibler vos points faibles." }[lang]}
+            </p>
+            <ol className="mt-6 grid gap-4 md:grid-cols-3">
+              {[
+                {
+                  n: "01",
+                  title: { it: "Allenati", es: "Practica", en: "Practise", fr: "Entraînez-vous" }[lang],
+                  body: { it: "Affronta quiz e simulazioni della certificazione che stai preparando.", es: "Haz cuestionarios y simulacros de la certificación que preparas.", en: "Take quizzes and mock exams for the certification you are preparing.", fr: "Faites des quiz et des examens blancs pour votre certification." }[lang],
+                },
+                {
+                  n: "02",
+                  title: { it: "Comprendi gli errori", es: "Entiende tus errores", en: "Understand mistakes", fr: "Comprenez vos erreurs" }[lang],
+                  body: { it: "Consulta le spiegazioni disponibili e individua gli argomenti da migliorare.", es: "Consulta las explicaciones disponibles e identifica qué temas mejorar.", en: "Read the available explanations and identify topics to improve.", fr: "Consultez les explications disponibles et identifiez les points à améliorer." }[lang],
+                },
+                {
+                  n: "03",
+                  title: { it: "Ripassa con Premium", es: "Repasa con Premium", en: "Revise with Premium", fr: "Révisez avec Premium" }[lang],
+                  body: { it: "Ritorna sulle risposte sbagliate con il ripasso mirato e le risorse incluse.", es: "Vuelve a tus respuestas incorrectas con repasos específicos y recursos incluidos.", en: "Revisit incorrect answers with targeted revision and included resources.", fr: "Revenez sur vos mauvaises réponses avec une révision ciblée et les ressources incluses." }[lang],
+                },
+              ].map((step) => (
+                <li key={step.n} className="rounded-xl border border-gray-200 bg-white p-5">
+                  <span className="text-xs font-bold tracking-widest text-emerald-700">{step.n}</span>
+                  <h3 className="mt-2 text-base font-semibold text-gray-900">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-700">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-6 max-w-xl">
+              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
+            </div>
+          </section>
+
           {/* Features */}
           <section className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="rounded-2xl border border-gray-200 p-6">
