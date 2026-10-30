@@ -61,7 +61,9 @@ export default function MockExamPage() {
   // Premium reale dall'AuthProvider (come mixed/ e topic/): con `false` fisso un utente Premium vedeva
   // gli inviti all'acquisto nel risultato se /me/explanation-status falliva o non era ancora arrivato.
   // `premiumLocked` resta false: il mock exam e' FREE in Phase 1 (backend: checkMockExamAccess).
-  const { isPremiumUser } = useAuth();
+  // Il motore parte solo a bootstrap auth concluso: con sessione recuperata dal refresh cookie token e utente
+  // arrivano in momenti diversi e ogni cambio ricaricherebbe il mock (un nuovo esame casuale a ogni passaggio).
+  const { isPremiumUser, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (staticCertId) {
@@ -254,7 +256,7 @@ export default function MockExamPage() {
         </div>
       </div>
 
-      {!poolTotalSettled ? (
+      {!poolTotalSettled || authLoading ? (
         <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>
       ) : (
       <QuizEngine

@@ -29,7 +29,12 @@ const questionsPayload = () => ({
 
 type Account = "free" | "premium";
 
-async function setup(page: Page, account: Account, opts: { statusFails?: boolean } = {}) {
+const REFRESHED_TOKEN = "synthetic-refreshed-token-not-a-real-jwt";
+
+// viaRefreshCookie: nessun access token in localStorage (browser che riapre il sito con il solo refresh cookie
+// HttpOnly). Come il backend reale: /auth/me senza bearer -> 401; /auth/refresh -> nuovo token; /auth/me col
+// token -> utente. Il cookie in se' non e' emulabile: si verifica il percorso del client che lo consuma.
+async function setup(page: Page, account: Account, opts: { statusFails?: boolean; viaRefreshCookie?: boolean } = {}) {
   const calls: string[] = [];
   page.on("request", (r) => {
     const u = r.url();
@@ -43,14 +48,23 @@ async function setup(page: Page, account: Account, opts: { statusFails?: boolean
     premium: account === "premium",
     trial: false,
   };
-  await page.addInitScript(() => {
+  await page.addInitScript((withToken) => {
     try {
-      localStorage.setItem("cq:access", "synthetic-token-not-a-real-jwt");
+      if (withToken) localStorage.setItem("cq:access", "synthetic-token-not-a-real-jwt");
       localStorage.setItem("cq_cookie_consent", JSON.stringify({ accepted: false }));
     } catch { /* storage opzionale */ }
-  });
-  await page.route("**/api/backend/auth/refresh", (r) => r.fulfill({ status: 401, contentType: "application/json", body: "{}" }));
-  await page.route("**/api/backend/auth/me", (r) => r.fulfill({ json: { user } }));
+  }, !opts.viaRefreshCookie);
+  if (opts.viaRefreshCookie) {
+    await page.route("**/api/backend/auth/refresh", (r) => r.fulfill({ json: { ok: true, token: REFRESHED_TOKEN } }));
+    await page.route("**/api/backend/auth/me", (r) =>
+      r.request().headers()["authorization"] === `Bearer ${REFRESHED_TOKEN}`
+        ? r.fulfill({ json: { user } })
+        : r.fulfill({ status: 401, contentType: "application/json", body: "{}" })
+    );
+  } else {
+    await page.route("**/api/backend/auth/refresh", (r) => r.fulfill({ status: 401, contentType: "application/json", body: "{}" }));
+    await page.route("**/api/backend/auth/me", (r) => r.fulfill({ json: { user } }));
+  }
   await page.route("**/api/backend/me", (r) => r.fulfill({ json: { user } }));
   await page.route("**/api/backend/me/explanation-status**", (r) =>
     opts.statusFails
@@ -124,4 +138,27 @@ test("Premium con /me/explanation-status in errore: nessun invito all'acquisto (
   await expect(upsell(page)).not.toContainText("See Premium");
   await expect(upsell(page)).not.toContainText("Unlock Premium explanations");
   await expect(upsell(page)).not.toContainText("Full preparation with Premium");
+});
+
+test("Premium autenticato dal solo refresh cookie: stato Premium corretto, nessun invito, domande richieste una sola volta", async ({ page }) => {
+  const calls = await setup(page, "premium", { viaRefreshCookie: true });
+  await takeMockAndFinish(page);
+  expect(calls.filter((c) => c === "POST /auth/refresh"), "la sessione viene recuperata dal refresh cookie").not.toHaveLength(0);
+  // Senza "ricordami" il token recuperato vive in sessionStorage.
+  expect(await page.evaluate(() => sessionStorage.getItem("cq:access")), "il token recuperato e' salvato").toBe(REFRESHED_TOKEN);
+  await expect(upsell(page)).not.toContainText("See Premium");
+  await expect(upsell(page)).not.toContainText("Unlock Premium explanations");
+  await expect(upsell(page)).not.toContainText("Unlock Mock Review");
+  expect(calls.filter((c) => c.includes("/me/explanation-status")), "un Premium non interroga il limite delle spiegazioni").toHaveLength(0);
+  expect(calls.filter((c) => c.startsWith("GET /mock-exam/questions")), "un solo esame casuale, anche con bootstrap da refresh").toHaveLength(1);
+});
+
+test("Premium dal solo refresh cookie con /me/explanation-status in errore: nessun invito all'acquisto", async ({ page }) => {
+  const calls = await setup(page, "premium", { viaRefreshCookie: true, statusFails: true });
+  await takeMockAndFinish(page);
+  await expect(upsell(page)).not.toContainText("See Premium");
+  await expect(upsell(page)).not.toContainText("Unlock Premium explanations");
+  await expect(upsell(page)).not.toContainText("Full preparation with Premium");
+  await expect(upsell(page)).not.toContainText("Unlock Mock Review");
+  expect(calls.filter((c) => c.startsWith("GET /mock-exam/questions")), "un solo esame casuale").toHaveLength(1);
 });
