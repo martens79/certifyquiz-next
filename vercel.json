@@ -7,7 +7,8 @@
       "fix/eipass-user-release1-20261026": false,
       "feat/eipass-standard-landing-v1-20261027": false,
       "integration/ccst-w1-frontend-20261028": false,
-      "feat/admin-analytics-dashboard-fe-20261029": false
+      "feat/admin-analytics-dashboard-fe-20261029": false,
+      "fix/failed-payment-recovery-ui-20261030": false
     }
   }
 }

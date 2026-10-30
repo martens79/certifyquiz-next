@@ -33,6 +33,8 @@ import {
 } from "@/lib/checkout-intent";
 import PackagesUpsell from "./PackagesUpsell";
 import { useTwa } from "@/hooks/useTwa";
+import { isPaymentIssueCheckoutResponse, requestPortalUrl } from "@/lib/billing-recovery";
+import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
 
@@ -655,6 +657,10 @@ function PremiumPricingView({ forceLang }: Props) {
   const { user, loading: authLoading, isPremiumUser: authPremium } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // Abbonamento esistente con pagamento da regolarizzare (past_due/unpaid): niente nuovo checkout, si guida al portale Stripe.
+  const [paymentIssue, setPaymentIssue] = useState(false);
+  const [portalBusy, setPortalBusy] = useState(false);
+  const [portalFailed, setPortalFailed] = useState(false);
   // Guardie sincrone: due click ravvicinati o una ripresa + click non creano due checkout.
   const inFlightRef = useRef(false);
   const resumeHandledRef = useRef(false);
@@ -827,12 +833,26 @@ function PremiumPricingView({ forceLang }: Props) {
     window.location.assign(buildLoginHref(lang, resumePath));
   }
 
+  async function openPaymentPortal() {
+    if (portalBusy) return;
+    setPortalBusy(true);
+    setPortalFailed(false);
+    const result = await requestPortalUrl(() => authFetch("/api/backend/billing/create-portal-session", { method: "POST" }));
+    if (result.ok) {
+      window.location.href = result.url;
+      return;
+    }
+    setPortalFailed(true);
+    setPortalBusy(false);
+  }
+
   async function startPremiumCheckout(opts: { plan?: Plan; auto?: boolean } = {}) {
     if (isLoading || inFlightRef.current) return;
     const plan: Plan = opts.plan ?? selectedPlan;
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
     const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
     setNotice(null);
+    setPaymentIssue(false);
     // "Anonimo" solo a stato di autenticazione risolto E senza token: durante il caricamento (o con un
     // token gia' salvato ma utente non ancora letto) si procede come prima e decide il backend (401).
     if (!user && !authLoading && !getToken()) {
@@ -918,7 +938,14 @@ function PremiumPricingView({ forceLang }: Props) {
         return;
       }
 
-      const data: { url?: string; sessionId?: string; error?: string } = await res.json();
+      const data: { url?: string; sessionId?: string; error?: string; code?: string } = await res.json();
+      if (isPaymentIssueCheckoutResponse(res.status, data)) {
+        // Rifiuto atteso del backend (esiste gia' un abbonamento): non e' un errore generico, non si crea un secondo abbonamento.
+        setPaymentIssue(true);
+        inFlightRef.current = false;
+        setIsLoading(false);
+        return;
+      }
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
 
@@ -966,6 +993,10 @@ function PremiumPricingView({ forceLang }: Props) {
             <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
               {notice}
             </p>
+          )}
+
+          {paymentIssue && (
+            <PaymentRecoveryNotice lang={lang} message="checkoutBlocked" onOpenPortal={openPaymentPortal} busy={portalBusy} failed={portalFailed} />
           )}
 
           {explanationsUsed && (
