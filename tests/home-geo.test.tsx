@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import GeoRecommendations from '../src/components/home/GeoRecommendations';
@@ -65,4 +66,16 @@ test('manual selection persists, survives remount and blocked storage; language 
     if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
     else Reflect.deleteProperty(globalThis, 'localStorage');
   }
+});
+
+test('GA4 events describe a manual selection: selected_country, never the ambiguous geographic name `country`', () => {
+  const source = readFileSync(new URL('../src/components/home/GeoRecommendations.tsx', import.meta.url), 'utf8');
+  const calls = source.split('\n').filter(line => line.includes("trackEvent('home_geo_"));
+  assert.equal(calls.length, 3, 'impression, country_changed and clicked');
+  for (const call of calls) {
+    assert.match(call, /selected_country:/, call);
+    assert.doesNotMatch(call, /[{,]\s*country\s*[:,}]/, `bare "country" parameter in: ${call}`);
+    assert.doesNotMatch(call, /previous_country/, call);
+  }
+  assert.match(calls.find(call => call.includes('home_geo_country_changed')) ?? '', /previous_selected_country:/);
 });
