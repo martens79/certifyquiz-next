@@ -297,7 +297,7 @@ test("dates explicitly use Rome across DST; unzoned values are not silently gues
   );
 });
 
-test("admin shell defaults to events, gates auth/role, and mounts secondary sections only on selection", async () => {
+test("admin shell defaults to the dashboard, keeps events one click away, gates auth/role, and mounts secondary sections only on selection", async () => {
   let auth: any = {
     user: { role: "admin" },
     token: "synthetic",
@@ -326,14 +326,53 @@ test("admin shell defaults to events, gates auth/role, and mounts secondary sect
       __esModule: true,
       default: () => <div>Events mounted</div>,
     },
+    "./analytics/AdminAnalyticsClient": {
+      __esModule: true,
+      default: ({ onOpenEvents }: { onOpenEvents: () => void }) => (
+        <div>
+          Dashboard mounted
+          <button type="button" onClick={onOpenEvents}>
+            dashboard-open-events
+          </button>
+        </div>
+      ),
+    },
     "./admin-events.module.css": { __esModule: true, default: css },
   });
   let renderer!: ReactTestRenderer;
   await act(async () => {
     renderer = create(<Component />);
   });
+  assert.match(JSON.stringify(renderer.toJSON()), /Dashboard mounted/);
+  assert.doesNotMatch(
+    JSON.stringify(renderer.toJSON()),
+    /Events mounted|Secondary:/,
+  );
+  // The raw events view stays reachable from the navigation and from the dashboard link.
+  await act(async () =>
+    renderer.root
+      .findAllByType("button")
+      .find((b) => b.children.includes("Funnel Events"))!
+      .props.onClick(),
+  );
   assert.match(JSON.stringify(renderer.toJSON()), /Events mounted/);
-  assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Secondary:/);
+  assert.doesNotMatch(
+    JSON.stringify(renderer.toJSON()),
+    /Dashboard mounted|Secondary:/,
+  );
+  await act(async () =>
+    renderer.root
+      .findAllByType("button")
+      .find((b) => b.children.includes("Dashboard"))!
+      .props.onClick(),
+  );
+  await act(async () =>
+    renderer.root
+      .findAllByType("button")
+      .find((b) => b.children.includes("dashboard-open-events"))!
+      .props.onClick(),
+  );
+  assert.match(JSON.stringify(renderer.toJSON()), /Events mounted/);
   await act(async () =>
     renderer.root
       .findByType("select")
@@ -354,7 +393,7 @@ test("admin shell defaults to events, gates auth/role, and mounts secondary sect
     assert.match(JSON.stringify(renderer.toJSON()), expected);
     assert.doesNotMatch(
       JSON.stringify(renderer.toJSON()),
-      /Events mounted|Secondary:/,
+      /Events mounted|Secondary:|Dashboard mounted/,
     );
   }
   await act(async () => renderer.unmount());

@@ -6,7 +6,8 @@
       "fix/paywall-checkout-integration-20261029": false,
       "fix/eipass-user-release1-20261026": false,
       "feat/eipass-standard-landing-v1-20261027": false,
-      "integration/ccst-w1-frontend-20261028": false
+      "integration/ccst-w1-frontend-20261028": false,
+      "feat/admin-analytics-dashboard-fe-20261029": false
     }
   }
 }
