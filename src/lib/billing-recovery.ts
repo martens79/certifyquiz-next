@@ -77,7 +77,6 @@ type RecoveryCopy = {
   cta: string;
   loading: string;
   error: string;
-  twaNote: string;
 };
 
 export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
@@ -88,7 +87,6 @@ export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
     cta: "Aggiorna metodo di pagamento",
     loading: "Apertura del portale…",
     error: "Non riusciamo ad aprire il portale di pagamento. Riprova tra poco; se il problema continua, scrivici dalla pagina Contatti.",
-    twaNote: "Per aggiornare il metodo di pagamento apri CertifyQuiz dal sito web nel browser.",
   },
   en: {
     title: "Payment failed",
@@ -97,7 +95,6 @@ export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
     cta: "Update payment method",
     loading: "Opening the portal…",
     error: "We could not open the payment portal. Please try again shortly; if the problem persists, contact us from the Contact page.",
-    twaNote: "To update your payment method, open CertifyQuiz on the website in your browser.",
   },
   fr: {
     title: "Paiement échoué",
@@ -106,7 +103,6 @@ export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
     cta: "Mettre à jour le moyen de paiement",
     loading: "Ouverture du portail…",
     error: "Impossible d'ouvrir le portail de paiement. Réessayez dans un instant ; si le problème persiste, contactez-nous depuis la page Contact.",
-    twaNote: "Pour mettre à jour votre moyen de paiement, ouvrez CertifyQuiz sur le site web dans votre navigateur.",
   },
   es: {
     title: "Pago fallido",
@@ -115,7 +111,6 @@ export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
     cta: "Actualizar método de pago",
     loading: "Abriendo el portal…",
     error: "No podemos abrir el portal de pago. Inténtalo de nuevo en un momento; si el problema continúa, escríbenos desde la página de Contacto.",
-    twaNote: "Para actualizar tu método de pago, abre CertifyQuiz en el sitio web desde tu navegador.",
   },
 };
 

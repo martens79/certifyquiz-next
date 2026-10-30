@@ -86,7 +86,7 @@ const pricing = readFileSync(new URL("../src/app/(marketing)/pricing/PremiumComi
 
 test("profile: the subscription card also renders for a payment problem, not only for active Premium", () => {
   assert.match(profile, /\(user\?\.premium \|\| paymentRecovery\)/);
-  assert.match(profile, /needsPaymentRecovery\(subStatus\?\.status\)/);
+  assert.match(profile, /needsPaymentRecovery\(subStatus\?\.status\) && !isTwa/, "nothing about payments inside the Android app");
   assert.match(profile, /requestPortalUrl\(/);
   assert.doesNotMatch(profile, /\{user\?\.premium && \(\s*<div className="rounded-2xl bg-white shadow ring-1 ring-black\/5 p-4">/);
 });

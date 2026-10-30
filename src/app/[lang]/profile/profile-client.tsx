@@ -707,7 +707,8 @@ useEffect(() => {
 
 // Pagamento fallito (past_due/unpaid): Premium resta sospeso, ma il cliente deve poter aprire il portale e aggiornare il metodo di pagamento.
 const [portalError, setPortalError] = useState(false);
-const paymentRecovery = needsPaymentRecovery(subStatus?.status);
+// Nell'app Android (TWA, consumption-only) non compare nulla sui pagamenti: comportamento invariato rispetto a prima.
+const paymentRecovery = needsPaymentRecovery(subStatus?.status) && !isTwa;
 
 async function handleManageSubscription() {
   setPortalLoading(true);
@@ -1312,7 +1313,7 @@ const avatarBorderClass =
         )}
 
         {paymentRecovery && (
-          <PaymentRecoveryNotice lang={lang} message="body" twa={isTwa} failed={portalError} />
+          <PaymentRecoveryNotice lang={lang} message="body" failed={portalError} />
         )}
 
         {portalError && !paymentRecovery && (

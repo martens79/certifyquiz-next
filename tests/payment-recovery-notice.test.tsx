@@ -40,12 +40,6 @@ test("busy portal request disables the button and shows the loading label; a fai
   assert.equal(ok.includes(RECOVERY_COPY.en.error), false);
 });
 
-test("Android app (TWA): no portal button, only the note to use the website", () => {
-  const html = decode(render({ lang: "es", message: "body", onOpenPortal: () => {}, twa: true }));
-  assert.ok(html.includes(RECOVERY_COPY.es.twaNote));
-  assert.equal(html.includes("<button"), false);
-});
-
 test("unknown language falls back to English", () => {
   const html = decode(render({ lang: "xx", message: "body" }));
   assert.ok(html.includes(RECOVERY_COPY.en.title));

@@ -2,6 +2,7 @@
 //
 // Avviso per un abbonamento con pagamento da regolarizzare (past_due / unpaid).
 // Non concede nulla: spiega che Premium e' sospeso e, se riceve onOpenPortal, mostra il pulsante per il portale Stripe.
+// Non va mai mostrato nell'app Android (TWA, consumption-only): chi lo usa deve escludere quel caso.
 import { recoveryCopy } from "@/lib/billing-recovery";
 
 type Props = {
@@ -13,18 +14,15 @@ type Props = {
   busy?: boolean;
   /** L'ultimo tentativo di aprire il portale e' fallito. */
   failed?: boolean;
-  /** App Android (TWA): il portale non e' raggiungibile, si invita ad aprire il sito. */
-  twa?: boolean;
 };
 
-export default function PaymentRecoveryNotice({ lang, message, onOpenPortal, busy = false, failed = false, twa = false }: Props) {
+export default function PaymentRecoveryNotice({ lang, message, onOpenPortal, busy = false, failed = false }: Props) {
   const copy = recoveryCopy(lang);
   return (
     <div role="alert" data-testid="payment-recovery" className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
       <div className="font-semibold">⚠️ {copy.title}</div>
       <p className="mt-1">{copy[message]}</p>
-      {twa && <p className="mt-1">{copy.twaNote}</p>}
-      {onOpenPortal && !twa && (
+      {onOpenPortal && (
         <button
           type="button"
           onClick={onOpenPortal}
