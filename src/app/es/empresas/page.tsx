@@ -16,10 +16,32 @@ import FaqAccordion from "@/components/team/FaqAccordion";
 
 const CONTACT_EMAIL = "certifyquiz@gmail.com";
 
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
+
+const TITLE = "CertifyQuiz Team — Certificaciones IT para empresas desde €49/mes";
+const DESCRIPTION =
+  "Asigna certificaciones AWS, Cisco, CompTIA y otras 30+ a tu equipo IT y sigue el progreso en tiempo real. Planes para empresas desde €49/mes, factura única.";
+
 export const metadata: Metadata = {
-  title: "CertifyQuiz Team — Certificaciones IT para empresas desde €49/mes",
-  description:
-    "Asigna certificaciones AWS, Cisco, CompTIA y otras 30+ a tu equipo IT y sigue el progreso en tiempo real. Planes para empresas desde €49/mes, factura única.",
+  metadataBase: new URL(SITE),
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: `${SITE}/es/empresas`,
+    languages: {
+      "it-IT": `${SITE}/it/aziende`,
+      "en-US": `${SITE}/business`,
+      "fr-FR": `${SITE}/fr/entreprises`,
+      "es-ES": `${SITE}/es/empresas`,
+      "x-default": `${SITE}/business`,
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: `${SITE}/es/empresas`,
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 const STATUS_LABELS = {

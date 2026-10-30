@@ -35,6 +35,10 @@ const staticPages: Record<Lang, string[]> = {
   fr: ["privacy", "terms", "cookies"],
 };
 
+const B2B_PATH_BY_LANG: Record<Lang, string> = {
+  it: "aziende", en: "business", fr: "entreprises", es: "empresas",
+};
+
 const BLOG_SEGMENT_BY_LANG: Record<Lang, string> = {
   it: "blog",
   es: "blog",
@@ -359,6 +363,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "monthly" as const,
             priority: 0.6,
           })),
+
+          // Landing B2B (/business, /it/aziende, /fr/entreprises, /es/empresas)
+          {
+            url: `${base}/${B2B_PATH_BY_LANG[lang]}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.8,
+          },
 
           // Dettagli certificazioni lingua
           ...canonicalCerts.filter((c) => isCertificationIndexable({

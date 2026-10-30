@@ -16,10 +16,32 @@ import FaqAccordion from "@/components/team/FaqAccordion";
 
 const CONTACT_EMAIL = "certifyquiz@gmail.com";
 
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
+
+const TITLE = "CertifyQuiz Team — Certificazioni IT per aziende da €49/mese";
+const DESCRIPTION =
+  "Assegna certificazioni AWS, Cisco, CompTIA e altre 30+ al tuo team IT e segui i progressi in tempo reale. Piani aziendali da €49/mese, fattura unica.";
+
 export const metadata: Metadata = {
-  title: "CertifyQuiz Team — Certificazioni IT per aziende da €49/mese",
-  description:
-    "Assegna certificazioni AWS, Cisco, CompTIA e altre 30+ al tuo team IT e segui i progressi in tempo reale. Piani aziendali da €49/mese, fattura unica.",
+  metadataBase: new URL(SITE),
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: `${SITE}/it/aziende`,
+    languages: {
+      "it-IT": `${SITE}/it/aziende`,
+      "en-US": `${SITE}/business`,
+      "fr-FR": `${SITE}/fr/entreprises`,
+      "es-ES": `${SITE}/es/empresas`,
+      "x-default": `${SITE}/business`,
+    },
+  },
+  openGraph: {
+    type: "website",
+    url: `${SITE}/it/aziende`,
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 const PAIN_POINTS = [
