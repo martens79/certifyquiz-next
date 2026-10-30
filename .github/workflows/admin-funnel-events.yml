@@ -4,6 +4,9 @@ on:
     paths:
       - 'src/app/admin/**'
       - 'src/lib/funnel-export.ts'
+      - 'src/lib/admin-analytics-dashboard.ts'
+      - 'tests/admin-analytics*'
+      - 'tests/helpers/admin-analytics-fixture.ts'
       - 'tests/admin-funnel-events.*'
       - '.github/workflows/admin-funnel-events.yml'
   workflow_dispatch:
@@ -21,7 +24,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run typecheck
-      - run: npx --no-install eslint src/app/admin/AdminClient.tsx src/app/admin/FunnelEventsClient.tsx src/app/admin/AdminOverviewClient.tsx tests/admin-funnel-events.test.tsx tests/admin-funnel-events.spec.ts
-      - run: node --import tsx --test tests/admin-funnel-events.test.tsx tests/funnel-export.test.ts tests/admin-analytics.test.ts
+      - run: npx --no-install eslint src/app/admin/AdminClient.tsx src/app/admin/FunnelEventsClient.tsx src/app/admin/AdminOverviewClient.tsx src/app/admin/analytics src/lib/admin-analytics-dashboard.ts tests/admin-funnel-events.test.tsx tests/admin-funnel-events.spec.ts tests/admin-analytics.spec.ts tests/admin-analytics-dashboard.test.ts tests/helpers/admin-analytics-fixture.ts
+      - run: node --import tsx --test tests/admin-funnel-events.test.tsx tests/funnel-export.test.ts tests/admin-analytics.test.ts tests/admin-analytics-dashboard.test.ts
         env:
           TSX_TSCONFIG_PATH: tsconfig.test.json

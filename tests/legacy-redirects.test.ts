@@ -7,6 +7,7 @@ import { NextRequest } from "next/server";
 import { middleware } from "../src/middleware";
 import {
   LEGACY_EXACT_REDIRECTS,
+  SEO_404_SPRINT1_REDIRECTS,
   LEGACY_PREFIX_REDIRECTS,
   resolveLegacyRedirect,
 } from "../src/lib/legacyRedirects";
@@ -220,4 +221,69 @@ test("pagine vive che il vecchio next.config.ts avrebbe rediretto restano access
   ]) {
     assertPassThrough(p);
   }
+});
+
+
+test("Data Analytics: mixed e mock-exam restano route quiz, incluse le query assessment", () => {
+  for (const mode of ["mixed", "mock-exam"]) {
+    for (const query of ["", "?mode=assessment", "?mode=assessment&source=landing"]) {
+      assertPassThrough(`/it/quiz/data-analytics-foundations/${mode}${query}`);
+    }
+  }
+  // I vecchi URL di topic devono conservare il redirect e tutti i parametri.
+  const response = middleware(new NextRequest(`${ORIGIN}/it/quiz/data-analytics-foundations/kpi-dashboard-visualizzazione-dati?source=gsc`));
+  assert.equal(response.status, 301);
+  assert.equal(response.headers.get("location"), `${ORIGIN}/it/certificazioni/data-analytics-foundations/kpi-dashboard-visualizzazione-dati?source=gsc`);
+  // Le altre certificazioni/modalità non vengono toccate dal fix.
+  for (const locale of ["it", "en", "fr", "es"]) {
+    for (const slug of ["ccna", "eipass", "aws-ai-practitioner", "data-analytics-foundations"]) {
+      assertPassThrough(`/${locale}/quiz/${slug}/mixed?mode=assessment`);
+      assertPassThrough(`/${locale}/quiz/${slug}/mock-exam`);
+    }
+  }
+});
+
+
+test("Sprint 1: i 25 mapping corrispondono alla revisione live, senza noindex o cambi certificazione", () => {
+  const review = fs.readFileSync("docs/seo-404-sprint1/redirect-review.csv", "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/).slice(1);
+  const metadata = JSON.parse(fs.readFileSync("docs/seo-404-sprint1/redirect-destinations.json", "utf8"));
+  const expected = review.map(line => line.split(",").slice(0, 3)).filter(([, , outcome]) => outcome === "verified");
+  assert.equal(expected.length, 25);
+  assert.equal(Object.keys(SEO_404_SPRINT1_REDIRECTS).length, expected.length);
+  for (const [source, target] of expected) {
+    const from = new URL(source).pathname;
+    const to = new URL(target).pathname;
+    assert.equal(SEO_404_SPRINT1_REDIRECTS[from], to);
+    assertRedirect(from, to);
+    assertPassThrough(to);
+    const response = middleware(new NextRequest(`${ORIGIN}${from}?utm_source=gsc&test=1`));
+    assert.equal(response.headers.get("location"), `${ORIGIN}${to}?utm_source=gsc&test=1`);
+    const observed = metadata.find((row: { url: string }) => row.url === target);
+    assert.equal(observed.status, "200");
+    assert.equal(observed.redirects, "0");
+    assert.equal(observed.final_url, target);
+    assert.deepEqual(observed.canonical, [target]);
+    assert.ok(observed.robots.includes("index, follow"));
+    assert.ok(!observed.robots.some((value: string) => value.includes("noindex")));
+    const cert = (pathname: string) => pathname.split(/\/(?:certifications|certificazioni|certificaciones)\//)[1]?.split("/")[0];
+    assert.ok(cert(from) === cert(to) || (cert(from) === "eipass-basic" && cert(to) === "eipass"));
+    for (const alt of observed.hreflang) {
+      assert.ok(alt.href.startsWith(ORIGIN + "/"));
+      assert.ok(!Object.keys(SEO_404_SPRINT1_REDIRECTS).includes(new URL(alt.href).pathname));
+    }
+  }
+});
+
+test("Sprint 1: 18 proposte escluse e 31 URL editoriali non acquisiscono redirect", () => {
+  const csvLines = (file: string) => fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "").trim().split(/\r?\n/).slice(1);
+  const excluded = csvLines("docs/seo-404-sprint1/redirect-review.csv").map(line => line.split(",").slice(0, 3)).filter(([, , outcome]) => outcome !== "verified");
+  assert.equal(excluded.length, 18);
+  assert.equal(excluded.filter(([, , outcome]) => outcome === "noindex").length, 15);
+  for (const [source] of excluded) {
+    assert.equal(SEO_404_SPRINT1_REDIRECTS[new URL(source).pathname], undefined);
+    assertPassThrough(new URL(source).pathname);
+  }
+  const editorial = csvLines("docs/seo-404-sprint1/editorial-deferred.csv");
+  assert.equal(editorial.length, 31);
+  for (const line of editorial) assertPassThrough(new URL(line.split(",")[0]).pathname);
 });

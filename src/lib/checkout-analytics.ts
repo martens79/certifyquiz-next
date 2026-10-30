@@ -46,6 +46,17 @@ export async function checkoutAnalyticsContext(): Promise<Record<string, unknown
   return {consent_id:consentId,analytics_consent:true,marketing_consent:false,ga_client_id:client,ga_session_id:session,fbp:null};
 }
 
+/** Forget the request id of a scope once the backend proved its Stripe session is dead,
+ * so the next explicit user action starts a new idempotent request. */
+export function discardCheckoutRequest(scope: string): void {
+  try {
+    const key = `cq_checkout_request:${scope}`;
+    const previous = JSON.parse(sessionStorage.getItem(key) || "null");
+    sessionStorage.removeItem(key);
+    if (previous?.id) sessionStorage.removeItem(`cq_checkout_context:${previous.id}`);
+  } catch {}
+}
+
 /** Freeze optional analytics metadata too: Stripe rejects changed parameters
  * under the same idempotency key (e.g. a Google tag that loads on a retry). */
 export async function checkoutRequest(scope: string) {

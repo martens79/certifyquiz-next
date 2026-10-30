@@ -6,6 +6,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/components/auth/AuthProvider";
 import FunnelEventsClient from "./FunnelEventsClient";
+import AdminAnalyticsClient from "./analytics/AdminAnalyticsClient";
 import styles from "./admin-events.module.css";
 
 const loadingPanel = () => <p role="status">Caricamento sezione…</p>;
@@ -33,11 +34,11 @@ const sections = {
   organizations: { label: "Aziende", Component: Organizations },
   push: { label: "Notifiche push", Component: Push },
 };
-type Section = "events" | keyof typeof sections;
+type Section = "analytics" | "events" | keyof typeof sections;
 
 export default function AdminClient() {
   const { user, isAdmin, token, loading } = useAuth();
-  const [section, setSection] = useState<Section>("events");
+  const [section, setSection] = useState<Section>("analytics");
 
   if (loading)
     return (
@@ -61,17 +62,28 @@ export default function AdminClient() {
       </div>
     );
 
-  const Secondary = section === "events" ? null : sections[section].Component;
+  const Secondary = section === "events" || section === "analytics" ? null : sections[section].Component;
   return (
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
           <p className={styles.kicker}>CertifyQuiz · Admin</p>
           <h1>
-            {section === "events" ? "Funnel Events" : sections[section].label}
+            {section === "analytics"
+              ? "Dashboard"
+              : section === "events"
+                ? "Funnel Events"
+                : sections[section].label}
           </h1>
         </div>
         <nav aria-label="Amministrazione" className={styles.navigation}>
+          <button
+            type="button"
+            aria-current={section === "analytics" ? "page" : undefined}
+            onClick={() => setSection("analytics")}
+          >
+            Dashboard
+          </button>
           <button
             type="button"
             aria-current={section === "events" ? "page" : undefined}
@@ -83,7 +95,7 @@ export default function AdminClient() {
             Altre funzioni
             <select
               aria-label="Altre funzioni amministrative"
-              value={section === "events" ? "" : section}
+              value={section === "events" || section === "analytics" ? "" : section}
               onChange={(e) =>
                 setSection((e.target.value || "events") as Section)
               }
@@ -98,7 +110,13 @@ export default function AdminClient() {
           </label>
         </nav>
       </header>
-      {section === "events" ? (
+      {section === "analytics" ? (
+        <AdminAnalyticsClient
+          key={token}
+          token={token}
+          onOpenEvents={() => setSection("events")}
+        />
+      ) : section === "events" ? (
         <FunnelEventsClient key={token} token={token} />
       ) : (
         Secondary && <Secondary />

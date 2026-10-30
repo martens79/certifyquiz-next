@@ -3,7 +3,14 @@ import { notFound, redirect } from "next/navigation";
 
 import type { Locale } from "@/lib/i18n";
 import { CERTS_BY_SLUG, type CertificationData } from "@/certifications/registry";
-import { isPlannedCertification, isPlannedPreviewEnabled } from "@/certifications/publication";
+import {
+  isCertificationOfferedInLang,
+  isComingSoonCertification,
+  isPlannedCertification,
+  isPlannedPreviewEnabled,
+} from "@/certifications/publication";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
+import { EipassStandardComingSoonPanel } from "@/components/certification/EipassStandardComingSoon";
 import CertificationPage from "@/components/CertificationPage";
 import SapCertificationPlaceholder from "@/features/business-applications/SapCertificationPlaceholder";
 import { getSapPlaceholderCertification } from "@/features/business-applications/data";
@@ -118,6 +125,21 @@ export async function CertificationDetailView({
   // Planned certifications are 404 publicly; only a local developer preview renders them
   // (still noindex through the rollout guard).
   if (isPlannedCertification(reg) && !isPlannedPreviewEnabled()) return notFound();
+  // Language routes outside the certification launch scope do not exist (EIPASS Standard: Italian only).
+  if (reg && !isCertificationOfferedInLang(reg, lang)) return notFound();
+  // EIPASS Standard is "coming soon": ONLY this Italian landing is public. It has no DB certification and
+  // no quiz, so it is rendered from the registry alone, with no backend call at all and no link to any
+  // module, topic or quiz page.
+  if (reg && isEipassStandardSlug(reg.slug)) {
+    if (!isComingSoonCertification(reg)) return notFound();
+    const landing: DynamicCertData = { ...reg, questionCount: 0, questionCountByLang: { [lang]: 0 } };
+    return (
+      <>
+        <EipassStandardComingSoonPanel />
+        <CertificationPage lang={lang} data={landing} dbTopics={[]} hasScenarios={false} resources={null} />
+      </>
+    );
+  }
   // PLC Fundamentals is offered in English and Italian only: no FR/ES landing.
   if (reg?.slug === INDUSTRIAL_AUTOMATION_CERT_SLUG && !INDUSTRIAL_AUTOMATION_LANGS.includes(lang)) return notFound();
 

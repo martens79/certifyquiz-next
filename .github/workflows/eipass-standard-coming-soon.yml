@@ -1,0 +1,101 @@
+name: EIPASS Standard coming-soon landing
+
+# Guards the landing-only publication of EIPASS Standard: ONLY /it/certificazioni/eipass-standard is public
+# (200, index/follow, self canonical, in the sitemap); every other Standard URL is 404; the other certifications'
+# indexing rules and the EIPASS 7 Moduli User path are unchanged. No secrets, no deployment, no backend:
+# the isolated build points at a loopback read-only fixture.
+
+on:
+  pull_request:
+    paths:
+      - "src/lib/eipass-standard.ts"
+      - "src/certifications/**"
+      - "src/lib/seo/**"
+      - "src/lib/server/topic-page.ts"
+      - "src/app/sitemap.ts"
+      - "src/app/_views/CertificationDetailView.tsx"
+      - "src/app/**/certificazioni/**"
+      - "src/app/**/quiz/**"
+      - "src/app/**/categorie/**"
+      - "src/components/CertificationPage.tsx"
+      - "src/components/certification/EipassStandardComingSoon.tsx"
+      - "public/images/certifications/eipass-standard.svg"
+      - "tests/eipass-standard-*"
+      - "tests/plc-fundamentals-planned-guard.test.ts"
+      - "tests/az802-rollout-noindex.test.ts"
+      - "scripts/*eipass-standard-coming-soon.mjs"
+      - "playwright.eipass-standard.config.ts"
+      - "tests/helpers/eipass-editorial-backend.mjs"
+      - "docs/eipass-standard/**"
+      - ".github/workflows/eipass-standard-coming-soon.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eipass-standard-coming-soon-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Coming-soon contracts, sitemap runtime, other certifications' indexing rules
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+          NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+        run: >-
+          node --import tsx --test tests/eipass-standard-coming-soon.test.ts tests/eipass-standard-coming-soon-render.test.tsx
+          tests/eipass-standard-sitemap.test.ts tests/plc-fundamentals-planned-guard.test.ts
+          tests/az802-rollout-noindex.test.ts tests/certification-indexability.test.ts
+          tests/certifications-list-metadata.test.ts tests/sitemap-backend-calls.test.ts
+          tests/eipass-user-release.test.tsx
+
+  production-routing:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      API_BASE_URL: http://127.0.0.1:8459/api
+      API_BASE_URL_DEV: http://127.0.0.1:8459/api
+      NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      SANITY_READ_TOKEN: ''
+      INTERNAL_SERVER_TOKEN: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Use the runner's preinstalled Google Chrome
+        run: google-chrome --version
+      - name: Isolated production build, routing/SEO smoke, then desktop + mobile browser checks (no deployment)
+        run: |
+          node -e "require('fs').writeFileSync('/tmp/eipass-standard-isolation.json', JSON.stringify({testRunId:'ccst-r02-eipassstdci20261028',backendOrigin:'http://127.0.0.1:8459'}))"
+          export CCST_E2E_CONFIG=/tmp/eipass-standard-isolation.json
+          npm run build
+          node scripts/run-eipass-standard-coming-soon.mjs
+          node tests/helpers/eipass-editorial-backend.mjs > /tmp/eipass-standard-fixture.log 2>&1 &
+          npx --no-install next start -H 127.0.0.1 -p 3460 > /tmp/eipass-standard-frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3460/it/certificazioni/eipass-standard >/dev/null && break; sleep 1; done
+          npx --no-install playwright test -c playwright.eipass-standard.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eipass-standard-browser-evidence
+          path: |
+            .tmp/eipass-standard-browser
+            /tmp/eipass-standard-fixture.log
+            /tmp/eipass-standard-frontend.log
+          include-hidden-files: true

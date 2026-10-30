@@ -7,6 +7,7 @@ import { isReviewSeoIntentDistinct, selectIndexableReviewClusterItems, type Revi
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 import { isTopicIndexable } from "@/lib/seo/topic-indexability";
+import { EIPASS_STANDARD_LANDING_PATH } from "@/lib/eipass-standard";
 
 export const revalidate = 3600;
 
@@ -368,6 +369,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "weekly" as const,
             priority: 0.8,
           })),
+
+          // EIPASS Standard "coming soon": the ONE Standard URL in the sitemap. Static and Italian only (no other
+          // language page exists); never derived from the backend, which has no Standard certification.
+          ...(lang === "it"
+            ? [{ url: `${SITE}${EIPASS_STANDARD_LANDING_PATH}`, changeFrequency: "monthly" as const, priority: 0.6 }]
+            : []),
 
           ...appleTopics[lang].map(slug => ({
             url: `${base}/${listSegment}/apple-device-support/${slug}`,

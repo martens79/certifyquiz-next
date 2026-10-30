@@ -4,14 +4,9 @@ import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { backendUrl, acceptLoginToken, setUser } from "@/lib/auth";
 import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
-import { safePostAuthRedirect } from "@/lib/conversion-context";
+import { buildPostAuthRecoveryHref, safePostAuthRedirect } from "@/lib/conversion-context";
 
 const safeRedirectPath = safePostAuthRedirect;
-
-function loginPathFromRedirect(r: string) {
-  const m = r.match(/^\/(it|fr|es)\b/);
-  return m ? `/${m[1]}/login` : "/login";
-}
 
 export default function CallbackClient() {
   const router = useRouter();
@@ -30,7 +25,7 @@ export default function CallbackClient() {
 
     (async () => {
       if (!token) {
-        router.replace(loginPathFromRedirect(redirect));
+        router.replace(buildPostAuthRecoveryHref(redirect));
         return;
       }
 
@@ -56,7 +51,7 @@ export default function CallbackClient() {
         }
       } catch {}
 
-      if (generation === authGeneration()) router.replace(loginPathFromRedirect(redirect));
+      if (generation === authGeneration()) router.replace(buildPostAuthRecoveryHref(redirect));
     })();
   }, [router, sp]);
 

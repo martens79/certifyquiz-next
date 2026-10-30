@@ -11,6 +11,8 @@ import { getAllCertSlugs, getCertBySlug } from "@/lib/data";
 import { CertificationDetailView } from "@/app/_views/CertificationDetailView";
 import { enRootDetailPath, localizedDetailPath, toHreflang } from "@/lib/paths";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
+import { eipassStandardMetadata } from "@/lib/seo/eipass-standard-metadata";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
 
 export const dynamic = "force-dynamic";
 export const dynamicParams = true;
@@ -70,6 +72,9 @@ export async function generateMetadata({ params }: MetaProps): Promise<Metadata>
   const registryKey = toRegistryKey(slug);
 
   const L: Lang = isLocale(lang) ? (lang as Lang) : "it";
+
+  // EIPASS Standard: coming-soon landing, Italian only; decided before any backend lookup (no DB row exists).
+  if (isEipassStandardSlug(slug)) return eipassStandardMetadata(L, SITE_URL);
 
   const cert = await getCertBySlug(registryKey, L);
 
