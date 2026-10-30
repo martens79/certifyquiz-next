@@ -18,6 +18,7 @@ import {
   getAccessToken,
 } from "@/lib/apiClient";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import { getExamSpecForCert } from "@/lib/exam-specs";
 import { getMockExamLoadError } from "@/lib/mock-exam-errors";
 import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
@@ -57,6 +58,10 @@ export default function MockExamPage() {
 
   const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const isAuthenticated = !!getAccessToken();
+  // Premium reale dall'AuthProvider (come mixed/ e topic/): con `false` fisso un utente Premium vedeva
+  // gli inviti all'acquisto nel risultato se /me/explanation-status falliva o non era ancora arrivato.
+  // `premiumLocked` resta false: il mock exam e' FREE in Phase 1 (backend: checkMockExamAccess).
+  const { isPremiumUser } = useAuth();
 
   useEffect(() => {
     if (staticCertId) {
@@ -266,7 +271,7 @@ export default function MockExamPage() {
           certificationId: certId,
           backHref: withLang(currentLang, `/quiz/${currentSlug}`),
           backLabel: t.backLabel,
-          isPremiumUser: false,
+          isPremiumUser,
           premiumLocked: false,
           isAuthenticated,
         }}

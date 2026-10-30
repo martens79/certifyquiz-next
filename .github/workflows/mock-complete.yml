@@ -1,7 +1,7 @@
 name: Mock Complete purchase path
 on:
   pull_request:
-    paths: ['src/components/quiz/**', 'src/components/certification/CertificationPackageOffers.tsx', 'tests/mock-complete*', 'tests/helpers/sprint2a-ssr.cjs', 'playwright.mock-complete.config.ts', '.github/workflows/mock-complete.yml']
+    paths: ['src/components/quiz/**', 'src/components/certification/CertificationPackageOffers.tsx', 'tests/mock-complete*', 'tests/mock-exam-premium*', 'src/app/**/mock-exam/**', 'tests/helpers/sprint2a-ssr.cjs', 'playwright.mock-complete.config.ts', '.github/workflows/mock-complete.yml']
 permissions:
   contents: read
 jobs:
@@ -24,7 +24,7 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - run: node --import tsx --test tests/mock-complete-link.test.tsx tests/analytics-funnel-event.test.ts tests/analytics-privacy.test.ts tests/automated-client.test.ts tests/conversion-tracking.test.ts
-      - run: npx eslint src/components/quiz/MockCompleteLink.tsx src/components/certification/CertificationPackageOffers.tsx tests/mock-complete-link.test.tsx tests/mock-complete.spec.ts playwright.mock-complete.config.ts
+      - run: npx eslint src/components/quiz/MockCompleteLink.tsx src/components/certification/CertificationPackageOffers.tsx tests/mock-complete-link.test.tsx tests/mock-complete.spec.ts tests/mock-exam-premium.spec.ts playwright.mock-complete.config.ts
       - name: Isolated production build and browser tests
         run: |
           node tests/helpers/sprint2a-ssr.cjs > /tmp/fixture.log 2>&1 &
