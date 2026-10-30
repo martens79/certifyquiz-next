@@ -11,6 +11,8 @@ import PushNotificationCard from "@/components/push/PushNotificationCard";
 import MyPackages from "@/components/profile/MyPackages";
 import { useTwa } from "@/hooks/useTwa";
 import { reviewErrorsPath } from "@/lib/paths";
+import { needsPaymentRecovery, recoveryCopy, requestPortalUrl } from "@/lib/billing-recovery";
+import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 
 // 📈 Grafico andamento
 import {
@@ -703,20 +705,21 @@ useEffect(() => {
   };
 }, []);
 
+// Pagamento fallito (past_due/unpaid): Premium resta sospeso, ma il cliente deve poter aprire il portale e aggiornare il metodo di pagamento.
+const [portalError, setPortalError] = useState(false);
+// Nell'app Android (TWA, consumption-only) non compare nulla sui pagamenti: comportamento invariato rispetto a prima.
+const paymentRecovery = needsPaymentRecovery(subStatus?.status) && !isTwa;
+
 async function handleManageSubscription() {
   setPortalLoading(true);
-  try {
-    const res = await apiFetch("/billing/create-portal-session", { method: "POST" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
-    }
-  } catch (e) {
-    console.error("portal session error", e);
+  setPortalError(false);
+  const result = await requestPortalUrl(() => apiFetch("/billing/create-portal-session", { method: "POST" }));
+  if (result.ok) {
+    window.location.href = result.url;
+    return;
   }
+  console.error("portal session error", result.reason);
+  setPortalError(true);
   setPortalLoading(false);
 }
 
@@ -1265,8 +1268,8 @@ const avatarBorderClass =
     <MyPackages lang={lang} />
   </div>
 )}
-{/* Gestione abbonamento */}
-{user?.premium && (
+{/* Gestione abbonamento: anche con un pagamento da regolarizzare, quando Premium non e' attivo */}
+{(user?.premium || paymentRecovery) && (
   <div className="rounded-2xl bg-white shadow ring-1 ring-black/5 p-4">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
@@ -1308,6 +1311,14 @@ const avatarBorderClass =
             {lang === "it" ? "Abbonamento attivo" : lang === "fr" ? "Abonnement actif" : lang === "es" ? "Suscripción activa" : "Subscription active"}
           </div>
         )}
+
+        {paymentRecovery && (
+          <PaymentRecoveryNotice lang={lang} message="body" failed={portalError} />
+        )}
+
+        {portalError && !paymentRecovery && (
+          <p role="alert" className="mt-2 text-sm text-red-700">{recoveryCopy(lang).error}</p>
+        )}
       </div>
 
       {/* App Android (TWA): il portale Stripe non e' raggiungibile (consumption-only) */}
@@ -1321,6 +1332,8 @@ const avatarBorderClass =
         ⚙️{" "}
         {portalLoading
           ? "..."
+          : paymentRecovery
+          ? recoveryCopy(lang).cta
           : lang === "it"
           ? "Gestisci abbonamento"
           : lang === "fr"
