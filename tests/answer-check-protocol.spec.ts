@@ -2,6 +2,12 @@ import { expect, test, type Page, type Route } from "@playwright/test";
 
 test.setTimeout(120_000);
 
+// L'app registra /sw.js (produzione) con skipWaiting + clients.claim: appena il service worker prende
+// il controllo della pagina, le sue fetch NON passano da page.route() e raggiungono la rete reale
+// (500 sul proxy /api/backend -> "No questions." nel mock exam, in modo intermittente). Si blocca il
+// service worker nel contesto di test: e' irrilevante per il protocollo risposta -> verdetto.
+test.use({ serviceWorkers: "block" });
+
 // Paywall Phase 2 — protocollo domanda -> risposta -> spiegazione.
 // Il payload della domanda non contiene ne' `is_correct` ne' `explanation`:
 // la UI deve prendere correttezza e spiegazione da POST /answers/check

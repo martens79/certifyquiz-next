@@ -1,0 +1,43 @@
+name: Answer check protocol (verdict from server)
+on:
+  pull_request:
+    paths:
+      - 'src/components/quiz/**'
+      - 'src/app/**/quiz/**'
+      - 'src/lib/apiClient.ts'
+      - 'tests/answer-check-protocol.spec.ts'
+      - 'playwright.answer-check.config.ts'
+      - '.github/workflows/answer-check-protocol.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  answer-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      # Nessun backend: le chiamate del browser sono intercettate dal test; le fetch lato server
+      # puntano a una porta chiusa, cosi' il test non raggiunge mai l'API reale.
+      API_BASE_URL: http://127.0.0.1:9/api
+      API_BASE_URL_DEV: http://127.0.0.1:9/api
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+      E2E_BASE_URL: http://127.0.0.1:3117
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Start production server
+        run: |
+          npx next start -H 127.0.0.1 -p 3117 > /tmp/frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3117/en/quiz/ccna/mock-exam >/dev/null && break; sleep 1; done
+      - run: npx playwright test -c playwright.answer-check.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: answer-check-evidence, path: 'test-results/'}
