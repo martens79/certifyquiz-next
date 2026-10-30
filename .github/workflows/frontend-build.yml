@@ -34,6 +34,10 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: CCST historical and W1 transport compatibility
+        run: node --import tsx --test tests/ccst-r03-attempt-validation.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
       - name: Isolate production-mode API rewrites
         run: |
           node -e "require('fs').writeFileSync(process.env.RUNNER_TEMP + '/cq-build.json', JSON.stringify({testRunId:'ccst-r02-buildvalidation20261024',backendOrigin:'http://127.0.0.1:9'}))"

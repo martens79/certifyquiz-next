@@ -1,5 +1,6 @@
 import "server-only";
 import { internalApiHeaders } from "./internal-api";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
 import { EIPASS_USER_COPY, eipassLocalizedText, getEipassUserModule, orderEipassTopics } from "@/lib/eipass-user-release";
 
 export type Lang = "it" | "en" | "fr" | "es";
@@ -71,6 +72,9 @@ export async function getTopicPageData({
   lang: Lang;
 }): Promise<TopicPageData | null> {
   const normalizedCertSlug = normalizeCertSlug(certSlug);
+
+  // EIPASS Standard is "coming soon": it has NO topic pages, in any language. Fail closed with no backend call.
+  if (isEipassStandardSlug(normalizedCertSlug)) return null;
 
   const res = await fetch(
     `${API_BASE_URL}/topic-pages/${normalizedCertSlug}/${topicSlug}?lang=${lang}`,

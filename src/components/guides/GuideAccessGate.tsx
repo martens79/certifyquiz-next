@@ -27,6 +27,7 @@ type Props = {
   lang: Locale;
   slug: string;
   price: number;
+  trialRestricted?: boolean;
 };
 
 const COPY = {
@@ -114,7 +115,7 @@ export default function GuideAccessGate(props: Props) {
   return <GuideAccessGateInner {...props} />;
 }
 
-function GuideAccessGateInner({ lang, slug, price }: Props) {
+function GuideAccessGateInner({ lang, slug, price, trialRestricted }: Props) {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -242,6 +243,12 @@ function GuideAccessGateInner({ lang, slug, price }: Props) {
 
       <h2 className="mb-1 text-xl font-semibold text-gray-900">{COPY.title[lang]}</h2>
       <p className="mb-6 text-sm text-gray-600">{gateDescription}</p>
+
+      {trialRestricted && (
+        <p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          {{ it: "Durante i 7 giorni di prova Premium puoi consultare l’anteprima, ma non scaricare il PDF completo. Il download si attiva dopo il primo pagamento oppure acquistando questa guida.", en: "During the 7-day Premium trial you can view the preview, but cannot download the full PDF. Downloads unlock after the first payment or by buying this guide.", fr: "Pendant les 7 jours d’essai Premium, vous pouvez consulter l’aperçu, mais pas télécharger le PDF complet. Le téléchargement est débloqué après le premier paiement ou l’achat de ce guide.", es: "Durante los 7 días de prueba Premium puedes ver la vista previa, pero no descargar el PDF completo. La descarga se habilita tras el primer pago o al comprar esta guía." }[lang]}
+        </p>
+      )}
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 

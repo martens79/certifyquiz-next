@@ -9,6 +9,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CERTS_BY_SLUG, CERT_SLUGS } from "@/certifications/data";
+import { isPubliclyListed } from "@/certifications/publication";
 
 import {
   seoPrefix,
@@ -468,7 +469,7 @@ const certSlugs =
     : CERT_SLUGS.filter(
         (s) =>
           CERT_CATEGORY_BY_SLUG[s] === key &&
-          CERTS_BY_SLUG[s]?.publicationStatus !== "planned"
+          isPubliclyListed(s, CERTS_BY_SLUG)
       );
 
   const breadcrumb = {
