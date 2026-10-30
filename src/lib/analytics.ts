@@ -7,11 +7,13 @@
 // "use client" non serve qui: il file non ha side effect a livello di
 // modulo, il guard su typeof window basta a renderlo innocuo in SSR.
 
+import { analyticsConsentGranted } from "@/lib/checkout-analytics";
 import { getToken } from "@/lib/auth";
 import { isAutomatedClient } from "@/lib/automated-client";
 import { paywallTypeForEvent, rememberCommercialOrigin } from "@/lib/commercial-origin";
+import { scrubAnalyticsPayload } from "@/lib/analytics-privacy";
 
-type TrackParams = Record<string, string | number | boolean | null | undefined>;
+type TrackParams = Record<string, string | number | boolean | null | undefined | Array<{item_id:string}>>;
 
 export type AnalyticsUserState = "anonymous" | "free" | "trial" | "premium";
 
@@ -39,7 +41,7 @@ function normalizeGa4Params(params: TrackParams): TrackParams {
 }
 
 export function getAnonymousSessionId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   try {
     let value = sessionStorage.getItem(SESSION_KEY);
     if (!value) {
@@ -53,7 +55,7 @@ export function getAnonymousSessionId(): string | undefined {
 }
 
 export function trackEvent(eventName: string, params: TrackParams = {}) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
   if (typeof w.gtag !== "function") {
@@ -61,15 +63,17 @@ export function trackEvent(eventName: string, params: TrackParams = {}) {
     return;
   }
 
-  w.gtag("event", eventName, {
-    anonymous_session_id: getAnonymousSessionId(),
-    ...normalizeGa4Params(params),
-  });
+  try {
+    w.gtag("event", eventName, {
+      anonymous_session_id: getAnonymousSessionId(),
+      ...scrubAnalyticsPayload(normalizeGa4Params(params)),
+    });
+  } catch { /* Tracking must never prevent study or checkout navigation. */ }
 }
 
 /** Invia gli eventi partiti prima che lo script GA4 fosse pronto. */
 export function flushPendingAnalyticsEvents() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
   const w = window as typeof window & { gtag?: (...args: unknown[]) => void };
   if (typeof w.gtag !== "function") return;
 
@@ -83,9 +87,28 @@ export function trackEventOnce(
   eventName: string,
   params: TrackParams = {}
 ) {
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
   if (onceKeys.has(dedupeKey)) return;
   onceKeys.add(dedupeKey);
   trackEvent(eventName, params);
+}
+
+/** A checkout exists only after the API returns its Stripe session. */
+export function trackCheckoutCreated(sessionId: string | undefined, params: TrackParams) {
+  if (!sessionId || typeof window === "undefined" || !analyticsConsentGranted()) return;
+  const key = `cq_checkout_created:${sessionId}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key,"1");
+  } catch {}
+  const product = [params.plan_type,params.guide_slug,params.certification_slug,params.purchase_type]
+    .find((value): value is string => typeof value === "string" && value.length > 0) || "unclassified";
+  trackEventOnce(key,"begin_checkout",{...params,items:[{item_id:product}]});
+}
+
+/** A tab may stay open for a week: do not suppress a later day's real study. */
+export function studyEngagementKey(scope: string, mode: string, at = new Date()) {
+  return `study_engaged:${scope}:${mode}:${at.toISOString().slice(0,10)}`;
 }
 
 /** user_status per gli eventi: mai id/email, solo lo stato d'accesso. */
@@ -125,9 +148,9 @@ export function trackReviewModuleEvent(
   trackEvent(eventName, params);
 }
 
+// Nessun campo email: i dati personali non entrano negli analytics (l'user_id lo ricava il backend dal token).
 type FunnelEventBody = {
   event: string;
-  email?: string | null;
   cert_slug?: string | null;
   topic_slug?: string | null;
   lang?: string | null;
@@ -141,7 +164,7 @@ type FunnelEventBody = {
 const VISITOR_KEY = "cq_analytics_visitor";
 
 export function getAnonymousVisitorId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   try {
     let value = localStorage.getItem(VISITOR_KEY);
     if (!value) {
@@ -161,7 +184,7 @@ function currentPathname(): string {
 }
 
 export function getPageViewId(): string | undefined {
-  if (typeof window === "undefined") return undefined;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return undefined;
   const pathname = currentPathname();
   if (!currentPageView || currentPageView.pathname !== pathname) {
     currentPageView = { pathname, id: crypto.randomUUID() };
@@ -207,9 +230,10 @@ function safeReferrer(): { referrer_origin: string | null; referrer_path: string
  */
 export function trackFunnelEvent(
   body: FunnelEventBody,
-  endpoint = "/api/backend/funnel-event"
+  endpoint = "/api/backend/funnel-event",
+  delivery?: {eventId: string; requireAck: boolean}
 ) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   // Crawler che eseguono JS e browser headless non scrivono in funnel_events:
   // gonfiano gli eventi di esposizione (vedi automated-client.ts). Il controllo
@@ -217,7 +241,12 @@ export function trackFunnelEvent(
   if (isAutomatedClient()) return;
 
   const referrer = safeReferrer();
-  const metadata = body.metadata || (body.plan ? { plan: body.plan } : null);
+  // Difesa in profondita': anche se un chiamante passasse `email` (o un valore che sembra un indirizzo),
+  // il payload inviato al funnel non lo contiene mai.
+  const { email: _discardedEmail, ...safeBody } = body as FunnelEventBody & { email?: unknown };
+  void _discardedEmail;
+  const rawMetadata = safeBody.metadata || (safeBody.plan ? { plan: safeBody.plan } : null);
+  const metadata = rawMetadata ? scrubAnalyticsPayload(rawMetadata) : null;
 
   // I click Premium sono il punto in cui nasce il percorso commerciale: qui si
   // ricordano certificazione e paywall d'origine (letti poi da pricing/checkout,
@@ -225,13 +254,13 @@ export function trackFunnelEvent(
   // non lo passa, cosi' ogni variante premium_clicked_* e' classificabile.
   const isPremiumClick = body.event.startsWith("premium_clicked");
   const paywallType = body.paywall_type ?? (isPremiumClick ? paywallTypeForEvent(body.event) : null);
-  if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType });
+  if (isPremiumClick) rememberCommercialOrigin({ certSlug: body.cert_slug, paywallType, ctaId: metadata?.cta_id });
 
   const payload = JSON.stringify({
-    ...body,
+    ...safeBody,
     ...(paywallType ? { paywall_type: paywallType } : {}),
     metadata,
-    event_id: crypto.randomUUID(),
+    event_id: delivery?.eventId ?? crypto.randomUUID(),
     session_id: getAnonymousSessionId() ?? null,
     visitor_id: getAnonymousVisitorId() ?? null,
     pathname: currentPathname(),
@@ -247,12 +276,12 @@ export function trackFunnelEvent(
 
   // Authenticated events use fetch so the backend can resolve user_id from
   // the bearer token. Anonymous events keep the unload-safe beacon path.
-  if (!token && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+  if (!delivery?.requireAck && !token && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
     const blob = new Blob([payload], { type: "application/json" });
-    if (navigator.sendBeacon(endpoint, blob)) return;
+    if (navigator.sendBeacon(endpoint, blob)) return Promise.resolve(true);
   }
 
-  fetch(endpoint, {
+  return fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -268,8 +297,9 @@ export function trackFunnelEvent(
       if (!res.ok) {
         console.warn(`trackFunnelEvent: ${body.event} rejected (${res.status})`);
       }
+      return res.ok;
     })
-    .catch(() => {});
+    .catch(() => false);
 }
 
 /**
@@ -286,26 +316,28 @@ export function trackFunnelEventOnce(
   body: FunnelEventBody,
   endpoint = "/api/backend/funnel-event"
 ) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !analyticsConsentGranted()) return;
 
   // Prima del dedup: un client automatizzato non deve lasciare nemmeno la chiave.
   if (isAutomatedClient()) return;
 
   const storageKey = `cq_funnel_once:${dedupeKey}`;
-
+  const idKey = `cq_funnel_event_id:${dedupeKey}`;
   if (funnelOnceKeys.has(dedupeKey)) return;
-
+  let eventId = crypto.randomUUID();
   try {
-    if (sessionStorage.getItem(storageKey) === "1") {
-      funnelOnceKeys.add(dedupeKey);
-      return;
-    }
-
-    sessionStorage.setItem(storageKey, "1");
-  } catch {
-    // Se sessionStorage non è disponibile, resta comunque il guard in memoria.
-  }
-
+    if (sessionStorage.getItem(storageKey) === "1") return;
+    eventId = sessionStorage.getItem(idKey) || eventId;
+    sessionStorage.setItem(idKey,eventId);
+  } catch {}
   funnelOnceKeys.add(dedupeKey);
-  trackFunnelEvent(body, endpoint);
+  // Ack before persisting "done"; retries reuse the event_id, even after reload.
+  const delivery = trackFunnelEvent(body,endpoint,{eventId,requireAck:true});
+  void delivery?.then(accepted => {
+    if (accepted) {
+      try { sessionStorage.setItem(storageKey,"1"); } catch {}
+    } else {
+      funnelOnceKeys.delete(dedupeKey);
+    }
+  });
 }

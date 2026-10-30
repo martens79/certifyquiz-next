@@ -11,6 +11,7 @@ import React, {
 import { usePathname, useRouter } from "next/navigation";
 import { authMe } from "@/lib/apiClient";
 import { isPremiumLocked } from "@/lib/flags";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, onAuthBoundaryChange } from '@/lib/auth-session';
 import {
   getToken,
   getUser as getCachedUser,
@@ -80,7 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (refreshInFlight.current) return refreshInFlight.current;
 
     refreshInFlight.current = (async () => {
+      const generation = authGeneration();
       const hadToken = !!getToken();
+      const tokenAtStart = getToken();
+      let rerunWithNewToken = false;
       try {
         const t = getToken();
 
@@ -94,6 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // se ho già user cache, non devo per forza chiamare /me ogni volta
         // (ma la facciamo comunque in bootstrap e quando token cambia)
         const me = await authMe();
+        assertAuthGeneration(generation);
         const refreshedToken = getToken();
         const normalized = toUser(me.user);
 
@@ -113,9 +118,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           true
         );
       } catch (err: any) {
+        if (generation !== authGeneration() || isExplicitlyLoggedOut()) return;
         const status = err?.status ?? err?.response?.status;
 
-        if (status === 401 || status === 403) {
+        if ((status === 401 || status === 403) && getToken() !== tokenAtStart) {
+          // Un token nuovo e' arrivato mentre la richiesta era in volo (es. ritorno da Google):
+          // questo 401 riguarda lo stato precedente e non deve cancellare la sessione appena creata.
+          // Il refreshMe() del cambio di token e' stato assorbito da questa richiesta in volo: si rifa' qui.
+          rerunWithNewToken = true;
+        } else if (status === 401 || status === 403) {
           // Per un visitatore senza token e senza refresh cookie e' normale
           // ricevere 401: resta guest e non forzare il redirect al login.
           clearToken();
@@ -129,13 +140,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } finally {
         refreshInFlight.current = null;
+        if (generation !== authGeneration() && !isExplicitlyLoggedOut() && getToken()) queueMicrotask(() => { void refreshMe(); });
       }
+      if (rerunWithNewToken) await refreshMe();
     })();
 
     return refreshInFlight.current;
   };
 
   // ✅ bootstrap una sola volta
+  useEffect(() => onAuthBoundaryChange(() => {
+    if (isExplicitlyLoggedOut()) {
+      clearToken();
+      setCachedUser(null);
+      setTokenState(null);
+      setUserState(null);
+      setLostSession(false);
+    }
+  }), []);
+
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;

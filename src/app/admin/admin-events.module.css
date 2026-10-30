@@ -1,0 +1,249 @@
+.page {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  color: #0f172a;
+  min-width: 0;
+}
+.header,
+.navigation,
+.actions,
+.pagination {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.header {
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.header h1 {
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+}
+.kicker {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 0 0 6px;
+}
+.page button,
+.page input,
+.page select {
+  font: inherit;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #0f172a;
+  max-width: 100%;
+  min-width: 0;
+}
+.page button {
+  cursor: pointer;
+  font-weight: 700;
+}
+.page button[aria-current="page"] {
+  background: #0f172a;
+  color: #fff;
+}
+.page button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.page :is(button, input, select, summary, a):focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+.page label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 0;
+}
+.page summary {
+  cursor: pointer;
+}
+.page a {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.events {
+  min-width: 0;
+}
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #fff;
+  align-items: end;
+}
+.search {
+  grid-column: span 2;
+}
+.hint {
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.actions {
+  justify-content: flex-start;
+  margin: 18px 0;
+  align-items: flex-start;
+}
+.actions > details {
+  max-width: 420px;
+  padding: 10px 0;
+}
+.state,
+.error {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+}
+.error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.error :is(a, button) {
+  margin-right: 12px;
+}
+.tableCard {
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #fff;
+  overflow: hidden;
+}
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.caption {
+  text-align: left;
+  padding: 16px;
+  font-weight: 700;
+}
+.table :is(th, td) {
+  text-align: left;
+  vertical-align: top;
+  padding: 14px 12px;
+  overflow-wrap: anywhere;
+  border-top: 1px solid #e2e8f0;
+}
+.table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 12px;
+}
+.table th:nth-child(2) {
+  width: 23%;
+}
+.table th:nth-child(3) {
+  width: 21%;
+}
+.table th:nth-child(5) {
+  width: 7%;
+}
+.technical {
+  display: block;
+  font-size: 11px;
+  color: #475569;
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+}
+.badge {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 8px;
+  padding: 3px 6px;
+  display: inline-block;
+  font-size: 12px;
+}
+.table dl {
+  margin: 12px 0 0;
+  font-size: 12px;
+}
+.table dt {
+  font-weight: 700;
+  margin-top: 6px;
+}
+.table dd {
+  margin: 0;
+}
+.pagination {
+  margin-top: 18px;
+}
+.pagination p {
+  font-size: 13px;
+  color: #475569;
+}
+@media (max-width: 760px) {
+  .page {
+    padding: 20px 12px 40px;
+  }
+  .header h1 {
+    font-size: 28px;
+  }
+  .navigation {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .navigation label {
+    flex: 1;
+  }
+  .search {
+    grid-column: auto;
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .table tr {
+    border-top: 2px solid #e2e8f0;
+    padding: 12px;
+  }
+  .table td {
+    border: 0;
+    padding: 6px 0;
+  }
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .pagination {
+    justify-content: center;
+  }
+  .pagination p {
+    width: 100%;
+    text-align: center;
+    order: -1;
+  }
+}

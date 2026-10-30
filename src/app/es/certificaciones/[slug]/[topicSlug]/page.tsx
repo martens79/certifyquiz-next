@@ -136,6 +136,7 @@ export default async function TopicPageEs({
   const labels = getLabels();
 
   const hasQuestions = hasQuizInventory(data.questionCount);
+  const hasReview = data.reviewAvailable !== false;
   const quizHref = `/es/quiz/topic/${data.topic.id}`;
   const reviewHref = `/es/certificaciones/${slug}/${topicSlug}/repaso`;
 
@@ -162,12 +163,12 @@ export default async function TopicPageEs({
           {/* CTA sopra la piega */}
           <div className="mb-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
+              {hasReview && (<Link
                 href={reviewHref}
                 className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-6 py-3 font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100"
               >
                 {labels.quickReview}
-              </Link>
+              </Link>)}
 
               {hasQuestions && (<Link
                 href={quizHref}
@@ -210,7 +211,7 @@ export default async function TopicPageEs({
               content={data.topic.content}
               introText={data.topic.intro}
               quizRoute={hasQuestions ? quizHref : undefined}
-              reviewRoute={reviewHref}
+              reviewRoute={hasReview ? reviewHref : undefined}
               lang="es"
             />
           </section>
@@ -261,16 +262,16 @@ export default async function TopicPageEs({
       <div className="md:hidden fixed left-4 right-4 bottom-20 z-40">
         <div className="rounded-2xl bg-white/95 backdrop-blur border shadow-lg p-3">
           <div className="text-xs text-slate-500 mb-2">
-            {hasQuestions ? labels.mobileHint : unavailableQuizLabels.es}
+            {hasQuestions ? (hasReview ? labels.mobileHint : labels.quizShort) : unavailableQuizLabels.es}
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <Link
+          <div className={hasReview ? "grid grid-cols-2 gap-2" : "grid gap-2"}>
+            {hasReview && (<Link
               href={reviewHref}
               className="flex items-center justify-center w-full rounded-full border border-blue-200 bg-blue-50 px-3 py-3 text-sm font-semibold text-blue-700"
             >
               {labels.quickReviewShort}
-            </Link>
+            </Link>)}
 
             {hasQuestions && (<Link
               href={quizHref}

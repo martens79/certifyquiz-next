@@ -1,6 +1,8 @@
 // src/app/[lang]/quiz/topic/[topicId]/QuizTopicClient.tsx
 "use client";
 
+import { getEipassUserModule } from "@/lib/eipass-user-release";
+
 import { useCallback, useEffect, useMemo, useState,useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -147,7 +149,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         const certId = meta?.topic?.certification_id;
         const t = meta?.topic;
 
-        const title =
+        const title = (certId === 3 ? getEipassUserModule(numericId)?.title[L] : undefined) ??
           (L === "it"
             ? t?.title_it
             : L === "en"
@@ -358,7 +360,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       blockSize={10}
       context={{
         kind: "topic",
-        certificationName: certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
+        certificationName: certSlug === "eipass" ? "EIPASS 7 Moduli User" : certSlug ? certSlug.toUpperCase() : "CertifyQuiz",
         certificationSlug: certSlug ?? undefined,
         certificationId,
         topicId: numericId,

@@ -160,11 +160,42 @@ const SINGLE_REDIRECTS: Record<string, string> = {
   "/base-quiz": "/certifications",
 };
 
+// GSC 26/10/2026: exact historical URLs, rechecked for indexability.
+// Exclusions and HTTP/metadata evidence: docs/seo-404-sprint1/redirect-review.csv.
+export const SEO_404_SPRINT1_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
+  "/fr/certifications/google-cloud-digital-leader/infrastructure-securite-couts-cloud": "/fr/certifications/google-cloud-digital-leader/securite-et-operations-avec-google-cloud",
+  "/it/certificazioni/project-management-foundations/fondamenti-project-management": "/it/certificazioni/project-management-foundations/fondamenti-di-pm",
+  "/it/certificazioni/project-management-foundations/agile-scrum-approcci-tradizionali": "/it/certificazioni/project-management-foundations/agile-scrum-kanban-e-chiusura",
+  "/es/certificaciones/google-cloud-digital-leader/infraestructura-seguridad-costes-cloud": "/es/certificaciones/google-cloud-digital-leader/seguridad-y-operaciones-con-google-cloud",
+  "/es/certificaciones/aws-ai-practitioner/servicios-ia-ml-aws": "/es/certificaciones/aws-ai-practitioner/servicios-aws-machine-learning-casos-de-uso",
+  "/it/certificazioni/google-cloud-digital-leader/fondamenti-cloud-trasformazione-digitale": "/it/certificazioni/google-cloud-digital-leader/trasformazione-digitale-con-google-cloud",
+  "/certifications/ai-foundations/responsible-ai-ethics-security": "/certifications/ai-foundations/ai-ethics-risks-responsible-use",
+  "/fr/certifications/eipass-basic": "/fr/certifications/eipass",
+  "/es/certificaciones/ai-foundations/ia-en-el-mundo-real": "/es/certificaciones/ai-foundations/ia-generativa-aplicaciones-reales",
+  "/fr/certifications/google-cloud-digital-leader/fondamentaux-cloud-transformation-numerique": "/fr/certifications/google-cloud-digital-leader/transformation-numerique-avec-google-cloud",
+  "/certifications/ai-foundations/ai-in-the-real-world": "/certifications/ai-foundations/generative-ai-real-world-applications",
+  "/certifications/google-cloud-digital-leader/data-ai-machine-learning-google-cloud": "/certifications/google-cloud-digital-leader/innovation-with-data-and-google-cloud",
+  "/es/certificaciones/aws-ai-practitioner/casos-uso-empresarial-ia-aws": "/es/certificaciones/aws-ai-practitioner/servicios-aws-machine-learning-casos-de-uso",
+  "/certifications/ai-foundations/generative-ai-practical-use": "/certifications/ai-foundations/generative-ai-real-world-applications",
+  "/it/certificazioni/google-cloud-digital-leader/sicurezza-affidabilita-governance-google-cloud": "/it/certificazioni/google-cloud-digital-leader/sicurezza-e-operazioni-con-google-cloud",
+  "/fr/certifications/aws-ai-practitioner/cas-usage-metier-ia-aws": "/fr/certifications/aws-ai-practitioner/services-aws-machine-learning-cas-utilisation",
+  "/it/certificazioni/ai-foundations/ai-nel-mondo-reale": "/it/certificazioni/ai-foundations/ai-generativa-applicazioni-reali",
+  "/fr/certifications/google-cloud-digital-leader/donnees-ia-machine-learning-google-cloud": "/fr/certifications/google-cloud-digital-leader/innovation-avec-les-donnees-et-google-cloud",
+  "/es/certificaciones/google-cloud-digital-leader/seguridad-fiabilidad-gobernanza-google-cloud": "/es/certificaciones/google-cloud-digital-leader/seguridad-y-operaciones-con-google-cloud",
+  "/certifications/google-cloud-digital-leader/security-reliability-governance-google-cloud": "/certifications/google-cloud-digital-leader/security-and-operations-with-google-cloud",
+  "/it/certificazioni/ai-foundations/ai-responsabile-etica-sicurezza": "/it/certificazioni/ai-foundations/etica-rischi-uso-responsabile-ai",
+  "/it/certificazioni/google-cloud-digital-leader/dati-ai-machine-learning-google-cloud": "/it/certificazioni/google-cloud-digital-leader/innovazione-con-i-dati-e-google-cloud",
+  "/fr/certifications/google-cloud-digital-leader/securite-fiabilite-gouvernance-google-cloud": "/fr/certifications/google-cloud-digital-leader/securite-et-operations-avec-google-cloud",
+  "/it/certificazioni/aws-ai-practitioner/casi-uso-business-ai-aws": "/it/certificazioni/aws-ai-practitioner/servizi-aws-machine-learning-casi-uso",
+  "/fr/certifications/aws-ai-practitioner/services-ia-ml-aws": "/fr/certifications/aws-ai-practitioner/services-aws-machine-learning-cas-utilisation"
+});
+
 export const LEGACY_EXACT_REDIRECTS: Readonly<Record<string, string>> = Object.freeze({
   ...buildCategoryRootRedirects(),
   ...buildCcstCyberRedirects(),
   ...LEGAL_REDIRECTS,
   ...SINGLE_REDIRECTS,
+  ...SEO_404_SPRINT1_REDIRECTS,
 });
 
 /* ------------------------------------------------------------------ */

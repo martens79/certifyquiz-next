@@ -7,9 +7,11 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
 import { langFromPathname, getLabel } from '@/lib/i18n';
-import { setToken, backendUrl } from '@/lib/auth';
-import { trackEvent, trackEventOnce } from '@/lib/analytics';
+import { acceptLoginToken, backendUrl } from '@/lib/auth';
+import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
+import { trackEvent, trackEventOnce, trackFunnelEventOnce } from '@/lib/analytics';
 import { readConversionContext, withConversionContext } from '@/lib/conversion-context';
+import { CHECKOUT_SOURCE, checkoutAuthBanner } from '@/lib/checkout-intent';
 
 type FormDataState = {
   username: string;
@@ -176,6 +178,7 @@ export default function RegisterPageClient() {
     setSubmitting(true);
     setError('');
     setMessage('');
+    const generation = authGeneration();
 
     try {
       const res = await fetch(backendUrl('/auth/register'), {
@@ -191,6 +194,7 @@ export default function RegisterPageClient() {
       });
 
       const data = await safeJson<RegisterSuccess & RegisterError>(res);
+      assertAuthGeneration(generation, true);
 
       if (!res.ok) {
         const status = res.status;
@@ -229,15 +233,11 @@ export default function RegisterPageClient() {
           topic_slug: conversion.topicSlug,
           assessment_score: conversion.score,
         });
-        try {
-          setToken?.(data.token, true); // persistente
-        } catch {
-          try {
-            localStorage.setItem('cq_token', data.token);
-          } catch {
-            /* noop */
-          }
-        }
+        acceptLoginToken(data.token, true, generation);
+        trackFunnelEventOnce('registration_completed', {
+          event: 'registration_completed', cert_slug: conversion.certificationSlug,
+          topic_slug: conversion.topicSlug, lang,
+        });
         router.replace(redirectParam || `/${lang}/profile`);
         return;
       }
@@ -263,6 +263,10 @@ export default function RegisterPageClient() {
         topic_slug: conversion.topicSlug,
         assessment_score: conversion.score,
       });
+        trackFunnelEventOnce('registration_completed', {
+          event: 'registration_completed', cert_slug: conversion.certificationSlug,
+          topic_slug: conversion.topicSlug, lang,
+        });
       const loginHref = withConversionContext(`/${lang}/login`, conversion);
       setTimeout(() => router.replace(loginHref), 1200);
     } catch (err: unknown) {
@@ -284,6 +288,12 @@ export default function RegisterPageClient() {
         <h2 className="text-2xl font-bold text-blue-600 flex items-center gap-2 mb-6">
           🔐 {String(getLabel({ it: 'Registrati', en: 'Register' }, lang))}
         </h2>
+
+        {conversion.source === CHECKOUT_SOURCE && (
+          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" data-testid="checkout-auth-banner">
+            {checkoutAuthBanner(lang)}
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* Honeypot anti-bot: non rimuovere. */}

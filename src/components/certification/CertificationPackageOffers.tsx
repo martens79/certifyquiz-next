@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { checkoutRequest, discardCheckoutRequest } from "@/lib/checkout-analytics";
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -13,12 +15,15 @@ import {
   getAnonymousSessionId,
   getAnonymousVisitorId,
   trackEvent,
+  trackCheckoutCreated,
   trackEventOnce,
   trackFunnelEvent,
   trackFunnelEventOnce,
 } from "@/lib/analytics";
 import { resolveCommercialOrigin } from "@/lib/commercial-origin";
 import { readPostGateCohort } from "@/lib/post-gate-tracking";
+import { packageReturnPath, readPackageIntent, savePackageIntent } from "@/lib/package-intent";
+import { isCheckoutAllowedHost, CHECKOUT_BLOCKED_NOTICE } from "@/lib/checkout-intent";
 import {
   accessValidityLabel,
   activeUntilLabel,
@@ -40,15 +45,18 @@ type Payload = {
 };
 
 const TEXT = {
-  it: { title: "Scegli come prepararti", free: "Free", freeBody: "Inizia gratis: quiz, assessment e Mock Exam con punteggio.", premium: "Accesso completo a tutto il catalogo CertifyQuiz, per chi prepara più certificazioni.", premiumCta: "Scopri Premium", buy: "Ottieni l'accesso", renew: "Estendi l'accesso", upgrade: "Passa a Complete", owned: "Già attivo", recommended: "Consigliato", inactive: "Dark launch — solo anteprima admin", warning: "Questo contenuto è già incluso nel tuo Premium. Acquista il pass solo se vuoi mantenere l'accesso a questa certificazione indipendentemente dall'abbonamento.", buyAnyway: "Acquista comunque", renewNote: "Il nuovo periodo si somma a quello attuale.", errors: { generic: "Non è stato possibile avviare il pagamento. Riprova tra poco.", unavailable: "Questa offerta non è ancora disponibile.", inProgress: "Hai già un pagamento in corso per questa offerta.", owned: "Hai già accesso a questo pacchetto." } },
-  en: { title: "Choose how to prepare", free: "Free", freeBody: "Start free: quizzes, assessment and a scored Mock Exam.", premium: "Full access to the whole CertifyQuiz catalog, for learners preparing several certifications.", premiumCta: "Explore Premium", buy: "Get access", renew: "Extend access", upgrade: "Upgrade to Complete", owned: "Already active", recommended: "Recommended", inactive: "Dark launch — admin preview only", warning: "This content is already included in your Premium. Buy the pass only if you want to keep access to this certification regardless of your subscription.", buyAnyway: "Buy anyway", renewNote: "The new period is added to your current one.", errors: { generic: "We could not start the payment. Please try again shortly.", unavailable: "This offer is not available yet.", inProgress: "You already have a payment in progress for this offer.", owned: "You already have access to this package." } },
-  fr: { title: "Choisissez votre préparation", free: "Gratuit", freeBody: "Commencez gratuitement : quiz, évaluation et Mock Exam noté.", premium: "Accès complet à tout le catalogue CertifyQuiz, pour préparer plusieurs certifications.", premiumCta: "Découvrir Premium", buy: "Obtenir l'accès", renew: "Prolonger l'accès", upgrade: "Passer à Complete", owned: "Déjà actif", recommended: "Recommandé", inactive: "Lancement privé — aperçu administrateur", warning: "Ce contenu est déjà inclus dans votre Premium. Achetez le pass uniquement pour conserver cette certification indépendamment de l'abonnement.", buyAnyway: "Acheter quand même", renewNote: "La nouvelle période s'ajoute à la période en cours.", errors: { generic: "Impossible de lancer le paiement. Réessayez dans un instant.", unavailable: "Cette offre n'est pas encore disponible.", inProgress: "Un paiement est déjà en cours pour cette offre.", owned: "Vous avez déjà accès à ce pack." } },
-  es: { title: "Elige cómo prepararte", free: "Gratis", freeBody: "Empieza gratis: cuestionarios, evaluación y Mock Exam con puntuación.", premium: "Acceso completo a todo el catálogo de CertifyQuiz, para quien prepara varias certificaciones.", premiumCta: "Ver Premium", buy: "Obtener acceso", renew: "Ampliar acceso", upgrade: "Pasar a Complete", owned: "Ya activo", recommended: "Recomendado", inactive: "Lanzamiento privado — vista admin", warning: "Este contenido ya está incluido en tu Premium. Compra el pase solo si quieres conservar esta certificación independientemente de la suscripción.", buyAnyway: "Comprar igualmente", renewNote: "El nuevo periodo se suma al actual.", errors: { generic: "No se pudo iniciar el pago. Inténtalo de nuevo en breve.", unavailable: "Esta oferta aún no está disponible.", inProgress: "Ya tienes un pago en curso para esta oferta.", owned: "Ya tienes acceso a este paquete." } },
+  it: { title: "Scegli come prepararti", free: "Free", freeBody: "Inizia gratis: quiz, assessment e Mock Exam con punteggio.", premium: "Accesso completo a tutto il catalogo CertifyQuiz, per chi prepara più certificazioni.", premiumCta: "Scopri Premium", buy: "Ottieni l'accesso", renew: "Estendi l'accesso", upgrade: "Passa a Complete", owned: "Già attivo", recommended: "Consigliato", inactive: "Dark launch — solo anteprima admin", warning: "Questo contenuto è già incluso nel tuo Premium. Acquista il pass solo se vuoi mantenere l'accesso a questa certificazione indipendentemente dall'abbonamento.", buyAnyway: "Acquista comunque", renewNote: "Il nuovo periodo si somma a quello attuale.", errors: { generic: "Non è stato possibile avviare il pagamento. Riprova tra poco.", unavailable: "Questa offerta non è ancora disponibile.", inProgress: "Hai già un pagamento in corso per questa offerta.", owned: "Hai già accesso a questo pacchetto.", expired: "La sessione di pagamento è scaduta. Premi di nuovo il pulsante per avviarne una nuova.", completed: "Questo pagamento risulta già completato. Controlla nel tuo profilo se l'accesso è attivo: l'attivazione può richiedere qualche istante.", verifying: "Stiamo ancora verificando lo stato del pagamento. Riprova tra poco." } },
+  en: { title: "Choose how to prepare", free: "Free", freeBody: "Start free: quizzes, assessment and a scored Mock Exam.", premium: "Full access to the whole CertifyQuiz catalog, for learners preparing several certifications.", premiumCta: "Explore Premium", buy: "Get access", renew: "Extend access", upgrade: "Upgrade to Complete", owned: "Already active", recommended: "Recommended", inactive: "Dark launch — admin preview only", warning: "This content is already included in your Premium. Buy the pass only if you want to keep access to this certification regardless of your subscription.", buyAnyway: "Buy anyway", renewNote: "The new period is added to your current one.", errors: { generic: "We could not start the payment. Please try again shortly.", unavailable: "This offer is not available yet.", inProgress: "You already have a payment in progress for this offer.", owned: "You already have access to this package.", expired: "The payment session has expired. Press the button again to start a new one.", completed: "This payment is already completed. Check your profile to see whether your access is active: activation can take a few moments.", verifying: "We are still verifying the payment status. Please try again shortly." } },
+  fr: { title: "Choisissez votre préparation", free: "Gratuit", freeBody: "Commencez gratuitement : quiz, évaluation et Mock Exam noté.", premium: "Accès complet à tout le catalogue CertifyQuiz, pour préparer plusieurs certifications.", premiumCta: "Découvrir Premium", buy: "Obtenir l'accès", renew: "Prolonger l'accès", upgrade: "Passer à Complete", owned: "Déjà actif", recommended: "Recommandé", inactive: "Lancement privé — aperçu administrateur", warning: "Ce contenu est déjà inclus dans votre Premium. Achetez le pass uniquement pour conserver cette certification indépendamment de l'abonnement.", buyAnyway: "Acheter quand même", renewNote: "La nouvelle période s'ajoute à la période en cours.", errors: { generic: "Impossible de lancer le paiement. Réessayez dans un instant.", unavailable: "Cette offre n'est pas encore disponible.", inProgress: "Un paiement est déjà en cours pour cette offre.", owned: "Vous avez déjà accès à ce pack.", expired: "La session de paiement a expiré. Appuyez à nouveau sur le bouton pour en démarrer une nouvelle.", completed: "Ce paiement est déjà terminé. Vérifiez dans votre profil si l'accès est actif : l'activation peut prendre quelques instants.", verifying: "Nous vérifions encore l'état du paiement. Réessayez dans un instant." } },
+  es: { title: "Elige cómo prepararte", free: "Gratis", freeBody: "Empieza gratis: cuestionarios, evaluación y Mock Exam con puntuación.", premium: "Acceso completo a todo el catálogo de CertifyQuiz, para quien prepara varias certificaciones.", premiumCta: "Ver Premium", buy: "Obtener acceso", renew: "Ampliar acceso", upgrade: "Pasar a Complete", owned: "Ya activo", recommended: "Recomendado", inactive: "Lanzamiento privado — vista admin", warning: "Este contenido ya está incluido en tu Premium. Compra el pase solo si quieres conservar esta certificación independientemente de la suscripción.", buyAnyway: "Comprar igualmente", renewNote: "El nuevo periodo se suma al actual.", errors: { generic: "No se pudo iniciar el pago. Inténtalo de nuevo en breve.", unavailable: "Esta oferta aún no está disponible.", inProgress: "Ya tienes un pago en curso para esta oferta.", owned: "Ya tienes acceso a este paquete.", expired: "La sesión de pago ha caducado. Pulsa de nuevo el botón para iniciar una nueva.", completed: "Este pago ya está completado. Comprueba en tu perfil si el acceso está activo: la activación puede tardar unos instantes.", verifying: "Aún estamos verificando el estado del pago. Inténtalo de nuevo en breve." } },
 } as const;
 
 function errorMessage(code: string, t: (typeof TEXT)[Locale]) {
   if (code === "OFFER_NOT_AVAILABLE" || code === "OFFER_NOT_CONFIGURED" || code === "PACKAGE_BILLING_DISABLED") return t.errors.unavailable;
   if (code === "CHECKOUT_ALREADY_IN_PROGRESS") return t.errors.inProgress;
+  if (code === "CHECKOUT_SESSION_NOT_REUSABLE") return t.errors.expired;
+  if (code === "CHECKOUT_ALREADY_COMPLETED") return t.errors.completed;
+  if (code === "CHECKOUT_STATE_UNCERTAIN") return t.errors.verifying;
   if (code === "already_owned" || code === "downgrade_not_allowed") return t.errors.owned;
   return t.errors.generic;
 }
@@ -67,26 +75,37 @@ export default function CertificationPackageOffers(props: CertificationPackageOf
 
 function CertificationPackageOffersInner({ lang, certificationSlug, resources }: CertificationPackageOffersProps) {
   const t = TEXT[lang];
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [data, setData] = useState<Payload | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOffer, setSelectedOffer] = useState<string | null>(null);
+  const inFlight = useRef(false);
 
   useEffect(() => {
-    if (detectTwa()) return;
+    if (detectTwa() || authLoading) return;
+    setData(null); // Reload ownership and offer availability after authentication.
     let alive = true;
     apiFetch(`/packages/offers/${encodeURIComponent(certificationSlug)}${isAdmin ? "?include_inactive=1" : ""}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((v) => { if (alive) setData(v); })
       .catch(() => {});
     return () => { alive = false; };
-  }, [certificationSlug, isAdmin]);
+  }, [certificationSlug, isAdmin, user?.id, authLoading]);
 
   const offers = useMemo(() => data?.offers || [], [data]);
   const certificationId = data?.certificationId ?? resources?.certificationId ?? null;
   const certificationName = resources?.certificationName || null;
+
+  // Offers load after hydration, so native fragment scrolling can run too early.
+  useEffect(() => {
+    const target = offers.find(o => window.location.hash === `#package-offer-${o.code}`);
+    if (target) {
+      document.getElementById(`package-offer-${target.code}`)?.scrollIntoView({ block: "start" });
+    }
+  }, [offers]);
 
   // package_viewed: evento esistente package_offer_viewed, ora anche nel funnel V2
   // (visitor/session/pathname) oltre che in GA4. Una volta per sessione e cert.
@@ -107,6 +126,19 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
     });
   }, [offers, certificationSlug, certificationId, lang, user]);
 
+  useEffect(() => {
+    const fromUrl = new URLSearchParams(window.location.search).get("package_offer");
+    const saved = readPackageIntent(certificationSlug, lang);
+    // A copied URL can highlight a public offer, never authorize or start checkout.
+    const code = fromUrl || saved;
+    const offer = offers.find(o => o.code === code);
+    setSelectedOffer(offer?.code ?? null);
+  }, [offers, certificationSlug, lang]);
+
+  useEffect(() => {
+    if (selectedOffer) document.getElementById("package-resume")?.closest("article")?.scrollIntoView({ block: "start" });
+  }, [selectedOffer, offers]);
+
   if (!offers.length) return null;
 
   const money = (o: Offer) =>
@@ -114,6 +146,9 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       .format((o.effectiveAmountMinor ?? o.amountMinor) / 100);
 
   const checkout = async (o: Offer) => {
+    if (authLoading || inFlight.current || o.blockedReason) return;
+    inFlight.current = true;
+    setBusy(o.code);
     setError(null);
     const purchaseType = o.purchaseType || "purchase";
     const gateInstanceId = user?.id != null ? readPostGateCohort(user.id)?.gateInstanceId ?? null : null;
@@ -138,18 +173,25 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
       product_type: o.productCode, purchase_type: purchaseType, source_page: "certification_page",
     });
     if (!user) {
-      router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(pathname || "/")}`);
+      savePackageIntent({ offerCode: o.code, certificationSlug, lang });
+      const returnPath = packageReturnPath(pathname || "/", window.location.search, o.code);
+      router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(returnPath || pathname || "/")}`);
       return;
     }
-    if (!o.checkoutAvailable) { setError(t.inactive); return; }
-    setBusy(o.code);
+    if (!o.checkoutAvailable || !isCheckoutAllowedHost(window.location.hostname)) {
+      setError(o.checkoutAvailable ? CHECKOUT_BLOCKED_NOTICE : t.inactive);
+      inFlight.current = false;
+      setBusy(null);
+      return;
+    }
+    const checkoutScope = `package:${o.code}:${lang}:${origin.paywallType || ""}:${gateInstanceId || ""}`;
     try {
       trackFunnelEvent({
-        event: "checkout_started", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
+        event: "checkout_attempted", cert_slug: certificationSlug, lang, paywall_type: origin.paywallType,
         gate_instance_id: gateInstanceId, metadata: commercialMeta,
       });
-      trackEvent("checkout_started", {
-        language: lang, user_state: analyticsUserStateFrom(user), plan_type: o.productCode,
+      trackEvent("checkout_attempted", {
+        language: lang, certification_slug: certificationSlug, user_state: analyticsUserStateFrom(user), plan_type: o.productCode,
         purchase_type: "certification_package", source_page: "certification_page", gate_instance_id: gateInstanceId,
       });
       // Ledger commerce esistente (commerce_events).
@@ -157,12 +199,14 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "package_selected", offerCode: o.code, source: "certification_page" }),
       }).catch(() => {});
+      const checkoutContext = await checkoutRequest(checkoutScope);
       const r = await apiFetch("/packages/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          offerCode: o.code, lang, source: "certification_page", idempotencyKey: crypto.randomUUID(),
+          offerCode: o.code, lang, source: "certification_page", idempotencyKey: checkoutContext.requestId,
           // Solo attribuzione funnel: il backend ricava offerta/prezzo/certificazione dal server.
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           gate_instance_id: gateInstanceId,
@@ -170,11 +214,25 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
         }),
       });
       const body = await r.json().catch(() => ({}));
+      if (r.status === 401) {
+        savePackageIntent({ offerCode: o.code, certificationSlug, lang });
+        const returnPath = packageReturnPath(pathname || "/", window.location.search, o.code);
+        router.push(`${lang === "en" ? "" : `/${lang}`}/login?redirect=${encodeURIComponent(returnPath || pathname || "/")}`);
+        return;
+      }
       if (!r.ok) throw new Error(body.error || "CHECKOUT_FAILED");
-      if (body.url) window.location.href = body.url;
+      const checkoutUrl = typeof body.url === "string" ? body.url.trim() : "";
+      if (!checkoutUrl) throw new Error("CHECKOUT_FAILED");
+      trackCheckoutCreated(body.sessionId, {purchase_type:"certification_package", plan_type:o.productCode, certification_slug:certificationSlug, language:lang});
+      window.location.href = checkoutUrl;
     } catch (e) {
-      setError(errorMessage(e instanceof Error ? e.message : "CHECKOUT_FAILED", t));
+      const code = e instanceof Error ? e.message : "CHECKOUT_FAILED";
+      // Only a backend-proven dead session lets the next explicit click use a new
+      // request id. Completed/uncertain/other errors keep the key (no duplicate order).
+      if (code === "CHECKOUT_SESSION_NOT_REUSABLE") discardCheckoutRequest(checkoutScope);
+      setError(errorMessage(code, t));
       setBusy(null);
+      inFlight.current = false;
     }
   };
 
@@ -187,7 +245,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
   };
   const ownsTier = (o: Offer) => data?.owned?.tier === o.productCode;
 
-  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6" aria-labelledby="package-title">
+  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <h2 id="package-title" className="text-xl font-black text-slate-950">{t.title}</h2>
       {data?.darkLaunch && isAdmin ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{t.inactive}</span> : null}
@@ -211,8 +269,15 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
         return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
+          <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
+          {selectedOffer === o.code ? <p id="package-resume" data-package-selected role="status" className="mt-2 text-sm font-semibold text-indigo-900">{{
+            it: "Pacchetto selezionato. Verifica l'offerta e conferma per continuare.",
+            en: "Selected package. Review the offer and confirm to continue.",
+            fr: "Pack sélectionné. Vérifiez l'offre et confirmez pour continuer.",
+            es: "Paquete seleccionado. Revisa la oferta y confirma para continuar.",
+          }[lang]}</p> : null}
           <p className="text-sm text-slate-600">{packageTagline(o.productCode, lang)}</p>
           <p className="mt-3 text-2xl font-black">{money(o)}</p>
           <p className="text-xs font-bold uppercase text-slate-500">{oneTimePaymentLabel(lang)}</p>
@@ -220,13 +285,13 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang).map((f) => <li key={f}>✓ {f}</li>)}</ul>
           {activeUntil ? <p className="mt-3 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{activeUntil}</p> : null}
           {renewal ? <p className="mt-1 text-xs text-slate-500">{t.renewNote}</p> : null}
-          <button type="button" disabled={blocked || busy === o.code} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
+          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
         </article>;
       })}
       <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
         <h3 className="font-black">Premium</h3>
         <p className="mt-2 text-sm text-blue-100">{t.premium}</p>
-        <a href={`${pricingPath(lang)}?source=package_offers&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
+        <a href={`${pricingPath(lang)}?source=package_offers&cta=package_offers_premium&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
       </article>
     </div>
     {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}

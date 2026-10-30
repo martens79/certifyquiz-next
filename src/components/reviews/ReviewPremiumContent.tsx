@@ -13,6 +13,7 @@ import {
 } from "@/lib/analytics";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { certPath, pricingPath, type Locale } from "@/lib/paths";
+import { premiumClickMetadata } from "@/lib/commercial-origin";
 import type { TopicReviewPage } from "@/lib/data";
 import type { ReviewModuleStructure } from "@/lib/review-module-types";
 import ReviewModuleShell from "@/components/reviews/module/ReviewModuleShell";
@@ -190,6 +191,7 @@ export default function ReviewPremiumContent({
       cert_slug: certSlug,
       topic_slug: topicSlug,
       lang,
+      metadata: premiumClickMetadata("review_gate"),
     });
   }
 
@@ -243,7 +245,7 @@ export default function ReviewPremiumContent({
               onClick={() => click("premium")}
               href={`${pricingPath(
                 lang
-              )}?source=review_gate&cert_slug=${encodeURIComponent(
+              )}?source=review_gate&cta=review_gate&cert_slug=${encodeURIComponent(
                 certSlug
               )}&topic_slug=${encodeURIComponent(topicSlug)}`}
               className="inline-flex min-h-11 items-center justify-center rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white"

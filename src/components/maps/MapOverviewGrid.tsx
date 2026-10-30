@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata } from "@/lib/commercial-origin";
 import type { MapOverviewItem } from "@/lib/data";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -34,6 +35,7 @@ const LABELS = {
     preview: "Anteprima gratuita",
     download: "Scarica il PDF",
     downloading: "Download in corso…",
+    trialBlocked: "Durante i 7 giorni di prova gratuita non puoi scaricare le mappe PDF complete. Sono disponibili le anteprime; il download si sblocca dopo il primo pagamento.",
     downloadError: "Download non riuscito. Riprova.",
     unlock: "Sblocca guida e mappe",
     italianOnly: "",
@@ -53,6 +55,7 @@ const LABELS = {
     preview: "Free preview",
     download: "Download PDF",
     downloading: "Downloading…",
+    trialBlocked: "Full PDF map downloads are unavailable during the 7-day free trial. Previews remain available; downloads unlock after the first payment.",
     downloadError: "Download failed. Please try again.",
     unlock: "Unlock guide and maps",
     italianOnly: "🇮🇹 Currently in Italian only",
@@ -72,6 +75,7 @@ const LABELS = {
     preview: "Aperçu gratuit",
     download: "Télécharger le PDF",
     downloading: "Téléchargement…",
+    trialBlocked: "Le téléchargement des cartes PDF complètes est indisponible pendant les 7 jours d’essai gratuit. Les aperçus restent disponibles ; le téléchargement est débloqué après le premier paiement.",
     downloadError: "Échec du téléchargement. Réessayez.",
     unlock: "Débloquer le guide et les cartes",
     italianOnly: "🇮🇹 Disponible uniquement en italien pour l'instant",
@@ -91,6 +95,7 @@ const LABELS = {
     preview: "Vista previa gratuita",
     download: "Descargar PDF",
     downloading: "Descargando…",
+    trialBlocked: "Durante los 7 días de prueba gratuita no puedes descargar los mapas PDF completos. Las vistas previas siguen disponibles; la descarga se habilita tras el primer pago.",
     downloadError: "Error al descargar. Inténtalo de nuevo.",
     unlock: "Desbloquear guía y mapas",
     italianOnly: "🇮🇹 Por ahora solo en italiano",
@@ -147,6 +152,7 @@ function MapCard({
       cert_slug: item.certification_slug,
       topic_slug: null,
       lang,
+      metadata: premiumClickMetadata("map_locked"),
     });
   }
 
@@ -160,7 +166,10 @@ function MapCard({
         `/maps/${encodeURIComponent(item.slug)}/download?lang=${lang}`
       );
 
-      if (!res.ok) throw new Error("download_failed");
+      if (!res.ok) {
+        if (res.status === 403 && (await res.json().catch(() => null))?.error === "trial_pdf_restricted") { setError(t.trialBlocked); return; }
+        throw new Error("download_failed");
+      }
 
       const blob = await res.blob();
       if (!blob.size) throw new Error("empty_pdf");
@@ -267,7 +276,7 @@ function MapCard({
           </button>
         ) : (
           <Link
-            href={`${pricingPath(lang)}?source=map_preview&certification_slug=${encodeURIComponent(item.certification_slug)}&map_slug=${encodeURIComponent(item.slug)}`}
+            href={`${pricingPath(lang)}?source=map_preview&cta=map_locked&certification_slug=${encodeURIComponent(item.certification_slug)}&map_slug=${encodeURIComponent(item.slug)}`}
             onClick={handleLockedClick}
             className={`${ACTION_BASE} border-transparent bg-amber-500 text-white hover:bg-amber-600`}
           >

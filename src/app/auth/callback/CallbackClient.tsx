@@ -1,31 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { backendUrl, setToken, authHeader, setUser } from "@/lib/auth";
+import { backendUrl, acceptLoginToken, setUser } from "@/lib/auth";
+import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
+import { buildPostAuthRecoveryHref, safePostAuthRedirect } from "@/lib/conversion-context";
 
-function safeRedirectPath(p: string | null) {
-  if (!p) return "/";
-  if (!p.startsWith("/")) return "/";
-  if (p.startsWith("//")) return "/";
-
-  // ✅ alias profilo -> profile
-  if (p === "/it/profilo") return "/it/profile";
-  if (p === "/profilo") return "/profile";
-
-  return p;
-}
-
-function loginPathFromRedirect(r: string) {
-  const m = r.match(/^\/(it|fr|es)\b/);
-  return m ? `/${m[1]}/login` : "/login";
-}
+const safeRedirectPath = safePostAuthRedirect;
 
 export default function CallbackClient() {
   const router = useRouter();
   const sp = useSearchParams();
+  // Il token viene tolto dall'URL (replaceState): senza guardia l'effetto ripartirebbe senza token
+  // e rimanderebbe al login mentre l'accesso e' gia' avvenuto. Una sola esecuzione per visita.
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
     const token = sp.get("token");
     const redirect = safeRedirectPath(sp.get("redirect"));
     const remember = (sp.get("remember") ?? "1") === "1";
@@ -33,11 +25,11 @@ export default function CallbackClient() {
 
     (async () => {
       if (!token) {
-        router.replace(loginPathFromRedirect(redirect));
+        router.replace(buildPostAuthRecoveryHref(redirect));
         return;
       }
 
-      setToken(token, remember);
+      const generation = authGeneration();
 
       // ✅ pulisci URL (evita token in history)
       window.history.replaceState(null, "", "/auth/callback");
@@ -45,17 +37,21 @@ export default function CallbackClient() {
       try {
         const meRes = await fetch(backendUrl("/auth/me"), {
           method: "GET",
-          headers: { Accept: "application/json", ...authHeader() },
+          headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
           credentials: "include",
           cache: "no-store",
         });
         if (meRes.ok) {
           const me = await meRes.json();
-          setUser(me, remember);
+          assertAuthGeneration(generation, true);
+          acceptLoginToken(token, remember, generation);
+          setUser(me.user ?? me, remember);
+          router.replace(redirect);
+          return;
         }
       } catch {}
 
-      router.replace(redirect);
+      if (generation === authGeneration()) router.replace(buildPostAuthRecoveryHref(redirect));
     })();
   }, [router, sp]);
 
