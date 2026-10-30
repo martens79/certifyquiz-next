@@ -73,6 +73,7 @@ type CopyEntry = {
   subCta: string;
   subCtaMonthly: string;
   trialNote: string;
+  trialPdfNotice: string;
   promoNote: string;
   featuresTitle: string;
   checkoutError: string;
@@ -136,6 +137,7 @@ const COPY: Record<Lang, CopyEntry> = {
     ctaLoading: "Apertura checkout...",
     subCta: "59,90€ addebitati oggi in un unico pagamento per 12 mesi",
     subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
+    trialPdfNotice: "Durante i 7 giorni di prova gratuita puoi consultare le anteprime, ma non scaricare le guide PDF e le mappe complete. I download sono disponibili dopo il primo pagamento o con acquisto singolo.",
     trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
     promoNote: "Sconto del 50% già applicato sul primo mese, addebitato subito — nessun periodo di prova.",
     featuresTitle: "Cosa include Premium",
@@ -210,6 +212,7 @@ const COPY: Record<Lang, CopyEntry> = {
     ctaLoading: "Abriendo checkout...",
     subCta: "59,90€ cobrados hoy en un único pago por 12 meses",
     subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
+    trialPdfNotice: "Durante los 7 días de prueba gratuita puedes consultar las vistas previas, pero no descargar las guías PDF ni los mapas completos. Las descargas están disponibles tras el primer pago o con una compra individual.",
     trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
     promoNote: "Descuento del 50% ya aplicado en el primer mes, cobrado ahora — sin periodo de prueba.",
     featuresTitle: "Qué incluye Premium",
@@ -284,6 +287,7 @@ const COPY: Record<Lang, CopyEntry> = {
     ctaLoading: "Opening checkout...",
     subCta: "€59.90 charged today as one payment for 12 months",
     subCtaMonthly: "7 days free · No charge today · Cancel anytime",
+    trialPdfNotice: "During the 7-day free trial, previews are available but full PDF guides and maps cannot be downloaded. Downloads become available after the first payment or with an individual purchase.",
     trialNote: "Try free for 7 days, then €9.99/month.",
     promoNote: "50% off your first month already applied, charged now — no free trial.",
     featuresTitle: "What Premium includes",
@@ -358,6 +362,7 @@ const COPY: Record<Lang, CopyEntry> = {
     ctaLoading: "Ouverture du checkout...",
     subCta: "59,90€ débités aujourd'hui en un paiement unique pour 12 mois",
     subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
+    trialPdfNotice: "Pendant les 7 jours d’essai gratuit, les aperçus sont disponibles, mais le téléchargement des guides PDF et cartes complets est désactivé. Les téléchargements sont accessibles après le premier paiement ou un achat individuel.",
     trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
     promoNote: "Réduction de 50% déjà appliquée sur le premier mois, débité maintenant — aucun essai gratuit.",
     featuresTitle: "Ce que Premium inclut",
@@ -965,6 +970,10 @@ function PremiumPricingView({ forceLang }: Props) {
 
           {explanationsUsed && (
             <ExplanationsUsedNote t={t} used={explanationsUsed.used} limit={explanationsUsed.limit} />
+          )}
+
+          {selectedPlan === "premium_monthly" && !isPromoLink && (
+            <p role="note" className="mt-3 max-w-3xl text-sm text-gray-700">{t.trialPdfNotice}</p>
           )}
 
           {/* CTA principale */}

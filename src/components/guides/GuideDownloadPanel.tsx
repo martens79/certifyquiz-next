@@ -32,6 +32,12 @@ const COPY = {
     fr: "Échec du téléchargement. Réessayez.",
     es: "Error al descargar. Inténtalo de nuevo.",
   },
+  trialBlocked: {
+    it: "Durante la prova gratuita di 7 giorni il download dei PDF completi non è disponibile. Puoi usare le anteprime; il download si sblocca dopo il primo pagamento o acquistando la guida.",
+    en: "Full PDF downloads are unavailable during the 7-day free trial. Previews remain available; download access starts after the first payment or an individual guide purchase.",
+    fr: "Le téléchargement des PDF complets est indisponible pendant les 7 jours d’essai gratuit. Les aperçus restent accessibles ; le téléchargement est débloqué après le premier paiement ou l’achat du guide.",
+    es: "No se pueden descargar los PDF completos durante los 7 días de prueba gratuita. Puedes consultar las vistas previas; la descarga se habilita tras el primer pago o al comprar la guía.",
+  },
   checking: {
     it: "Verifica accesso…",
     en: "Checking access…",
@@ -111,6 +117,7 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
     );
 
     if (!res.ok) {
+      if (res.status === 403 && (await res.json().catch(() => null))?.error === "trial_pdf_restricted") { setError(COPY.trialBlocked[lang]); return; }
       throw new Error("download_failed");
     }
 
@@ -156,7 +163,7 @@ export default function GuideDownloadPanel({ lang, slug, price }: Props) {
   }
 
   if (!hasAccess) {
-    return <GuideAccessGate lang={lang} slug={slug} price={price} />;
+    return <GuideAccessGate lang={lang} slug={slug} price={price} trialRestricted={accessReason === "trial_pdf_restricted"} />;
   }
 
   const badgeCopy =
