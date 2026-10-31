@@ -715,6 +715,19 @@ function PremiumPricingView({ forceLang }: Props) {
       plan_type: plan,
       source_page: "pricing",
     });
+    const origin = resolveCommercialOrigin(window.location.search);
+    trackFunnelEvent({
+      event: "pricing_plan_selected",
+      cert_slug: origin.originCertSlug,
+      lang,
+      plan,
+      paywall_type: origin.paywallType,
+      metadata: {
+        plan,
+        source_page: "pricing",
+        ...(origin.ctaId ? { origin_cta_id: origin.ctaId } : {}),
+      },
+    });
   }
 
   // Ritorno da login/registrazione (anche Google): riprende il checkout col piano scelto.
@@ -953,6 +966,20 @@ function PremiumPricingView({ forceLang }: Props) {
       window.location.href = data.url;
     } catch (err) {
       console.error("Premium checkout error:", err);
+      // Solo una categoria fissa: mai inviare al funnel error.message, URL Stripe o PII.
+      const origin = resolveCommercialOrigin(window.location.search);
+      trackFunnelEvent({
+        event: "checkout_failed",
+        cert_slug: origin.originCertSlug,
+        lang,
+        plan,
+        paywall_type: origin.paywallType,
+        metadata: {
+          failure_stage: "checkout_creation_or_redirect",
+          source_page: "pricing",
+          purchase_type: "subscription",
+        },
+      });
       alert(t.checkoutError);
       inFlightRef.current = false;
       setIsLoading(false);
