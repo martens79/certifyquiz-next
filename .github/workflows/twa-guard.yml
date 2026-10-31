@@ -1,0 +1,54 @@
+name: TWA consumption-only guard
+on:
+  pull_request:
+    paths:
+      - 'src/components/twa/**'
+      - 'src/lib/twa.ts'
+      - 'src/hooks/useTwa.ts'
+      - 'src/app/layout.tsx'
+      - 'src/app/business/**'
+      - 'src/app/it/aziende/**'
+      - 'src/app/fr/entreprises/**'
+      - 'src/app/es/empresas/**'
+      - 'src/app/(marketing)/pricing/**'
+      - 'tests/twa*'
+      - 'playwright.twa.config.ts'
+      - '.github/workflows/twa-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  twa:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      API_BASE_URL: http://127.0.0.1:8298/api
+      API_BASE_URL_DEV: http://127.0.0.1:8298/api
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+      E2E_BASE_URL: http://127.0.0.1:3118
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: node --import tsx --test tests/twa.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+      - name: Isolated production build and TWA browser tests
+        run: |
+          node tests/helpers/sprint2a-ssr.cjs > /tmp/fixture.log 2>&1 &
+          node -e "require('fs').writeFileSync('/tmp/isolation.json', JSON.stringify({testRunId:'ccst-r02-twaguardci000001',backendOrigin:'http://127.0.0.1:8298'}))"
+          export CCST_E2E_CONFIG=/tmp/isolation.json
+          npm run build
+          npx next start -H 127.0.0.1 -p 3118 > /tmp/frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3118/it/aziende >/dev/null && break; sleep 1; done
+          npx playwright test -c playwright.twa.config.ts tests/twa-business-gate.spec.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: twa-guard-evidence, path: 'test-results/'}

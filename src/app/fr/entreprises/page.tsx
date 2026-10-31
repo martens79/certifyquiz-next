@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import TeamDashboardPreview from "@/components/team/TeamDashboardPreview";
 import FaqAccordion from "@/components/team/FaqAccordion";
+import TwaPurchaseGate from "@/components/twa/TwaPurchaseGate";
 
 
 
@@ -128,6 +129,7 @@ function mailto(subject: string) {
 
 export default function TeamLandingPageFR() {
   return (
+    <TwaPurchaseGate lang="fr">
     <main className={`${spaceGrotesk.variable} bg-white`}>
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0B1220]">
@@ -327,5 +329,6 @@ export default function TeamLandingPageFR() {
         </div>
       </section>
     </main>
+    </TwaPurchaseGate>
   );
 }
