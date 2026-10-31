@@ -58,6 +58,8 @@ type PlanOption = {
   perMonth: string;
   badge?: string;
   trialBadge?: string;
+  // Equivalente mensile dell'annuale (59,90 / 12): solo aritmetica, non e' un prezzo Stripe.
+  equivalent?: string;
   popular?: boolean;
 };
 
@@ -67,8 +69,6 @@ type CopyEntry = {
   title: string;
   subtitle: string;
   lossPoints: string[];
-  // Prova sociale (placeholder — vedi TODO-SOCIAL-PROOF)
-  socialProofLine: string;
   plans: PlanOption[];
   cta: string;
   ctaLoading: string;
@@ -85,7 +85,6 @@ type CopyEntry = {
   resumeManual: string;
   resumeExpired: string;
   pizzaLine: string;
-  urgencyLine: string;
   finalLine: string;
   features: FeatureItem[];
   tableTitle: string;
@@ -99,8 +98,6 @@ type CopyEntry = {
   faqs: { question: string; answer: string }[];
   popularLabel: string;
   explanationsUsedTemplate: string;
-  testimonialsTitle: string;
-  testimonials: { text: string; name: string; cert: string }[];
   businessBannerTitle: string;
   businessBannerBody: string;
   businessBannerCta: string;
@@ -127,13 +124,11 @@ const COPY: Record<Lang, CopyEntry> = {
       "Spiegazioni dettagliate per capire ogni errore",
       "Guide PDF e mappe concettuali complete incluse",
       "Ripasso mirato delle risposte sbagliate",
-      "Simulazioni e Tutor AI senza i limiti del piano Free",
+      "Mock Review delle simulazioni e Tutor AI sulla domanda che stai svolgendo",
     ],
-    // TODO-SOCIAL-PROOF: sostituire con il numero reale di utenti attivi
-    socialProofLine: "[TODO: numero utenti reali] persone si stanno preparando con CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
-      { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "Pagamento unico per 12 mesi", badge: "Risparmi il 50%", popular: true },
+      { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "Pagamento unico per 12 mesi", badge: "Risparmi il 50%", equivalent: "≈ 4,99€/mese", popular: true },
     ],
     cta: "Inizia Premium",
     ctaLoading: "Apertura checkout...",
@@ -149,12 +144,11 @@ const COPY: Record<Lang, CopyEntry> = {
     resumeManual: "Accesso eseguito! Premi il pulsante per proseguire al pagamento sicuro.",
     resumeExpired: "La sessione è scaduta. Accedi di nuovo e premi il pulsante Premium.",
     pizzaLine: "Scegli il mensile per provare senza addebito per 7 giorni, oppure risparmia il 50% con l'annuale.",
-    urgencyLine: "Tutti gli strumenti Premium lavorano insieme: pratica, comprensione degli errori e ripasso mirato.",
     finalLine: "Scegli il piano più adatto al tempo che ti separa dall'esame.",
     popularLabel: "Più popolare",
     features: [
       { h: "Spiegazioni complete", p: "Sblocca tutte le spiegazioni per capire davvero gli errori e non limitarti a memorizzare." },
-      { h: "Modalità esame reale", p: "Allenati in modo più vicino all'esperienza d'esame, con un approccio più serio e focalizzato." },
+      { h: "Mock Review", p: "Dopo ogni simulazione rivedi domanda per domanda la tua risposta e quella corretta, per capire dove hai perso punti." },
       { h: "Ripasso errori", p: "Rivedi le domande sbagliate e concentrati sui punti deboli invece di ripartire ogni volta da zero." },
       { h: "Guide e mappe incluse", p: "Usa le risorse complete della tua certificazione per ripassare i concetti tra una sessione e l'altra." },
     ],
@@ -164,12 +158,12 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Spiegazioni errori", free: "10 gratuite", premium: "✅ Illimitate" },
-      { label: "Modalità esame reale", free: "❌", premium: "✅" },
+      { label: "Mock Exam", free: "Punteggio finale", premium: "✅ Con Mock Review" },
       { label: "Ripasso errori", free: "❌", premium: "✅" },
       { label: "Guide PDF", free: "Anteprima gratuita", premium: "✅ Incluse" },
       { label: "Mappe concettuali", free: "Anteprima gratuita", premium: "✅ Incluse" },
       { label: "Scenari d'esame", free: "Alcuni scenari", premium: "✅ Tutti inclusi" },
-      { label: "AI Tutor", free: "Limitato", premium: "✅ Illimitato" },
+      { label: "AI Tutor", free: "Assistente generale", premium: "✅ Tutor sulla tua domanda" },
     ],
     guaranteeTitle: "Prezzi chiari, checkout sicuro",
     guaranteeDesc: "Mensile: 7 giorni gratis e nessun addebito oggi. Annuale: 59,90€ addebitati oggi per 12 mesi. Puoi gestire l'abbonamento online.",
@@ -181,13 +175,6 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Premium vale per tutte le certificazioni?", answer: "Sì. Premium sblocca le risorse Premium disponibili nel catalogo, non una sola certificazione." },
     ],
     explanationsUsedTemplate: "Hai già usato {used} delle tue {limit} spiegazioni gratuite.",
-    testimonialsTitle: "Chi lo usa, lo consiglia",
-    testimonials: [
-      // TODO-SOCIAL-PROOF: sostituire con una recensione reale
-      { text: "[TODO: testimonial reale]", name: "[TODO: nome reale]", cert: "[TODO: certificazione reale]" },
-      { text: "[TODO: testimonial reale]", name: "[TODO: nome reale]", cert: "[TODO: certificazione reale]" },
-      { text: "[TODO: testimonial reale]", name: "[TODO: nome reale]", cert: "[TODO: certificazione reale]" },
-    ],
     businessBannerTitle: "Stai cercando un piano per il tuo team?",
     businessBannerBody: "Se gestisci un team IT, dai un'occhiata ai piani aziendali: dashboard di progresso condivisa per tutto il team e fattura unica.",
     businessBannerCta: "Scopri i piani aziendali",
@@ -202,13 +189,11 @@ const COPY: Record<Lang, CopyEntry> = {
       "Explicaciones detalladas para entender cada error",
       "Guías PDF y mapas conceptuales completos incluidos",
       "Repaso específico de las respuestas incorrectas",
-      "Simulaciones y Tutor AI sin los límites del plan Free",
+      "Mock Review de los simulacros y Tutor AI sobre la pregunta que estás resolviendo",
     ],
-    // TODO-SOCIAL-PROOF: sustituir por el número real de usuarios activos
-    socialProofLine: "[TODO: número real de usuarios] personas se están preparando con CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
-      { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "Pago único por 12 meses", badge: "Ahorra el 50%", popular: true },
+      { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "Pago único por 12 meses", badge: "Ahorra el 50%", equivalent: "≈ 4,99€/mes", popular: true },
     ],
     cta: "Empezar Premium",
     ctaLoading: "Abriendo checkout...",
@@ -224,12 +209,11 @@ const COPY: Record<Lang, CopyEntry> = {
     resumeManual: "¡Sesión iniciada! Pulsa el botón para continuar al pago seguro.",
     resumeExpired: "La sesión ha caducado. Inicia sesión de nuevo y pulsa el botón Premium.",
     pizzaLine: "Elige el plan mensual para probar 7 días sin cargo o ahorra un 50% con el anual.",
-    urgencyLine: "Todas las herramientas Premium trabajan juntas: práctica, comprensión de errores y repaso específico.",
     finalLine: "Elige el plan que mejor se adapta al tiempo que falta para tu examen.",
     popularLabel: "Más popular",
     features: [
       { h: "Explicaciones completas", p: "Desbloquea todas las explicaciones para entender de verdad tus errores y no solo memorizar." },
-      { h: "Modo examen real", p: "Entrena de una forma más cercana a la experiencia real del examen, con un enfoque más serio." },
+      { h: "Mock Review", p: "Tras cada simulacro revisa pregunta por pregunta tu respuesta y la correcta para saber dónde perdiste puntos." },
       { h: "Repaso de errores", p: "Revisa tus fallos y céntrate en tus puntos débiles en lugar de empezar siempre desde cero." },
       { h: "Guías y mapas incluidos", p: "Usa todos los recursos de tu certificación para repasar entre sesiones." },
     ],
@@ -239,12 +223,12 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Explicaciones de errores", free: "10 gratuitas", premium: "✅ Ilimitadas" },
-      { label: "Modo examen real", free: "❌", premium: "✅" },
+      { label: "Mock Exam", free: "Puntuación final", premium: "✅ Con Mock Review" },
       { label: "Repaso de errores", free: "❌", premium: "✅" },
       { label: "Guías PDF", free: "Vista previa gratuita", premium: "✅ Incluidas" },
       { label: "Mapas conceptuales", free: "Vista previa gratuita", premium: "✅ Incluidos" },
       { label: "Escenarios de examen", free: "Algunos escenarios", premium: "✅ Todos incluidos" },
-      { label: "AI Tutor", free: "Limitado", premium: "✅ Ilimitado" },
+      { label: "AI Tutor", free: "Asistente general", premium: "✅ Tutor sobre tu pregunta" },
     ],
     guaranteeTitle: "Precios claros y checkout seguro",
     guaranteeDesc: "Mensual: 7 días gratis y ningún cargo hoy. Anual: 59,90€ cobrados hoy por 12 meses. Puedes gestionar la suscripción online.",
@@ -256,13 +240,6 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "¿Premium sirve para todas las certificaciones?", answer: "Sí. Premium desbloquea los recursos Premium disponibles en todo el catálogo." },
     ],
     explanationsUsedTemplate: "Ya has usado {used} de tus {limit} explicaciones gratuitas.",
-    testimonialsTitle: "Quienes lo usan, lo recomiendan",
-    testimonials: [
-      // TODO-SOCIAL-PROOF: sustituir por una reseña real
-      { text: "[TODO: testimonio real]", name: "[TODO: nombre real]", cert: "[TODO: certificación real]" },
-      { text: "[TODO: testimonio real]", name: "[TODO: nombre real]", cert: "[TODO: certificación real]" },
-      { text: "[TODO: testimonio real]", name: "[TODO: nombre real]", cert: "[TODO: certificación real]" },
-    ],
     businessBannerTitle: "¿Buscas un plan para tu equipo?",
     businessBannerBody: "Si gestionas un equipo IT, descubre nuestros planes para empresas: panel de progreso compartido para todo el equipo y factura única.",
     businessBannerCta: "Ver planes para empresas",
@@ -277,13 +254,11 @@ const COPY: Record<Lang, CopyEntry> = {
       "Detailed explanations to understand every mistake",
       "Complete PDF guides and concept maps included",
       "Focused review of your incorrect answers",
-      "Simulations and AI Tutor without Free-plan limits",
+      "Mock Review of your mock exams and an AI Tutor that knows the question you are answering",
     ],
-    // TODO-SOCIAL-PROOF: replace with the real number of active users
-    socialProofLine: "[TODO: real user count] people are preparing with CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
-      { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "One payment for 12 months", badge: "Save 50%", popular: true },
+      { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "One payment for 12 months", badge: "Save 50%", equivalent: "≈ €4.99/month", popular: true },
     ],
     cta: "Start Premium",
     ctaLoading: "Opening checkout...",
@@ -299,12 +274,11 @@ const COPY: Record<Lang, CopyEntry> = {
     resumeManual: "You're signed in! Press the button to continue to secure checkout.",
     resumeExpired: "Your session expired. Log in again and press the Premium button.",
     pizzaLine: "Choose monthly to try Premium for 7 days with no charge, or save 50% with annual.",
-    urgencyLine: "Every Premium tool works together: practice, mistake understanding, and focused review.",
     finalLine: "Choose the plan that best fits the time left before your exam.",
     popularLabel: "Most popular",
     features: [
       { h: "Full explanations", p: "Unlock every explanation so you can actually understand mistakes instead of just memorizing answers." },
-      { h: "Real exam mode", p: "Practice in a way that feels closer to the real exam experience, with a more focused approach." },
+      { h: "Mock Review", p: "After every mock exam, go through each question with your answer and the correct one to see where you lost points." },
       { h: "Error review", p: "Go back over your incorrect answers and focus on weak areas instead of restarting blindly." },
       { h: "Guides and maps included", p: "Use the complete resources for your certification to review concepts between practice sessions." },
     ],
@@ -314,12 +288,12 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Wrong answer explanations", free: "10 free", premium: "✅ Unlimited" },
-      { label: "Real exam mode", free: "❌", premium: "✅" },
+      { label: "Mock Exam", free: "Final score", premium: "✅ With Mock Review" },
       { label: "Error review", free: "❌", premium: "✅" },
       { label: "PDF guides", free: "Free preview", premium: "✅ Included" },
       { label: "Concept maps", free: "Free preview", premium: "✅ Included" },
       { label: "Exam scenarios", free: "Some scenarios", premium: "✅ All included" },
-      { label: "AI Tutor", free: "Limited", premium: "✅ Unlimited" },
+      { label: "AI Tutor", free: "General assistant", premium: "✅ Tutor on your question" },
     ],
     guaranteeTitle: "Clear pricing and secure checkout",
     guaranteeDesc: "Monthly: 7 days free and no charge today. Annual: €59.90 charged today for 12 months. Manage your subscription online.",
@@ -331,13 +305,6 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Does Premium cover every certification?", answer: "Yes. Premium unlocks the Premium resources available across the catalog, not just one certification." },
     ],
     explanationsUsedTemplate: "You've already used {used} of your {limit} free explanations.",
-    testimonialsTitle: "Those who use it, recommend it",
-    testimonials: [
-      // TODO-SOCIAL-PROOF: replace with a real testimonial
-      { text: "[TODO: real testimonial]", name: "[TODO: real name]", cert: "[TODO: real certification]" },
-      { text: "[TODO: real testimonial]", name: "[TODO: real name]", cert: "[TODO: real certification]" },
-      { text: "[TODO: real testimonial]", name: "[TODO: real name]", cert: "[TODO: real certification]" },
-    ],
     businessBannerTitle: "Looking for a plan for your team?",
     businessBannerBody: "If you manage an IT team, check out our business plans: a shared progress dashboard for the whole team and a single company invoice.",
     businessBannerCta: "See business plans",
@@ -352,13 +319,11 @@ const COPY: Record<Lang, CopyEntry> = {
       "Explications détaillées pour comprendre chaque erreur",
       "Guides PDF et cartes conceptuelles complètes inclus",
       "Révision ciblée de vos réponses incorrectes",
-      "Simulations et Tutor IA sans les limites du plan gratuit",
+      "Mock Review de vos examens blancs et Tutor IA qui connaît la question en cours",
     ],
-    // TODO-SOCIAL-PROOF: remplacer par le nombre réel d'utilisateurs actifs
-    socialProofLine: "[TODO : nombre réel d'utilisateurs] personnes se préparent avec CertifyQuiz",
     plans: [
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
-      { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "Paiement unique pour 12 mois", badge: "Économisez 50%", popular: true },
+      { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "Paiement unique pour 12 mois", badge: "Économisez 50%", equivalent: "≈ 4,99€/mois", popular: true },
     ],
     cta: "Commencer Premium",
     ctaLoading: "Ouverture du checkout...",
@@ -374,12 +339,11 @@ const COPY: Record<Lang, CopyEntry> = {
     resumeManual: "Vous êtes connecté ! Appuyez sur le bouton pour passer au paiement sécurisé.",
     resumeExpired: "Votre session a expiré. Reconnectez-vous et appuyez sur le bouton Premium.",
     pizzaLine: "Choisissez le mensuel pour essayer 7 jours sans débit, ou économisez 50% avec l'annuel.",
-    urgencyLine: "Tous les outils Premium fonctionnent ensemble : pratique, compréhension des erreurs et révision ciblée.",
     finalLine: "Choisissez l'offre adaptée au temps qu'il vous reste avant l'examen.",
     popularLabel: "Le plus populaire",
     features: [
       { h: "Explications complètes", p: "Débloquez toutes les explications pour vraiment comprendre vos erreurs." },
-      { h: "Mode examen réel", p: "Entraînez-vous dans des conditions plus proches de l'examen réel." },
+      { h: "Mock Review", p: "Après chaque examen blanc, revoyez chaque question avec votre réponse et la bonne réponse pour voir où vous avez perdu des points." },
       { h: "Révision des erreurs", p: "Revenez sur vos erreurs et concentrez-vous sur vos points faibles." },
       { h: "Guides et cartes inclus", p: "Utilisez toutes les ressources de votre certification pour réviser entre les sessions." },
     ],
@@ -389,12 +353,12 @@ const COPY: Record<Lang, CopyEntry> = {
     tablePremium: "Premium",
     tableRows: [
       { label: "Explications des erreurs", free: "10 gratuites", premium: "✅ Illimitées" },
-      { label: "Mode examen réel", free: "❌", premium: "✅" },
+      { label: "Mock Exam", free: "Score final", premium: "✅ Avec Mock Review" },
       { label: "Révision des erreurs", free: "❌", premium: "✅" },
       { label: "Guides PDF", free: "Aperçu gratuit", premium: "✅ Inclus" },
       { label: "Cartes conceptuelles", free: "Aperçu gratuit", premium: "✅ Incluses" },
       { label: "Scénarios d'examen", free: "Quelques scénarios", premium: "✅ Tous inclus" },
-      { label: "AI Tutor", free: "Limité", premium: "✅ Illimité" },
+      { label: "AI Tutor", free: "Assistant général", premium: "✅ Tuteur sur votre question" },
     ],
     guaranteeTitle: "Tarifs clairs et paiement sécurisé",
     guaranteeDesc: "Mensuel : 7 jours gratuits sans débit aujourd'hui. Annuel : 59,90€ débités aujourd'hui pour 12 mois. Gérez votre abonnement en ligne.",
@@ -406,16 +370,116 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Premium couvre-t-il toutes les certifications ?", answer: "Oui. Premium débloque les ressources Premium disponibles dans tout le catalogue." },
     ],
     explanationsUsedTemplate: "Vous avez déjà utilisé {used} de vos {limit} explications gratuites.",
-    testimonialsTitle: "Ceux qui l'utilisent le recommandent",
-    testimonials: [
-      // TODO-SOCIAL-PROOF: remplacer par un témoignage réel
-      { text: "[TODO : témoignage réel]", name: "[TODO : nom réel]", cert: "[TODO : certification réelle]" },
-      { text: "[TODO : témoignage réel]", name: "[TODO : nom réel]", cert: "[TODO : certification réelle]" },
-      { text: "[TODO : témoignage réel]", name: "[TODO : nom réel]", cert: "[TODO : certification réelle]" },
-    ],
     businessBannerTitle: "Vous cherchez une offre pour votre équipe ?",
     businessBannerBody: "Si vous gérez une équipe IT, découvrez nos offres entreprises : tableau de bord de progression partagé pour toute l'équipe et facture unique.",
     businessBannerCta: "Découvrir les offres entreprises",
+  },
+};
+
+// Copy della pagina commerciale oltre al listino: percorso studio -> acquisto, esempio, fiducia.
+// Solo fatti verificabili nel prodotto: nessun numero di utenti, recensione o garanzia inventati.
+type StoryEntry = {
+  journeyTitle: string;
+  journeyIntro: string;
+  steps: { tag: string; premiumTag: boolean; title: string; body: string }[];
+  exampleLabel: string;
+  exampleQuestion: string;
+  exampleYourAnswer: string;
+  exampleCorrect: string;
+  exampleExplanation: string;
+  exampleNote: string;
+  trust: string[];
+  trustLabel: string;
+  stickyLabel: string;
+  stickyCtaAnon: string;
+  tableYes: string;
+  tableNo: string;
+};
+
+const STORY: Record<Lang, StoryEntry> = {
+  it: {
+    journeyTitle: "Da ogni simulazione a un ripasso più mirato",
+    journeyIntro: "Non devi indovinare cosa ripassare: usa i risultati per concentrarti sui tuoi punti deboli. Ecco dove finisce il piano gratuito e cosa aggiunge Premium.",
+    steps: [
+      { tag: "Gratis", premiumTag: false, title: "Allenati", body: "Affronta quiz e Mock Exam con punteggio della certificazione che stai preparando: si parte senza pagare." },
+      { tag: "10 gratis, poi Premium", premiumTag: true, title: "Comprendi gli errori", body: "Leggi la spiegazione delle risposte sbagliate: 10 sono gratuite, con Premium sono illimitate." },
+      { tag: "Premium", premiumTag: true, title: "Ripassa con Premium", body: "Ritrova le domande sbagliate nel Ripasso errori e usa guide PDF e mappe complete per colmare le lacune." },
+    ],
+    exampleLabel: "Esempio illustrativo",
+    exampleQuestion: "Quale protocollo traduce un nome di dominio in un indirizzo IP?",
+    exampleYourAnswer: "La tua risposta: ARP",
+    exampleCorrect: "Risposta corretta: DNS",
+    exampleExplanation: "Il DNS risolve i nomi in indirizzi IP. ARP lavora invece nella rete locale: associa un indirizzo IP a un indirizzo MAC.",
+    exampleNote: "Con Premium le spiegazioni non finiscono dopo la decima e le domande sbagliate tornano nel Ripasso errori.",
+    trustLabel: "Informazioni utili prima di pagare",
+    trust: ["Pagamento sicuro con Stripe", "Disdici online dal tuo profilo", "Prezzi e addebiti chiari prima di pagare", "Disponibile in italiano, inglese, francese e spagnolo"],
+    stickyLabel: "Riepilogo del piano scelto",
+    stickyCtaAnon: "Accedi o registrati",
+    tableYes: "Incluso",
+    tableNo: "Non incluso",
+  },
+  es: {
+    journeyTitle: "De cada simulacro a un repaso más preciso",
+    journeyIntro: "No tienes que adivinar qué repasar: usa tus resultados para centrarte en tus puntos débiles. Aquí ves hasta dónde llega el plan gratuito y qué añade Premium.",
+    steps: [
+      { tag: "Gratis", premiumTag: false, title: "Practica", body: "Haz cuestionarios y Mock Exam con puntuación de la certificación que preparas: empiezas sin pagar." },
+      { tag: "10 gratis, luego Premium", premiumTag: true, title: "Entiende tus errores", body: "Lee la explicación de las respuestas incorrectas: 10 son gratuitas y con Premium son ilimitadas." },
+      { tag: "Premium", premiumTag: true, title: "Repasa con Premium", body: "Encuentra tus preguntas falladas en el Repaso de errores y usa guías PDF y mapas completos para cubrir las lagunas." },
+    ],
+    exampleLabel: "Ejemplo ilustrativo",
+    exampleQuestion: "¿Qué protocolo traduce un nombre de dominio en una dirección IP?",
+    exampleYourAnswer: "Tu respuesta: ARP",
+    exampleCorrect: "Respuesta correcta: DNS",
+    exampleExplanation: "El DNS resuelve nombres en direcciones IP. ARP, en cambio, trabaja en la red local: asocia una dirección IP con una dirección MAC.",
+    exampleNote: "Con Premium las explicaciones no se acaban en la décima y las preguntas falladas vuelven en el Repaso de errores.",
+    trustLabel: "Información útil antes de pagar",
+    trust: ["Pago seguro con Stripe", "Cancela online desde tu perfil", "Precios y cobros claros antes de pagar", "Disponible en italiano, inglés, francés y español"],
+    stickyLabel: "Resumen del plan elegido",
+    stickyCtaAnon: "Accede o regístrate",
+    tableYes: "Incluido",
+    tableNo: "No incluido",
+  },
+  en: {
+    journeyTitle: "From every mock exam to more focused revision",
+    journeyIntro: "No need to guess what to revise: use your results to focus on weaker areas. Here is where the free plan ends and what Premium adds.",
+    steps: [
+      { tag: "Free", premiumTag: false, title: "Practise", body: "Take quizzes and scored Mock Exams for the certification you are preparing: you start without paying." },
+      { tag: "10 free, then Premium", premiumTag: true, title: "Understand mistakes", body: "Read the explanation for wrong answers: 10 are free, with Premium they are unlimited." },
+      { tag: "Premium", premiumTag: true, title: "Revise with Premium", body: "Find your wrong answers again in Error review and use full PDF guides and maps to close the gaps." },
+    ],
+    exampleLabel: "Illustrative example",
+    exampleQuestion: "Which protocol translates a domain name into an IP address?",
+    exampleYourAnswer: "Your answer: ARP",
+    exampleCorrect: "Correct answer: DNS",
+    exampleExplanation: "DNS resolves names into IP addresses. ARP works on the local network instead: it maps an IP address to a MAC address.",
+    exampleNote: "With Premium the explanations do not stop after the tenth and wrong answers come back in Error review.",
+    trustLabel: "Useful information before you pay",
+    trust: ["Secure payment with Stripe", "Cancel online from your profile", "Clear prices and charges before you pay", "Available in English, Italian, French and Spanish"],
+    stickyLabel: "Selected plan summary",
+    stickyCtaAnon: "Log in or sign up",
+    tableYes: "Included",
+    tableNo: "Not included",
+  },
+  fr: {
+    journeyTitle: "De chaque examen blanc à une révision plus ciblée",
+    journeyIntro: "Plus besoin de deviner quoi réviser : utilisez vos résultats pour cibler vos points faibles. Voici où s'arrête le plan gratuit et ce que Premium ajoute.",
+    steps: [
+      { tag: "Gratuit", premiumTag: false, title: "Entraînez-vous", body: "Faites des quiz et des Mock Exam notés pour votre certification : vous commencez sans payer." },
+      { tag: "10 gratuites, puis Premium", premiumTag: true, title: "Comprenez vos erreurs", body: "Lisez l'explication des mauvaises réponses : 10 sont gratuites, avec Premium elles sont illimitées." },
+      { tag: "Premium", premiumTag: true, title: "Révisez avec Premium", body: "Retrouvez vos mauvaises réponses dans la Révision des erreurs et utilisez guides PDF et cartes complets pour combler vos lacunes." },
+    ],
+    exampleLabel: "Exemple illustratif",
+    exampleQuestion: "Quel protocole traduit un nom de domaine en adresse IP ?",
+    exampleYourAnswer: "Votre réponse : ARP",
+    exampleCorrect: "Bonne réponse : DNS",
+    exampleExplanation: "Le DNS résout les noms en adresses IP. ARP, lui, travaille sur le réseau local : il associe une adresse IP à une adresse MAC.",
+    exampleNote: "Avec Premium, les explications ne s'arrêtent pas à la dixième et vos erreurs reviennent dans la Révision des erreurs.",
+    trustLabel: "Informations utiles avant de payer",
+    trust: ["Paiement sécurisé avec Stripe", "Annulez en ligne depuis votre profil", "Tarifs et débits clairs avant de payer", "Disponible en français, anglais, italien et espagnol"],
+    stickyLabel: "Récapitulatif de l'offre choisie",
+    stickyCtaAnon: "Connexion ou inscription",
+    tableYes: "Inclus",
+    tableNo: "Non inclus",
   },
 };
 
@@ -440,36 +504,28 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3">
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
         return (
           <div key={plan.id} className="relative">
-            {/* Badge "Più popolare" sopra la card — solo annuale */}
-            {plan.popular && (
-              <div className="absolute -top-3 left-0 right-0 flex justify-center">
-                <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-[10px] font-bold text-white whitespace-nowrap">
-                  ⭐ {popularLabel}
-                </span>
-              </div>
-            )}
             <button
               type="button"
               onClick={() => onChange(plan.id)}
               aria-pressed={isSelected}
-              className={`relative w-full rounded-2xl border-2 p-4 text-left transition ${
+              className={`relative h-full w-full rounded-2xl border-2 p-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 sm:p-4 ${
                 plan.popular && !isSelected
                   ? "border-emerald-400 bg-white text-gray-900 hover:border-emerald-500"
                   : isSelected
                   ? "border-black bg-black text-white"
                   : "border-gray-200 bg-white text-gray-900 hover:border-gray-400"
-              } ${plan.popular ? "pt-5" : ""}`}
+              }`}
             >
               {activeBadge && (
                 <span className={`absolute -top-2.5 left-3 rounded-full px-2 py-0.5 text-xs font-semibold ${
                   plan.trialBadge
-                    ? isSelected ? "bg-emerald-400 text-white" : "bg-emerald-500 text-white"
+                    ? isSelected ? "bg-emerald-300 text-emerald-950" : "bg-emerald-700 text-white"
                     : isSelected ? "bg-white text-black" : "bg-black text-white"
                 }`}>
                   {activeBadge}
@@ -477,9 +533,19 @@ function PlanSelector({
               )}
               <div className="text-sm font-semibold">{plan.label}</div>
               <div className="mt-1 text-lg font-bold">{plan.price}</div>
-              <div className={`text-xs mt-0.5 ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
+              <div className={`mt-0.5 text-xs ${isSelected ? "text-gray-300" : "text-gray-600"}`}>
                 {plan.perMonth}
               </div>
+              {plan.equivalent && (
+                <div className={`mt-0.5 text-xs font-semibold ${isSelected ? "text-emerald-300" : "text-emerald-700"}`}>
+                  {plan.equivalent}
+                </div>
+              )}
+              {plan.popular && (
+                <div className={`mt-2 text-xs font-bold ${isSelected ? "text-white" : "text-emerald-800"}`}>
+                  ⭐ {popularLabel}
+                </div>
+              )}
             </button>
           </div>
         );
@@ -516,7 +582,7 @@ function CtaBlock({
   return (
     <div className="mt-5">
       {isMonthly && (
-        <p className="mb-2 text-sm font-medium text-emerald-700">
+        <p className="mb-2 text-sm font-medium text-emerald-800">
           🎁 {isPromoLink ? t.promoNote : t.trialNote}
         </p>
       )}
@@ -524,12 +590,12 @@ function CtaBlock({
         type="button"
         onClick={onCta}
         disabled={isLoading}
-        className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+        className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
       >
         {isLoading ? t.ctaLoading : t.cta}
       </button>
       {!(isMonthly && isPromoLink) && (
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-600">
           {isMonthly ? t.subCtaMonthly : t.subCta}
         </p>
       )}
@@ -552,62 +618,71 @@ function FeatureCard({ title, desc, variant }: { title: string; desc: string; va
   );
 }
 
-function ComparisonTable({ t, onCta, isLoading, activePlan, isPromoLink }: { t: CopyEntry; onCta: () => void; isLoading: boolean; activePlan: PlanOption; isPromoLink: boolean }) {
+function TableCell({ value, yes, no }: { value: string; yes: string; no: string }) {
+  const isYes = value.startsWith("✅");
+  const isNo = value.startsWith("❌");
+  const text = value.replace(/^(✅|❌)\s*/, "");
+  return (
+    <>
+      {isYes && <span aria-hidden="true" className="mr-1">✓</span>}
+      {isNo && <span aria-hidden="true">✕</span>}
+      {(isYes || isNo) && <span className="sr-only">{isYes ? yes : no}{text ? ": " : ""}</span>}
+      {text}
+    </>
+  );
+}
+
+function ComparisonTable({ t, s, onCta, isLoading, activePlan, isPromoLink }: { t: CopyEntry; s: StoryEntry; onCta: () => void; isLoading: boolean; activePlan: PlanOption; isPromoLink: boolean }) {
   const isMonthly = activePlan.id === "premium_monthly";
   return (
-    <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200">
-      <div className="bg-gray-50 px-6 py-4 text-lg font-semibold text-gray-900">{t.tableTitle}</div>
+    <section className="mt-8 overflow-hidden rounded-2xl border border-gray-200" aria-labelledby="premium-compare">
+      <h2 id="premium-compare" className="bg-gray-50 px-4 py-4 text-lg font-semibold text-gray-900 sm:px-6">{t.tableTitle}</h2>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200">
-              <th className="px-6 py-3 text-left font-medium text-gray-600">{t.tableFeature}</th>
-              <th className="px-6 py-3 text-center font-medium text-gray-600">{t.tableFree}</th>
-              <th className="px-6 py-3 text-center font-semibold text-black">{t.tablePremium}</th>
+              <th scope="col" className="px-3 py-3 text-left font-medium text-gray-700 sm:px-6">{t.tableFeature}</th>
+              <th scope="col" className="px-3 py-3 text-center font-medium text-gray-700 sm:px-6">{t.tableFree}</th>
+              <th scope="col" className="bg-emerald-50 px-3 py-3 text-center font-semibold text-black sm:px-6">{t.tablePremium}</th>
             </tr>
           </thead>
           <tbody>
             {t.tableRows.map((row, i) => (
               <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                <td className="px-6 py-3 text-gray-800">{row.label}</td>
-                <td className="px-6 py-3 text-center text-gray-500">{row.free}</td>
-                <td className="px-6 py-3 text-center font-medium text-emerald-700">{row.premium}</td>
+                <th scope="row" className="px-3 py-3 text-left font-normal text-gray-800 sm:px-6">{row.label}</th>
+                <td className="px-3 py-3 text-center text-gray-700 sm:px-6"><TableCell value={row.free} yes={s.tableYes} no={s.tableNo} /></td>
+                <td className="bg-emerald-50/60 px-3 py-3 text-center font-medium text-emerald-800 sm:px-6"><TableCell value={row.premium} yes={s.tableYes} no={s.tableNo} /></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div className="border-t border-gray-200 px-6 py-4 text-center">
+      <div className="border-t border-gray-200 px-4 py-4 text-center sm:px-6">
         {isMonthly && (
-          <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
+          <p className="mb-2 text-sm font-medium text-emerald-800">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
         )}
         <button
           type="button"
           onClick={onCta}
           disabled={isLoading}
-          className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
         >
           {isLoading ? t.ctaLoading : t.cta}
         </button>
         {isMonthly && !isPromoLink && (
-          <p className="mt-2 text-xs text-gray-500">{t.subCtaMonthly}</p>
+          <p className="mt-2 text-xs text-gray-600">{t.subCtaMonthly}</p>
         )}
       </div>
     </section>
   );
 }
 
-function Guarantee({ t, isPromoLink }: { t: CopyEntry; isPromoLink: boolean }) {
+function PriceClarity({ t, isPromoLink }: { t: CopyEntry; isPromoLink: boolean }) {
   return (
-    <div className="mt-6 flex items-start gap-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-6 shadow-sm">
-      <div className="text-4xl">🛡️</div>
-      <div>
-        <div className="text-lg font-bold text-emerald-900">{t.guaranteeTitle}</div>
-        {!isPromoLink && (
-          <p className="mt-1 text-sm text-emerald-800">{t.guaranteeDesc}</p>
-        )}
-      </div>
-    </div>
+    <section className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-6" aria-labelledby="premium-price-clarity">
+      <h2 id="premium-price-clarity" className="text-lg font-bold text-emerald-950">{t.guaranteeTitle}</h2>
+      {!isPromoLink && <p className="mt-1 text-sm text-emerald-900">{t.guaranteeDesc}</p>}
+    </section>
   );
 }
 
@@ -649,6 +724,111 @@ function BusinessBanner({ t, href }: { t: CopyEntry; href: string }) {
   );
 }
 
+function TrustStrip({ s }: { s: StoryEntry }) {
+  return (
+    <ul aria-label={s.trustLabel} className="mt-5 grid gap-x-6 gap-y-1.5 text-sm text-gray-700 sm:grid-cols-2">
+      {s.trust.map((item) => (
+        <li key={item} className="flex items-start gap-2">
+          <span aria-hidden="true" className="mt-0.5 text-emerald-700">✓</span>
+          <span>{item}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ValueJourney({ s, children }: { s: StoryEntry; children: React.ReactNode }) {
+  return (
+    <section className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-6 sm:px-7 sm:py-7" aria-labelledby="premium-how-it-works">
+      <h2 id="premium-how-it-works" className="text-2xl font-semibold tracking-tight text-gray-900">{s.journeyTitle}</h2>
+      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-700">{s.journeyIntro}</p>
+      <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        {s.steps.map((step, i) => (
+          <li key={step.title} className="rounded-xl border border-gray-200 bg-white p-5">
+            <div className="flex items-center justify-between gap-2">
+              <span aria-hidden="true" className="text-xs font-bold tracking-widest text-emerald-800">{String(i + 1).padStart(2, "0")}</span>
+              <span
+                className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  step.premiumTag ? "bg-emerald-100 text-emerald-900" : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {step.tag}
+              </span>
+            </div>
+            <h3 className="mt-3 text-base font-semibold text-gray-900">{step.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-gray-700">{step.body}</p>
+          </li>
+        ))}
+      </ol>
+
+      {/* Esempio dimostrativo, dichiarato come tale: nessun dato reale di utenti. */}
+      <figure className="mt-6 rounded-xl border border-dashed border-gray-300 bg-white p-4 sm:p-5">
+        <figcaption className="text-xs font-semibold uppercase tracking-wide text-gray-600">{s.exampleLabel}</figcaption>
+        <p className="mt-2 text-sm font-semibold text-gray-900">{s.exampleQuestion}</p>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+            <span aria-hidden="true">✕ </span>{s.exampleYourAnswer}
+          </p>
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+            <span aria-hidden="true">✓ </span>{s.exampleCorrect}
+          </p>
+        </div>
+        <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-sm leading-relaxed text-gray-800">{s.exampleExplanation}</p>
+        <p className="mt-3 text-sm font-medium text-emerald-800">{s.exampleNote}</p>
+      </figure>
+
+      <div className="mt-6 max-w-xl">{children}</div>
+    </section>
+  );
+}
+
+// Barra CTA per smartphone: compare quando la CTA dell'hero esce dallo schermo e
+// sparisce quando si raggiunge (o si supera) la CTA finale. Usa lo stesso checkout.
+function StickyCtaBar({
+  t,
+  s,
+  isAnonymous,
+  activePlan,
+  isPromoLink,
+  isLoading,
+  onCta,
+}: {
+  t: CopyEntry;
+  s: StoryEntry;
+  isAnonymous: boolean;
+  activePlan: PlanOption;
+  isPromoLink: boolean;
+  isLoading: boolean;
+  onCta: () => void;
+}) {
+  const summary = [
+    activePlan.id === "premium_monthly" && !isPromoLink ? activePlan.trialBadge : null,
+    activePlan.perMonth,
+  ].filter(Boolean).join(" · ");
+  return (
+    <div
+      role="region"
+      aria-label={s.stickyLabel}
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(0,0,0,0.08)] backdrop-blur md:hidden"
+    >
+      <div className="mx-auto flex max-w-xl items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold text-gray-900">{t.badge} · {activePlan.label}</div>
+          <div className="text-xs leading-tight text-gray-700">{summary}</div>
+        </div>
+        <button
+          type="button"
+          onClick={onCta}
+          disabled={isLoading}
+          className="inline-flex min-h-12 max-w-[55%] shrink-0 items-center justify-center rounded-xl bg-black px-4 py-2 text-center text-sm font-semibold leading-tight text-white transition hover:opacity-90 disabled:opacity-60"
+        >
+          {isLoading ? t.ctaLoading : isAnonymous ? s.stickyCtaAnon : t.cta}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Componente principale ───────────────────────────────────────
 
 function PremiumPricingView({ forceLang }: Props) {
@@ -679,11 +859,41 @@ function PremiumPricingView({ forceLang }: Props) {
   // Visitatore non autenticato: il pulsante dice chiaramente che serve un account.
   const isAnonymous = !authLoading && !user;
   const copy = COPY[lang];
+  const story = STORY[lang];
   const t: CopyEntry = isAnonymous
     ? { ...copy, cta: copy.ctaAnon, subCta: `${copy.anonNote} ${copy.subCta}`, subCtaMonthly: `${copy.anonNote} ${copy.subCtaMonthly}` }
     : copy;
   const activePlan = t.plans.find((p) => p.id === selectedPlan) ?? t.plans[t.plans.length - 1];
   const isMonthly = selectedPlan === "premium_monthly";
+
+  // Barra CTA mobile: visibile solo se la CTA dell'hero e' fuori schermo e la CTA finale non e' ancora stata raggiunta.
+  const heroCtaRef = useRef<HTMLDivElement | null>(null);
+  const finalCtaRef = useRef<HTMLDivElement | null>(null);
+  const [heroCtaOut, setHeroCtaOut] = useState(false);
+  const [finalCtaReached, setFinalCtaReached] = useState(false);
+  useEffect(() => {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const vh = window.innerHeight;
+      const hero = heroCtaRef.current?.getBoundingClientRect();
+      const fin = finalCtaRef.current?.getBoundingClientRect();
+      setHeroCtaOut(!!hero && (hero.bottom <= 0 || hero.top >= vh));
+      setFinalCtaReached(!!fin && fin.top < vh);
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+    };
+  }, []);
+  const showStickyCta = heroCtaOut && !finalCtaReached;
 
   useEffect(() => {
     if (detectTwa() || authLoading) return;
@@ -959,20 +1169,22 @@ function PremiumPricingView({ forceLang }: Props) {
     }
   }
 
+  const startCheckout = () => startPremiumCheckout();
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 pt-8 pb-28 md:py-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
 
         {/* Hero */}
-        <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-6 py-8">
+        <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-4 py-8 sm:px-6">
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="h-2 w-2 rounded-full bg-emerald-600" />
               {t.badge}
             </div>
           </div>
 
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="mt-4 max-w-3xl text-2xl font-semibold leading-tight tracking-tight text-gray-900 sm:text-4xl">
             {t.title}
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-gray-700 sm:text-base">{t.subtitle}</p>
@@ -980,7 +1192,7 @@ function PremiumPricingView({ forceLang }: Props) {
           <ul className="mt-4 max-w-2xl space-y-1.5">
             {t.lossPoints.map((point, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                <span className="mt-0.5 text-emerald-600">✓</span>
+                <span aria-hidden="true" className="mt-0.5 text-emerald-700">✓</span>
                 <span>{point}</span>
               </li>
             ))}
@@ -988,6 +1200,8 @@ function PremiumPricingView({ forceLang }: Props) {
 
           {/* Selettore piani */}
           <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
+
+          {!isPromoLink && <p className="mt-3 max-w-3xl text-sm text-gray-700">{t.pizzaLine}</p>}
 
           {notice && (
             <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
@@ -1004,82 +1218,37 @@ function PremiumPricingView({ forceLang }: Props) {
           )}
 
           {selectedPlan === "premium_monthly" && !isPromoLink && (
-            <p role="note" className="mt-3 max-w-3xl text-sm text-gray-700">{t.trialPdfNotice}</p>
+            <p role="note" className="mt-3 max-w-3xl border-l-2 border-gray-300 pl-3 text-xs leading-relaxed text-gray-700 sm:text-sm">{t.trialPdfNotice}</p>
           )}
 
           {/* CTA principale */}
-          <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
-
-          <div className="mt-4 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-sm font-semibold text-amber-900">{t.urgencyLine}</p>
-            {!isPromoLink && (
-              <p className="mt-2 text-sm text-amber-800">{t.pizzaLine}</p>
-            )}
+          <div ref={heroCtaRef}>
+            <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startCheckout} />
           </div>
+
+          <TrustStrip s={story} />
         </section>
 
-        <div className="px-6 py-6">
-          <Guarantee t={t} isPromoLink={isPromoLink} />
+        <div className="px-4 py-6 sm:px-6">
+          {/* Percorso di valore: dallo studio gratuito a cio' che aggiunge Premium. */}
+          <ValueJourney s={story}>
+            <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={startCheckout} />
+          </ValueJourney>
 
-          {/* Percorso di valore: mostra il beneficio prima di chiedere l'acquisto. */}
-          <section className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 px-5 py-7 sm:px-7" aria-labelledby="premium-how-it-works">
-            <h2 id="premium-how-it-works" className="text-2xl font-semibold tracking-tight text-gray-900">
-              {{ it: "Da ogni simulazione a un ripasso più mirato", es: "De cada simulacro a un repaso más preciso", en: "From every mock exam to more focused revision", fr: "De chaque examen blanc à une révision plus ciblée" }[lang]}
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-gray-700">
-              {{ it: "Non devi indovinare cosa ripassare: usa i risultati per concentrarti sui tuoi punti deboli.", es: "No tienes que adivinar qué repasar: usa tus resultados para centrarte en tus puntos débiles.", en: "No need to guess what to revise: use your results to focus on weaker areas.", fr: "Plus besoin de deviner quoi réviser : utilisez vos résultats pour cibler vos points faibles." }[lang]}
-            </p>
-            <ol className="mt-6 grid gap-4 md:grid-cols-3">
-              {[
-                {
-                  n: "01",
-                  title: { it: "Allenati", es: "Practica", en: "Practise", fr: "Entraînez-vous" }[lang],
-                  body: { it: "Affronta quiz e simulazioni della certificazione che stai preparando.", es: "Haz cuestionarios y simulacros de la certificación que preparas.", en: "Take quizzes and mock exams for the certification you are preparing.", fr: "Faites des quiz et des examens blancs pour votre certification." }[lang],
-                },
-                {
-                  n: "02",
-                  title: { it: "Comprendi gli errori", es: "Entiende tus errores", en: "Understand mistakes", fr: "Comprenez vos erreurs" }[lang],
-                  body: { it: "Consulta le spiegazioni disponibili e individua gli argomenti da migliorare.", es: "Consulta las explicaciones disponibles e identifica qué temas mejorar.", en: "Read the available explanations and identify topics to improve.", fr: "Consultez les explications disponibles et identifiez les points à améliorer." }[lang],
-                },
-                {
-                  n: "03",
-                  title: { it: "Ripassa con Premium", es: "Repasa con Premium", en: "Revise with Premium", fr: "Révisez avec Premium" }[lang],
-                  body: { it: "Ritorna sulle risposte sbagliate con il ripasso mirato e le risorse incluse.", es: "Vuelve a tus respuestas incorrectas con repasos específicos y recursos incluidos.", en: "Revisit incorrect answers with targeted revision and included resources.", fr: "Revenez sur vos mauvaises réponses avec une révision ciblée et les ressources incluses." }[lang],
-                },
-              ].map((step) => (
-                <li key={step.n} className="rounded-xl border border-gray-200 bg-white p-5">
-                  <span className="text-xs font-bold tracking-widest text-emerald-700">{step.n}</span>
-                  <h3 className="mt-2 text-base font-semibold text-gray-900">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-700">{step.body}</p>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-6 max-w-xl">
-              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
+          {/* Cosa include */}
+          <section className="mt-8" aria-labelledby="premium-features">
+            <h2 id="premium-features" className="mb-3 text-lg font-semibold text-gray-900">{t.featuresTitle}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <FeatureCard title={t.features[0].h} desc={t.features[0].p} variant="blue" />
+              <FeatureCard title={t.features[1].h} desc={t.features[1].p} variant="purple" />
+              <FeatureCard title={t.features[2].h} desc={t.features[2].p} variant="amber" />
+              <FeatureCard title={t.features[3].h} desc={t.features[3].p} variant="green" />
             </div>
           </section>
 
-          {/* Features */}
-          <section className="mt-6 grid gap-6 lg:grid-cols-2">
-            <div className="rounded-2xl border border-gray-200 p-6">
-              <div className="text-lg font-semibold text-gray-900">{t.title}</div>
-              <p className="mt-2 text-sm text-gray-700">{t.subtitle}</p>
-              <CtaBlock t={t} activePlan={activePlan} isLoading={isLoading} isPromoLink={isPromoLink} onCta={() => startPremiumCheckout()} />
-              <p className="mt-4 text-sm font-medium text-gray-900">{t.finalLine}</p>
-            </div>
+          <ComparisonTable t={t} s={story} onCta={startCheckout} isLoading={isLoading} activePlan={activePlan} isPromoLink={isPromoLink} />
 
-            <div>
-              <div className="mb-3 text-lg font-semibold text-gray-900">{t.featuresTitle}</div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <FeatureCard title={t.features[0].h} desc={t.features[0].p} variant="blue" />
-                <FeatureCard title={t.features[1].h} desc={t.features[1].p} variant="purple" />
-                <FeatureCard title={t.features[2].h} desc={t.features[2].p} variant="amber" />
-                <FeatureCard title={t.features[3].h} desc={t.features[3].p} variant="green" />
-              </div>
-            </div>
-          </section>
-
-          <ComparisonTable t={t} onCta={() => startPremiumCheckout()} isLoading={isLoading} activePlan={activePlan} isPromoLink={isPromoLink} />
+          <PriceClarity t={t} isPromoLink={isPromoLink} />
 
           <PricingFaq t={t} />
 
@@ -1088,23 +1257,23 @@ function PremiumPricingView({ forceLang }: Props) {
           <BusinessBanner t={t} href={BUSINESS_HREF[lang]} />
 
           {/* CTA finale */}
-          <div className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+          <div ref={finalCtaRef} className="mt-8 rounded-2xl border border-gray-200 bg-gray-50 p-5 text-center sm:p-6">
             <p className="text-base font-semibold text-gray-900">{t.finalLine}</p>
-              <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
+            <PlanSelector plans={t.plans} selected={selectedPlan} onChange={selectPlan} popularLabel={t.popularLabel} />
             <div className="mt-5 flex flex-col items-center">
               {isMonthly && (
-                <p className="mb-2 text-sm font-medium text-emerald-700">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
+                <p className="mb-2 text-sm font-medium text-emerald-800">🎁 {isPromoLink ? t.promoNote : t.trialNote}</p>
               )}
               <button
                 type="button"
-                onClick={() => startPremiumCheckout()}
+                onClick={startCheckout}
                 disabled={isLoading}
-                className="inline-flex w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto"
               >
                 {isLoading ? t.ctaLoading : t.cta}
               </button>
               {!(isMonthly && isPromoLink) && (
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-600">
                   {isMonthly ? t.subCtaMonthly : t.subCta}
                 </p>
               )}
@@ -1112,6 +1281,10 @@ function PremiumPricingView({ forceLang }: Props) {
           </div>
         </div>
       </div>
+
+      {showStickyCta && (
+        <StickyCtaBar t={t} s={story} isAnonymous={isAnonymous} activePlan={activePlan} isPromoLink={isPromoLink} isLoading={isLoading} onCta={startCheckout} />
+      )}
     </main>
   );
 }
