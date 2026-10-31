@@ -373,3 +373,114 @@ test.describe("redirect e parametri ostili", () => {
     });
   }
 });
+
+// Eventi diagnostici del funnel: pricing_plan_selected (un evento per scelta) e checkout_failed (solo nel ramo di errore).
+// Vedi PremiumComingSoonView.tsx: nessun errore grezzo, URL Stripe o dato personale deve uscire dal browser.
+test.describe("eventi diagnostici pricing_plan_selected / checkout_failed", () => {
+  const noPersonalData = (m: Mock) => {
+    const wire = JSON.stringify(m.funnel) + JSON.stringify(m.checkoutPosts);
+    for (const needle of ["example.test", "e2e-user", TOKEN, "stripe.test", "cs_test_stub", "Failed", "mock"]) {
+      expect(wire, `"${needle}" non deve comparire negli eventi`).not.toContain(needle);
+    }
+    for (const e of m.funnel) {
+      for (const k of ["email", "username", "user_id", "token", "error", "message"]) expect(Object.keys(e)).not.toContain(k);
+    }
+  };
+
+  test("scelta del piano: un solo evento per azione, con piano, certificazione e origine", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    await page.goto(PRICING);
+    await expect(page.getByRole("button", { name: /start premium/i }).first()).toBeVisible();
+    expect(events(m, "pricing_plan_selected"), "nessun evento al solo caricamento della pagina").toHaveLength(0);
+
+    await page.getByRole("button", { name: /annual/i }).first().click();
+    await expect.poll(() => events(m, "pricing_plan_selected").length).toBe(1);
+    await page.getByRole("button", { name: /monthly/i }).first().click();
+    await expect.poll(() => events(m, "pricing_plan_selected").length).toBe(2);
+    await page.waitForTimeout(600);
+
+    const sel = events(m, "pricing_plan_selected");
+    expect(sel, "un evento per click, nessun duplicato").toHaveLength(2);
+    expect(sel.map((e) => e.plan)).toEqual(["premium_annual", "premium_monthly"]);
+    expect(sel[0]).toMatchObject({ cert_slug: "ccna", lang: "en", paywall_type: "guide" });
+    expect(sel[0].metadata).toEqual({ plan: "premium_annual", source_page: "pricing", origin_cta_id: "guide_gate" });
+    expect(new Set(sel.map((e) => e.event_id)).size, "event_id distinti").toBe(2);
+    expect(m.checkoutPosts, "scegliere il piano non crea checkout").toHaveLength(0);
+    expect(m.unmocked).toEqual([]);
+    noPersonalData(m);
+  });
+
+  test("il piano scelto e l'origine arrivano al checkout senza eventi in piu'", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    await page.goto(PRICING);
+    await page.getByRole("button", { name: /annual/i }).first().click();
+    await page.getByRole("button", { name: /start premium/i }).first().click();
+    await page.waitForURL(STRIPE_URL);
+    expect(events(m, "pricing_plan_selected")).toHaveLength(1);
+    expect(events(m, "checkout_attempted")).toHaveLength(1);
+    expect(events(m, "checkout_failed"), "nessun checkout_failed nel percorso riuscito").toHaveLength(0);
+    expect(m.checkoutPosts).toHaveLength(1);
+    expect(m.checkoutPosts[0]).toMatchObject({ plan: "premium_annual", origin_cert_slug: "ccna", paywall_type: "guide" });
+    noPersonalData(m);
+  });
+
+  test("ripresa dopo il login: il piano ripristinato non e' una nuova scelta (nessun pricing_plan_selected)", async ({ page }) => {
+    const m = await setup(page);
+    await page.goto(PRICING);
+    await page.getByRole("button", { name: /log in or sign up to continue/i }).first().click();
+    await page.waitForURL(/\/login/);
+    await submitLogin(page);
+    await page.waitForURL(STRIPE_URL);
+    expect(events(m, "pricing_plan_selected")).toHaveLength(0);
+    expect(events(m, "checkout_failed")).toHaveLength(0);
+    expect(m.checkoutPosts).toHaveLength(1);
+  });
+
+  test("errore API sul checkout: un solo checkout_failed con categoria fissa, nessun redirect a Stripe", async ({ page }) => {
+    const m = await setup(page, { authed: true, checkoutStatus: 500 });
+    page.on("dialog", (d) => d.dismiss());
+    await page.goto(PRICING);
+    const cta = page.getByRole("button", { name: /start premium/i }).first();
+    await cta.click();
+    await expect.poll(() => events(m, "checkout_failed").length).toBe(1);
+    await expect(cta).toBeEnabled();
+    await page.waitForTimeout(800);
+
+    expect(events(m, "checkout_failed")).toHaveLength(1);
+    expect(m.checkoutPosts).toHaveLength(1);
+    expect(new URL(page.url()).origin, "nessun redirect a Stripe").toBe(new URL(BASE).origin);
+    const failed = events(m, "checkout_failed")[0];
+    expect(failed).toMatchObject({ cert_slug: "ccna", lang: "en", plan: "premium_monthly", paywall_type: "guide" });
+    expect(failed.metadata).toEqual({ failure_stage: "checkout_creation_or_redirect", source_page: "pricing", purchase_type: "subscription" });
+    noPersonalData(m);
+
+    // Riprovare con successo: nessun secondo checkout_failed.
+    m.checkoutStatus = 200;
+    await cta.click();
+    await page.waitForURL(STRIPE_URL);
+    expect(events(m, "checkout_failed")).toHaveLength(1);
+  });
+
+  test("risposta 200 senza URL di pagamento: stesso evento, nessun redirect", async ({ page }) => {
+    const m = await setup(page, { authed: true });
+    await page.route("**/api/backend/billing/create-checkout-session", (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ sessionId: "cs_test_stub" }) })
+    );
+    page.on("dialog", (d) => d.dismiss());
+    await page.goto(PRICING);
+    await page.getByRole("button", { name: /start premium/i }).first().click();
+    await expect.poll(() => events(m, "checkout_failed").length).toBe(1);
+    expect(new URL(page.url()).origin).toBe(new URL(BASE).origin);
+    noPersonalData(m);
+  });
+
+  test("sessione scaduta (401) e host di prova non producono checkout_failed", async ({ page }) => {
+    const m = await setup(page, { checkoutStatus: 401 });
+    await page.goto(PRICING);
+    await page.getByRole("button", { name: /log in or sign up to continue/i }).first().click();
+    await page.waitForURL(/\/login/);
+    await submitLogin(page);
+    await expect(page.getByRole("alert").filter({ hasText: /session expired/i })).toBeVisible();
+    expect(events(m, "checkout_failed"), "401 e' un'autenticazione scaduta, non un errore di checkout").toHaveLength(0);
+  });
+});
