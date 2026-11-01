@@ -38,7 +38,7 @@ type Section = "analytics" | "events" | keyof typeof sections;
 
 export default function AdminClient() {
   const { user, isAdmin, token, loading } = useAuth();
-  const [section, setSection] = useState<Section>("analytics");
+  const [section, setSection] = useState<Section>("events");
 
   if (loading)
     return (
@@ -79,17 +79,17 @@ export default function AdminClient() {
         <nav aria-label="Amministrazione" className={styles.navigation}>
           <button
             type="button"
-            aria-current={section === "analytics" ? "page" : undefined}
-            onClick={() => setSection("analytics")}
-          >
-            Dashboard
-          </button>
-          <button
-            type="button"
             aria-current={section === "events" ? "page" : undefined}
             onClick={() => setSection("events")}
           >
             Funnel Events
+          </button>
+          <button
+            type="button"
+            aria-current={section === "analytics" ? "page" : undefined}
+            onClick={() => setSection("analytics")}
+          >
+            Dashboard
           </button>
           <label>
             Altre funzioni

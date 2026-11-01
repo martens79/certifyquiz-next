@@ -84,6 +84,9 @@ async function install(page: Page, options: Options = {}) {
   });
   return calls;
 }
+async function openDashboard(page: Page) {
+  await page.getByRole("button", { name: "Dashboard", exact: true }).click();
+}
 const analyticsCalls = (calls: URL[], name: string) =>
   calls.filter((c) => c.pathname.endsWith(`/analytics/${name}`));
 
@@ -91,7 +94,7 @@ for (const viewport of [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "mobile", width: 390, height: 844 },
 ]) {
-  test(`dashboard is the default /admin view and fits the ${viewport.name} screen`, async ({
+  test(`dashboard opens from the visible entry and fits the ${viewport.name} screen`, async ({
     page,
   }) => {
     await page.setViewportSize({
@@ -100,6 +103,13 @@ for (const viewport of [
     });
     const calls = await install(page);
     await page.goto("/admin");
+    await expect(
+      page.getByRole("heading", { name: "Funnel Events", exact: true }),
+    ).toBeVisible();
+    const rawEventCalls = () =>
+      calls.filter((c) => c.pathname.endsWith("/funnel-events")).length;
+    await expect.poll(rawEventCalls).toBe(1); // only the initial events view
+    await openDashboard(page);
     await expect(
       page.getByRole("heading", { name: "Dashboard", exact: true }),
     ).toBeVisible();
@@ -154,6 +164,12 @@ for (const viewport of [
     await expect(page.getByText("Popolazione non attribuibile")).toContainText(
       "Il pagamento è collegato solo allo stesso account",
     );
+    await expect(page.getByText("Popolazione non attribuibile")).toContainText(
+      "non confrontabile direttamente con la quota",
+    );
+    await expect(
+      page.locator('[data-metric="unattributed_events"]'),
+    ).toContainText("esclusi eventi tecnici PWA e anteprime");
     // No horizontal scroll of the page itself.
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,
@@ -161,9 +177,7 @@ for (const viewport of [
     expect(overflow).toBeLessThanOrEqual(1);
     // The bulk of the work is server-side: one call per section, no raw events downloaded.
     expect(analyticsCalls(calls, "overview")).toHaveLength(1);
-    expect(calls.some((c) => c.pathname.endsWith("/funnel-events"))).toBe(
-      false,
-    );
+    expect(rawEventCalls()).toBe(1); // the dashboard downloads no raw events
     // Privacy: nothing that looks like an email or a Stripe identifier is rendered by the dashboard.
     const text = await page.locator("main main").innerText();
     expect(text).not.toMatch(
@@ -188,6 +202,7 @@ test("filters change the request, invalid custom ranges never reach the API, una
 }) => {
   const calls = await install(page);
   await page.goto("/admin");
+  await openDashboard(page);
   await expect(page.locator('[data-metric="new_questions"]')).toBeVisible();
   expect(
     new URL(analyticsCalls(calls, "overview")[0].href).searchParams.get(
@@ -258,6 +273,7 @@ test("certifications table: all catalog rows, sortable, unavailable vs zero, det
 }) => {
   const calls = await install(page);
   await page.goto("/admin");
+  await openDashboard(page);
   const table = page.getByRole("table").first();
   const names = () => table.locator("tbody th button").allInnerTexts();
   await expect.poll(async () => (await names()).length).toBe(6);
@@ -310,6 +326,7 @@ test("a failing section shows its own error with retry and leaves the others wor
     status: { retention: 500, revenue: 404 },
   });
   await page.goto("/admin");
+  await openDashboard(page);
   await expect(page.locator('[data-metric="new_questions"]')).toBeVisible();
   const ritorno = page.locator("#ritorno");
   await expect(ritorno.getByRole("alert")).toContainText(
@@ -323,6 +340,34 @@ test("a failing section shows its own error with retry and leaves the others wor
   );
   await ritorno.getByRole("button", { name: "Riprova" }).click();
   await expect.poll(() => analyticsCalls(calls, "retention").length).toBe(2);
+});
+
+test("Funnel Events stays the initial view; the dashboard entry is visible and loads nothing until opened", async ({
+  page,
+}) => {
+  const calls = await install(page);
+  await page.goto("/admin");
+  await expect(
+    page.getByRole("heading", { name: "Funnel Events", exact: true }),
+  ).toBeVisible();
+  const entry = page.getByRole("button", { name: "Dashboard", exact: true });
+  await expect(entry).toBeVisible();
+  expect(
+    await entry.evaluate((el) => el.getBoundingClientRect().top),
+  ).toBeLessThan(500);
+  expect(calls.filter((c) => c.pathname.includes("/analytics/"))).toHaveLength(
+    0,
+  );
+  await entry.click();
+  await expect(
+    page.getByRole("heading", { name: "Dashboard", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(
+      () =>
+        calls.filter((c) => c.pathname.endsWith("/analytics/overview")).length,
+    )
+    .toBe(1);
 });
 
 test("non-admin never reaches the analytics API; events stay one click away", async ({
@@ -341,6 +386,7 @@ test("raw events view remains reachable from the dashboard and back", async ({
 }) => {
   await install(page);
   await page.goto("/admin");
+  await openDashboard(page);
   await page
     .getByRole("button", { name: "Apri Funnel Events (dettaglio grezzo)" })
     .click();
@@ -358,6 +404,7 @@ test("every metric exposes its definition, source, denominator and limits", asyn
 }) => {
   await install(page);
   await page.goto("/admin");
+  await openDashboard(page);
   const card = page.locator('[data-metric="click_after_paywall"]');
   await card.getByText("Definizione e limiti").click();
   await expect(card).toContainText("Fonte");
