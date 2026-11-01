@@ -97,6 +97,17 @@ test("sitemap: poche decine di chiamate, indipendenti dal numero di ripassi", as
   assert.equal(small.calls, 1 + certSlugs.length + 4 + 4);
 });
 
+test("sitemap: contiene una sola volta le quattro URL canoniche della pagina Premium", async () => {
+  const { entries } = await run();
+  const urls = entries.map((e) => e.url);
+  for (const path of ["/it/prezzi", "/pricing", "/fr/prix", "/es/precios"]) {
+    assert.equal(urls.filter((u) => u === `https://www.example.test${path}`).length, 1, path);
+  }
+  for (const path of ["/fr/prezzi", "/es/prezzi", "/fr/tarifs", "/en/pricing"]) {
+    assert.ok(!urls.includes(`https://www.example.test${path}`), `${path} non deve essere in sitemap`);
+  }
+});
+
 test("sitemap: ogni fetch e' in Data Cache (revalidate), nessun no-store", async () => {
   await run();
   assert.ok(calls.length > 0);

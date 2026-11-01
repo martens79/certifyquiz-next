@@ -8,6 +8,7 @@ import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 import { isTopicIndexable } from "@/lib/seo/topic-indexability";
 import { EIPASS_STANDARD_LANDING_PATH } from "@/lib/eipass-standard";
+import { pricingPath } from "@/lib/paths";
 
 export const revalidate = 3600;
 
@@ -294,6 +295,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   changeFrequency: "weekly",
   priority: 0.75,
 },
+          // Pagina Premium: URL canonico per lingua (pricingPath), stesso set di hreflang delle metadata.
+          {
+            url: `${SITE}${pricingPath(lang)}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+          },
           // Statiche lingua
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}`,
