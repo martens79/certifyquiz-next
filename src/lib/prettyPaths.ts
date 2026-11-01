@@ -26,10 +26,12 @@ export function prettyList(lang: Lang): string {
  * PAGINA PREZZI
  * -------------------------------------------------------------------- */
 
+// Stessi URL di pricingPath() in paths.ts: EN vive alla radice (/en/pricing e' un 301),
+// FR usa "prix" (lo slug "tarifs" non e' mai stato servito).
 const pricing = {
   it: "/it/prezzi",
-  en: "/en/pricing",
-  fr: "/fr/tarifs",
+  en: "/pricing",
+  fr: "/fr/prix",
   es: "/es/precios",
 } as const;
 

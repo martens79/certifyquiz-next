@@ -16,7 +16,7 @@
 // - il middleware consulta questo modulo PRIMA della normalizzazione /en e
 //   delle regole prefix generiche (es. google-cloud → google-cloud-digital-leader).
 
-import { categoryPath, type CategoryKey, type Locale } from "./paths";
+import { categoryPath, pricingPath, type CategoryKey, type Locale } from "./paths";
 
 /* ------------------------------------------------------------------ */
 /* Vecchie radici categoria: /{it,fr,es,en}/<slug-italiano>             */
@@ -158,6 +158,10 @@ const SINGLE_REDIRECTS: Record<string, string> = {
   // URL sporchi visti in Search Console
   "/esundefined": "/es",
   "/base-quiz": "/certifications",
+
+  // Pagina Premium: lo slug francese canonico e' "prix" (pricingPath), non "tarifs",
+  // che vecchie versioni di prettyPaths.ts indicavano ma nessuna route serve.
+  "/fr/tarifs": pricingPath("fr"),
 };
 
 // GSC 26/10/2026: exact historical URLs, rechecked for indexability.
