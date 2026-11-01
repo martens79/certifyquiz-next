@@ -117,3 +117,50 @@ export const RECOVERY_COPY: Record<RecoveryLang, RecoveryCopy> = {
 export function recoveryCopy(lang: string | null | undefined): RecoveryCopy {
   return RECOVERY_COPY[(lang as RecoveryLang) in RECOVERY_COPY ? (lang as RecoveryLang) : "en"];
 }
+
+/**
+ * Risposta del backend a create-checkout-session quando l'utente ha gia' un abbonamento attivo o in prova
+ * (HTTP 400, code "SUBSCRIPTION_ALREADY_ACTIVE"). E' un rifiuto atteso: nessuna sessione Stripe, nessun errore generico.
+ */
+export function isAlreadyActiveCheckoutResponse(httpStatus: number, body: unknown): boolean {
+  return (
+    httpStatus === 400 &&
+    typeof body === "object" &&
+    body !== null &&
+    (body as { code?: unknown }).code === "SUBSCRIPTION_ALREADY_ACTIVE"
+  );
+}
+
+type AlreadyActiveCopy = { title: string; body: string; cta: string };
+
+export const ALREADY_ACTIVE_COPY: Record<RecoveryLang, AlreadyActiveCopy> = {
+  it: {
+    title: "Hai già Premium",
+    body: "Il tuo abbonamento Premium è già attivo (o in prova gratuita): non serve crearne un altro e non ti è stato addebitato nulla. Puoi vederlo e gestirlo dal tuo profilo.",
+    cta: "Vai al tuo abbonamento",
+  },
+  en: {
+    title: "You already have Premium",
+    body: "Your Premium subscription is already active (or in its free trial): there is no need to create another one and you have not been charged. You can view and manage it from your profile.",
+    cta: "Go to your subscription",
+  },
+  fr: {
+    title: "Vous avez déjà Premium",
+    body: "Votre abonnement Premium est déjà actif (ou en essai gratuit) : inutile d'en créer un autre et rien ne vous a été débité. Vous pouvez le consulter et le gérer depuis votre profil.",
+    cta: "Accéder à votre abonnement",
+  },
+  es: {
+    title: "Ya tienes Premium",
+    body: "Tu suscripción Premium ya está activa (o en prueba gratuita): no hace falta crear otra y no se te ha cobrado nada. Puedes verla y gestionarla desde tu perfil.",
+    cta: "Ir a tu suscripción",
+  },
+};
+
+export function alreadyActiveCopy(lang: string | null | undefined): AlreadyActiveCopy {
+  return ALREADY_ACTIVE_COPY[(lang as RecoveryLang) in ALREADY_ACTIVE_COPY ? (lang as RecoveryLang) : "en"];
+}
+
+/** Profilo dell'utente (qui c'e' il pulsante "Gestisci abbonamento"): EN alla radice, le altre lingue con prefisso. */
+export function profileHref(lang: string | null | undefined): string {
+  return lang === "it" || lang === "fr" || lang === "es" ? `/${lang}/profile` : "/profile";
+}
