@@ -8,7 +8,8 @@
       "feat/eipass-standard-landing-v1-20261027": false,
       "integration/ccst-w1-frontend-20261028": false,
       "feat/admin-analytics-dashboard-fe-20261029": false,
-      "fix/failed-payment-recovery-ui-20261030": false
+      "fix/failed-payment-recovery-ui-20261030": false,
+      "fix/admin-default-funnel-events-20261101": false
     }
   }
 }

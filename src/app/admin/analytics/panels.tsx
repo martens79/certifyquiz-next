@@ -501,7 +501,9 @@ export function FunnelPanel({
       </div>
       {population ? (
         <p className={styles.banner}>
-          Popolazione non attribuibile:{" "}
+          Popolazione non attribuibile (denominatore: eventi web, esclusi gli
+          eventi tecnici PWA e le anteprime; non confrontabile direttamente con
+          la quota dell&rsquo;audit generale):{" "}
           {formatInt(population.unattributedEvents)} eventi
           {population.unattributedShare != null
             ? ` (${formatPct(population.unattributedShare)})`

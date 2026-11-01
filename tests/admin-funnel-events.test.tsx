@@ -297,7 +297,7 @@ test("dates explicitly use Rome across DST; unzoned values are not silently gues
   );
 });
 
-test("admin shell defaults to the dashboard, keeps events one click away, gates auth/role, and mounts secondary sections only on selection", async () => {
+test("admin shell defaults to events, keeps the dashboard one click away, gates auth/role, and mounts secondary sections only on selection", async () => {
   let auth: any = {
     user: { role: "admin" },
     token: "synthetic",
@@ -343,28 +343,22 @@ test("admin shell defaults to the dashboard, keeps events one click away, gates 
   await act(async () => {
     renderer = create(<Component />);
   });
-  assert.match(JSON.stringify(renderer.toJSON()), /Dashboard mounted/);
-  assert.doesNotMatch(
-    JSON.stringify(renderer.toJSON()),
-    /Events mounted|Secondary:/,
-  );
-  // The raw events view stays reachable from the navigation and from the dashboard link.
-  await act(async () =>
-    renderer.root
-      .findAllByType("button")
-      .find((b) => b.children.includes("Funnel Events"))!
-      .props.onClick(),
-  );
   assert.match(JSON.stringify(renderer.toJSON()), /Events mounted/);
   assert.doesNotMatch(
     JSON.stringify(renderer.toJSON()),
     /Dashboard mounted|Secondary:/,
   );
+  // The analytics dashboard is one visible click away and links back to the events.
   await act(async () =>
     renderer.root
       .findAllByType("button")
       .find((b) => b.children.includes("Dashboard"))!
       .props.onClick(),
+  );
+  assert.match(JSON.stringify(renderer.toJSON()), /Dashboard mounted/);
+  assert.doesNotMatch(
+    JSON.stringify(renderer.toJSON()),
+    /Events mounted|Secondary:/,
   );
   await act(async () =>
     renderer.root
@@ -373,6 +367,7 @@ test("admin shell defaults to the dashboard, keeps events one click away, gates 
       .props.onClick(),
   );
   assert.match(JSON.stringify(renderer.toJSON()), /Events mounted/);
+  assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Dashboard mounted/);
   await act(async () =>
     renderer.root
       .findByType("select")

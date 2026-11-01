@@ -132,7 +132,8 @@ export const OVERVIEW = {
     kpi("unattributed_events", 2160, {
       denominator: {
         value: 8912,
-        label: "eventi web del periodo",
+        label:
+          "eventi web del periodo (esclusi eventi tecnici PWA e anteprime)",
         share: 0.242,
       },
     }),

@@ -42,11 +42,6 @@ const sample = [
     created_at: "2026-10-24T22:00:00.000Z",
   },
 ];
-async function openEvents(page: Page) {
-  await page
-    .getByRole("button", { name: "Funnel Events", exact: true })
-    .click();
-}
 async function install(
   page: Page,
   options: { status?: number; empty?: boolean; role?: string } = {},
@@ -118,7 +113,6 @@ for (const viewport of [
     await page.setViewportSize(viewport);
     const calls = await install(page);
     await page.goto("/admin");
-    await openEvents(page);
     await expect(
       page.getByRole("heading", { name: "Funnel Events", exact: true }),
     ).toBeVisible();
@@ -186,7 +180,6 @@ for (const viewport of [
 test("empty results then unfiltered empty dataset", async ({ page }) => {
   await install(page, { empty: true });
   await page.goto("/admin");
-  await openEvents(page);
   await expect(
     page.getByText("Nessun risultato con i filtri attivi."),
   ).toBeVisible();
@@ -200,7 +193,6 @@ for (const status of [401, 403, 500]) {
     const options = { status };
     await install(page, options);
     await page.goto("/admin");
-    await openEvents(page);
     await expect(
       page.getByRole("region", { name: "Eventi funnel" }).getByRole("alert"),
     ).toContainText(
@@ -238,7 +230,6 @@ test("legacy overview errors do not follow the user back to events", async ({
 }) => {
   const calls = await install(page);
   await page.goto("/admin");
-  await openEvents(page);
   await expect(
     page.getByText("student.with.a.very.long.synthetic.address@example.test", {
       exact: true,
