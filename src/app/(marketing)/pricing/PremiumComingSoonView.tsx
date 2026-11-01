@@ -33,7 +33,8 @@ import {
 } from "@/lib/checkout-intent";
 import PackagesUpsell from "./PackagesUpsell";
 import { useTwa } from "@/hooks/useTwa";
-import { isPaymentIssueCheckoutResponse, requestPortalUrl } from "@/lib/billing-recovery";
+import { isAlreadyActiveCheckoutResponse, isPaymentIssueCheckoutResponse, requestPortalUrl } from "@/lib/billing-recovery";
+import AlreadyPremiumNotice from "@/components/billing/AlreadyPremiumNotice";
 import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
@@ -839,6 +840,8 @@ function PremiumPricingView({ forceLang }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   // Abbonamento esistente con pagamento da regolarizzare (past_due/unpaid): niente nuovo checkout, si guida al portale Stripe.
   const [paymentIssue, setPaymentIssue] = useState(false);
+  // Abbonamento gia' attivo o in prova (SUBSCRIPTION_ALREADY_ACTIVE): rifiuto atteso, si rimanda al profilo.
+  const [alreadyActive, setAlreadyActive] = useState(false);
   const [portalBusy, setPortalBusy] = useState(false);
   const [portalFailed, setPortalFailed] = useState(false);
   // Guardie sincrone: due click ravvicinati o una ripresa + click non creano due checkout.
@@ -1076,6 +1079,7 @@ function PremiumPricingView({ forceLang }: Props) {
     const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
     setNotice(null);
     setPaymentIssue(false);
+    setAlreadyActive(false);
     // "Anonimo" solo a stato di autenticazione risolto E senza token: durante il caricamento (o con un
     // token gia' salvato ma utente non ancora letto) si procede come prima e decide il backend (401).
     if (!user && !authLoading && !getToken()) {
@@ -1169,6 +1173,13 @@ function PremiumPricingView({ forceLang }: Props) {
         setIsLoading(false);
         return;
       }
+      if (isAlreadyActiveCheckoutResponse(res.status, data)) {
+        // Anche questo e' un rifiuto atteso: nessuna sessione Stripe, nessun "checkout_failed", nessun alert generico.
+        setAlreadyActive(true);
+        inFlightRef.current = false;
+        setIsLoading(false);
+        return;
+      }
       if (!res.ok || !data?.url) throw new Error(data?.error || "Failed");
 
 
@@ -1239,6 +1250,8 @@ function PremiumPricingView({ forceLang }: Props) {
           {paymentIssue && (
             <PaymentRecoveryNotice lang={lang} message="checkoutBlocked" onOpenPortal={openPaymentPortal} busy={portalBusy} failed={portalFailed} />
           )}
+
+          {alreadyActive && <AlreadyPremiumNotice lang={lang} />}
 
           {explanationsUsed && (
             <ExplanationsUsedNote t={t} used={explanationsUsed.used} limit={explanationsUsed.limit} />
