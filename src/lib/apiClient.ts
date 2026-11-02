@@ -65,9 +65,12 @@ export type SaveExamRequest = {
   isExam: boolean;
 
   // ✅ NEW: per ripasso errori
+  // Forma emessa dal QuizEngine; il backend accetta anche la storica
+  // {question_id, selected_answer_id}.
   attempts?: Array<{
-    question_id: number;
-    selected_answer_id: number;
+    questionId: number;
+    chosenAnswerId: number;
+    isCorrect?: boolean;
   }>;
 };
 

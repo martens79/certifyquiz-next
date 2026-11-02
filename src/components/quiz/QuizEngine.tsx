@@ -56,6 +56,14 @@ import {
   type AnswerCheckResult,
 } from "@/lib/apiClient";
 import { apiFetch } from "@/lib/auth";
+import {
+  adoptServerRev,
+  chunk,
+  clearPendingClose,
+  closeServerProgress,
+  readPendingClose,
+  savePendingClose,
+} from "@/lib/quiz-progress-sync";
 import {VersionedTrainingError,type VersionedTrainingClient} from '@/lib/ccst-versioned-training';
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
@@ -690,6 +698,21 @@ const openFeedback = () => {
   const attemptRef = useRef<ExamAttempt | null>(null);
   const attemptClockRef = useRef<{ left: number; perfAt: number } | null>(null);
 
+  // Completamento: la valutazione finale e' in corso / e' fallita (recuperabile).
+  // Il quiz diventa "finished" solo quando la valutazione ha avuto successo: un
+  // errore di rete o un 5xx non devono produrre uno 0% artificiale ne' cancellare
+  // le risposte. `expired` = l'errore e' avvenuto a tempo scaduto (input bloccato).
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<{ expired: boolean } | null>(null);
+  const finishingRef = useRef(false);
+  // true dal momento in cui il quiz e' concluso: nessuna PUT di progresso deve
+  // piu' partire (debounce gia' armato, pagehide, visibilitychange). Il server
+  // ignora comunque le PUT tardive dello stesso seed (tombstone).
+  const completedRef = useRef(false);
+  // Una scrittura DB debounced e' armata e non ancora partita (per il flush allo smontaggio).
+  const dbFlushPendingRef = useRef(false);
+  const dbFlushRef = useRef<(() => Promise<void>) | null>(null);
+
   // Inizio del countdown exam appena ripristinato: l'effect di init del timer
   // (piu' sotto) azzera startedAtRef a ogni cambio di questions.length, cioe'
   // proprio subito dopo il ripristino. Questo ref porta il valore ripristinato
@@ -783,6 +806,10 @@ const openFeedback = () => {
       setAttemptClosed(false);
       attemptRef.current = null;
       attemptClockRef.current = null;
+      // Nuova sessione di lavoro: si riabilitano le scritture di progresso e si
+      // azzera un eventuale errore di completamento del tentativo precedente.
+      completedRef.current = false;
+      setFinishError(null);
 
       try {
         const transport=effectiveMode==='training'?await resolveVersionedTraining?.():null;
@@ -894,6 +921,35 @@ const openFeedback = () => {
           }
         }
         if (!alive) return;
+
+        // ---- tentativo gia' concluso ----
+        // A fine quiz il server sostituisce la riga con un tombstone
+        // (row.completed): non e' una sessione da ripristinare. Lo stesso vale se
+        // la chiusura non era andata a buon fine su questo device (marker locale):
+        // la si ritenta e la riga si tratta come chiusa. Si conserva solo il pavimento
+        // di rev, cosi' il nuovo tentativo non viene scartato dal guard >= del server.
+        let dbFloorRev: number | null = null;
+        if (dbRow) {
+          const pendingClose = readPendingClose(scopedKey);
+          if (pendingClose && !dbRow.completed && pendingClose.seed === dbRow.seed) {
+            void closeServerProgress(apiFetch, { topicId: topicId as number, lang, mode: effectiveMode, ...pendingClose })
+              .then((ok) => { if (ok) clearPendingClose(scopedKey); });
+            dbRow = { ...dbRow, completed: true };
+          } else if (pendingClose) {
+            clearPendingClose(scopedKey);
+          }
+          if (dbRow.completed) {
+            dbFloorRev = Number(dbRow.rev) + 1;
+            // Un salvataggio locale dello stesso tentativo chiuso (concluso da un altro
+            // dispositivo) e' obsoleto; uno con seed diverso e' un tentativo piu' recente.
+            if (local && local.seed === dbRow.seed) {
+              clearProgress(scopedKey);
+              local = null;
+            }
+            dbRow = null;
+          }
+        }
+        const dbRevFloor = dbEligible ? (dbRow ? Number(dbRow.rev) + 1 : dbFloorRev ?? 0) : 0;
 
         // ---- scelta della fonte ----
         // (1) rete giù -> locale se c'è, mai azzerare un progresso che sta
@@ -1084,7 +1140,7 @@ const openFeedback = () => {
           // anon->user sopra): altrimenti la prima PUT verrebbe scartata in
           // silenzio dal guard >= lato server, e il progresso appena
           // ripristinato non si sincronizzerebbe mai.
-          revRef.current = Math.max(p.rev ?? 0, dbEligible && dbRow ? dbRow.rev + 1 : 0);
+          revRef.current = Math.max(p.rev ?? 0, dbRevFloor);
         } else if (canRestore && source!.kind === 'db') {
           const row = source!.data;
           const st = row.state ?? {};
@@ -1120,7 +1176,7 @@ const openFeedback = () => {
           // scartata per hash non combaciante): altrimenti la prima PUT del
           // nuovo tentativo verrebbe scartata in silenzio dal guard >= lato
           // server, e l'utente gioca una sessione intera mai persistita.
-          revRef.current = dbEligible && dbRow ? dbRow.rev + 1 : 0;
+          revRef.current = dbRevFloor;
         }
 
         // Checkpoint di blocco: ripristinato solo se l'indice e' davvero su un
@@ -1411,7 +1467,9 @@ clearProgress(`${storageScope}:assessment`);
   }, [effectiveMode, effectiveDuration, questions.length]);
 
   useEffect(() => {
-    if (effectiveMode !== 'exam' || finished || attemptClosed || !hydrated || !attemptRef.current) {
+    // finishError.expired: con la valutazione fallita a tempo scaduto il loop non
+    // deve rilanciare doFinish a ogni frame; l'utente usa "Riprova".
+    if (effectiveMode !== 'exam' || finished || attemptClosed || finishError?.expired || !hydrated || !attemptRef.current) {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
       return;
@@ -1469,7 +1527,7 @@ clearProgress(`${storageScope}:assessment`);
   // doFinish reads the latest quiz state; including it would restart the RAF
   // loop on every render and disturb timer scheduling.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining, hydrated, attemptClosed]);
+  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining, hydrated, attemptClosed, finishError?.expired]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
@@ -1579,11 +1637,17 @@ clearProgress(`${storageScope}:assessment`);
   useEffect(() => {
     const topicId = context?.topicId;
     const dbSyncEnabled = isLoggedIn && effectiveMode !== 'assessment' && !!topicId;
+    dbFlushPendingRef.current = false;
+    dbFlushRef.current = null;
     if(versionedTrainingRef.current)return;
     if (!dbSyncEnabled) return;
 
     const flushDb = async () => {
       if(versionedTrainingRef.current)return;
+      dbFlushPendingRef.current = false;
+      // Quiz concluso: lo stato e' stato chiuso lato server (tombstone). Un
+      // debounce gia' armato o un pagehide non devono piu' scrivere.
+      if (completedRef.current) return;
       // Gate di idratazione: finché il load effect non ha concluso la
       // riconciliazione locale/DB, non scrivere — altrimenti una PUT con
       // seed fresco e rev 0 competerebbe con la riconciliazione stessa
@@ -1649,11 +1713,13 @@ clearProgress(`${storageScope}:assessment`);
         const row = data?.row;
         if (!row) return;
 
-        // Incondizionato: è così che un client con rev disallineato (rete
-        // caduta prima, riga DB sconosciuta) si autocorregge al primo giro
-        // riuscito, invece di continuare a scrivere con un rev troppo
-        // basso che il guard server-side scarta in silenzio per sempre.
-        revRef.current = row.rev;
+        // Un client con rev piu' basso di quello del server (rete caduta
+        // prima, riga DB sconosciuta) si autocorregge al primo giro riuscito,
+        // invece di continuare a scrivere con un rev troppo basso che il
+        // guard server-side scarta in silenzio per sempre. Non si scende mai:
+        // una risposta lenta con rev inferiore a quello nel frattempo salito
+        // in locale farebbe partire la PUT successiva sotto il rev gia' sul server.
+        revRef.current = adoptServerRev(revRef.current, row.rev);
 
         if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
           examServerSyncRef.current = { remainingAtSync: row.remainingSec, perfAtSync: performance.now() };
@@ -1664,6 +1730,11 @@ clearProgress(`${storageScope}:assessment`);
     };
 
     const timeoutId = setTimeout(flushDb, 2500);
+    // Scrittura armata e non ancora partita: se il componente si smonta prima
+    // dei 2,5 s (navigazione client-side, che non emette pagehide), la invia
+    // l'effect di smontaggio qui sotto.
+    dbFlushPendingRef.current = true;
+    dbFlushRef.current = flushDb;
 
     const onHideDb = () => {
       if (document.hidden) {
@@ -1680,6 +1751,15 @@ clearProgress(`${storageScope}:assessment`);
       window.removeEventListener('pagehide', flushDb);
     };
   }, [questions, marked, reviewLater, effectiveMode, idx, scopedKey, isLoggedIn, context?.topicId, lang, effectiveDuration]);
+
+  // Smontaggio (navigazione client-side verso un'altra pagina): se c'e' una PUT
+  // armata dal debounce la si invia ora, con keepalive. Le altre uscite (chiusura
+  // tab, background) passano da pagehide/visibilitychange gestiti sopra.
+  useEffect(() => {
+    return () => {
+      if (dbFlushPendingRef.current) void dbFlushRef.current?.();
+    };
+  }, []);
 
   /* ------------- RE-CHECK DELLE RISPOSTE RIPRISTINATE (training) -------------
      Correttezza e spiegazione non vengono mai salvate lato client (Paywall
@@ -1819,6 +1899,9 @@ clearProgress(`${storageScope}:assessment`);
  const choose = async (q: Question, a: Answer) => {
   setActionsOpen(false);
   if (blockReview) return;
+  // Valutazione finale in corso, o fallita a tempo scaduto: le risposte sono quelle
+  // gia' date e non devono cambiare sotto la valutazione/il retry.
+  if (!versionedTrainingRef.current && (finishingRef.current || finishError?.expired)) return;
   if(versionedTrainingRef.current){if(resultOf(q.id)||versionedCheckingRef.current.has(String(q.id))||(marked[q.id]!=null&&String(marked[q.id])!==String(a.id)))return;versionedCheckingRef.current.add(String(q.id));}
   // Una nuova scelta supera il re-check del ripristino: la verifica la fa
   // questo handler, una volta sola.
@@ -1970,12 +2053,26 @@ const goToFirstUnanswered = () => {
 };
 
  async function doFinish(timeExpired = false) {
-  if (effectiveMode === 'exam' && attemptRef.current) {
-    attemptRef.current = closeAttempt(attemptRef.current, timeExpired ? 'expired' : 'completed');
-    saveExamAttempt(attemptRef.current);
+  // Un solo completamento alla volta: doppio click, timer scaduto durante una
+  // valutazione in corso o retry sovrapposto non devono duplicare salvataggi.
+  if (finishingRef.current) return;
+  finishingRef.current = true;
+  setFinishing(true);
+  try {
+    await runFinish(timeExpired);
+  } finally {
+    finishingRef.current = false;
+    setFinishing(false);
   }
-  setFinished(true);
-  setMockReviewGate(null);
+}
+
+ async function runFinish(timeExpired: boolean) {
+  const isVersioned = !!versionedTrainingRef.current;
+  // CCST versionato: flusso invariato (chiude e valuta con il proprio client).
+  if (isVersioned) {
+    setFinished(true);
+    setMockReviewGate(null);
+  }
 
   const total = questions.length;
 
@@ -1990,8 +2087,15 @@ const goToFirstUnanswered = () => {
     const completed=await versionedTrainingRef.current.complete();serverCorrect=completed.state.summary?.correct??null;setResults(evaluated);
   }catch(e){setFinished(false);console.error('Versioned completion failed',e);return;}}
 
-  if (isTestLike) {
+  // Valutazione finale. Il quiz NON e' "finished" finche' non ha successo: se la
+  // chiamata fallisce (rete, 5xx, 429) si esce qui senza chiudere l'attempt,
+  // senza salvare un risultato, senza cancellare il progresso, e si mostra un
+  // errore con "Riprova". Prima l'errore veniva solo loggato e il punteggio
+  // risultava 0% (salvato davvero in quiz_results via onFinish).
+  if (!isVersioned) {
+    setMockReviewGate(null);
     try {
+    if (isTestLike) {
       if (effectiveMode === 'exam' && context?.certificationId) {
         const submitted = questions.map((q) => ({
           question_id: Number(q.id),
@@ -2031,9 +2135,42 @@ const goToFirstUnanswered = () => {
           for (const r of res.results || []) evaluated[String(r.question_id)] = r;
         }
       }
+    } else if (effectiveMode === 'training') {
+      // Training: la correttezza arriva domanda per domanda da /answers/check, ma
+      // dopo un ripristino (reload, altro device) `results` e' vuoto e viene
+      // ricostruito solo per le domande che l'utente rivede. Quelle risposte
+      // prima del ripristino e mai riviste contavano come errate. Si valutano in
+      // blocco quelle senza verdetto (senza spiegazioni, senza consumare quota).
+      // Non si fondono in `results`: la spiegazione viene richiesta alla prima
+      // visita dal re-check, come sempre.
+      const unevaluated = questions
+        .filter((q) => marked[q.id] != null && !results[String(q.id)])
+        .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
+      if (unevaluated.length > 0) {
+        const fresh: Record<string, AnswerCheckResult> = {};
+        for (const part of chunk(unevaluated, 200)) {
+          const res = await evaluateAnswers(part, lang);
+          for (const r of res.results || []) {
+            if (!(r as { error?: string }).error) fresh[String(r.question_id)] = r;
+          }
+        }
+        evaluated = { ...results, ...fresh };
+      }
+    }
     } catch (err) {
       console.error("Errore valutazione risposte:", err);
+      setFinishError({ expired: timeExpired });
+      return;
     }
+
+    // Valutazione riuscita: da qui il tentativo e' concluso.
+    if (effectiveMode === 'exam' && attemptRef.current) {
+      attemptRef.current = closeAttempt(attemptRef.current, timeExpired ? 'expired' : 'completed');
+      saveExamAttempt(attemptRef.current);
+    }
+    completedRef.current = true;
+    setFinishError(null);
+    setFinished(true);
   }
 
   let correctCount = 0;
@@ -2129,6 +2266,21 @@ const goToFirstUnanswered = () => {
   }
 
   clearProgress(scopedKey);
+
+  // Chiusura lato server del progresso (tombstone legato al seed): senza, la riga
+  // quiz_progress restava e il quiz concluso risorgeva alla riapertura. Se la
+  // chiamata non riesce si lascia un marker locale e si ritenta al prossimo caricamento.
+  const closeTopicId = context?.topicId;
+  if (!isVersioned && isLoggedIn && effectiveMode !== 'assessment' && closeTopicId && seedRef.current != null) {
+    const closing = {
+      seed: seedRef.current,
+      rev: revRef.current,
+      qidsHash: hashIds(questions.map((q) => q.id)),
+    };
+    const closed = await closeServerProgress(apiFetch, { topicId: closeTopicId, lang, mode: effectiveMode, ...closing });
+    if (closed) clearPendingClose(scopedKey);
+    else savePendingClose(scopedKey, closing);
+  }
 }
 
 const submitAssessmentReport = async () => {
@@ -2230,6 +2382,8 @@ const submitAssessmentReport = async () => {
 
   const restart = async () => {
   if(versionedTrainingRef.current){try{await versionedTrainingRef.current.restart();setVersionedReload(n=>n+1);}catch(e){console.error('Versioned restart failed',e);}return;}
+  completedRef.current = false;
+  setFinishError(null);
   clearProgress(scopedKey);
   if (effectiveMode === 'exam') {
     clearExamAttempt(scopedKey);
@@ -3603,6 +3757,33 @@ return (
         />
       </div>
     </div>
+
+    {/* ERRORE DI VALUTAZIONE FINALE (recuperabile: risposte e progresso conservati) */}
+    {finishError && (
+      <div
+        role="alert"
+        data-testid="finish-error"
+        className="mb-3 rounded-xl border border-amber-300/60 bg-amber-500/20 p-3 text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <span>
+          {lang === 'it'
+            ? 'Non siamo riusciti a calcolare il risultato. Le tue risposte sono state conservate: riprova.'
+            : lang === 'fr'
+            ? "Impossible de calculer le résultat. Vos réponses sont conservées : réessayez."
+            : lang === 'es'
+            ? 'No pudimos calcular el resultado. Tus respuestas se han conservado: inténtalo de nuevo.'
+            : "We couldn't calculate your result. Your answers have been kept: please try again."}
+        </span>
+        <button
+          type="button"
+          className="px-3 py-2 rounded-lg bg-white text-gray-900 text-sm font-semibold disabled:opacity-60"
+          disabled={finishing}
+          onClick={() => doFinish(finishError.expired)}
+        >
+          {lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Try again'}
+        </button>
+      </div>
+    )}
 
     {/* NAV BAR */}
     <div className="rounded-xl bg-black/20 backdrop-blur border border-white/10 p-2">

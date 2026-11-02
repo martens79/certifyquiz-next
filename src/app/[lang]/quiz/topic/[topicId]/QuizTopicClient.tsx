@@ -440,8 +440,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
           attempts: rawAttempts
             .filter((a: any) => a?.chosenAnswerId != null)
             .map((a: any) => ({
-              question_id: Number(a.questionId),
-              selected_answer_id: Number(a.chosenAnswerId),
+              // stesse chiavi emesse dal QuizEngine e lette da /save-exam: con
+              // {question_id, selected_answer_id} il backend scartava gli
+              // attempts in silenzio (201, user_question_stats mai aggiornata)
+              questionId: Number(a.questionId),
+              chosenAnswerId: Number(a.chosenAnswerId),
             })),
         };
 
