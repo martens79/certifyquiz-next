@@ -44,7 +44,7 @@ timeout (richiesta appesa all'infinito) e il topic exam usava un `fetch` grezzo 
 
 - `tests/save-exam-outbox.test.ts` (17 unit): classificazione, write-ahead, 500, retry manuale/cooldown, 429, 401, 4xx, timeout, risposta persa dopo COMMIT,
   coalescenza, recupero dopo reload (solo stesso utente), logout, storage rotto, scarto, payload.
-- `tests/save-exam-reliability.spec.ts` (12 e2e Chromium mobile, backend stubbato nel browser): A salvataggio, B 500 (mixed e topic exam), 429, 401,
+- `tests/save-exam-reliability.spec.ts` (13 e2e Chromium mobile, backend stubbato nel browser): A salvataggio, A2 mock senza rientro del timer d'esame, B 500 (mixed e topic exam), 429, 401,
   C connessione persa, D risposta persa dopo commit (retry deduplicato), doppio click, E reload (training e mock a tempo, esame non riaperto), E3 altro account, anonimo.
 - La deduplicazione REALE è provata su MySQL 9.7.2 nella PR backend.
 
@@ -63,3 +63,15 @@ Rollback FE: ripristinare il frontend precedente; le voci `cq:quiz:pending-save:
 - Il logout elimina i risultati non ancora registrati di quell'utente (scelta di privacy per dispositivi condivisi).
 - Finestra di millisecondi fra `setFinished` e la scrittura write-ahead: se la scheda viene chiusa esattamente lì il risultato non è recuperabile.
 - Il banner dei risultati residui compare solo sulle pagine quiz (topic/mixed/mock); non c'è un punto di ingresso globale.
+
+## Nota: rientro del timer d'esame
+
+Rilasciare `finishingRef` subito a fine `runFinish` esponeva una corsa: un frame del timer d'esame prima del re-render con `finished=true`
+rilanciava `doFinish(true)` (seconda valutazione mock e seconda registrazione con un nuovo `attemptId`). `doFinish` ora esce anche se
+`completedRef.current` è vero. Trovato dal test `answer-check-protocol` su questo branch; copertura: test A2.
+
+## Confronto con `origin/main` (e2e ampio: quiz-session-*, mock-exam-premium, quiz-block-summary, answer-check-protocol)
+
+`origin/main` pulito: 24 falliscono su 69 con 2 worker (timeout da 30 s / fixture PWA, preesistenti). Sul branch dopo la correzione sopra,
+le differenze di insieme emerse (4 solo-branch, 1 solo-main) erano oscillazioni: i 4 passano in isolamento (3 al primo giro, `answer-check` dopo la correzione) e
+`quiz-finish-reliability` + `quiz-session-persistence` passano 32/32. `quiz-block-summary › versioned` fallisce identico su main.
