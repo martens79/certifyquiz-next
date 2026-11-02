@@ -32,6 +32,9 @@ export type QuizSummary = {
   scorePct: number; // percentuale 0–100
   marked: Record<string | number, string | number | null>; // qId -> answerId scelto
   durationSec: number; // tempo totale in secondi
+  // UUID stabile del risultato concluso: identifica la registrazione in cronologia
+  // (/save-exam) e resta lo stesso a ogni retry. Assente nei riepiloghi ripristinati.
+  attemptId?: string;
 };
 
 // ✅ fuori da QuizSummary

@@ -88,6 +88,8 @@ import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 
 import RegistrationGate from '@/components/quiz/RegistrationGate';
 import MockCompleteLink from '@/components/quiz/MockCompleteLink';
+import SaveResultBanner from '@/components/quiz/SaveResultBanner';
+import { createAttemptId } from '@/lib/save-exam-outbox';
 import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
 import { useQuizTutor } from '@/components/quiz/QuizTutorContext';
 
@@ -709,6 +711,10 @@ const openFeedback = () => {
   // piu' partire (debounce gia' armato, pagehide, visibilitychange). Il server
   // ignora comunque le PUT tardive dello stesso seed (tombstone).
   const completedRef = useRef(false);
+  // Identificativo stabile del risultato concluso (registrazione in cronologia):
+  // nasce a ogni valutazione riuscita e viaggia in summary.attemptId; i retry
+  // del salvataggio lo riusano (vedi save-exam-outbox).
+  const resultAttemptIdRef = useRef<string | null>(null);
   // Una scrittura DB debounced e' armata e non ancora partita (per il flush allo smontaggio).
   const dbFlushPendingRef = useRef(false);
   const dbFlushRef = useRef<(() => Promise<void>) | null>(null);
@@ -2206,6 +2212,9 @@ const goToFirstUnanswered = () => {
   });
 
   const serverScorePct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  // Sempre nuovo a ogni completamento riuscito: un id rimasto da un quiz precedente
+  // farebbe passare un risultato diverso per un duplicato lato server.
+  resultAttemptIdRef.current = createAttemptId();
   const summary: QuizSummary & { mode: Mode; attempts: typeof attempts } = {
     total,
     correct,
@@ -2214,6 +2223,7 @@ const goToFirstUnanswered = () => {
     durationSec: elapsedSec,
     mode: effectiveMode,
     attempts,
+    attemptId: resultAttemptIdRef.current,
   };
 
   setLastSummary(summary);
@@ -2259,11 +2269,17 @@ const goToFirstUnanswered = () => {
     });
   }
 
-  try {
-    if(!versionedTrainingRef.current)await onFinish?.(summary);
-  } catch {
-    /* ignore */
-  }
+  // Registrazione in cronologia: parte subito (la parte sincrona dell'onFinish
+  // scrive la voce write-ahead in localStorage PRIMA di clearProgress) ma non
+  // blocca la chiusura del progresso. Un fallimento NON e' ignorato: lo stato
+  // vive nello store dell'outbox e SaveResultBanner lo mostra con il retry.
+  const savePromise = (async () => {
+    try {
+      if (!versionedTrainingRef.current) await onFinish?.(summary);
+    } catch (err) {
+      console.error('Registrazione del risultato in cronologia non riuscita:', err);
+    }
+  })();
 
   clearProgress(scopedKey);
 
@@ -2281,6 +2297,8 @@ const goToFirstUnanswered = () => {
     if (closed) clearPendingClose(scopedKey);
     else savePendingClose(scopedKey, closing);
   }
+
+  await savePromise;
 }
 
 const submitAssessmentReport = async () => {
@@ -2383,6 +2401,7 @@ const submitAssessmentReport = async () => {
   const restart = async () => {
   if(versionedTrainingRef.current){try{await versionedTrainingRef.current.restart();setVersionedReload(n=>n+1);}catch(e){console.error('Versioned restart failed',e);}return;}
   completedRef.current = false;
+  resultAttemptIdRef.current = null;
   setFinishError(null);
   clearProgress(scopedKey);
   if (effectiveMode === 'exam') {
@@ -2685,6 +2704,9 @@ const assessmentCopy =
       <div className={`min-h-screen ${gradient}`}>
         <div className="mobile-safe-top max-w-3xl mx-auto px-4 pt-20 pb-28">
           <div className="bg-white text-gray-900 rounded-2xl shadow-xl p-6 space-y-4">
+            {!isAssessmentResult && lastSummary?.attemptId && (
+              <SaveResultBanner lang={lang} userId={user?.id} attemptId={lastSummary.attemptId} />
+            )}
             {isAssessmentResult ? (
   <div className="space-y-3">
     <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-800">

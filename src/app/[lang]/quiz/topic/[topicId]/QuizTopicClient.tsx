@@ -7,6 +7,8 @@ import { useCallback, useEffect, useMemo, useState,useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import QuizEngine from "@/components/quiz/QuizEngine";
+import SaveResultBanner from "@/components/quiz/SaveResultBanner";
+import { recordQuizResult } from "@/lib/quiz-result-save";
 import ComingSoonBox from "@/components/ui/ComingSoonBox";
 import TopicPremiumRequired from "@/components/topics/TopicPremiumRequired";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -349,6 +351,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         }}>{ccstOptInText[L].start}</button>}
       </section>
     )}
+    <SaveResultBanner lang={L} userId={user?.id} leftover />
     <QuizEngine
       resolveVersionedTraining={resolveVersionedTraining}
       lang={L}
@@ -421,50 +424,21 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   assessment: 10,
 }}
       onFinish={async (s: QuizSummary & { mode: "training" | "exam" | "assessment"; attempts?: any[] }) => {
+        // Solo l'esame del topic finisce in cronologia (training/assessment: nessun salvataggio).
         if (s.mode !== "exam") return;
-
-        const token = getAccessToken();
-        if (!token) return;
-
         if (!certificationId) return;
 
-        const rawAttempts = Array.isArray((s as any).attempts) ? (s as any).attempts : [];
-
-        const payload = {
+        // Gli attempts usano le chiavi emesse dal QuizEngine e lette da /save-exam.
+        // Un fallimento NON e' ingoiato: stato e retry vivono nell'outbox e
+        // SaveResultBanner li mostra nella schermata finale.
+        await recordQuizResult({
+          userId: user?.id,
+          scope: `topic:${numericId}:${L}`,
+          summary: s as any,
+          certificationId,
           topicId: numericId,
-          certification_id: certificationId,
-          totalQuestions: s.total ?? 0,
-          correctAnswers: s.correct ?? 0,
           isExam: true,
-          quizId: null,
-          attempts: rawAttempts
-            .filter((a: any) => a?.chosenAnswerId != null)
-            .map((a: any) => ({
-              // stesse chiavi emesse dal QuizEngine e lette da /save-exam: con
-              // {question_id, selected_answer_id} il backend scartava gli
-              // attempts in silenzio (201, user_question_stats mai aggiornata)
-              questionId: Number(a.questionId),
-              chosenAnswerId: Number(a.chosenAnswerId),
-            })),
-        };
-
-        try {
-          const res = await fetch("/api/backend/save-exam", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(payload),
-          });
-
-          if (!res.ok) {
-            const txt = await res.text().catch(() => "");
-            throw new Error(`HTTP ${res.status} ${txt}`);
-          }
-        } catch (e) {
-          console.error("🟥 save-exam FAILED", e);
-        }
+        });
       }}
     />
     </>
