@@ -13,10 +13,11 @@ import {
   getMockExamQuestions,
   getCertificationPoolTotal,
   getCertificationBySlug,
-  saveExam,
   type Question as ApiQuestion,
   getAccessToken,
 } from "@/lib/apiClient";
+import { recordQuizResult } from "@/lib/quiz-result-save";
+import SaveResultBanner from "@/components/quiz/SaveResultBanner";
 
 import { useAuth } from "@/components/auth/AuthProvider";
 import { getExamSpecForCert } from "@/lib/exam-specs";
@@ -63,7 +64,7 @@ export default function MockExamPage() {
   // `premiumLocked` resta false: il mock exam e' FREE in Phase 1 (backend: checkMockExamAccess).
   // Il motore parte solo a bootstrap auth concluso: con sessione recuperata dal refresh cookie token e utente
   // arrivano in momenti diversi e ogni cambio ricaricherebbe il mock (un nuovo esame casuale a ogni passaggio).
-  const { isPremiumUser, loading: authLoading } = useAuth();
+  const { isPremiumUser, loading: authLoading, user } = useAuth();
 
   useEffect(() => {
     if (staticCertId) {
@@ -259,6 +260,10 @@ export default function MockExamPage() {
       {!poolTotalSettled || authLoading ? (
         <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>
       ) : (
+      <>
+      <div className="mx-auto max-w-3xl px-4">
+        <SaveResultBanner lang={currentLang} userId={user?.id} leftover />
+      </div>
       <QuizEngine
         key={`mock:${currentSlug}:${currentLang}`}
         lang={currentLang}
@@ -288,20 +293,19 @@ export default function MockExamPage() {
         onModeChange={() => {}}
         fetchQuestions={fetchQuestions}
         onFinish={async (s: any) => {
-          try {
-            await saveExam({
-              certification_id: certId,
-              totalQuestions: s.total,
-              correctAnswers: s.correct,
-              isExam: true,
-              attempts: s.attempts,
-            });
-          } catch {
-            // best-effort
-          }
+          // Un fallimento NON e' ingoiato: stato e retry vivono nell'outbox e
+          // SaveResultBanner li mostra nella schermata finale.
+          await recordQuizResult({
+            userId: user?.id,
+            scope: `mock-exam:${currentSlug}:${currentLang}`,
+            summary: s,
+            certificationId: certId,
+            isExam: true,
+          });
         }}
         backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
       />
+      </>
       )}
     </div>
   );

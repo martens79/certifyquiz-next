@@ -94,7 +94,10 @@ test('quiz local state survives reload without authenticating or saving a server
   expect(await authState(page)).toEqual({ access: false, cached: false });
   expect(f.log.filter(e => e.path === 'save-exam')).toHaveLength(0);
   await page.getByRole('button', { name: 'Terminar', exact: true }).click();
-  await expect.poll(() => f.log.filter(e => e.path === 'save-exam').length).toBeGreaterThan(0);
+  // Anonimo: recordQuizResult non deve mai chiamare /save-exam (niente 401 inutile, niente scrittura).
+  await expect(page.getByRole('button', { name: 'Terminar', exact: true })).toBeHidden();
+  await page.waitForLoadState('networkidle');
+  expect(f.log.filter(e => e.path === 'save-exam')).toHaveLength(0);
   expect(f.acceptedSaves).toBe(0);
 });
 test('server logout clears cookie and stays signed out after reload, navigation and a late cookie', async ({ page }) => {

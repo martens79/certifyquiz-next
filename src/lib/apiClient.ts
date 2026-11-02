@@ -58,6 +58,12 @@ export type Question = {
 export type QuestionsResponse = Question[] | { questions: Question[] };
 
 export type SaveExamRequest = {
+  /**
+   * UUID stabile del risultato concluso. Il backend lo usa per l'idempotenza:
+   * un retry (anche dopo una risposta persa) non crea una seconda riga di
+   * cronologia ne' un secondo aggiornamento di user_question_stats.
+   */
+  attemptId?: string;
   topicId?: number | null;
   certification_id: number;
   totalQuestions: number;
@@ -672,7 +678,8 @@ export const evaluateMockExam = (
   );
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
-export const saveExam = (payload: SaveExamRequest) => apiPost<SaveExamResponse>("/save-exam", payload, true);
+export const saveExam = (payload: SaveExamRequest, opts: { signal?: AbortSignal } = {}) =>
+  apiFetch<SaveExamResponse>("/save-exam", { method: "POST", body: payload, auth: true, signal: opts.signal });
 export const saveResult = (payload: SaveResultRequest) =>
   apiPost<{ success: boolean; streakUpdated?: boolean }>("/save-result", payload, true);
 

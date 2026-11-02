@@ -21,10 +21,11 @@ import {
   getMockExamQuestions,
   getCertificationPoolTotal,
   getCertificationBySlug,
-  saveExam,
   type Question as ApiQuestion,
   getAccessToken,
 } from '@/lib/apiClient';
+import { recordQuizResult } from '@/lib/quiz-result-save';
+import SaveResultBanner from '@/components/quiz/SaveResultBanner';
 
 import { getExamSpecForCert } from '@/lib/exam-specs';
 import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from '@/lib/apple-device-support-release';
@@ -189,7 +190,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const copy = COPY[currentLang] ?? COPY.it;
   const isEipassUser = currentSlug === "eipass";
-const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
+const { isPremiumUser, premiumLocked, isAdmin, user } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
   useEffect(() => {
@@ -399,6 +400,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
       )}
       {!isComingSoon && poolTotalSettled && (
         <div className="mx-auto max-w-5xl px-4 mt-6 pb-10">
+  <SaveResultBanner lang={currentLang} userId={user?.id} leftover />
   <QuizEngine
   key={`${currentSlug}:${currentLang}`}
   lang={currentLang}
@@ -471,24 +473,22 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     }
   }}
   onFinish={async (s: any) => {
-    try {
-      const finishedMode =
-  s?.mode === 'exam' || s?.mode === 'training' || s?.mode === 'assessment'
-    ? s.mode
-    : mode;
+    const finishedMode =
+      s?.mode === 'exam' || s?.mode === 'training' || s?.mode === 'assessment'
+        ? s.mode
+        : mode;
 
-if (finishedMode === 'assessment') return;
+    if (finishedMode === 'assessment') return;
 
-      await saveExam({
-        certification_id: certId,
-        totalQuestions: s.total,
-        correctAnswers: s.correct,
-        isExam: finishedMode === 'exam',
-        attempts: s.attempts,
-      });
-    } catch {
-      // best-effort
-    }
+    // Un fallimento NON e' ingoiato: lo stato (e il retry) vive nell'outbox e
+    // SaveResultBanner lo mostra nella schermata finale.
+    await recordQuizResult({
+      userId: user?.id,
+      scope: `mixed:${currentSlug}:${currentLang}`,
+      summary: s,
+      certificationId: certId,
+      isExam: finishedMode === 'exam',
+    });
   }}
   backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
 />
