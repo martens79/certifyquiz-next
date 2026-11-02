@@ -11,7 +11,7 @@ async function fixture(page: Page, cookie: 'valid' | 'invalid' | 'none' = 'none'
   await page.route(/^http:\/\/127\.0\.0\.1:3347\/(?!api\/backend)/, r => r.continue());
   const log: { method: string; path: string; status: number }[] = [];
   let refreshCount = 0, acceptedSaves = 0;
-  const state = { logoutStatus: 200 };
+  const state = { logoutStatus: 200, logoutDelayMs: 0, logoutDrop: false };
   await page.context().addCookies(cookie === 'none' ? [] : [{ name: 'rt', value: cookie === 'valid' ? 'synthetic-valid-cookie' : 'synthetic-expired-cookie', url: origin, httpOnly: true, sameSite: 'Lax' }]);
   await page.addInitScript(({ seedCache, user }) => {
     localStorage.setItem('cq_cookie_consent', JSON.stringify({ accepted: false }));
@@ -35,6 +35,8 @@ async function fixture(page: Page, cookie: 'valid' | 'invalid' | 'none' = 'none'
       if (bearer?.startsWith('Bearer synthetic-access-') && rt?.value === 'synthetic-valid-cookie') body = { user };
       else { status = 401; body = { error: 'UNAUTHORIZED' }; }
     } else if (p === 'logout') {
+      if (state.logoutDelayMs) await new Promise(res => setTimeout(res, state.logoutDelayMs));
+      if (state.logoutDrop) { log.push({ method: r.request().method(), path: p, status: 0 }); await r.abort('connectionreset'); return; }
       status = state.logoutStatus;
       if (status === 200) await page.context().clearCookies({ name: 'rt' });
       body = { ok: status === 200 };
@@ -245,4 +247,59 @@ test('OAuth callback validates its token before reopening logout', async ({ page
   await expect.poll(() => authState(page)).toEqual({ access: true, cached: true });
   await page.waitForURL(/\/mock-exam/);
   expect(new URL(page.url()).searchParams.has('token')).toBe(false);
+});
+
+const notConfirmed = (page: Page) => page.getByRole('alert').filter({ hasText: /servidor/ }).filter({ visible: true });
+async function openMenuAndLogout(page: Page, clicks = 1) {
+  const mobile = page.getByRole('button', { name: 'Abrir menú', exact: true });
+  if (await mobile.isVisible()) await mobile.click();
+  else await page.locator('header button[aria-haspopup="menu"]').click();
+  const out = page.getByRole('button', { name: 'Cerrar sesión', exact: true });
+  await out.click({ noWaitAfter: true });
+  for (let i = 1; i < clicks; i++) await out.click({ noWaitAfter: true, timeout: 1000 }).catch(() => {});
+}
+test('slow but successful server logout never shows "not confirmed" while the request is in flight; one request; protected route is closed afterwards', async ({ page }) => {
+  const f = await fixture(page, 'valid'); await page.goto(path); await ready(page);
+  await expect.poll(() => authState(page)).toEqual({ access: true, cached: true });
+  f.state.logoutDelayMs = 6000;
+  await openMenuAndLogout(page, 2); // click ripetuto: una sola richiesta
+  // Finestra "in volo": il server non ha ancora risposto. Asserzioni ISTANTANEE (toHaveCount ritenta e
+  // passerebbe a risposta arrivata): in nessun campione deve comparire l'avviso "non confermata".
+  const t0 = Date.now(); let samples = 0;
+  while (Date.now() - t0 < 2500) {
+    expect(f.log.filter(e => e.path === 'logout')).toHaveLength(0);
+    expect(await notConfirmed(page).count(), 'avviso mostrato mentre la conferma e ancora in corso').toBe(0);
+    samples++; await page.waitForTimeout(250);
+  }
+  expect(samples).toBeGreaterThan(5);
+  await page.waitForURL(/\/es\/login/, { timeout: 20000 });
+  await expect(notConfirmed(page)).toHaveCount(0);
+  expect(f.log.filter(e => e.path === 'logout')).toEqual([{ method: 'POST', path: 'logout', status: 200 }]);
+  expect((await page.context().cookies(origin)).some(c => c.name === 'rt')).toBe(false);
+  await expect.poll(() => authState(page)).toEqual({ access: false, cached: false });
+  // risorsa protetta dopo il logout: porta al login, senza riaprire l'identita'
+  const before = f.refreshCount;
+  await page.goto('/es/profile');
+  await page.waitForURL(/\/es\/login/);
+  expect(f.refreshCount).toBe(before);
+  expect(f.acceptedSaves).toBe(0);
+});
+test('server logout lost on the network: the notice appears AFTER the failure and stays; retry confirms and clears it; local session stays closed throughout', async ({ page }) => {
+  const f = await fixture(page, 'valid'); await page.goto(path); await ready(page);
+  f.state.logoutDrop = true;
+  await openMenuAndLogout(page);
+  await expect(notConfirmed(page)).toBeVisible({ timeout: 15000 });
+  await expect.poll(() => authState(page)).toEqual({ access: false, cached: false });
+  expect((await page.context().cookies(origin)).some(c => c.name === 'rt')).toBe(true); // il server NON ha confermato
+  await page.reload();
+  await expect.poll(() => authState(page)).toEqual({ access: false, cached: false });
+  const menu = page.getByRole('button', { name: 'Abrir menú', exact: true });
+  if (await menu.isVisible()) await menu.click();
+  await expect(notConfirmed(page)).toBeVisible(); // resta anche dopo il reload
+  f.state.logoutDrop = false;
+  await page.getByRole('button', { name: 'Reintentar', exact: true }).filter({ visible: true }).click();
+  await page.waitForURL(/\/es\/login/);
+  await expect(notConfirmed(page)).toHaveCount(0);
+  expect((await page.context().cookies(origin)).some(c => c.name === 'rt')).toBe(false);
+  expect(f.log.filter(e => e.path === 'logout').map(e => e.status)).toEqual([0, 200]);
 });

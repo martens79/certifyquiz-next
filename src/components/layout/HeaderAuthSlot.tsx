@@ -67,7 +67,9 @@ export default function HeaderAuthSlot({
     finally { setLoggingOut(false); setLogoutPending(isLogoutPending()); }
   }
   function LogoutNotice() {
-    return logoutPending ? <div role="alert" className="max-w-xs text-xs text-red-700">{logoutMessage} <button type="button" disabled={loggingOut} onClick={signOut} className="underline">{retryLabel}</button></div> : null;
+    // "Non confermata" vale solo a richiesta conclusa: durante l'invio (loggingOut) la conferma e' ancora in corso,
+    // quindi l'avviso non va mostrato. Dopo un errore/timeout (finally) o dopo un reload con pending persistente resta.
+    return logoutPending && !loggingOut ? <div role="alert" className="max-w-xs text-xs text-red-700">{logoutMessage} <button type="button" disabled={loggingOut} onClick={signOut} className="underline">{retryLabel}</button></div> : null;
   }
   useEffect(() => {
     const update = () => { setLogoutPending(isLogoutPending()); if (isExplicitlyLoggedOut()) { setUserState(null); setLoading(false); } };
