@@ -1,6 +1,7 @@
 // src/lib/auth.ts
 
 import { clearAllProgressForUser } from "./quiz-storage";
+import { clearAwaitingIdentity } from "./save-exam-outbox";
 import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, acceptExplicitLogin } from './auth-session';
 
 /** Chiave token principale (stessa usata da apiClient) */
@@ -75,6 +76,7 @@ export function acceptLoginToken(token: string, persist = true, generation = aut
 
 export function clearToken() {
   if (!isBrowser()) return;
+  clearAwaitingIdentity(); // risultati in memoria senza identita' non devono sopravvivere al token
   try {
     localStorage.removeItem(AUTH_KEY);
     sessionStorage.removeItem(AUTH_KEY);

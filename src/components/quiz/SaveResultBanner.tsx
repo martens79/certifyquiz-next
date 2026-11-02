@@ -4,14 +4,20 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { Locale } from '@/lib/quiz-types';
 import {
   EMPTY_OUTBOX,
+  completeAwaiting,
+  discardAwaiting,
   discardResult,
+  getAwaitingIdentity,
   getOutboxItems,
+  getResolvedIdentity,
   hydrateOutbox,
   retryResult,
   subscribeOutbox,
+  type AwaitingItem,
   type OutboxItem,
   type SaveFailureKind,
 } from '@/lib/save-exam-outbox';
+import { retryUnresolvedResult } from '@/lib/quiz-result-save';
 
 type Props = {
   lang: Locale;
@@ -50,6 +56,7 @@ const COPY: Record<Locale, Copy> = {
       auth: 'La sessione è scaduta: il risultato NON è ancora nella cronologia. Accedi di nuovo (anche da un’altra scheda) e poi riprova a salvare.',
       rejected: 'Non è stato possibile registrare questo risultato nella cronologia. Il punteggio mostrato resta valido.',
       interrupted: 'La registrazione del risultato nella cronologia NON è confermata. Riprova a salvare, non verranno creati duplicati.',
+      identity: 'Il risultato è stato calcolato, ma la registrazione nella cronologia NON è confermata: non riesco ancora a verificare il tuo account. Riprova tra qualche secondo senza rispondere di nuovo; se ricarichi la pagina il risultato non verrà registrato.',
     },
   },
   en: {
@@ -68,6 +75,7 @@ const COPY: Record<Locale, Copy> = {
       auth: 'Your session has expired: your result is NOT in your history yet. Sign in again (a different tab works too), then retry saving.',
       rejected: 'This result could not be saved to your history. The score shown is still valid.',
       interrupted: 'Saving your result to your history is NOT confirmed. Please retry saving, no duplicates will be created.',
+      identity: 'Your result was calculated, but saving to your history is NOT confirmed: your account could not be verified yet. Retry in a few seconds without answering again; if you reload this page the result will not be saved.',
     },
   },
   fr: {
@@ -86,6 +94,7 @@ const COPY: Record<Locale, Copy> = {
       auth: 'La session a expiré : le résultat n’est PAS encore dans l’historique. Reconnectez-vous (un autre onglet convient aussi), puis réessayez l’enregistrement.',
       rejected: 'Ce résultat n’a pas pu être enregistré dans l’historique. Le score affiché reste valable.',
       interrupted: 'L’enregistrement du résultat dans l’historique n’est PAS confirmé. Réessayez l’enregistrement, aucun doublon ne sera créé.',
+      identity: 'Le résultat a été calculé, mais son enregistrement dans l’historique n’est PAS confirmé : votre compte n’a pas encore pu être vérifié. Réessayez dans quelques secondes sans répondre à nouveau ; si vous rechargez la page, le résultat ne sera pas enregistré.',
     },
   },
   es: {
@@ -104,6 +113,7 @@ const COPY: Record<Locale, Copy> = {
       auth: 'La sesión ha caducado: tu resultado AÚN NO está en el historial. Inicia sesión de nuevo (sirve otra pestaña) y reintenta el guardado.',
       rejected: 'No se pudo guardar este resultado en tu historial. La puntuación mostrada sigue siendo válida.',
       interrupted: 'El guardado de tu resultado en el historial NO está confirmado. Reintenta el guardado, no se crearán duplicados.',
+      identity: 'El resultado se calculó, pero el guardado en tu historial NO está confirmado: aún no se pudo verificar tu cuenta. Reintenta en unos segundos sin responder de nuevo; si recargas la página, el resultado no se guardará.',
     },
   },
 };
@@ -181,17 +191,85 @@ function Row({ item, lang, showLeftover }: { item: OutboxItem; lang: Locale; sho
   );
 }
 
+/** Risultato valutato ma identita' non ancora verificata: solo in memoria, retry manuale senza rispondere di nuovo. */
+function AwaitingRow({ item, lang }: { item: AwaitingItem; lang: Locale }) {
+  const t = COPY[lang] ?? COPY.en;
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const wait = item.retryAt - Date.now();
+    if (item.status !== 'waiting' || wait <= 0) return;
+    const id = setTimeout(() => setNow(Date.now()), wait + 20);
+    return () => clearTimeout(id);
+  }, [item.retryAt, item.status]);
+  if (item.status === 'resolving') {
+    return (
+      <div role="status" data-testid="save-status-saving" className="mb-3 rounded-xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-800">
+        {t.saving}
+      </div>
+    );
+  }
+  return (
+    <div
+      role="alert"
+      data-testid="save-error"
+      data-kind="identity"
+      className="mb-3 flex flex-col gap-2 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div className="space-y-1">
+        <p>{t.failed.identity}</p>
+        <p className="font-semibold">{t.keepOpen}</p>
+      </div>
+      <div className="flex shrink-0 gap-2">
+        <button
+          type="button"
+          data-testid="save-retry"
+          className="rounded-lg bg-amber-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          disabled={item.retryAt > now}
+          onClick={() => { retryUnresolvedResult(item.attemptId).catch(() => { /* lo stato e' nello store */ }); }}
+        >
+          {t.retry}
+        </button>
+        <button
+          type="button"
+          data-testid="save-discard"
+          className="rounded-lg border border-amber-900 px-3 py-2 text-sm font-semibold"
+          onClick={() => discardAwaiting(item.attemptId)}
+        >
+          {t.discard}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Stato della registrazione in cronologia, distinto dal punteggio.
  * - con `attemptId`: il risultato appena concluso (salvataggio / salvato / errore + retry);
  * - con `leftover`: risultati di un caricamento precedente non ancora registrati.
  */
 export default function SaveResultBanner({ lang, userId, attemptId, leftover = false }: Props) {
-  const uid = userId == null ? null : String(userId);
+  const awaiting = useSyncExternalStore(
+    subscribeOutbox,
+    () => (leftover ? null : getAwaitingIdentity(attemptId)),
+    () => null
+  );
+  const resolved = useSyncExternalStore(
+    subscribeOutbox,
+    () => (leftover ? null : getResolvedIdentity(attemptId)),
+    () => null
+  );
+  // user?.id (AuthProvider) oppure l'id verificato dal retry dell'identita'
+  const uid = userId != null ? String(userId) : resolved;
 
   useEffect(() => {
     if (leftover && uid != null) hydrateOutbox(uid);
   }, [leftover, uid]);
+
+  // L'identita' e' arrivata (AuthProvider idratato) mentre il risultato era in attesa: una sola registrazione, nessun loop.
+  const waitingId = awaiting?.status === 'waiting' ? awaiting.attemptId : null;
+  useEffect(() => {
+    if (waitingId && userId != null) completeAwaiting(waitingId, async () => userId, {}, false).catch(() => { /* stato nello store */ });
+  }, [waitingId, userId]);
 
   const all = useSyncExternalStore(
     subscribeOutbox,
@@ -199,6 +277,13 @@ export default function SaveResultBanner({ lang, userId, attemptId, leftover = f
     () => EMPTY_OUTBOX
   );
   const shown = leftover ? all.filter((i) => !i.fresh) : attemptId ? all.filter((i) => i.entry.attemptId === attemptId) : EMPTY_OUTBOX;
+  if (awaiting) {
+    return (
+      <div data-testid="save-current">
+        <AwaitingRow item={awaiting} lang={lang} />
+      </div>
+    );
+  }
   if (uid == null || shown.length === 0) return null;
   return (
     <div data-testid={leftover ? 'save-leftover' : 'save-current'}>

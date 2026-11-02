@@ -219,6 +219,42 @@ test("B5. 401 on /save-exam with a valid refresh cookie: token refreshed, same a
   expect(await pendingKeys(page)).toEqual([]);
 });
 
+test("B6. token present but user id unavailable: visible identity failure, nothing on disk, retry without re-answering saves once", async ({ page, context }) => {
+  const { server } = await setup(page, context);
+  // token valido, nessuna cache utente e /auth/me in errore: user?.id non determinabile
+  await context.addInitScript(() => { try { localStorage.removeItem("cq_user"); } catch { /* */ } });
+  let meOk = false;
+  await page.route("**/api/backend/auth/me", (route) =>
+    meOk ? json(route, 200, { user: { id: USER.id, username: "tester", email: "t@example.test", role: "user", premium: true } }) : json(route, 500, { error: "ME_DOWN" }));
+  await openQuiz(page, MIXED_URL);
+  await answerToEnd(page);
+
+  const alert = page.getByTestId("save-error");
+  await expect(alert).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toHaveAttribute("data-kind", "identity");
+  await expect(page.getByTestId("save-status-saved")).toHaveCount(0);
+  expect(await bodyText(page)).toContain("100%"); // la valutazione resta visibile
+  expect(server.requests, "nessuna richiesta a /save-exam finche' l'identita' e' ignota").toHaveLength(0);
+  expect(await pendingKeys(page), "nessuna voce su disco per un utente ignoto").toEqual([]);
+
+  // identita' ancora non disponibile: il retry resta fallito, nessun /save-exam, nessun loop
+  await expect(page.getByTestId("save-retry")).toBeEnabled({ timeout: 10_000 });
+  await page.getByTestId("save-retry").click();
+  await expect(alert).toHaveAttribute("data-kind", "identity");
+  expect(server.requests).toHaveLength(0);
+
+  // identita' recuperata: retry senza rispondere di nuovo, un solo risultato
+  meOk = true;
+  await expect(page.getByTestId("save-retry")).toBeEnabled({ timeout: 10_000 });
+  await page.getByTestId("save-retry").click();
+  await expect(page.getByTestId("save-status-saved")).toBeVisible({ timeout: 30_000 });
+  await expect(alert).toHaveCount(0);
+  expect(server.requests).toHaveLength(1);
+  expect(server.requests[0].attemptId).toMatch(UUID);
+  expect(server.committed.size).toBe(1);
+  expect(await pendingKeys(page)).toEqual([]);
+});
+
 // ---------------------------------------------------------------- C
 
 test("C. connection lost before the server sees the request: nothing is lost, recovered by the retry", async ({ page, context }) => {

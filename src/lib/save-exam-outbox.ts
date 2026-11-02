@@ -13,6 +13,11 @@
 //   `deduped` se il tentativo e' gia' registrato (risposta HTTP persa).
 // - Nessun retry illimitato: una richiesta + UN solo retry automatico (solo
 //   rete/timeout/5xx), poi solo retry manuale con cooldown (429: 30 s).
+// - Identita' non ancora determinabile (token presente, userId assente): il
+//   risultato NON entra nell'outbox (le voci sono legate a un utente noto) e NON
+//   va su disco. Resta solo in memoria (`awaiting`), visibile nel banner con un
+//   retry manuale; appena l'id e' noto passa dal normale write-ahead con lo stesso
+//   attemptId. Si perde chiudendo/ricaricando la pagina e al logout/clearToken.
 // - Le voci sono legate all'utente (chiave `...:user:<id>`): il logout le
 //   rimuove con le altre chiavi `cq:quiz:` dell'utente (clearAllProgressForUser)
 //   e non vengono mai inviate con il token di un altro account.
@@ -20,7 +25,7 @@
 
 import type { SaveExamRequest } from '@/lib/apiClient';
 
-export type SaveFailureKind = 'network' | 'timeout' | 'server' | 'busy' | 'rate' | 'auth' | 'rejected' | 'interrupted';
+export type SaveFailureKind = 'network' | 'timeout' | 'server' | 'busy' | 'rate' | 'auth' | 'rejected' | 'interrupted' | 'identity';
 export type SaveFailure = { kind: SaveFailureKind; retryable: boolean; status: number | null };
 
 export type OutboxEntry = {
@@ -285,8 +290,94 @@ export function discardResult(attemptId: string) {
   emit();
 }
 
+// ── risultato in attesa di identita' (solo memoria, mai su disco) ───────────
+export type AwaitingItem = {
+  attemptId: string;
+  scope: string;
+  createdAt: number;
+  payload: SaveExamRequest & { attemptId: string };
+  status: 'resolving' | 'waiting';
+  /** epoch ms prima del quale il retry manuale e' disabilitato */
+  retryAt: number;
+};
+const awaiting = new Map<string, AwaitingItem>();
+const resolvedIds = new Map<string, string>();
+const awaitingInflight = new Map<string, Promise<string>>();
+
+export function getAwaitingIdentity(attemptId: string | undefined | null): AwaitingItem | null {
+  return (attemptId && awaiting.get(attemptId)) || null;
+}
+/** Id risolto per un risultato che era in attesa: serve al banner finche' user?.id non e' idratato. */
+export function getResolvedIdentity(attemptId: string | undefined | null): string | null {
+  return (attemptId && resolvedIds.get(attemptId)) || null;
+}
+/** Registra un risultato valutato per il quale esiste un token ma non ancora l'id utente. */
+export function holdForIdentity(
+  input: { attemptId: string; scope: string; payload: SaveExamRequest },
+  deps: OutboxDeps = {}
+) {
+  awaiting.set(input.attemptId, {
+    attemptId: input.attemptId, scope: input.scope, createdAt: (deps.now ?? Date.now)(),
+    payload: { ...input.payload, attemptId: input.attemptId }, status: 'resolving', retryAt: 0,
+  });
+  emit();
+}
+/**
+ * Risolve l'identita' (una sola richiesta, nessun retry interno) e, se nota, registra il
+ * risultato dal normale outbox. `manual` rispetta il cooldown. Risolve con l'id utente;
+ * se l'id manca lancia SaveExamFailure('identity'); se il salvataggio fallisce lancia
+ * SaveExamFailure con la voce gia' nell'outbox dell'utente (retry dal banner).
+ */
+export function completeAwaiting(
+  attemptId: string,
+  resolve: () => Promise<string | number | null>,
+  deps: OutboxDeps = {},
+  manual = true
+): Promise<string> {
+  const running = awaitingInflight.get(attemptId);
+  if (running) return running;
+  const item = awaiting.get(attemptId);
+  const now = (deps.now ?? Date.now)();
+  if (!item) return Promise.reject(new SaveExamFailure({ kind: 'rejected', retryable: false, status: null }, false));
+  const identityFailure = (): SaveFailure => ({ kind: 'identity', retryable: true, status: null });
+  if (manual && item.retryAt > now) return Promise.reject(new SaveExamFailure(identityFailure(), false));
+  const p = (async () => {
+    awaiting.set(attemptId, { ...item, status: 'resolving' });
+    emit();
+    let id: string | null = null;
+    try { const r = await resolve(); id = r == null ? null : String(r); } catch { id = null; }
+    const cur = awaiting.get(attemptId);
+    if (!cur) throw new SaveExamFailure({ kind: 'rejected', retryable: false, status: null }, false); // scartato/logout nel frattempo
+    if (id == null) {
+      awaiting.set(attemptId, { ...cur, status: 'waiting', retryAt: (deps.now ?? Date.now)() + COOLDOWN_MS });
+      emit();
+      throw new SaveExamFailure(identityFailure(), false);
+    }
+    awaiting.delete(attemptId);
+    resolvedIds.set(attemptId, id);
+    emit();
+    await submitResult({ attemptId, userId: id, scope: cur.scope, payload: cur.payload }, deps);
+    return id;
+  })().finally(() => { awaitingInflight.delete(attemptId); });
+  awaitingInflight.set(attemptId, p);
+  return p;
+}
+export function discardAwaiting(attemptId: string) {
+  if (awaiting.delete(attemptId)) emit();
+}
+/** Logout / token rimosso: nessun risultato in memoria deve poter essere inviato con un'altra identita'. */
+export function clearAwaitingIdentity() {
+  if (awaiting.size === 0 && resolvedIds.size === 0) return;
+  awaiting.clear();
+  resolvedIds.clear();
+  emit();
+}
+
 /** Solo per i test. */
 export function __resetOutboxForTests() {
+  awaiting.clear();
+  resolvedIds.clear();
+  awaitingInflight.clear();
   items.clear();
   inflight.clear();
   snapshots.clear();
