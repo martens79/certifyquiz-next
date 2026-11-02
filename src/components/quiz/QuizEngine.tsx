@@ -2061,7 +2061,10 @@ const goToFirstUnanswered = () => {
  async function doFinish(timeExpired = false) {
   // Un solo completamento alla volta: doppio click, timer scaduto durante una
   // valutazione in corso o retry sovrapposto non devono duplicare salvataggi.
-  if (finishingRef.current) return;
+  // completedRef copre anche il frame del timer d'esame che scatta tra la fine di
+  // runFinish e il re-render con finished=true (altrimenti: seconda valutazione e
+  // seconda registrazione con un nuovo attemptId).
+  if (finishingRef.current || completedRef.current) return;
   finishingRef.current = true;
   setFinishing(true);
   try {

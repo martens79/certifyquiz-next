@@ -130,6 +130,17 @@ test("A. mixed training saved: one request with a stable attemptId, explicit 'sa
   expect(await bodyText(page)).toContain("100%");
 });
 
+test("A2. mock exam: one evaluation and one save request — the exam timer cannot re-enter after completion", async ({ page, context }) => {
+  const { server, counters } = await setup(page, context);
+  await openQuiz(page, MOCK_URL);
+  await finishMock(page);
+  await expect(page.getByTestId("save-status-saved")).toBeVisible({ timeout: 20_000 });
+  await page.waitForTimeout(2500); // oltre qualche frame del timer d'esame
+  expect(counters.mock).toBe(1);
+  expect(server.requests).toHaveLength(1);
+  expect(server.committed.size).toBe(1);
+});
+
 // ---------------------------------------------------------------- B
 
 test("B. save-exam 500: score shown, history NOT updated is stated, one auto retry, manual retry saves once with the same attemptId", async ({ page, context }) => {
