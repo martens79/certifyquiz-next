@@ -249,3 +249,40 @@ test('createAttemptId yields RFC 4122 v4 UUIDs, all distinct', () => {
   assert.equal(ids.size, 200);
   for (const id of ids) assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
 });
+
+// ---- user id non ancora disponibile durante il bootstrap dell'auth ----
+const rArgs = { userId: undefined, scope: 'mixed:x:en', summary: { total: 5, correct: 3 }, certificationId: 7, isExam: false };
+
+test('recordQuizResult: token present but user.id not yet hydrated resolves the id from cache and saves (no silent skip)', async () => {
+  const sent: unknown[] = [];
+  const res = await recordQuizResult(rArgs, { send: async (p) => { sent.push(p); return {}; }, ...noWait },
+    { hasToken: () => true, cachedId: () => UID, fetchId: async () => { throw new Error('must not call /auth/me'); } });
+  assert.deepEqual(res, { recorded: true });
+  assert.equal(sent.length, 1);
+});
+
+test('recordQuizResult: no cached id falls back to /auth/me', async () => {
+  let sent = 0;
+  const res = await recordQuizResult(rArgs, { send: async () => { sent++; return {}; }, ...noWait },
+    { hasToken: () => true, cachedId: () => null, fetchId: async () => UID });
+  assert.deepEqual(res, { recorded: true });
+  assert.equal(sent, 1);
+});
+
+test('recordQuizResult: token present but id undeterminable throws a retryable failure instead of recorded:false', async () => {
+  let sent = 0;
+  await assert.rejects(
+    recordQuizResult(rArgs, { send: async () => { sent++; return {}; }, ...noWait },
+      { hasToken: () => true, cachedId: () => null, fetchId: async () => { throw http(500); } }),
+    (e: unknown) => e instanceof SaveExamFailure && e.failure.kind === 'auth' && e.failure.retryable === true,
+  );
+  assert.equal(sent, 0);
+});
+
+test('recordQuizResult: real anonymous (no token) makes no request even with a stale cached user', async () => {
+  let calls = 0;
+  const res = await recordQuizResult(rArgs, { send: async () => { calls++; return {}; } },
+    { hasToken: () => false, cachedId: () => { calls++; return UID; }, fetchId: async () => { calls++; return UID; } });
+  assert.deepEqual(res, { recorded: false });
+  assert.equal(calls, 0);
+});

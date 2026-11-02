@@ -143,7 +143,7 @@ test("A2. mock exam: one evaluation and one save request — the exam timer cann
 
 // ---------------------------------------------------------------- B
 
-test("B. save-exam 500: score shown, history NOT updated is stated, one auto retry, manual retry saves once with the same attemptId", async ({ page, context }) => {
+test("B. save-exam 500: score shown, history NOT confirmed is stated, one auto retry, manual retry saves once with the same attemptId", async ({ page, context }) => {
   const { server } = await setup(page, context);
   server.plan = ["500", "500"]; // richiesta + unico retry automatico
   await openQuiz(page, MIXED_URL);
@@ -151,7 +151,7 @@ test("B. save-exam 500: score shown, history NOT updated is stated, one auto ret
 
   const alert = page.getByTestId("save-error");
   await expect(alert).toBeVisible({ timeout: 20_000 });
-  await expect(alert).toContainText(/NOT saved to your history/i);
+  await expect(alert).toContainText(/saving to your history is NOT confirmed/i);
   await expect(page.getByTestId("save-status-saved")).toHaveCount(0);
   expect(await bodyText(page)).toContain("100%"); // la valutazione resta completata e visibile
   expect(server.requests).toHaveLength(2); // nessun retry illimitato
@@ -203,6 +203,20 @@ test("B4. 401: explicit sign-in message, result kept on the device", async ({ pa
   await answerToEnd(page);
   await expect(page.getByTestId("save-error")).toHaveAttribute("data-kind", "auth", { timeout: 30_000 });
   expect((await pendingKeys(page)).length).toBe(1);
+});
+
+test("B5. 401 on /save-exam with a valid refresh cookie: token refreshed, same attemptId re-sent, saved once, no error banner", async ({ page, context }) => {
+  const { server, backend } = await setup(page, context);
+  server.plan = ["401"]; // access token scaduto; poi il fallback "ok" dopo il refresh
+  await openQuiz(page, MIXED_URL);
+  await answerToEnd(page);
+  await expect(page.getByTestId("save-status-saved")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("save-error")).toHaveCount(0);
+  expect(backend.refreshCalls, "il refresh del token deve essere stato tentato").toBeGreaterThan(0);
+  expect(server.requests).toHaveLength(2);
+  expect(server.requests[1].attemptId).toBe(server.requests[0].attemptId);
+  expect(server.committed.size).toBe(1);
+  expect(await pendingKeys(page)).toEqual([]);
 });
 
 // ---------------------------------------------------------------- C
