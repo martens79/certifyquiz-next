@@ -7,6 +7,8 @@ import { PortableText } from "@portabletext/react";
 import { sanityServerClient } from "@/lib/sanity.server";
 import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
+import ArticleAudio from "@/components/blog/ArticleAudio";
+import type { SanityArticle } from "@/lib/sanity.types";
 import AuthorBox from "@/components/blog/AuthorBox";
 import type { Metadata } from "next";
 import LeadMagnetBox from "@/components/blog/LeadMagnetBox";
@@ -20,7 +22,7 @@ import { isArticleIndexable } from "@/lib/seo/article-indexability";
 
 /* ------------------------------------------------------------ */
 
-function formatDate(lang: Locale, iso?: string) {
+function formatDate(lang: Locale, iso?: string | null) {
   if (!iso) return "";
   try {
     const locale = lang === "en" ? "en-US" : lang;
@@ -85,7 +87,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
 
-  const article = await sanityServerClient.fetch<any>(articleBySlugLang, {
+  const article = await sanityServerClient.fetch<SanityArticle | null>(articleBySlugLang, {
     lang,
     slug,
   });
@@ -152,7 +154,7 @@ export default async function BlogArticlePage({
 }) {
   const { lang, slug } = await params;
 
-  const article = await sanityServerClient.fetch<any>(articleBySlugLang, {
+  const article = await sanityServerClient.fetch<SanityArticle | null>(articleBySlugLang, {
     lang,
     slug,
   });
@@ -255,6 +257,8 @@ export default async function BlogArticlePage({
           </div>
         </div>
       </header>
+
+      <ArticleAudio audioUrl={article.audioUrl} lang={article.lang} />
 
      {/* Article content */}
 <section className="mt-8">
