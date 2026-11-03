@@ -56,6 +56,7 @@ Nessuna dipendenza aggiunta; nessuna operazione MySQL, merge, push, deploy o pub
 - TypeScript frontend e Studio: superati.
 - ESLint dei file frontend interessati: superato.
 - Test componente: 2/2 superati; quattro lingue, desktop e mobile Chromium emulato, WAV di prova.
+- Test schema: superato; campo assente consentito, MP3/WAV validi accettati, asset mancanti, formati diversi e MIME incoerenti rifiutati.
 - Build Studio: superata con `npm run build -- --no-auto-updates`, usando `XDG_CONFIG_HOME` in una cartella temporanea scrivibile. Il flag evita il download degli aggiornamenti durante la verifica, senza cambiare la configurazione dello Studio.
 - Build Next.js: tentata; download dei font Google bloccato prima dal DNS della sandbox e poi dalla catena di certificati TLS dell'ambiente (`UNABLE_TO_VERIFY_LEAF_SIGNATURE`). Non è stata disattivata la verifica TLS.
 - Da verificare con i propri file: upload MP3/WAV nello Studio e riproduzione su dispositivi mobili fisici.
