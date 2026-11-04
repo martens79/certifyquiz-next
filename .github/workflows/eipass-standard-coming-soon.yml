@@ -1,7 +1,8 @@
 name: EIPASS Standard coming-soon landing
 
 # Guards the landing-only publication of EIPASS Standard: ONLY /it/certificazioni/eipass-standard is public
-# (200, index/follow, self canonical, in the sitemap); every other Standard URL is 404; the other certifications'
+# (200, index/follow, self canonical, in the sitemap) and the Italian catalogue lists it; the seven modules are
+# "Prossimamente" with disabled buttons; every other Standard URL is 404; the other certifications'
 # indexing rules and the EIPASS 7 Moduli User path are unchanged. No secrets, no deployment, no backend:
 # the isolated build points at a loopback read-only fixture.
 
@@ -19,6 +20,10 @@ on:
       - "src/app/**/categorie/**"
       - "src/components/CertificationPage.tsx"
       - "src/components/certification/EipassStandardComingSoon.tsx"
+      - "src/components/certification/EipassStandardModules.tsx"
+      - "src/components/CertificationCard.tsx"
+      - "src/components/CertificationListClient.tsx"
+      - "src/lib/catalog-coming-soon.ts"
       - "public/images/certifications/eipass-standard.svg"
       - "tests/eipass-standard-*"
       - "tests/plc-fundamentals-planned-guard.test.ts"
@@ -53,6 +58,7 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
         run: >-
           node --import tsx --test tests/eipass-standard-coming-soon.test.ts tests/eipass-standard-coming-soon-render.test.tsx
+          tests/eipass-standard-modules.test.tsx tests/eipass-standard-catalog.test.ts tests/eipass-standard-catalog-card.test.tsx
           tests/eipass-standard-sitemap.test.ts tests/plc-fundamentals-planned-guard.test.ts
           tests/az802-rollout-noindex.test.ts tests/certification-indexability.test.ts
           tests/certifications-list-metadata.test.ts tests/sitemap-backend-calls.test.ts

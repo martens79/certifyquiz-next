@@ -10,6 +10,7 @@ imageUrl,
 level,
 description,
 badgeLabel,
+comingSoon,
 lang,
 }: {
 href: string;
@@ -18,10 +19,15 @@ imageUrl?: string | null;
 level?: string | null;
 description?: string | null;
 badgeLabel?: string;
+/** Landing-only certification (no quiz yet): no "try for free" promise, an explicit "coming soon" pill. */
+comingSoon?: boolean;
 lang: Locale;
 }) {
-const cta =
-lang === "it"
+const soonCta = lang === "it" ? "Scopri di più →" : lang === "fr" ? "En savoir plus →" : lang === "es" ? "Saber más →" : "Learn more →";
+const soonPill = lang === "it" ? "Prossimamente" : lang === "fr" ? "Bientôt disponible" : lang === "es" ? "Próximamente" : "Coming soon";
+const cta = comingSoon
+? soonCta
+: lang === "it"
 ? "Scopri e prova gratis →"
 : lang === "fr"
 ? "Découvrir et essayer gratuitement →"
@@ -48,6 +54,9 @@ dark:border-neutral-800 dark:bg-neutral-900"
 {level ? <p className="mt-0.5 text-xs text-gray-500 dark:text-neutral-400">{level}</p> : null}
 {description ? (
 <p className="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-neutral-300">{description}</p>
+) : null}
+{comingSoon ? (
+<span className="mt-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900">{soonPill}</span>
 ) : null}
 {badgeLabel ? (
 <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-900">

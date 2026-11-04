@@ -36,6 +36,20 @@ export function isPubliclyListed(
   return !isPlannedCertification(cert) && !isComingSoonCertification(cert);
 }
 
+/**
+ * Catalogue list only: a coming-soon certification flagged `listedInCatalog` appears in the catalogue of the
+ * languages it is offered in (EIPASS Standard: Italian). Home and category pages keep using isPubliclyListed.
+ */
+export function isCatalogListed(
+  slug: string,
+  registry: Readonly<Record<string, CertificationData | undefined>>,
+  lang: string
+): boolean {
+  if (isPubliclyListed(slug, registry)) return true;
+  const cert = registry[slug];
+  return isComingSoonCertification(cert) && cert?.listedInCatalog === true && isCertificationOfferedInLang(cert, lang);
+}
+
 /** Language routes of a certification: only the languages in its launch scope exist (default: all). */
 export function isCertificationOfferedInLang(
   cert: CertificationData | null | undefined,

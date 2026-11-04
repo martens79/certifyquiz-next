@@ -7,7 +7,7 @@ import { isReviewSeoIntentDistinct, selectIndexableReviewClusterItems, type Revi
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 import { isTopicIndexable } from "@/lib/seo/topic-indexability";
-import { EIPASS_STANDARD_LANDING_PATH } from "@/lib/eipass-standard";
+import { EIPASS_STANDARD_LANDING_PATH, isEipassStandardSlug } from "@/lib/eipass-standard";
 import { pricingPath } from "@/lib/paths";
 
 export const revalidate = 3600;
@@ -240,9 +240,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // The API still exposes two legacy registry slugs. Publish only their final
   // public destinations so every certification URL in the sitemap is a 200.
+  // EIPASS Standard is never derived from the backend list: its only URL is the static Italian landing below, even
+  // if a database row (and, one day, a question inventory) exists (no EN/FR/ES page exists for it).
   const canonicalCerts = Array.from(
     new Map(
-      certs.map((cert) => {
+      certs.filter((cert) => !isEipassStandardSlug(cert.slug)).map((cert) => {
         const slug = canonicalCertificationSlug(cert.slug);
         return [slug, { ...cert, slug }] as const;
       })

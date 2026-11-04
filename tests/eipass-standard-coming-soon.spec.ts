@@ -43,6 +43,45 @@ test('hydrated landing: coming-soon message, 7 modules, no Premium/quiz/package 
   expect(await page.locator('link[rel="alternate"][hreflang]').count()).toBe(0);
 });
 
+test('seven modules, each "Prossimamente" with a disabled button: nothing starts, no request, no navigation',async({page})=>{
+  await prepare(page,true);
+  const requests:string[]=[];
+  page.on('request',r=>{const u=new URL(r.url());if(u.pathname.startsWith('/api/backend/')||/\/quiz\/|attempt|session/i.test(u.pathname))requests.push(r.method()+' '+u.pathname);});
+  await page.goto(LANDING);
+  await page.waitForLoadState('networkidle');
+  const before=requests.length;
+  const items=page.locator('li[data-module]');
+  await expect(items).toHaveCount(7);
+  for(let i=0;i<7;i++){
+    const li=items.nth(i);
+    await expect(li).toContainText(MODULES[i]);
+    await expect(li.getByText('Prossimamente',{exact:true})).toBeVisible();
+    const btn=li.getByRole('button',{name:'Esercitazione non ancora disponibile'});
+    await expect(btn).toBeDisabled();
+    await expect(btn).toHaveAttribute('aria-disabled','true');
+    await btn.dispatchEvent('click'); // dispatched on the element itself: a coordinate click on a phone could hit an overlay
+  }
+  await expect(page).toHaveURL(new RegExp(LANDING+'$'));
+  expect(requests.slice(before),'clicking a disabled button sends nothing').toEqual([]);
+  expect(await page.locator('main li[data-module] a').count()).toBe(0);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test('the Italian catalogue lists EIPASS Standard once and it opens the landing; other languages do not list it',async({page,request})=>{
+  await prepare(page,true);
+  await page.goto('/it/certificazioni');
+  const card=page.locator('a[href="'+LANDING+'"]');
+  await expect(card.first()).toBeVisible();
+  expect(await card.count()).toBeGreaterThanOrEqual(1);
+  await card.first().click();
+  await expect(page).toHaveURL(new RegExp(LANDING+'$'));
+  await expect(page.getByRole('heading',{name:'Quiz di preparazione in arrivo'})).toBeVisible();
+  for(const p of ['/certifications','/fr/certifications','/es/certificaciones','/it']){
+    expect(await (await request.get(p)).text(),p).not.toContain('eipass-standard');
+  }
+});
+
 test('no consent: clicking the links sends no analytics event',async({page})=>{
   await prepare(page,false);
   await page.goto(LANDING);

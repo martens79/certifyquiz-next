@@ -3,8 +3,9 @@
 //
 // COMING SOON: publicationStatus "coming_soon" => ONLY the Italian landing is public (200, index/follow,
 // self canonical, in the sitemap). No quiz, topic page, practice, review or other language exists: those
-// routes are 404. Not listed in the catalogue, home or category pages (only one contextual link from the
-// Italian EIPASS 7 Moduli User landing). No DB id on purpose: the certification row does not exist.
+// routes are 404. Listed in the ITALIAN catalogue (listedInCatalog) but not in home or category pages, plus
+// one contextual link from the Italian EIPASS 7 Moduli User landing. No DB id on purpose: the landing and the
+// catalogue entry come from this registry alone and never read the certification row.
 //
 // The copy is original, independent and never says the preparation is available: it states that the
 // quizzes are in preparation. No coverage, equivalence, ranking or "valid for competitions" claim.
@@ -84,6 +85,7 @@ const FAQ_IT = [
 const EipassStandard: CertificationData = {
   slug: EIPASS_STANDARD_SLUG,
   publicationStatus: "coming_soon",
+  listedInCatalog: true,
   launchScope: { languages: EIPASS_STANDARD_LANGS, countries: EIPASS_STANDARD_COUNTRIES },
   // Original illustration: no EIPASS logo or mark.
   imageUrl: "/images/certifications/eipass-standard.svg",

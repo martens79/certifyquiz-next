@@ -6,6 +6,7 @@ import { CERTS_BY_SLUG, IDS_BY_SLUG } from "../src/certifications/data/index.ts"
 import {
   isPlannedCertification,
   isPlannedPreviewEnabled,
+  isCatalogListed,
   isPubliclyListed,
   PLANNED_PREVIEW_ENV,
 } from "../src/certifications/publication.ts";
@@ -93,7 +94,9 @@ test("discovery: planned certifications are not listed; published ones (PLC incl
     assert.equal(isPubliclyListed(slug, CERTS_BY_SLUG), true, slug);
   }
   const list = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");
-  assert.match(list, /isPubliclyListed\(c\.slug, CERTS_BY_SLUG\)/, "certifications list + its JSON-LD filter planned slugs");
+  // the list uses isCatalogListed: identical to isPubliclyListed for every certification except flagged coming-soon landings
+  assert.match(list, /isCatalogListed\(c\.slug, CERTS_BY_SLUG, L\)/, "certifications list + its JSON-LD filter planned slugs");
+  assert.equal(isCatalogListed("any", { any: { ...CERTS_BY_SLUG[SLUG], publicationStatus: "planned", listedInCatalog: true } }, "it"), false, "a planned entry stays hidden even if flagged");
   const category = read("../src/app/[lang]/categorie/[cat]/page.tsx");
   assert.match(category, /isPubliclyListed\(s, CERTS_BY_SLUG\)/, "category pages filter planned (and coming-soon) slugs");
 });

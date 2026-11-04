@@ -12,6 +12,7 @@ import CertificationPracticeBox from "@/components/certifications/CertificationP
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
 import { isEipassStandardSlug } from "@/lib/eipass-standard";
 import { EipassStandardPointer } from "@/components/certification/EipassStandardComingSoon";
+import EipassStandardModules from "@/components/certification/EipassStandardModules";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
 import CertificationPackageOffers from "@/components/certification/CertificationPackageOffers";
 import ExamBlueprintCard from "@/components/certification/ExamBlueprintCard";
@@ -517,8 +518,16 @@ const pageTopics =
 
         {/* Blocchi */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* EIPASS Standard (coming soon): the seven official modules, each "Prossimamente" with a disabled button
+              instead of the generic checked list (a checkmark would suggest an available module). */}
+          {isEipassStandardSlug(data.slug) && (
+            <div className="sm:col-span-2">
+              <EipassStandardModules />
+            </div>
+          )}
+
           {/* Topics */}
-          {pageTopics.length > 0 && (
+          {!isEipassStandardSlug(data.slug) && pageTopics.length > 0 && (
             <div className="bg-blue-100 p-4 rounded-xl shadow">
               <h2 className="text-lg font-semibold text-blue-800 mb-2">
                 {extraContent?.topicsHeading?.[lang] ??

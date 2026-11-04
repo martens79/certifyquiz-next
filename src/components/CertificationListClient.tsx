@@ -16,6 +16,8 @@ type CertListClientItem = {
   imageUrl?: string | null;
   levelKey?: LevelKey;
   category?: string | null;
+  /** Landing-only certification: the card promises no quiz. */
+  comingSoon?: boolean;
 };
 
 const UI = {
@@ -254,6 +256,7 @@ export function CertificationListClient({
               imageUrl={c.imageUrl ?? undefined}
               level={c.level ?? undefined}
               description={c.description ?? undefined}
+              comingSoon={c.comingSoon}
               lang={lang}
             />
           ))
