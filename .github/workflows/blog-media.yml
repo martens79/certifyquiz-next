@@ -1,0 +1,39 @@
+name: Blog audio and diary
+on:
+  pull_request:
+    paths:
+      - 'src/app/**/blog/**'
+      - 'src/app/api/og/**'
+      - 'src/components/blog/**'
+      - 'src/lib/blog-categories.ts'
+      - 'src/lib/sanity*'
+      - 'tests/blog-*.test.tsx'
+      - 'package*.json'
+      - '.github/workflows/blog-media.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  blog-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx --no-install playwright install --with-deps chromium
+      - name: Lint blog changes
+        run: >-
+          npx --no-install eslint
+          'src/app/[lang]/blog/page.tsx' 'src/app/[lang]/blog/[slug]/page.tsx'
+          src/app/api/og/route.tsx src/components/blog/ArticleAudio.tsx
+          src/components/blog/BlogCategoryBadge.tsx src/lib/blog-categories.ts
+          src/lib/sanity.queries.ts src/lib/sanity.types.ts
+          tests/blog-audio.test.tsx tests/blog-category.test.tsx
+      - name: Four-language rendering and native desktop/mobile playback
+        run: npx --no-install tsx --tsconfig tsconfig.test.json --test tests/blog-audio.test.tsx tests/blog-category.test.tsx
