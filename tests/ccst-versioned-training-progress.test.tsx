@@ -248,7 +248,7 @@ test('only one retry: a second STALE_REVISION fails, and the next save still goe
     if (active && method === 'PUT' && path.endsWith('/progress')) { k++; srv.foreignAnswer(srv.ids[k], srv.ids[k] * 10 + 1); }
   };
   const before = srv.log.filter(l => l.startsWith('PUT')).length;
-  await assert.rejects(c.save({ marked: {}, reviewLater: [], currentIndex: 0 }), (e: unknown) => e instanceof VersionedTrainingError && e.message === 'STALE_REVISION');
+  await assert.rejects(c.save({ marked: {}, reviewLater: [], currentIndex: 1 }), (e: unknown) => e instanceof VersionedTrainingError && e.message === 'STALE_REVISION');
   assert.equal(srv.log.filter(l => l.startsWith('PUT')).length - before, 2, 'exactly one retry');
   active = false;
   const ok = await c.save({ marked: {}, reviewLater: [], currentIndex: 2 });
@@ -343,4 +343,141 @@ test('transport: GET is retried once on a network error, PUT and POST are not', 
   const writer = versionedTrainingRequest(async () => { calls++; throw new TypeError('network'); });
   await assert.rejects(writer('/attempts/x/progress', { method: 'PUT', body: '{}' }));
   assert.equal(calls, 1);
+});
+
+// ---- Request economy and rate limiting (429) ----
+const sleeps: number[] = [];
+const noSleep = async (ms: number) => { sleeps.push(ms); };
+const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
+const strip = (path: string) => path.replace(/^\/ccst-versioned-training/, '');
+
+test('after an answer the server already holds the progress: the autosave sends no PUT, and a normal answer costs 3 requests', async () => {
+  const srv = makeServer({ n: 8 });
+  const c = makeClient(srv);
+  await c.open();
+  const marked: Record<string, number | null> = {};
+  const base = srv.log.length;
+  for (let i = 0; i < 5; i++) {
+    const q = srv.ids[i], a = q * 10 + 1;
+    // What the UI does: Next persists the new position, then the answer is checked, then the autosave runs with the answer marked.
+    await c.save({ marked: { ...marked }, reviewLater: [], currentIndex: i + 1 });
+    assert.equal((await c.checkAnswer(q, a)).correct, true);
+    marked[q] = a;
+    const after = await c.save({ marked: { ...marked }, reviewLater: [], currentIndex: i + 1 });
+    assert.equal(after.state.marked[q], a, 'the returned attempt is the server copy');
+  }
+  const used = srv.log.slice(base);
+  assert.equal(used.filter(l => l.startsWith('PUT')).length, 5, 'one PUT per position change, none after the answer');
+  assert.equal(used.filter(l => l.startsWith('POST')).length, 5);
+  assert.equal(used.filter(l => l.startsWith('GET')).length, 5, 'one re-read per answer (the POST does not return the revision)');
+  assert.equal(srv.maxWriting, 1);
+  for (const q of srv.ids.slice(0, 5)) assert.equal(srv.state.marked[q], q * 10 + 1);
+  assert.equal(Object.keys(srv.state.evaluations).length, 5);
+  const done = await c.complete();
+  assert.equal(done.state.summary?.answered, 5);
+});
+
+test('a save whose progress differs from the server is still written (no false skip)', async () => {
+  const srv = makeServer();
+  const c = makeClient(srv);
+  await c.open();
+  const before = srv.count('PUT');
+  await c.save({ marked: {}, reviewLater: [], currentIndex: 3 });
+  await c.save({ marked: {}, reviewLater: [5], currentIndex: 3 });
+  assert.equal(srv.count('PUT') - before, 2);
+  assert.equal(srv.state.currentIndex, 3); assert.deepEqual(srv.state.reviewLater, [5]);
+  const noop = srv.count('PUT');
+  await c.save({ marked: {}, reviewLater: [5], currentIndex: 3 });
+  assert.equal(srv.count('PUT'), noop, 'identical progress is not rewritten');
+});
+
+test('429: any method is replayed after Retry-After (bounded), the retry order is preserved and nothing is duplicated', async () => {
+  sleeps.length = 0;
+  const srv = makeServer({ n: 10 });
+  const storage = makeStorage();
+  let limited = 0, putLimited = false, postLimited = false;
+  const apiFetch = async (path: string, init?: { method?: string; body?: string }) => {
+    const p = strip(path);
+    const method = init?.method ?? 'GET';
+    // Rate limiter: rejects one PUT and one POST /answers BEFORE the handler (nothing reaches the server model).
+    const hitPut = method === 'PUT' && !putLimited && srv.count('PUT') >= 1;
+    const hitPost = method === 'POST' && p.endsWith('/answers') && !postLimited && srv.count('POST /attempts/:id/answers') >= 2;
+    if (hitPut || hitPost) {
+      limited++; if (hitPut) putLimited = true; else postLimited = true;
+      return new Response('Too many requests, please try again later.', { status: 429, headers: { 'Retry-After': hitPut ? '3' : '120' } });
+    }
+    try { return json(200, await srv.request(p, init)); }
+    catch (e) { if (e instanceof VersionedTrainingError) return json(e.status ?? 500, { error: e.message }); throw e; }
+  };
+  const c = createVersionedTrainingClient({ userId: USER, topicId: TOPIC, lang: 'it', storage, request: versionedTrainingRequest(apiFetch as any, '/ccst-versioned-training', noSleep), randomKey: () => 'fixture-start-key-123456789' });
+  await c.open();
+  const marked: Record<string, number | null> = {};
+  for (let i = 0; i < 6; i++) assertAllFulfilled(await clickAnswer(c, srv, marked, i));
+  assert.equal(limited, 2, 'both injected 429 were exercised');
+  assert.deepEqual([...sleeps].sort((a, b) => a - b), [3000, 15000], 'Retry-After honoured and capped at 15 s');
+  assert.equal(srv.count('POST /attempts/:id/answers'), 6, 'no answer was evaluated twice or lost');
+  assert.equal(Object.keys(srv.state.evaluations).length, 6);
+  assert.equal(srv.maxWriting, 1, 'the retry stays inside the serialized queue');
+  assert.equal(pendingOf(storage), undefined);
+  const done = await c.complete();
+  assert.equal(done.state.summary?.answered, 6);
+});
+
+test('429 that persists: typed RATE_LIMITED error after 2 replays, never a SyntaxError, and the next call still works', async () => {
+  sleeps.length = 0;
+  let calls = 0, hot = true;
+  const apiFetch = async () => { calls++; return hot ? new Response('Too many requests, please try again later.', { status: 429 }) : json(200, { ok: true }); };
+  const request = versionedTrainingRequest(apiFetch as any, '/x', noSleep);
+  await assert.rejects(request('/attempts/a/answers', { method: 'POST', body: '{}' }), (e: unknown) => e instanceof VersionedTrainingError && e.message === 'RATE_LIMITED' && e.status === 429);
+  assert.equal(calls, 3, 'first try + 2 replays');
+  assert.deepEqual(sleeps, [2000, 2000], 'no Retry-After header: 2 s default');
+  hot = false;
+  assert.deepEqual(await request('/latest'), { ok: true });
+});
+
+test('non-JSON error bodies never surface as SyntaxError: GET is retried once, writes fail with a typed error', async () => {
+  let calls = 0;
+  const html = () => new Response('<html>Bad gateway</html>', { status: 502 });
+  const flakyGet = versionedTrainingRequest((async () => { calls++; return calls === 1 ? html() : json(200, { fine: true }); }) as any, '', noSleep);
+  assert.deepEqual(await flakyGet('/latest'), { fine: true });
+  assert.equal(calls, 2);
+  calls = 0;
+  const deadGet = versionedTrainingRequest((async () => { calls++; return html(); }) as any, '', noSleep);
+  await assert.rejects(deadGet('/latest'), (e: unknown) => e instanceof VersionedTrainingError && e.message === 'REQUEST_FAILED' && e.status === 502);
+  assert.equal(calls, 2);
+  calls = 0;
+  const writer = versionedTrainingRequest((async () => { calls++; return html(); }) as any, '', noSleep);
+  await assert.rejects(writer('/attempts/a/progress', { method: 'PUT', body: '{}' }), (e: unknown) => e instanceof VersionedTrainingError && e.status === 502);
+  assert.equal(calls, 1, 'a write is not replayed on a 5xx');
+  calls = 0;
+  const brokenOk = versionedTrainingRequest((async () => { calls++; return new Response('not json', { status: 200 }); }) as any, '', noSleep);
+  await assert.rejects(brokenOk('/attempts/a/progress', { method: 'PUT', body: '{}' }), SyntaxError);
+  assert.equal(calls, 1);
+});
+
+test('a 429 on POST /answers leaves the answer marked but not evaluated, and the next open reconciles it exactly once', async () => {
+  sleeps.length = 0;
+  const srv = makeServer({ n: 5 });
+  const storage = makeStorage();
+  let hot = false;
+  const apiFetch = async (path: string, init?: { method?: string; body?: string }) => {
+    const p = strip(path);
+    if (hot && init?.method === 'POST' && p.endsWith('/answers')) return new Response('Too many requests', { status: 429 });
+    try { return json(200, await srv.request(p, init)); } catch (e) { if (e instanceof VersionedTrainingError) return json(e.status ?? 500, { error: e.message }); throw e; }
+  };
+  const mk = () => createVersionedTrainingClient({ userId: USER, topicId: TOPIC, lang: 'it', storage, request: versionedTrainingRequest(apiFetch as any, '/ccst-versioned-training', noSleep), randomKey: () => 'fixture-start-key-123456789' });
+  const c = mk(); await c.open();
+  const q = srv.ids[0], a = q * 10 + 1;
+  hot = true;
+  await assert.rejects(c.checkAnswer(q, a), (e: unknown) => e instanceof VersionedTrainingError && e.message === 'RATE_LIMITED');
+  await c.save({ marked: { [q]: a }, reviewLater: [], currentIndex: 0 });
+  assert.equal(srv.state.marked[q], a, 'marked is persisted by the autosave');
+  assert.equal(srv.state.evaluations, undefined, 'but not evaluated: the 429 never reached the server');
+  hot = false;
+  const again = mk(); const reopened = await again.open();
+  assert.equal(reopened.state.marked[q], a);
+  assert.equal((await again.checkAnswer(q, a)).correct, true, 'the app re-submits the persisted answer on resume');
+  assert.equal(srv.count('POST /attempts/:id/answers'), 1);
+  assert.equal(Object.keys(srv.state.evaluations).length, 1);
 });
