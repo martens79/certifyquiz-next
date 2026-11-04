@@ -1,6 +1,7 @@
 import { sanityClient } from "@/lib/sanity.client";
 import { articlesListByLang } from "@/lib/sanity.queries";
 import Link from "next/link";
+import BlogCategoryBadge from "@/components/blog/BlogCategoryBadge";
 import type { Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
@@ -59,6 +60,7 @@ export default async function BlogPage({
                 )}
 
                 <div className="flex-1 p-5">
+                  <BlogCategoryBadge category={a.category} lang={lang} />
                   <h2 className="text-xl font-semibold text-gray-900 transition group-hover:text-blue-600">
                     {a.title}
                   </h2>

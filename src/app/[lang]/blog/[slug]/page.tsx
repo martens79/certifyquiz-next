@@ -8,6 +8,7 @@ import { sanityServerClient } from "@/lib/sanity.server";
 import { articleBySlugLang } from "@/lib/sanity.queries";
 import { portableTextComponents } from "@/components/blog/PortableTextComponents";
 import ArticleAudio from "@/components/blog/ArticleAudio";
+import BlogCategoryBadge from "@/components/blog/BlogCategoryBadge";
 import type { SanityArticle } from "@/lib/sanity.types";
 import AuthorBox from "@/components/blog/AuthorBox";
 import type { Metadata } from "next";
@@ -216,6 +217,7 @@ export default async function BlogArticlePage({
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
+              <BlogCategoryBadge category={article.category} lang={article.lang} />
               <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
                 {labels.fromBlog}
               </span>
