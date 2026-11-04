@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { CERTS_BY_SLUG, IDS_BY_SLUG } from "../src/certifications/data/index.ts";
 import {
+  isCatalogListed,
   isCertificationOfferedInLang,
   isComingSoonCertification,
   isPlannedCertification,
@@ -34,7 +35,7 @@ const OFFICIAL_TITLES = [
   "Creare presentazioni multimediali",
 ];
 
-test("registry: coming_soon (not planned), Italian-only, no DB id, not in the catalogue", () => {
+test("registry: coming_soon (not planned), Italian-only, no DB id, in the Italian catalogue only (not home, not categories)", () => {
   const reg = CERTS_BY_SLUG[SLUG];
   assert.ok(reg);
   assert.equal(EIPASS_STANDARD_SLUG, SLUG);
@@ -45,7 +46,18 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, not in the ca
   assert.equal(reg.id, undefined);
   assert.deepEqual([...(reg.launchScope?.languages ?? [])], ["it"]);
   assert.deepEqual([...(reg.launchScope?.countries ?? [])], ["IT"]);
-  assert.equal(isPubliclyListed(SLUG, CERTS_BY_SLUG), false, "not listed in catalogue, home or categories");
+  assert.equal(isPubliclyListed(SLUG, CERTS_BY_SLUG), false, "not listed in home or categories");
+  assert.equal(reg.listedInCatalog, true);
+  assert.equal(isCatalogListed(SLUG, CERTS_BY_SLUG, "it"), true, "listed in the Italian catalogue");
+  for (const lang of ["en", "fr", "es"]) assert.equal(isCatalogListed(SLUG, CERTS_BY_SLUG, lang), false, `not listed in the ${lang} catalogue`);
+  const flagged = Object.values(CERTS_BY_SLUG).filter((c) => c && c.listedInCatalog === true).map((c) => c.slug);
+  assert.deepEqual([...new Set(flagged)], [SLUG], "only Standard is flagged for the catalogue");
+  for (const c of Object.values(CERTS_BY_SLUG)) {
+    if (!c || c.slug === SLUG) continue;
+    for (const lang of ["it", "en", "fr", "es"]) {
+      assert.equal(isCatalogListed(c.slug, CERTS_BY_SLUG, lang), isPubliclyListed(c.slug, CERTS_BY_SLUG), `${c.slug}/${lang}: catalogue rule unchanged for every other certification`);
+    }
+  }
   const planned = Object.values(CERTS_BY_SLUG).filter((c) => c && isPlannedCertification(c)).map((c) => c.slug);
   assert.deepEqual(planned, [], "no certification is 'planned'");
   const comingSoon = Object.values(CERTS_BY_SLUG).filter((c) => c && isComingSoonCertification(c)).map((c) => c.slug);
@@ -55,6 +67,7 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, not in the ca
 test("seven modules in official order; informational only: no module carries a slug or link", () => {
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.number), [1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.title), OFFICIAL_TITLES);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), Array(7).fill("coming_soon"), "no module is available");
   const reg = CERTS_BY_SLUG[SLUG];
   assert.equal(reg.topics.length, 7);
   for (const t of reg.topics) {
@@ -130,7 +143,13 @@ test("wiring: landing renders from the registry only; quiz, topics and other lan
   const gate = cp.search(/\{!isEipassStandardSlug\(data\.slug\) && \(\s*<>\s*<CertificationPackageOffers/);
   assert.ok(gate >= 0 && gate < cp.search(/<PremiumResourcesCta/), "no package offer and no Premium CTA for Standard (client-rendered, invisible to an SSR smoke)");
   assert.match(read("../src/app/[lang]/categorie/[cat]/page.tsx"), /isPubliclyListed\(s, CERTS_BY_SLUG\)/);
-  assert.match(read("../src/app/[lang]/certificazioni/CertificationsListView.tsx"), /isPubliclyListed\(c\.slug, CERTS_BY_SLUG\)/);
+  assert.match(read("../src/lib/server/home-data.ts"), /isPubliclyListed\(slug, CERTS_BY_SLUG\)/, "home keeps excluding coming-soon certifications");
+  const listView = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");
+  assert.match(listView, /isCatalogListed\(c\.slug, CERTS_BY_SLUG, L\)/);
+  assert.match(listView, /mergeComingSoonCatalogEntries\(certs, CERTS_BY_SLUG, L\)/);
+  const cpage = read("../src/components/CertificationPage.tsx");
+  assert.match(cpage, /\{isEipassStandardSlug\(data\.slug\) && \(\s*<div className="sm:col-span-2">\s*<EipassStandardModules \/>/, "Standard shows the seven-module block");
+  assert.match(cpage, /\{!isEipassStandardSlug\(data\.slug\) && pageTopics\.length > 0 && \(/, "no generic checked list for Standard");
   for (const f of [
     "../src/app/certifications/[slug]/scenarios/page.tsx", "../src/app/es/certificaciones/[slug]/escenarios/page.tsx",
     "../src/app/fr/certifications/[slug]/scenarios/page.tsx", "../src/app/it/certificazioni/[slug]/scenari/page.tsx",

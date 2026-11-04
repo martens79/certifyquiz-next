@@ -2,8 +2,13 @@
 // EIPASS Standard (DigComp 2.2): a product distinct from "EIPASS 7 Moduli User" (certification id 3).
 //
 // STATUS: "coming_soon" (see certifications/data/eipass-standard.ts). ONLY the Italian landing is public
-// (HTTP 200, indexable, in the sitemap). There is no quiz, no topic page, no practice, no review and no
-// other language: those routes answer 404 and the certification has no database row.
+// (HTTP 200, indexable, in the sitemap) and the Italian catalogue lists it. There is no quiz, no topic page,
+// no practice, no review and no other language: those routes answer 404, whether or not the certification
+// row exists in the database (the landing never reads it).
+//
+// Per-module availability: every module is "coming_soon" and the landing shows "Prossimamente" with a
+// disabled button. Activating a module later is a deliberate code change (status + the topic/quiz guards),
+// never a side effect of a database flag.
 //
 // Source of the module names/order: "EIPASS Standard - Utente qualificato di computer in base al
 // DigComp 2.2", programma analitico rev. 02/2024, Centro Studi CERTIPASS. Only the seven module titles
@@ -19,6 +24,9 @@ export const EIPASS_STANDARD_OFFICIAL_URL =
 export const EIPASS_USER_LANDING_PATH = "/it/certificazioni/eipass";
 export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDARD_SLUG}`;
 
+/** Only "coming_soon" exists today: a second state is added together with the route that makes it real. */
+export type EipassStandardModuleStatus = "coming_soon";
+
 export type EipassStandardModule = Readonly<{
   /** Official module number: also the display order. */
   number: 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -26,17 +34,23 @@ export type EipassStandardModule = Readonly<{
   title: string;
   /** DigComp 2.2 competence area the module belongs to. */
   digcompArea: Readonly<{ number: 1 | 2 | 3 | 4 | 5; name: string }>;
+  status: EipassStandardModuleStatus;
 }>;
 
 export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
-  { number: 1, title: "I fondamenti dell'ICT", digcompArea: { number: 5, name: "Risolvere problemi" } },
-  { number: 2, title: "Navigare e cercare informazioni sul Web", digcompArea: { number: 1, name: "Alfabetizzazione su informazioni e dati" } },
-  { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" } },
-  { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" } },
-  { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" } },
-  { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" } },
-  { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" } },
+  { number: 1, title: "I fondamenti dell'ICT", digcompArea: { number: 5, name: "Risolvere problemi" }, status: "coming_soon" },
+  { number: 2, title: "Navigare e cercare informazioni sul Web", digcompArea: { number: 1, name: "Alfabetizzazione su informazioni e dati" }, status: "coming_soon" },
+  { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" }, status: "coming_soon" },
+  { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "coming_soon" },
+  { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
+  { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
+  { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
 ] as const;
+
+/** Module card copy: no date, no promise, nothing that suggests a practice session exists. */
+export const EIPASS_STANDARD_MODULES_HEADING = "I 7 moduli d'esame";
+export const EIPASS_STANDARD_MODULE_SOON_LABEL = "Prossimamente";
+export const EIPASS_STANDARD_MODULE_BUTTON_LABEL = "Esercitazione non ancora disponibile";
 
 export function isEipassStandardSlug(slug: string | null | undefined): boolean {
   return slug === EIPASS_STANDARD_SLUG;

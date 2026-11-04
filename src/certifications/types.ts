@@ -182,6 +182,11 @@ export type CertificationData = {
    */
   publicationStatus?: "published" | "planned" | "coming_soon";
   /**
+   * Only meaningful for "coming_soon": list the landing in the public catalogue (and only in the languages of
+   * `launchScope`). Home and category pages never list a coming-soon certification.
+   */
+  listedInCatalog?: boolean;
+  /**
    * Where the certification is offered. Language and country are separate axes:
    * `languages` decides which language routes exist (the others are 404),
    * `countries` is the target market (ISO 3166-1 alpha-2) and never drives routing.

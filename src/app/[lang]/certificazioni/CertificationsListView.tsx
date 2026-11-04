@@ -6,7 +6,8 @@ import { getCertificationsListRSC } from "@/lib/server/certs";
 import type { CertListItem } from "@/lib/certs";
 import { CertificationListClient } from "@/components/CertificationListClient";
 import { CERTS_BY_SLUG } from "@/certifications/registry";
-import { isPubliclyListed } from "@/certifications/publication";
+import { isCatalogListed, isComingSoonCertification } from "@/certifications/publication";
+import { mergeComingSoonCatalogEntries } from "@/lib/catalog-coming-soon";
 import { normalizeSlug } from "@/lib/cert-slug";
 
 /* ------------------------- CANONICAL PATHS (PUBLIC) ------------------------- */
@@ -284,11 +285,15 @@ export default async function CertificationsListView({ lang }: ViewProps) {
     certs.push(...toAdd);
   }
 
+  // Coming-soon landings flagged `listedInCatalog` (EIPASS Standard, Italian only) come from the registry,
+  // whatever the backend list returns for them (see lib/catalog-coming-soon.ts).
+  const certsWithComingSoon = mergeComingSoonCatalogEntries(certs, CERTS_BY_SLUG, L);
+
   // Planned certifications (registered, not launched) are never listed, even when the
-  // backend already returns their row.
-  const visible = certs.filter(
+  // backend already returns their row. Coming-soon ones only through the explicit flag above.
+  const visible = certsWithComingSoon.filter(
     (c): c is CertListItem & { slug: string } =>
-      typeof c.slug === "string" && c.slug.trim().length > 0 && isPubliclyListed(c.slug, CERTS_BY_SLUG)
+      typeof c.slug === "string" && c.slug.trim().length > 0 && isCatalogListed(c.slug, CERTS_BY_SLUG, L)
   );
 
   /* ------------------------- JSON-LD ------------------------- */
@@ -354,6 +359,7 @@ export default async function CertificationsListView({ lang }: ViewProps) {
             imageUrl: c.imageUrl,
             levelKey,
             category: c.category ?? null,
+            comingSoon: isComingSoonCertification(CERTS_BY_SLUG[c.slug]) || undefined,
           };
         })}
       />

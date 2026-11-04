@@ -10,7 +10,8 @@ Data: 28/10/2026. Autorizzazione del proprietario: pubblicare **la sola landing*
 | Stessa landing in EN/FR/ES (`/certifications/…`, `/fr/…`, `/es/…`) | 404 | `launchScope.languages = ["it"]` |
 | Pagine topic/modulo, ripassi per topic, scenari, indice ripassi, quiz, quiz misto, esercitazione a tempo, hub | 404 (stato HTTP vero, non pagina "soft") | `topic-page.ts`, `TopicReviewPageShell`, `ReviewsCertificationIndexPage`, 4 pagine scenari, `quiz/[slug]/layout.tsx` |
 | Sitemap | **una sola** voce Standard: la landing italiana | voce statica, solo `lang === "it"`, mai dal backend |
-| Catalogo, home, categorie | assenti | `isPubliclyListed` esclude `planned` e `coming_soon` |
+| Catalogo italiano `/it/certificazioni` | **una scheda** verso la landing (aggiornamento 04/11/2026) | `listedInCatalog: true` + `isCatalogListed` + `mergeComingSoonCatalogEntries`: dal registro, con o senza riga nel database; EN/FR/ES non la elencano |
+| Home, pagine categoria | assenti | `isPubliclyListed` esclude `planned` e `coming_soon` |
 | Landing EIPASS 7 Moduli User (solo italiano) | un link contestuale "In preparazione" | `EipassStandardPointer` |
 
 Stato `coming_soon` ≠ `planned`: `planned` resta 404 ovunque; `coming_soon` pubblica solo la landing. Nessuna certificazione né riga DB, nessun backend, nessun import, nessuna dipendenza dalla PR backend #149.
@@ -18,7 +19,7 @@ Stato `coming_soon` ≠ `planned`: `planned` resta 404 ovunque; `coming_soon` pu
 ## Contenuto (originale, nessuna dichiarazione di disponibilità)
 - Messaggio "Quiz di preparazione in arrivo" (blocco in testa, badge, descrizione, FAQ).
 - Che cos'è EIPASS Standard; rapporto con il DigComp 2.2 (cinque aree; i tre moduli Office all'area della creazione di contenuti); **differenze rispetto a EIPASS 7 Moduli User**; che cosa sta preparando CertifyQuiz; FAQ (4).
-- Sette moduli come **elenco informativo senza link** (nomi e ordine ufficiali). Il programma ufficiale **non** è riprodotto (nessun elenco di argomenti/attività). Nessun logo o marchio EIPASS: illustrazione SVG originale.
+- Sette moduli (nomi e ordine ufficiali) come **schede «Prossimamente» con pulsante disabilitato** «Esercitazione non ancora disponibile» (`EipassStandardModules`, aggiornamento 04/11/2026): nessun link, nessun gestore, nessuna sessione o tentativo possibile. Stato per modulo: `EIPASS_STANDARD_MODULES[i].status` (oggi tutti `coming_soon`). Il programma ufficiale **non** è riprodotto (nessun elenco di argomenti/attività). Nessun logo o marchio EIPASS: illustrazione SVG originale.
 - Link: pagina ufficiale EIPASS Standard (nuova scheda, `noopener noreferrer`) e EIPASS 7 Moduli User, con la dicitura "percorso distinto".
 - Rimossi per Standard (blocchi lato client che prometterebbero ciò che non esiste): griglia "Materiale di studio", offerte pacchetto, CTA Premium ("Preparazione completa"). Il blocco Premium appariva **solo dopo l'idratazione**: lo ha scoperto il controllo nel browser, non lo smoke SSR; ora c'è un test Playwright che lo impedisce.
 - **Free/Premium**: nessuna divisione dei moduli o delle domande e nessun limite toccato. Un test verifica che i file della release non contengano logica Premium/Free.
@@ -51,3 +52,6 @@ GA4 registra le visualizzazioni (consenso, `anonymize_ip`, niente segnali Google
 
 ## Rollback
 Revert della PR (la landing torna 404 e sparisce dalla sitemap alla rigenerazione, fino a un'ora). Nessun dato da ripristinare.
+
+## Attivazione progressiva dei moduli (come si farà, non ancora implementata)
+L'attivazione di un modulo è una **modifica di codice deliberata**, mai l'effetto collaterale di un flag nel database: (1) topic nel database con domande approvate e `is_active = 1`; (2) nel registro `status` del modulo da `coming_soon` a un nuovo stato `available` (e solo allora il componente produce un link); (3) la guardia del loader topic (`topic-page.ts`) e quella del layout quiz lasciano passare **solo** quel modulo; (4) test, sitemap e metadata del modulo. Finché non esiste il punto (2) nessun link a un modulo può esistere, quindi nessun 404 né tentativo vuoto.

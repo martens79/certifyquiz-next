@@ -76,12 +76,26 @@ for (const path of [`/it/ripassi/${SLUG}`, `/reviews/${SLUG}`, `/fr/revisions/${
   checked++;
 }
 
-// 3) discovery surfaces: nothing, except the single contextual link on the Italian User landing
-for (const path of ['/', '/it', '/it/certificazioni', '/certifications', '/fr/certifications', '/es/certificaciones', '/robots.txt']) {
+// 3) discovery surfaces: nothing, except the Italian catalogue (one card to the landing) and the single contextual link on the Italian User landing
+for (const path of ['/', '/it', '/certifications', '/fr/certifications', '/es/certificaciones', '/robots.txt']) {
   const res = await get(path);
   assert.ok(res.status === 200 || (res.status >= 300 && res.status < 400), `${path}: ${res.status}`);
   const body = res.status === 200 ? await res.text() : '';
   assert.ok(!body.includes(SLUG), `${path}: must not mention ${SLUG}`);
+  checked++;
+}
+{
+  const res = await get('/it/certificazioni');
+  assert.equal(res.status, 200, '/it/certificazioni');
+  const body = await res.text();
+  const cardHrefs = [...body.matchAll(/href="([^"]*eipass-standard[^"]*)"/g)].map((m) => m[1]);
+  assert.ok(cardHrefs.length >= 1 && cardHrefs.every((h) => h === LANDING), `the Italian catalogue links only to the landing, got ${JSON.stringify(cardHrefs)}`);
+  assert.ok(visible(body).includes('EIPASS Standard'), 'catalogue card title');
+  const card = (body.match(/<a[^>]*href="\/it\/certificazioni\/eipass-standard"[\s\S]*?<\/a>/) || [''])[0];
+  assert.ok(card.length > 100, 'catalogue card found');
+  assert.match(visible(card), /Prossimamente/, 'the catalogue card says Prossimamente');
+  assert.doesNotMatch(visible(card), /prova gratis|gratis|gratuit/i, 'the catalogue card promises nothing free or available');
+  assert.doesNotMatch(body, /\/quiz\/eipass-standard|eipass-standard\/modulo/, 'no quiz or module link from the catalogue');
   checked++;
 }
 {
