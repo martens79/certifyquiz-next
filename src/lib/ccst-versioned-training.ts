@@ -53,7 +53,10 @@ export function createVersionedTrainingClient({userId,topicId,lang,storage,reque
  function save(state:TrainingState):Promise<TrainingAttempt>{
   if(!validState(state))return Promise.reject(new VersionedTrainingError('INVALID_PROGRESS'));
   const frozen={marked:structuredClone(state.marked),reviewLater:[...state.reviewLater],currentIndex:state.currentIndex};
-  return run(async()=>{const a=await current(),h=load();if(!h?.attemptId)throw new VersionedTrainingError('ATTEMPT_HANDLE_MISSING');h.pending={baseRev:a.rev,state:frozen,base:a.state};persist(h);
+  return run(async()=>{const a=await current(),h=load();if(!h?.attemptId)throw new VersionedTrainingError('ATTEMPT_HANDLE_MISSING');
+   // The server already holds exactly this progress (typically right after an answer: POST /answers wrote marked[q] and nothing else moved): no write, no revision bump.
+   if(same(a.state,frozen)){latest=a;return structuredClone(a);}
+   h.pending={baseRev:a.rev,state:frozen,base:a.state};persist(h);
    try{let saved:TrainingAttempt;
     try{saved=await put(a,a.rev,frozen);}catch(e){
      // POST /answers bumps the revision on the server. One retry, only if the server moved compatibly with this write.
@@ -85,6 +88,25 @@ export function createVersionedTrainingClient({userId,topicId,lang,storage,reque
  return Object.freeze({open,save,checkAnswer,review,useServerProgress,complete,restart,storageKey:key});
 }
 export type VersionedTrainingClient=ReturnType<typeof createVersionedTrainingClient>;
-export function versionedTrainingRequest(apiFetch:(path:string,init?:{method?:string;body?:string})=>Promise<Response>,base='/ccst-versioned-training'):Request{
- return async(path,init)=>{for(let attempt=0;attempt<2;attempt++){try{const response=await apiFetch(base+path,init),body=await response.json();if(!response.ok)throw new VersionedTrainingError(body?.error||'REQUEST_FAILED',response.status);return body;}catch(e){const read=!init?.method||init.method==='GET';if(attempt===0&&read&&(e instanceof TypeError||e instanceof SyntaxError))continue;throw e;}}throw new VersionedTrainingError('REQUEST_FAILED');};
+// 429 is raised by the rate limiter before any handler runs, so the request had no effect and is replayed unchanged (any method),
+// after Retry-After (bounded). Non-JSON bodies (plain-text 429, proxy HTML 502/503) never surface as SyntaxError: they become a typed error.
+export function versionedTrainingRequest(apiFetch:(path:string,init?:{method?:string;body?:string})=>Promise<Response>,base='/ccst-versioned-training',sleep:(ms:number)=>Promise<void>=ms=>new Promise(done=>setTimeout(done,ms))):Request{
+ const MAX_RATE_LIMIT_RETRIES=2,MAX_WAIT_MS=15000;
+ const waitMs=(response:Response)=>{const raw=response.headers?.get?.('retry-after'),seconds=raw?Number(raw):NaN;return Number.isFinite(seconds)&&seconds>=0?Math.min(Math.max(seconds*1000,1000),MAX_WAIT_MS):2000;};
+ return async(path,init)=>{
+  const read=!init?.method||init.method==='GET';let limited=0;
+  for(let attempt=0;attempt<2;attempt++){
+   try{
+    for(;;){
+     const response=await apiFetch(base+path,init);
+     if(response.status===429){if(limited++<MAX_RATE_LIMIT_RETRIES){await sleep(waitMs(response));continue;}throw new VersionedTrainingError('RATE_LIMITED',429);}
+     const body=await response.json().catch(()=>undefined);
+     if(body===undefined){if(response.ok)throw new SyntaxError('Invalid JSON response');if(attempt===0&&read)break;throw new VersionedTrainingError('REQUEST_FAILED',response.status);}
+     if(!response.ok)throw new VersionedTrainingError(body?.error||'REQUEST_FAILED',response.status);
+     return body;
+    }
+   }catch(e){if(attempt===0&&read&&(e instanceof TypeError||e instanceof SyntaxError))continue;throw e;}
+  }
+  throw new VersionedTrainingError('REQUEST_FAILED');
+ };
 }
