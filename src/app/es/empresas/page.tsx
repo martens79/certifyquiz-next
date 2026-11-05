@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { spaceGrotesk } from "@/fonts/space-grotesk";
 import { Users, Languages, LifeBuoy, Mail, ArrowRight, Building2 } from "lucide-react";
 import FaqAccordion from "@/components/team/FaqAccordion";
+import TwaPurchaseGate from "@/components/twa/TwaPurchaseGate";
 
 const CONTACT_EMAIL = "certifyquiz@gmail.com";
 
@@ -76,6 +77,7 @@ function mailto(subject: string) {
 
 export default function TeamLandingPageES() {
   return (
+    <TwaPurchaseGate lang="es">
     <main className={`${spaceGrotesk.variable} bg-white`}>
       {/* HERO */}
       <section className="relative overflow-hidden bg-[#0B1220]">
@@ -191,5 +193,6 @@ export default function TeamLandingPageES() {
         </div>
       </section>
     </main>
+    </TwaPurchaseGate>
   );
 }
