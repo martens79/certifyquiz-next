@@ -176,9 +176,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Premium vale per tutte le certificazioni?", answer: "Sì. Premium sblocca le risorse Premium disponibili nel catalogo, non una sola certificazione." },
     ],
     explanationsUsedTemplate: "Hai già usato {used} delle tue {limit} spiegazioni gratuite.",
-    businessBannerTitle: "Stai cercando un piano per il tuo team?",
-    businessBannerBody: "Se gestisci un team IT, dai un'occhiata ai piani aziendali: dashboard di progresso condivisa per tutto il team e fattura unica.",
-    businessBannerCta: "Scopri i piani aziendali",
+    businessBannerTitle: "Prepari un piccolo gruppo alle certificazioni IT?",
+    businessBannerBody: "Preparazione alle certificazioni IT per piccoli gruppi, con accessi individuali e avvio assistito. Scrivici per una proposta per il tuo gruppo.",
+    businessBannerCta: "Scopri la proposta per gruppi",
   },
 
   es: {
@@ -241,9 +241,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "¿Premium sirve para todas las certificaciones?", answer: "Sí. Premium desbloquea los recursos Premium disponibles en todo el catálogo." },
     ],
     explanationsUsedTemplate: "Ya has usado {used} de tus {limit} explicaciones gratuitas.",
-    businessBannerTitle: "¿Buscas un plan para tu equipo?",
-    businessBannerBody: "Si gestionas un equipo IT, descubre nuestros planes para empresas: panel de progreso compartido para todo el equipo y factura única.",
-    businessBannerCta: "Ver planes para empresas",
+    businessBannerTitle: "¿Preparas a un grupo pequeño para certificaciones IT?",
+    businessBannerBody: "Preparación de certificaciones IT para grupos pequeños, con accesos individuales e inicio asistido. Escríbenos para recibir una propuesta para tu grupo.",
+    businessBannerCta: "Descubre la propuesta para grupos",
   },
 
   en: {
@@ -306,9 +306,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Does Premium cover every certification?", answer: "Yes. Premium unlocks the Premium resources available across the catalog, not just one certification." },
     ],
     explanationsUsedTemplate: "You've already used {used} of your {limit} free explanations.",
-    businessBannerTitle: "Looking for a plan for your team?",
-    businessBannerBody: "If you manage an IT team, check out our business plans: a shared progress dashboard for the whole team and a single company invoice.",
-    businessBannerCta: "See business plans",
+    businessBannerTitle: "Preparing a small group for IT certifications?",
+    businessBannerBody: "IT certification prep for small groups, with individual accounts and assisted onboarding. Contact us for a proposal for your group.",
+    businessBannerCta: "Explore the offer for groups",
   },
 
   fr: {
@@ -371,9 +371,9 @@ const COPY: Record<Lang, CopyEntry> = {
       { question: "Premium couvre-t-il toutes les certifications ?", answer: "Oui. Premium débloque les ressources Premium disponibles dans tout le catalogue." },
     ],
     explanationsUsedTemplate: "Vous avez déjà utilisé {used} de vos {limit} explications gratuites.",
-    businessBannerTitle: "Vous cherchez une offre pour votre équipe ?",
-    businessBannerBody: "Si vous gérez une équipe IT, découvrez nos offres entreprises : tableau de bord de progression partagé pour toute l'équipe et facture unique.",
-    businessBannerCta: "Découvrir les offres entreprises",
+    businessBannerTitle: "Vous préparez un petit groupe aux certifications IT ?",
+    businessBannerBody: "Préparation aux certifications IT pour petits groupes, avec accès individuels et démarrage accompagné. Contactez-nous pour une proposition pour votre groupe.",
+    businessBannerCta: "Découvrir la proposition pour groupes",
   },
 };
 
