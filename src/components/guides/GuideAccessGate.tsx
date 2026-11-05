@@ -74,16 +74,16 @@ const COPY = {
     es: "Con Premium desbloqueas también esta guía",
   },
   premiumTeaserNote: {
-    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Prova gratis 7 giorni, poi 9,99€/mese.",
-    en: "All guides included, full explanations and AI Tutor. Try free for 7 days, then €9.99/month.",
-    fr: "Tous les guides inclus, explications complètes et Tutor IA. Essayez gratuitement 7 jours, puis 9,99€/mois.",
-    es: "Todas las guías incluidas, explicaciones completas y Tutor IA. Prueba gratis 7 días, luego 9,99€/mes.",
+    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Un trial di 3 giorni per nuovi utenti idonei; poi il prezzo del piano scelto, con rinnovo automatico.",
+    en: "All guides included, full explanations and AI Tutor. One 3-day trial for eligible new accounts, then your selected plan price with automatic renewal.",
+    fr: "Guides inclus, explications complètes et Tutor IA. Un essai de 3 jours pour les nouveaux comptes éligibles, puis le tarif choisi avec renouvellement automatique.",
+    es: "Guías incluidas, explicaciones completas y Tutor IA. Una prueba de 3 días para cuentas nuevas elegibles, después el precio elegido con renovación automática.",
   },
   premiumTeaserCta: {
-    it: "Inizia 7 giorni gratis",
-    en: "Start 7 days free",
-    fr: "Commencer 7 jours gratuits",
-    es: "Empieza 7 días gratis",
+    it: "Scopri Premium",
+    en: "Explore Premium",
+    fr: "Découvrir Premium",
+    es: "Descubre Premium",
   },
 } as const;
 
@@ -246,7 +246,7 @@ function GuideAccessGateInner({ lang, slug, price, trialRestricted }: Props) {
 
       {trialRestricted && (
         <p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
-          {{ it: "Durante i 7 giorni di prova Premium puoi consultare l’anteprima, ma non scaricare il PDF completo. Il download si attiva dopo il primo pagamento oppure acquistando questa guida.", en: "During the 7-day Premium trial you can view the preview, but cannot download the full PDF. Downloads unlock after the first payment or by buying this guide.", fr: "Pendant les 7 jours d’essai Premium, vous pouvez consulter l’aperçu, mais pas télécharger le PDF complet. Le téléchargement est débloqué après le premier paiement ou l’achat de ce guide.", es: "Durante los 7 días de prueba Premium puedes ver la vista previa, pero no descargar el PDF completo. La descarga se habilita tras el primer pago o al comprar esta guía." }[lang]}
+          {{ it: "Durante la prova Premium puoi consultare l’anteprima, ma non scaricare il PDF completo. Il download si attiva dopo il primo pagamento oppure acquistando questa guida.", en: "During your Premium trial you can view the preview, but cannot download the full PDF. Downloads unlock after the first payment or by buying this guide.", fr: "Pendant votre essai Premium, vous pouvez consulter l’aperçu, mais pas télécharger le PDF complet. Le téléchargement est débloqué après le premier paiement ou l’achat de ce guide.", es: "Durante tu prueba Premium puedes ver la vista previa, pero no descargar el PDF completo. La descarga se habilita tras el primer pago o al comprar esta guía." }[lang]}
         </p>
       )}
 

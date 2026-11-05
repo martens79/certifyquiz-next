@@ -41,7 +41,8 @@ import TwaNotice from "@/components/twa/TwaNotice";
 
 type Lang = "it" | "es" | "en" | "fr";
 const RESUME_WAIT_MS = 6000;
-type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
+const WEEKLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED === "1";
+type Plan = "premium_weekly" | "premium_monthly" | "premium_quarterly" | "premium_annual";
 
 type Props = {
   forceLang?: Lang;
@@ -75,6 +76,8 @@ type CopyEntry = {
   ctaLoading: string;
   subCta: string;
   subCtaMonthly: string;
+  weeklyNote: string;
+  weeklyRenewal: string;
   trialNote: string;
   trialPdfNotice: string;
   promoNote: string;
@@ -104,6 +107,59 @@ type CopyEntry = {
   businessBannerCta: string;
 };
 
+const NEW_TRIAL_COPY = {
+  "it": {
+    "eligibility": "Un solo trial gratuito di 3 giorni per i nuovi utenti idonei, su qualunque piano. Se non sei idoneo, il pagamento è immediato. Il checkout conferma le condizioni prima dell’adesione.",
+    "weekly": "Poi 3,99€ ogni 7 giorni, con rinnovo automatico.",
+    "monthly": "Poi 9,99€ al mese, con rinnovo automatico.",
+    "annual": "Poi 59,90€ ogni anno, con rinnovo automatico.",
+    "cancel": "Annulla dal profilo prima della fine del trial per evitare il primo addebito, oppure prima del rinnovo successivo.",
+    "badge": "3 giorni se idoneo",
+    "pdf": "Durante i 3 giorni di prova, guide PDF e mappe complete sono disponibili come anteprime. I download si sbloccano dopo il primo pagamento o con acquisto singolo."
+  },
+  "en": {
+    "eligibility": "One free 3-day trial per eligible new account, on any plan. Ineligible accounts pay immediately. Checkout confirms your terms before you subscribe.",
+    "weekly": "Then €3.99 every 7 days, automatically renewed.",
+    "monthly": "Then €9.99 per month, automatically renewed.",
+    "annual": "Then €59.90 per year, automatically renewed.",
+    "cancel": "Cancel from your profile before the trial ends to avoid the first charge, or before the next renewal.",
+    "badge": "3 days if eligible",
+    "pdf": "During the 3-day trial, full PDF guides and maps are preview-only. Downloads unlock after the first payment or an individual purchase."
+  },
+  "es": {
+    "eligibility": "Una única prueba gratuita de 3 días por cuenta nueva elegible, con cualquier plan. Si no eres elegible, el cobro es inmediato. El checkout confirma las condiciones antes de suscribirte.",
+    "weekly": "Después, 3,99€ cada 7 días, con renovación automática.",
+    "monthly": "Después, 9,99€ al mes, con renovación automática.",
+    "annual": "Después, 59,90€ al año, con renovación automática.",
+    "cancel": "Cancela desde tu perfil antes del fin de la prueba para evitar el primer cobro, o antes de la próxima renovación.",
+    "badge": "3 días si eres elegible",
+    "pdf": "Durante los 3 días de prueba, las guías PDF y mapas completos solo tienen vista previa. Las descargas se desbloquean tras el primer pago o una compra individual."
+  },
+  "fr": {
+    "eligibility": "Un seul essai gratuit de 3 jours par nouveau compte éligible, pour chaque offre. Sans éligibilité, le paiement est immédiat. Le checkout confirme les conditions avant votre abonnement.",
+    "weekly": "Ensuite, 3,99€ tous les 7 jours, avec renouvellement automatique.",
+    "monthly": "Ensuite, 9,99€ par mois, avec renouvellement automatique.",
+    "annual": "Ensuite, 59,90€ par an, avec renouvellement automatique.",
+    "cancel": "Annulez depuis votre profil avant la fin de l’essai pour éviter le premier débit, ou avant le prochain renouvellement.",
+    "badge": "3 jours si éligible",
+    "pdf": "Pendant les 3 jours d’essai, les guides PDF et cartes complets sont disponibles en aperçu. Les téléchargements sont accessibles après le premier paiement ou un achat individuel."
+  }
+};
+
+function revisedOffer(base: CopyEntry, lang: Lang, plan: Plan): CopyEntry {
+  const text = NEW_TRIAL_COPY[lang];
+  const period = plan === "premium_weekly" ? text.weekly : plan === "premium_annual" ? text.annual : text.monthly;
+  const disclosure = `${text.eligibility} ${period} ${text.cancel}`;
+  return {...base,
+    plans: base.plans.map(p => ({...p, trialBadge: text.badge,
+      perMonth: p.id === "premium_weekly" ? text.weekly : p.id === "premium_annual" ? text.annual : text.monthly})),
+    weeklyNote: disclosure, subCta: disclosure, subCtaMonthly: disclosure,
+    trialNote: disclosure, pizzaLine: text.eligibility, guaranteeDesc: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`,
+    trialPdfNotice: text.pdf,
+    faqs: base.faqs.map((q,i) => i === 0 || i === 2 ? {...q, answer: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`} : q),
+  };
+}
+
 function getLangFromPathname(pathname: string | null): Lang {
   const seg = (pathname?.split("/")[1] || "").toLowerCase();
   if (seg === "it" || seg === "es" || seg === "en" || seg === "fr") {
@@ -127,16 +183,19 @@ const COPY: Record<Lang, CopyEntry> = {
       "Ripasso mirato delle risposte sbagliate",
       "Mock Review delle simulazioni e Tutor AI sulla domanda che stai svolgendo",
     ],
+    weeklyRenewal: "Rinnovo automatico",
+    weeklyNote: "3,99€ addebitati subito. Rinnovo automatico ogni 7 giorni; annulla dal profilo prima del prossimo addebito. Nessuna prova gratuita sul settimanale.",
     plans: [
-      { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Settimanale", price: "3,99\u20ac", perMonth: "3,99\u20ac ogni 7 giorni" }] : []),
+      { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "3gg gratis" },
       { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "Pagamento unico per 12 mesi", badge: "Risparmi il 50%", equivalent: "≈ 4,99€/mese", popular: true },
     ],
     cta: "Inizia Premium",
     ctaLoading: "Apertura checkout...",
     subCta: "59,90€ addebitati oggi in un unico pagamento per 12 mesi",
-    subCtaMonthly: "7 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
-    trialPdfNotice: "Durante i 7 giorni di prova gratuita puoi consultare le anteprime, ma non scaricare le guide PDF e le mappe complete. I download sono disponibili dopo il primo pagamento o con acquisto singolo.",
-    trialNote: "Prova gratis per 7 giorni, poi 9,99€/mese.",
+    subCtaMonthly: "3 giorni gratis · Nessun addebito ora · Disdici quando vuoi",
+    trialPdfNotice: "Durante i 3 giorni di prova gratuita puoi consultare le anteprime, ma non scaricare le guide PDF e le mappe complete. I download sono disponibili dopo il primo pagamento o con acquisto singolo.",
+    trialNote: "Prova gratis per 3 giorni, poi 9,99€/mese.",
     promoNote: "Sconto del 50% già applicato sul primo mese, addebitato subito — nessun periodo di prova.",
     featuresTitle: "Cosa include Premium",
     checkoutError: "Errore durante l'apertura del checkout. Riprova.",
@@ -144,7 +203,7 @@ const COPY: Record<Lang, CopyEntry> = {
     anonNote: "Serve un account gratuito (anche con Google): dopo l'accesso torni qui e prosegui.",
     resumeManual: "Accesso eseguito! Premi il pulsante per proseguire al pagamento sicuro.",
     resumeExpired: "La sessione è scaduta. Accedi di nuovo e premi il pulsante Premium.",
-    pizzaLine: "Scegli il mensile per provare senza addebito per 7 giorni, oppure risparmia il 50% con l'annuale.",
+    pizzaLine: "Scegli il mensile per provare senza addebito per 3 giorni, oppure risparmia il 50% con l'annuale.",
     finalLine: "Scegli il piano più adatto al tempo che ti separa dall'esame.",
     popularLabel: "Più popolare",
     features: [
@@ -167,10 +226,10 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "AI Tutor", free: "Assistente generale", premium: "✅ Tutor sulla tua domanda" },
     ],
     guaranteeTitle: "Prezzi chiari, checkout sicuro",
-    guaranteeDesc: "Mensile: 7 giorni gratis e nessun addebito oggi. Annuale: 59,90€ addebitati oggi per 12 mesi. Puoi gestire l'abbonamento online.",
+    guaranteeDesc: "Mensile: 3 giorni gratis e nessun addebito oggi. Annuale: 59,90€ addebitati oggi per 12 mesi. Puoi gestire l'abbonamento online.",
     faqTitle: "Domande prima di iniziare",
     faqs: [
-      { question: "Quando viene effettuato l'addebito?", answer: "Con il mensile non paghi nulla oggi: l'addebito di 9,99€ avviene dopo i 7 giorni gratuiti. Con l'annuale paghi 59,90€ oggi per 12 mesi." },
+      { question: "Quando viene effettuato l'addebito?", answer: "Con il mensile non paghi nulla oggi: l'addebito di 9,99€ avviene dopo i 3 giorni gratuiti. Con l'annuale paghi 59,90€ oggi per 12 mesi." },
       { question: "Come posso annullare?", answer: "Puoi gestire o annullare l'abbonamento online dal tuo profilo." },
       { question: "Cosa succede dopo la prova gratuita?", answer: "Se non annulli, il piano mensile si rinnova a 9,99€ al mese. La prova gratuita è disponibile solo sul mensile." },
       { question: "Premium vale per tutte le certificazioni?", answer: "Sì. Premium sblocca le risorse Premium disponibili nel catalogo, non una sola certificazione." },
@@ -192,16 +251,19 @@ const COPY: Record<Lang, CopyEntry> = {
       "Repaso específico de las respuestas incorrectas",
       "Mock Review de los simulacros y Tutor AI sobre la pregunta que estás resolviendo",
     ],
+    weeklyRenewal: "Renovación automática",
+    weeklyNote: "3,99€ cobrados hoy. Renovación automática cada 7 días; cancela desde tu perfil antes del próximo cobro. Sin prueba gratuita en el semanal.",
     plans: [
-      { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Semanal", price: "3,99\u20ac", perMonth: "3,99\u20ac cada 7 d\u00edas" }] : []),
+      { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "3 días gratis" },
       { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "Pago único por 12 meses", badge: "Ahorra el 50%", equivalent: "≈ 4,99€/mes", popular: true },
     ],
     cta: "Empezar Premium",
     ctaLoading: "Abriendo checkout...",
     subCta: "59,90€ cobrados hoy en un único pago por 12 meses",
-    subCtaMonthly: "7 días gratis · Sin cargo ahora · Cancela cuando quieras",
-    trialPdfNotice: "Durante los 7 días de prueba gratuita puedes consultar las vistas previas, pero no descargar las guías PDF ni los mapas completos. Las descargas están disponibles tras el primer pago o con una compra individual.",
-    trialNote: "Prueba gratis 7 días, luego 9,99€/mes.",
+    subCtaMonthly: "3 días gratis · Sin cargo ahora · Cancela cuando quieras",
+    trialPdfNotice: "Durante los 3 días de prueba gratuita puedes consultar las vistas previas, pero no descargar las guías PDF ni los mapas completos. Las descargas están disponibles tras el primer pago o con una compra individual.",
+    trialNote: "Prueba gratis 3 días, luego 9,99€/mes.",
     promoNote: "Descuento del 50% ya aplicado en el primer mes, cobrado ahora — sin periodo de prueba.",
     featuresTitle: "Qué incluye Premium",
     checkoutError: "Error al abrir el checkout. Inténtalo de nuevo.",
@@ -209,7 +271,7 @@ const COPY: Record<Lang, CopyEntry> = {
     anonNote: "Se necesita una cuenta gratuita (también con Google): después volverás aquí para continuar.",
     resumeManual: "¡Sesión iniciada! Pulsa el botón para continuar al pago seguro.",
     resumeExpired: "La sesión ha caducado. Inicia sesión de nuevo y pulsa el botón Premium.",
-    pizzaLine: "Elige el plan mensual para probar 7 días sin cargo o ahorra un 50% con el anual.",
+    pizzaLine: "Elige el plan mensual para probar 3 días sin cargo o ahorra un 50% con el anual.",
     finalLine: "Elige el plan que mejor se adapta al tiempo que falta para tu examen.",
     popularLabel: "Más popular",
     features: [
@@ -232,10 +294,10 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "AI Tutor", free: "Asistente general", premium: "✅ Tutor sobre tu pregunta" },
     ],
     guaranteeTitle: "Precios claros y checkout seguro",
-    guaranteeDesc: "Mensual: 7 días gratis y ningún cargo hoy. Anual: 59,90€ cobrados hoy por 12 meses. Puedes gestionar la suscripción online.",
+    guaranteeDesc: "Mensual: 3 días gratis y ningún cargo hoy. Anual: 59,90€ cobrados hoy por 12 meses. Puedes gestionar la suscripción online.",
     faqTitle: "Preguntas antes de empezar",
     faqs: [
-      { question: "¿Cuándo se realiza el cobro?", answer: "Con el mensual no pagas nada hoy: el cobro de 9,99€ se realiza después de los 7 días gratis. Con el anual pagas 59,90€ hoy por 12 meses." },
+      { question: "¿Cuándo se realiza el cobro?", answer: "Con el mensual no pagas nada hoy: el cobro de 9,99€ se realiza después de los 3 días gratis. Con el anual pagas 59,90€ hoy por 12 meses." },
       { question: "¿Cómo puedo cancelar?", answer: "Puedes gestionar o cancelar la suscripción online desde tu perfil." },
       { question: "¿Qué ocurre después de la prueba?", answer: "Si no cancelas, el plan mensual se renueva a 9,99€ al mes. La prueba gratuita solo está disponible con el mensual." },
       { question: "¿Premium sirve para todas las certificaciones?", answer: "Sí. Premium desbloquea los recursos Premium disponibles en todo el catálogo." },
@@ -257,16 +319,19 @@ const COPY: Record<Lang, CopyEntry> = {
       "Focused review of your incorrect answers",
       "Mock Review of your mock exams and an AI Tutor that knows the question you are answering",
     ],
+    weeklyRenewal: "Automatic renewal",
+    weeklyNote: "€3.99 charged today. Automatically renews every 7 days; cancel from your profile before the next charge. No free trial on the weekly plan.",
     plans: [
-      { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Weekly", price: "\u20ac3.99", perMonth: "\u20ac3.99 every 7 days" }] : []),
+      { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "3 days free" },
       { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "One payment for 12 months", badge: "Save 50%", equivalent: "≈ €4.99/month", popular: true },
     ],
     cta: "Start Premium",
     ctaLoading: "Opening checkout...",
     subCta: "€59.90 charged today as one payment for 12 months",
-    subCtaMonthly: "7 days free · No charge today · Cancel anytime",
-    trialPdfNotice: "During the 7-day free trial, previews are available but full PDF guides and maps cannot be downloaded. Downloads become available after the first payment or with an individual purchase.",
-    trialNote: "Try free for 7 days, then €9.99/month.",
+    subCtaMonthly: "3 days free · No charge today · Cancel anytime",
+    trialPdfNotice: "During the 3-day free trial, previews are available but full PDF guides and maps cannot be downloaded. Downloads become available after the first payment or with an individual purchase.",
+    trialNote: "Try free for 3 days, then €9.99/month.",
     promoNote: "50% off your first month already applied, charged now — no free trial.",
     featuresTitle: "What Premium includes",
     checkoutError: "Error while opening checkout. Please try again.",
@@ -274,7 +339,7 @@ const COPY: Record<Lang, CopyEntry> = {
     anonNote: "A free account is required (Google works too): you'll come right back here to continue.",
     resumeManual: "You're signed in! Press the button to continue to secure checkout.",
     resumeExpired: "Your session expired. Log in again and press the Premium button.",
-    pizzaLine: "Choose monthly to try Premium for 7 days with no charge, or save 50% with annual.",
+    pizzaLine: "Choose monthly to try Premium for 3 days with no charge, or save 50% with annual.",
     finalLine: "Choose the plan that best fits the time left before your exam.",
     popularLabel: "Most popular",
     features: [
@@ -297,10 +362,10 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "AI Tutor", free: "General assistant", premium: "✅ Tutor on your question" },
     ],
     guaranteeTitle: "Clear pricing and secure checkout",
-    guaranteeDesc: "Monthly: 7 days free and no charge today. Annual: €59.90 charged today for 12 months. Manage your subscription online.",
+    guaranteeDesc: "Monthly: 3 days free and no charge today. Annual: €59.90 charged today for 12 months. Manage your subscription online.",
     faqTitle: "Questions before you start",
     faqs: [
-      { question: "When will I be charged?", answer: "With monthly, you pay nothing today: the €9.99 charge starts after the 7-day free trial. With annual, €59.90 is charged today for 12 months." },
+      { question: "When will I be charged?", answer: "With monthly, you pay nothing today: the €9.99 charge starts after the 3-day free trial. With annual, €59.90 is charged today for 12 months." },
       { question: "How do I cancel?", answer: "You can manage or cancel your subscription online from your profile." },
       { question: "What happens after the free trial?", answer: "Unless you cancel, monthly renews at €9.99 per month. The free trial is available on monthly only." },
       { question: "Does Premium cover every certification?", answer: "Yes. Premium unlocks the Premium resources available across the catalog, not just one certification." },
@@ -322,16 +387,19 @@ const COPY: Record<Lang, CopyEntry> = {
       "Révision ciblée de vos réponses incorrectes",
       "Mock Review de vos examens blancs et Tutor IA qui connaît la question en cours",
     ],
+    weeklyRenewal: "Renouvellement automatique",
+    weeklyNote: "3,99€ débités aujourd’hui. Renouvellement automatique tous les 7 jours ; annulez depuis votre profil avant le prochain débit. Sans essai gratuit sur cette offre.",
     plans: [
-      { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Hebdomadaire", price: "3,99\u20ac", perMonth: "3,99\u20ac tous les 7 jours" }] : []),
+      { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "3j gratuits" },
       { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "Paiement unique pour 12 mois", badge: "Économisez 50%", equivalent: "≈ 4,99€/mois", popular: true },
     ],
     cta: "Commencer Premium",
     ctaLoading: "Ouverture du checkout...",
     subCta: "59,90€ débités aujourd'hui en un paiement unique pour 12 mois",
-    subCtaMonthly: "7 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
-    trialPdfNotice: "Pendant les 7 jours d’essai gratuit, les aperçus sont disponibles, mais le téléchargement des guides PDF et cartes complets est désactivé. Les téléchargements sont accessibles après le premier paiement ou un achat individuel.",
-    trialNote: "Essayez gratuitement 7 jours, puis 9,99€/mois.",
+    subCtaMonthly: "3 jours gratuits · Aucun débit aujourd'hui · Annulez quand vous voulez",
+    trialPdfNotice: "Pendant les 3 jours d’essai gratuit, les aperçus sont disponibles, mais le téléchargement des guides PDF et cartes complets est désactivé. Les téléchargements sont accessibles après le premier paiement ou un achat individuel.",
+    trialNote: "Essayez gratuitement 3 jours, puis 9,99€/mois.",
     promoNote: "Réduction de 50% déjà appliquée sur le premier mois, débité maintenant — aucun essai gratuit.",
     featuresTitle: "Ce que Premium inclut",
     checkoutError: "Erreur lors de l'ouverture du checkout. Réessayez.",
@@ -339,7 +407,7 @@ const COPY: Record<Lang, CopyEntry> = {
     anonNote: "Un compte gratuit est nécessaire (Google possible) : vous reviendrez ici pour continuer.",
     resumeManual: "Vous êtes connecté ! Appuyez sur le bouton pour passer au paiement sécurisé.",
     resumeExpired: "Votre session a expiré. Reconnectez-vous et appuyez sur le bouton Premium.",
-    pizzaLine: "Choisissez le mensuel pour essayer 7 jours sans débit, ou économisez 50% avec l'annuel.",
+    pizzaLine: "Choisissez le mensuel pour essayer 3 jours sans débit, ou économisez 50% avec l'annuel.",
     finalLine: "Choisissez l'offre adaptée au temps qu'il vous reste avant l'examen.",
     popularLabel: "Le plus populaire",
     features: [
@@ -362,10 +430,10 @@ const COPY: Record<Lang, CopyEntry> = {
       { label: "AI Tutor", free: "Assistant général", premium: "✅ Tuteur sur votre question" },
     ],
     guaranteeTitle: "Tarifs clairs et paiement sécurisé",
-    guaranteeDesc: "Mensuel : 7 jours gratuits sans débit aujourd'hui. Annuel : 59,90€ débités aujourd'hui pour 12 mois. Gérez votre abonnement en ligne.",
+    guaranteeDesc: "Mensuel : 3 jours gratuits sans débit aujourd'hui. Annuel : 59,90€ débités aujourd'hui pour 12 mois. Gérez votre abonnement en ligne.",
     faqTitle: "Questions avant de commencer",
     faqs: [
-      { question: "Quand serai-je débité ?", answer: "Avec le mensuel, vous ne payez rien aujourd'hui : le débit de 9,99€ intervient après les 7 jours gratuits. Avec l'annuel, 59,90€ sont débités aujourd'hui pour 12 mois." },
+      { question: "Quand serai-je débité ?", answer: "Avec le mensuel, vous ne payez rien aujourd'hui : le débit de 9,99€ intervient après les 3 jours gratuits. Avec l'annuel, 59,90€ sont débités aujourd'hui pour 12 mois." },
       { question: "Comment annuler ?", answer: "Vous pouvez gérer ou annuler votre abonnement en ligne depuis votre profil." },
       { question: "Que se passe-t-il après l'essai ?", answer: "Sans annulation, le mensuel est renouvelé à 9,99€ par mois. L'essai gratuit est réservé au mensuel." },
       { question: "Premium couvre-t-il toutes les certifications ?", answer: "Oui. Premium débloque les ressources Premium disponibles dans tout le catalogue." },
@@ -505,7 +573,7 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3">
+    <div className={`mt-6 grid ${plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
@@ -597,7 +665,7 @@ function CtaBlock({
       </button>
       {!(isMonthly && isPromoLink) && (
         <p className="mt-2 text-xs text-gray-600">
-          {isMonthly ? t.subCtaMonthly : t.subCta}
+          {activePlan.id === "premium_weekly" ? t.weeklyNote : isMonthly ? t.subCtaMonthly : t.subCta}
         </p>
       )}
     </div>
@@ -670,6 +738,7 @@ function ComparisonTable({ t, s, onCta, isLoading, activePlan, isPromoLink }: { 
         >
           {isLoading ? t.ctaLoading : t.cta}
         </button>
+        {activePlan.id === "premium_weekly" && <p className="mt-2 text-xs text-gray-600">{t.weeklyNote}</p>}
         {isMonthly && !isPromoLink && (
           <p className="mt-2 text-xs text-gray-600">{t.subCtaMonthly}</p>
         )}
@@ -683,6 +752,7 @@ function PriceClarity({ t, isPromoLink }: { t: CopyEntry; isPromoLink: boolean }
     <section className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-6" aria-labelledby="premium-price-clarity">
       <h2 id="premium-price-clarity" className="text-lg font-bold text-emerald-950">{t.guaranteeTitle}</h2>
       {!isPromoLink && <p className="mt-1 text-sm text-emerald-900">{t.guaranteeDesc}</p>}
+      {WEEKLY_ENABLED && <p className="mt-2 text-sm text-emerald-900">{t.weeklyNote}</p>}
     </section>
   );
 }
@@ -804,7 +874,7 @@ function StickyCtaBar({
 }) {
   const summary = [
     activePlan.id === "premium_monthly" && !isPromoLink ? activePlan.trialBadge : null,
-    activePlan.perMonth,
+    activePlan.id === "premium_weekly" ? `${activePlan.perMonth} · ${t.weeklyRenewal}` : activePlan.perMonth,
   ].filter(Boolean).join(" · ");
   return (
     <div
@@ -861,7 +931,7 @@ function PremiumPricingView({ forceLang }: Props) {
 
   // Visitatore non autenticato: il pulsante dice chiaramente che serve un account.
   const isAnonymous = !authLoading && !user;
-  const copy = COPY[lang];
+  const copy = revisedOffer(COPY[lang], lang, selectedPlan);
   const story = STORY[lang];
   const t: CopyEntry = isAnonymous
     ? { ...copy, cta: copy.ctaAnon, subCta: `${copy.anonNote} ${copy.subCta}`, subCtaMonthly: `${copy.anonNote} ${copy.subCtaMonthly}` }
@@ -974,7 +1044,7 @@ function PremiumPricingView({ forceLang }: Props) {
     const intent = consumeCheckoutIntent();
     const { decision, plan } = decideResume({ search, authenticated: true, alreadyPremium: !!authPremium, intent });
     finish();
-    if (decision === "none" || !plan) return;
+    if (decision === "none" || !plan || (plan === "premium_weekly" && !WEEKLY_ENABLED)) return;
     setSelectedPlan(plan);
     if (decision === "auto") void startPremiumCheckout({ plan, auto: true });
     else setNotice(t.resumeManual);
@@ -1075,8 +1145,9 @@ function PremiumPricingView({ forceLang }: Props) {
   async function startPremiumCheckout(opts: { plan?: Plan; auto?: boolean } = {}) {
     if (isLoading || inFlightRef.current) return;
     const plan: Plan = opts.plan ?? selectedPlan;
+    if (plan === "premium_weekly" && !WEEKLY_ENABLED) return;
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
-    const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
+    const promoActive = plan !== "premium_weekly" && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
     setNotice(null);
     setPaymentIssue(false);
     setAlreadyActive(false);
@@ -1314,7 +1385,7 @@ function PremiumPricingView({ forceLang }: Props) {
               </button>
               {!(isMonthly && isPromoLink) && (
                 <p className="mt-2 text-xs text-gray-600">
-                  {isMonthly ? t.subCtaMonthly : t.subCta}
+                  {activePlan.id === "premium_weekly" ? t.weeklyNote : isMonthly ? t.subCtaMonthly : t.subCta}
                 </p>
               )}
             </div>
