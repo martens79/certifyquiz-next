@@ -1,0 +1,24 @@
+name: Admin member cancellation
+on:
+  pull_request:
+    paths:
+      - 'src/app/admin/organizations/AdminOrganizationsClient.tsx'
+      - 'tests/admin-member-cancel.test.tsx'
+      - '.github/workflows/admin-member-cancel.yml'
+permissions:
+  contents: read
+jobs:
+  cancellation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npx --no-install eslint src/app/admin/organizations/AdminOrganizationsClient.tsx tests/admin-member-cancel.test.tsx
+      - run: npx --no-install tsx --tsconfig tsconfig.test.json --test tests/admin-member-cancel.test.tsx
