@@ -1,0 +1,25 @@
+name: Weekly Premium contracts
+on:
+  pull_request:
+    paths:
+      - 'src/app/**/premium/**'
+      - 'src/app/(marketing)/pricing/**'
+      - 'src/lib/checkout-intent.ts'
+      - 'src/lib/metaPixel.ts'
+      - 'tests/weekly-pricing*'
+      - '.github/workflows/weekly-premium-tests.yml'
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    env:
+      TSX_TSCONFIG_PATH: tsconfig.test.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --import tsx --test tests/weekly-pricing.test.tsx tests/checkout-intent.test.ts tests/conversion-tracking.test.ts tests/google-analytics-consent.test.tsx tests/analytics-privacy.test.ts tests/pricing-seo.test.ts

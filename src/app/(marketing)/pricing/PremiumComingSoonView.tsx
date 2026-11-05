@@ -41,7 +41,8 @@ import TwaNotice from "@/components/twa/TwaNotice";
 
 type Lang = "it" | "es" | "en" | "fr";
 const RESUME_WAIT_MS = 6000;
-type Plan = "premium_monthly" | "premium_quarterly" | "premium_annual";
+const WEEKLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED === "1";
+type Plan = "premium_weekly" | "premium_monthly" | "premium_quarterly" | "premium_annual";
 
 type Props = {
   forceLang?: Lang;
@@ -75,6 +76,8 @@ type CopyEntry = {
   ctaLoading: string;
   subCta: string;
   subCtaMonthly: string;
+  weeklyNote: string;
+  weeklyRenewal: string;
   trialNote: string;
   trialPdfNotice: string;
   promoNote: string;
@@ -127,7 +130,10 @@ const COPY: Record<Lang, CopyEntry> = {
       "Ripasso mirato delle risposte sbagliate",
       "Mock Review delle simulazioni e Tutor AI sulla domanda che stai svolgendo",
     ],
+    weeklyRenewal: "Rinnovo automatico",
+    weeklyNote: "3,99€ addebitati subito. Rinnovo automatico ogni 7 giorni; annulla dal profilo prima del prossimo addebito. Nessuna prova gratuita sul settimanale.",
     plans: [
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Settimanale", price: "3,99\u20ac", perMonth: "3,99\u20ac ogni 7 giorni" }] : []),
       { id: "premium_monthly", label: "Mensile", price: "9,99€", perMonth: "9,99€/mese", trialBadge: "7gg gratis" },
       { id: "premium_annual", label: "Annuale", price: "59,90€", perMonth: "Pagamento unico per 12 mesi", badge: "Risparmi il 50%", equivalent: "≈ 4,99€/mese", popular: true },
     ],
@@ -192,7 +198,10 @@ const COPY: Record<Lang, CopyEntry> = {
       "Repaso específico de las respuestas incorrectas",
       "Mock Review de los simulacros y Tutor AI sobre la pregunta que estás resolviendo",
     ],
+    weeklyRenewal: "Renovación automática",
+    weeklyNote: "3,99€ cobrados hoy. Renovación automática cada 7 días; cancela desde tu perfil antes del próximo cobro. Sin prueba gratuita en el semanal.",
     plans: [
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Semanal", price: "3,99\u20ac", perMonth: "3,99\u20ac cada 7 d\u00edas" }] : []),
       { id: "premium_monthly", label: "Mensual", price: "9,99€", perMonth: "9,99€/mes", trialBadge: "7 días gratis" },
       { id: "premium_annual", label: "Anual", price: "59,90€", perMonth: "Pago único por 12 meses", badge: "Ahorra el 50%", equivalent: "≈ 4,99€/mes", popular: true },
     ],
@@ -257,7 +266,10 @@ const COPY: Record<Lang, CopyEntry> = {
       "Focused review of your incorrect answers",
       "Mock Review of your mock exams and an AI Tutor that knows the question you are answering",
     ],
+    weeklyRenewal: "Automatic renewal",
+    weeklyNote: "€3.99 charged today. Automatically renews every 7 days; cancel from your profile before the next charge. No free trial on the weekly plan.",
     plans: [
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Weekly", price: "\u20ac3.99", perMonth: "\u20ac3.99 every 7 days" }] : []),
       { id: "premium_monthly", label: "Monthly", price: "€9.99", perMonth: "€9.99/month", trialBadge: "7 days free" },
       { id: "premium_annual", label: "Annual", price: "€59.90", perMonth: "One payment for 12 months", badge: "Save 50%", equivalent: "≈ €4.99/month", popular: true },
     ],
@@ -322,7 +334,10 @@ const COPY: Record<Lang, CopyEntry> = {
       "Révision ciblée de vos réponses incorrectes",
       "Mock Review de vos examens blancs et Tutor IA qui connaît la question en cours",
     ],
+    weeklyRenewal: "Renouvellement automatique",
+    weeklyNote: "3,99€ débités aujourd’hui. Renouvellement automatique tous les 7 jours ; annulez depuis votre profil avant le prochain débit. Sans essai gratuit sur cette offre.",
     plans: [
+      ...(WEEKLY_ENABLED ? [{ id: "premium_weekly" as const, label: "Hebdomadaire", price: "3,99\u20ac", perMonth: "3,99\u20ac tous les 7 jours" }] : []),
       { id: "premium_monthly", label: "Mensuel", price: "9,99€", perMonth: "9,99€/mois", trialBadge: "7j gratuits" },
       { id: "premium_annual", label: "Annuel", price: "59,90€", perMonth: "Paiement unique pour 12 mois", badge: "Économisez 50%", equivalent: "≈ 4,99€/mois", popular: true },
     ],
@@ -505,7 +520,7 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className="mt-6 grid grid-cols-2 gap-2.5 sm:gap-3">
+    <div className={`mt-6 grid ${plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
@@ -597,7 +612,7 @@ function CtaBlock({
       </button>
       {!(isMonthly && isPromoLink) && (
         <p className="mt-2 text-xs text-gray-600">
-          {isMonthly ? t.subCtaMonthly : t.subCta}
+          {activePlan.id === "premium_weekly" ? t.weeklyNote : isMonthly ? t.subCtaMonthly : t.subCta}
         </p>
       )}
     </div>
@@ -670,6 +685,7 @@ function ComparisonTable({ t, s, onCta, isLoading, activePlan, isPromoLink }: { 
         >
           {isLoading ? t.ctaLoading : t.cta}
         </button>
+        {activePlan.id === "premium_weekly" && <p className="mt-2 text-xs text-gray-600">{t.weeklyNote}</p>}
         {isMonthly && !isPromoLink && (
           <p className="mt-2 text-xs text-gray-600">{t.subCtaMonthly}</p>
         )}
@@ -683,6 +699,7 @@ function PriceClarity({ t, isPromoLink }: { t: CopyEntry; isPromoLink: boolean }
     <section className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:p-6" aria-labelledby="premium-price-clarity">
       <h2 id="premium-price-clarity" className="text-lg font-bold text-emerald-950">{t.guaranteeTitle}</h2>
       {!isPromoLink && <p className="mt-1 text-sm text-emerald-900">{t.guaranteeDesc}</p>}
+      {WEEKLY_ENABLED && <p className="mt-2 text-sm text-emerald-900">{t.weeklyNote}</p>}
     </section>
   );
 }
@@ -804,7 +821,7 @@ function StickyCtaBar({
 }) {
   const summary = [
     activePlan.id === "premium_monthly" && !isPromoLink ? activePlan.trialBadge : null,
-    activePlan.perMonth,
+    activePlan.id === "premium_weekly" ? `${activePlan.perMonth} · ${t.weeklyRenewal}` : activePlan.perMonth,
   ].filter(Boolean).join(" · ");
   return (
     <div
@@ -974,7 +991,7 @@ function PremiumPricingView({ forceLang }: Props) {
     const intent = consumeCheckoutIntent();
     const { decision, plan } = decideResume({ search, authenticated: true, alreadyPremium: !!authPremium, intent });
     finish();
-    if (decision === "none" || !plan) return;
+    if (decision === "none" || !plan || (plan === "premium_weekly" && !WEEKLY_ENABLED)) return;
     setSelectedPlan(plan);
     if (decision === "auto") void startPremiumCheckout({ plan, auto: true });
     else setNotice(t.resumeManual);
@@ -1075,8 +1092,9 @@ function PremiumPricingView({ forceLang }: Props) {
   async function startPremiumCheckout(opts: { plan?: Plan; auto?: boolean } = {}) {
     if (isLoading || inFlightRef.current) return;
     const plan: Plan = opts.plan ?? selectedPlan;
+    if (plan === "premium_weekly" && !WEEKLY_ENABLED) return;
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
-    const promoActive = isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month";
+    const promoActive = plan !== "premium_weekly" && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
     setNotice(null);
     setPaymentIssue(false);
     setAlreadyActive(false);
@@ -1314,7 +1332,7 @@ function PremiumPricingView({ forceLang }: Props) {
               </button>
               {!(isMonthly && isPromoLink) && (
                 <p className="mt-2 text-xs text-gray-600">
-                  {isMonthly ? t.subCtaMonthly : t.subCta}
+                  {activePlan.id === "premium_weekly" ? t.weeklyNote : isMonthly ? t.subCtaMonthly : t.subCta}
                 </p>
               )}
             </div>

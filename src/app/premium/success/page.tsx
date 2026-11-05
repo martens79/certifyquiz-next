@@ -8,6 +8,7 @@ import { useAuth } from "@/components/auth/AuthProvider"; // <-- se il path è d
 export default function PremiumSuccessPage() {
   const { refreshMe } = useAuth();
   const searchParams = useSearchParams();
+  const isWeekly = searchParams.get("plan") === "premium_weekly";
   const isMonthly = searchParams.get("plan") !== "premium_annual";
   const [sync, setSync] = useState<"idle" | "ok" | "fail">("idle");
 
@@ -29,7 +30,9 @@ export default function PremiumSuccessPage() {
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">
       <h1 className="text-3xl font-bold mb-6">Premium activated 🎉</h1>
       <p className="mb-4 text-lg">
-        {isMonthly
+        {isWeekly
+          ? "Selected plan: Weekly Premium, €3.99 automatically renewed every 7 days. Check your subscription status in your profile."
+          : isMonthly
           ? "Your 7-day free trial has started."
           : "Your annual Premium plan is active. €59.90 was charged for 12 months."}
       </p>
