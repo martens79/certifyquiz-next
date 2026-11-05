@@ -1,0 +1,7 @@
+# Credential notes must not be uploaded, including from a local working tree.
+/types/CERTIFIER_API_KEY*.txt
+/types/VITE_SANITY_*.txt
+/types/*=*.txt
+/\# LOGIN*
+
+/types/*LOGIN*.txt
