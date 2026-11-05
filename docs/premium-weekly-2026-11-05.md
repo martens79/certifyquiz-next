@@ -1,13 +1,13 @@
-# Premium settimanale — frontend
+# Premium: trial unico 3 giorni, settimanale EUR 3,99
 
-Proposta in bozza. Piano settimanale EUR 3,99 ogni 7 giorni, rinnovo automatico, senza trial; mensile EUR 9,99 e trial 7 giorni invariati, annuale EUR 59,90 invariato. Stessi vantaggi Premium dopo pagamento.
+Questa revisione delle PR #194/#169 sostituisce la precedente proposta. Tutti i piani offrono una sola prova di 3 giorni ai nuovi account idonei; dopo la prova: settimanale EUR 3,99 ogni 7 giorni, mensile EUR 9,99 al mese, annuale EUR 59,90 all'anno. Rinnovi automatici; cancellazione dal profilo prima del primo addebito o del prossimo rinnovo. Account non idonei: pagamento immediato, confermato da Stripe prima dell'adesione.
 
-Per esporlo serve NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED=1 alla build. Default disattivato. Attivare solo dopo consenso, configurazione del Price reale STRIPE_PRICE_PREMIUM_WEEKLY e BILLING_WEEKLY_ENABLED=1 nel backend. Il Price non viene creato da queste PR.
+Account esistenti precedenti al lancio esclusi dal nuovo trial per sicurezza storica. Trial 7 giorni già attivi e abbonamenti preesistenti conservano condizioni e scadenze. Nessuna promessa di prova attiva dalla success page: stato verificato nel profilo.
 
-Listino IT/EN/FR/ES, prima card settimanale, 3 colonne desktop e card impilate su mobile. Selezione iniziale mensile conservata. CTA principale, confronto, CTA finale e barra mobile mostrano la periodicità corretta. Ripresa login conserva premium_weekly; vecchi intent vengono ignorati se la funzione è disabilitata. Campagna mensile non applicata al settimanale. Nessun nuovo evento di acquisto sulla success page.
+Listino e avvisi IT/EN/FR/ES, 3 colonne desktop e card impilate su mobile, stesso default mensile e stesse funzionalità. Download PDF durante il trial invariati. Ripresa login mantiene il piano. Eventi già disponibili riutilizzati senza duplicare acquisti e senza cambiare consenso Analytics.
 
-Il trial attuale è solo mensile; il backend non garantisce storicamente una sola prova per account. Il settimanale è senza trial per conservare la policy attuale. Prima di estendergli il trial di 7 giorni, approvare e implementare un registro unico persistente per account con recupero dello storico Stripe, prenotazione atomica e test concorrenti. Non usare localStorage per il diritto alla prova.
+Prima dell'abilitazione servono migrazione `premium_trial_accounts`, flag/cutoff della nuova policy e Price settimanale reale, collaudo Stripe sandbox e autorizzazione. Il frontend usa NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED=1 alla build. Il registro persistente e la serializzazione MySQL impediscono una prova per piano; errori o storico incerto falliscono in modo conservativo.
 
-Analytics riusa pricing_viewed, pricing_plan_selected, checkout_attempted e checkout_created con plan_type=premium_weekly; conversioni, rinnovi, cancellazioni e ricavi arrivano dal backend Stripe. Consenso e revoca invariati. Il piano di misurazione, SQL in sola lettura e checklist completa sono in certifyquiz-backend/docs/payments/premium-weekly-2026-11-05.md e premium-weekly-readonly.sql.
+Analisi, politica per account preesistenti, misurazione e limiti del confronto prima/dopo, SQL read-only e azioni manuali: `certifyquiz-backend/docs/payments/premium-weekly-2026-11-05.md`. Cambiano insieme trial e disponibilità del settimanale: non attribuire l'eventuale crescita a una singola modifica.
 
-La regola Vercel in vercel.json disabilita solo il branch codex/premium-weekly-20261105, impedendo preview automatiche; non modifica il comportamento di main. Nessun merge/deploy. La produzione Stripe richiede riautenticazione per una verifica effettiva dell'account; nessun checkout reale è stato aperto.
+Nessun merge, deploy o mutazione Stripe live. Regola Vercel invariata: niente preview automatica su codex/premium-weekly-20261105.

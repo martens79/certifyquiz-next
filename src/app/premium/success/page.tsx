@@ -2,14 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider"; // <-- se il path è diverso, adattalo
 
 export default function PremiumSuccessPage() {
   const { refreshMe } = useAuth();
-  const searchParams = useSearchParams();
-  const isWeekly = searchParams.get("plan") === "premium_weekly";
-  const isMonthly = searchParams.get("plan") !== "premium_annual";
   const [sync, setSync] = useState<"idle" | "ok" | "fail">("idle");
 
   useEffect(() => {
@@ -28,16 +24,12 @@ export default function PremiumSuccessPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-20 px-6 text-center">
-      <h1 className="text-3xl font-bold mb-6">Premium activated 🎉</h1>
+      <h1 className="text-3xl font-bold mb-6">Checkout completed</h1>
       <p className="mb-4 text-lg">
-        {isWeekly
-          ? "Selected plan: Weekly Premium, €3.99 automatically renewed every 7 days. Check your subscription status in your profile."
-          : isMonthly
-          ? "Your 7-day free trial has started."
-          : "Your annual Premium plan is active. €59.90 was charged for 12 months."}
+        Checkout completed. Your profile shows your verified subscription status, any free trial and the next charge date.
       </p>
       <p className="mb-6 text-gray-600">
-        You now have full access to explanations and Premium features.
+        Premium access is confirmed by Stripe and updated in your profile.
       </p>
 
       <p className="mb-10 text-sm text-gray-500">

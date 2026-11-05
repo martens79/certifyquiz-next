@@ -28,6 +28,9 @@ test('weekly is hidden by default and visible in all four locales only when enab
    const html=renderToStaticMarkup(React.createElement(C as React.ComponentType<{forceLang:string}>,{forceLang:lang}));
    assert.equal(/3[,.]99/.test(html),enabled==='1');
    assert.match(html,/9[,.]99/);assert.match(html,/59[,.]90/);
+   assert.match(html,/3 (giorni|days|días|jours)/);
+   assert.doesNotMatch(html,/7gg|7 days free|7 días gratis|7 jours gratuits/);
+   assert.doesNotMatch(html,/59,90€ addebitati oggi|59.90 was charged/);
    if(enabled==='1')assert.match(html,/sm:grid-cols-3/);
   }
  }

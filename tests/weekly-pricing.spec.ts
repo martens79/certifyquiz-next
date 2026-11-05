@@ -17,10 +17,10 @@ for(const width of [360,390,1280]){
   if(await reject.count())await reject.first().click();
   const weekly=page.getByRole('button',{name:/Settimanale/}).first();
   await expect(weekly).toBeVisible();await weekly.click();await expect(weekly).toHaveAttribute('aria-pressed','true');
-  await expect(page.getByText(/3,99€ addebitati subito/).first()).toBeVisible();
+  await expect(page.getByText(/Un solo trial gratuito di 3 giorni/).first()).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   const monthly=page.getByRole('button',{name:/Mensile/}).first();await monthly.click();
-  await expect(page.getByText('Prova gratis per 7 giorni, poi 9,99€/mese.').first()).toBeVisible();
+  await expect(page.getByText(/Poi 9,99€ al mese/).first()).toBeVisible();
   await weekly.click();await page.getByRole('button',{name:'Accedi o registrati per continuare'}).first().click();
   await expect(page).toHaveURL(/login/);expect(decodeURIComponent(page.url())).toContain('premium_weekly');
   expect(billing).toEqual([]);expect(outbound.filter(h=>/google-analytics|analytics.google|facebook/.test(h))).toEqual([]);
