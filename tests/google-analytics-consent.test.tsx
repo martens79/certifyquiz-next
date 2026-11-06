@@ -82,7 +82,7 @@ test("a delayed first GA onReady after rejection cannot initialize or grant any 
   consent = { ready: true, status: "denied" };
   ready();
   assert.equal(calls.some(a => a[0] === "config"), true, "advanced mode may configure cookieless measurement with denied consent");
-  assert.deepEqual(calls.find(a => a[0] === "consent" && a[1] === "update")?.[2], googleConsentState("denied"));
+  assert.deepEqual(calls.filter(a => a[0] === "consent" && a[1] === "update").at(-1)?.[2], googleConsentState("denied"));
   await act(async () => renderer.unmount());
 });
 
