@@ -10,7 +10,9 @@
       "feat/admin-analytics-dashboard-fe-20261029": false,
       "fix/failed-payment-recovery-ui-20261030": false,
       "fix/admin-default-funnel-events-20261101": false,
-      "codex/premium-weekly-20261105": false
+      "codex/premium-weekly-20261105": false,
+      "feat/premium-quarterly-local-20261106": false,
+      "feat/black-friday-2026-local-20261106": false
     }
   }
 }
