@@ -29,8 +29,8 @@ test("GA tag loads with denied defaults; explicit consent governs storage and re
   const update = async (ready: boolean, status: string) => { consent = { ready, status }; await act(async () => renderer.update(<GA />)); };
   await act(async () => { renderer = create(<GA />); });
   assert.equal(renderer.toJSON(), null, "uninitialized consent loads no tag or inline config");
-  await update(true, "unknown"); assert.equal(renderer.toJSON(), null);
-  await update(true, "denied"); assert.equal(renderer.toJSON(), null);
+  await update(true, "unknown"); assert.equal(renderer.root.findAllByType("script").length, 2, "advanced mode loads scripts with denied defaults");
+  await update(true, "denied"); assert.equal(renderer.root.findAllByType("script").length, 2);
   await update(false, "granted"); assert.equal(renderer.toJSON(), null);
   await update(true, "granted");
   const scripts = renderer.root.findAllByType("script");
@@ -75,7 +75,7 @@ test("a delayed first GA onReady after rejection cannot initialize or grant any 
     "@/lib/analytics-privacy": { isSensitiveAnalyticsPath: () => false, sanitizeAnalyticsUrl: (s: string) => s },
     "@/lib/consent-mode": { googleConsentState },
     "@/lib/checkout-analytics": { readStoredAnalyticsConsent: () => consent.status },
-  }, { process: { env: { NEXT_PUBLIC_GA_ID: "G-TESTONLY" } }, window: { gtag: (...a: unknown[]) => calls.push(a) } });
+  }, { process: { env: { NEXT_PUBLIC_GA_ID: "G-TESTONLY" } }, window: { location: { href: "https://example.test/" }, gtag: (...a: unknown[]) => calls.push(a) } });
   let renderer!: ReactTestRenderer;
   await act(async () => { renderer = create(<GA />); });
   const ready = renderer.root.findAllByType("script")[1].props.onReady;
