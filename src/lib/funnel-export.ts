@@ -64,6 +64,7 @@ export async function fetchFunnelExportCsv({
       page: String(page),
       limit: String(PAGE_SIZE),
       identity,
+      hide_resource_previews: "1",
       q: filters.q ?? "",
       event: filters.event ?? "all",
       lang: filters.lang ?? "all",
