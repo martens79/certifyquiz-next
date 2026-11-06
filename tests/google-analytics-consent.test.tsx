@@ -10,7 +10,7 @@ import { sanitizeAnalyticsUrl } from "../src/lib/analytics-privacy";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-test("GA scripts and config require ready, explicitly granted consent; revocation updates the existing runtime", async () => {
+test("GA tag loads with denied defaults; explicit consent governs storage and revocation", async () => {
   let consent = { ready: false, status: "unknown" };
   let pathname = "/packages/success";
   let flushed = 0;
@@ -51,13 +51,13 @@ test("GA scripts and config require ready, explicitly granted consent; revocatio
   for (const key of ["ad_storage", "ad_user_data", "ad_personalization"]) assert.equal(granted[key], "denied");
   browser.gtag = (...args: unknown[]) => calls.push(args);
   await update(true, "denied");
-  assert.equal(renderer.toJSON(), null, "no tag is rendered after revocation");
+  assert.equal(renderer.root.findAllByType("script").length, 2, "tag remains loaded with denied consent after revocation");
   assert.equal(calls.at(-1)?.[0], "consent");
   assert.equal((calls.at(-1)?.[2] as any).analytics_storage, "denied");
   readyCallback(); // stale callback from before revocation
   assert.equal(flushed, 1);
   assert.equal(typeof browser.gtag, "function", "React unmount does NOT remove Google's loaded runtime");
-  assert.equal(calls.filter(args => args[0] === "config").length, 0, "revocation does not configure a new tag");
+  assert.equal(calls.filter(args => args[0] === "config").length, 0, "stale callback cannot configure again");
   await update(true, "granted"); assert.equal(renderer.root.findAllByType("script").length, 2);
   pathname = "/auth/callback";
   await update(true, "granted"); assert.equal(renderer.toJSON(), null, "sensitive routes remain excluded");
