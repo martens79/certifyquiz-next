@@ -24,8 +24,13 @@ export const EIPASS_STANDARD_OFFICIAL_URL =
 export const EIPASS_USER_LANDING_PATH = "/it/certificazioni/eipass";
 export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDARD_SLUG}`;
 
-/** Only "coming_soon" exists today: a second state is added together with the route that makes it real. */
-export type EipassStandardModuleStatus = "coming_soon";
+/**
+ * "available" is DORMANT: no module uses it today. A module becomes available only by a deliberate code change in this
+ * file (status + topicId) together with the database activation of its topic (see docs/eipass-standard/M2_RELEASE.md);
+ * a database flag alone never shows a link. The consistency test (tests/eipass-standard-modules.test.tsx) refuses an
+ * "available" module while the landing still says "coming_soon".
+ */
+export type EipassStandardModuleStatus = "coming_soon" | "available";
 
 export type EipassStandardModule = Readonly<{
   /** Official module number: also the display order. */
@@ -35,6 +40,8 @@ export type EipassStandardModule = Readonly<{
   /** DigComp 2.2 competence area the module belongs to. */
   digcompArea: Readonly<{ number: 1 | 2 | 3 | 4 | 5; name: string }>;
   status: EipassStandardModuleStatus;
+  /** Id of the module's topic (topics.id) in the database. Required, and used, only when status is "available". */
+  topicId?: number;
 }>;
 
 export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
@@ -51,6 +58,25 @@ export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
 export const EIPASS_STANDARD_MODULES_HEADING = "I 7 moduli d'esame";
 export const EIPASS_STANDARD_MODULE_SOON_LABEL = "Prossimamente";
 export const EIPASS_STANDARD_MODULE_BUTTON_LABEL = "Esercitazione non ancora disponibile";
+/** Labels of an AVAILABLE module: a short practice, never an exam simulation. */
+export const EIPASS_STANDARD_MODULE_AVAILABLE_LABEL = "Disponibile";
+export const EIPASS_STANDARD_MODULE_START_LABEL = "Inizia l'esercitazione breve";
+
+/** A module is available only with status "available" AND a valid topic id: anything else stays "Prossimamente". */
+export function isEipassStandardModuleAvailable(m: EipassStandardModule): boolean {
+  return m.status === "available" && Number.isInteger(m.topicId) && (m.topicId as number) > 0;
+}
+
+/** Link of an available module (Italian only); null for every other module, so no link can exist by accident. */
+export function getEipassStandardModuleHref(m: EipassStandardModule): string | null {
+  return isEipassStandardModuleAvailable(m) ? `/it/quiz/topic/${m.topicId}` : null;
+}
+
+export function hasAvailableEipassStandardModule(
+  modules: ReadonlyArray<EipassStandardModule> = EIPASS_STANDARD_MODULES,
+): boolean {
+  return modules.some(isEipassStandardModuleAvailable);
+}
 
 export function isEipassStandardSlug(slug: string | null | undefined): boolean {
   return slug === EIPASS_STANDARD_SLUG;
