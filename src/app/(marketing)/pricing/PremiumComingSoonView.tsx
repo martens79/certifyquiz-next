@@ -149,16 +149,16 @@ const NEW_TRIAL_COPY = {
 };
 
 const QUARTERLY_COPY = {
- it:{label:'Trimestrale',period:'Poi 23,90€ ogni 3 mesi, con rinnovo automatico.'},
- en:{label:'Quarterly',period:'Then €23.90 every 3 months, with automatic renewal.'},
- fr:{label:'Trimestriel',period:'Ensuite, 23,90€ tous les 3 mois, avec renouvellement automatique.'},
- es:{label:'Trimestral',period:'Después, 23,90€ cada 3 meses, con renovación automática.'},
+ it:{label:'Trimestrale',period:'Poi 19,90€ ogni 3 mesi, con rinnovo automatico.'},
+ en:{label:'Quarterly',period:'Then €19.90 every 3 months, with automatic renewal.'},
+ fr:{label:'Trimestriel',period:'Ensuite, 19,90€ tous les 3 mois, avec renouvellement automatique.'},
+ es:{label:'Trimestral',period:'Después, 19,90€ cada 3 meses, con renovación automática.'},
 };
 function revisedOffer(base: CopyEntry, lang: Lang, plan: Plan): CopyEntry {
   const text = NEW_TRIAL_COPY[lang];
   const quarter=QUARTERLY_COPY[lang];
   const plans=[...base.plans];
-  if(QUARTERLY_ENABLED)plans.splice(plans.findIndex(p=>p.id==='premium_annual'),0,{id:'premium_quarterly',label:quarter.label,price:lang==='en'?'€23.90':'23,90€',perMonth:quarter.period});
+  if(QUARTERLY_ENABLED)plans.splice(plans.findIndex(p=>p.id==='premium_annual'),0,{id:'premium_quarterly',label:quarter.label,price:lang==='en'?'€19.90':'19,90€',perMonth:quarter.period});
   const period = plan === "premium_weekly" ? text.weekly : plan === "premium_annual" ? text.annual : plan==='premium_quarterly'?quarter.period:text.monthly;
   const disclosure = `${text.eligibility} ${period} ${text.cancel}`;
   return {...base,
