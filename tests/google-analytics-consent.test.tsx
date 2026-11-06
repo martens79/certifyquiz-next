@@ -10,7 +10,7 @@ import { sanitizeAnalyticsUrl } from "../src/lib/analytics-privacy";
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-test("GA scripts and config require ready, explicitly granted consent; revocation updates the existing runtime", async () => {
+test("GA tag loads with denied defaults; explicit consent governs storage and revocation", async () => {
   let consent = { ready: false, status: "unknown" };
   let pathname = "/packages/success";
   let flushed = 0;
@@ -29,8 +29,8 @@ test("GA scripts and config require ready, explicitly granted consent; revocatio
   const update = async (ready: boolean, status: string) => { consent = { ready, status }; await act(async () => renderer.update(<GA />)); };
   await act(async () => { renderer = create(<GA />); });
   assert.equal(renderer.toJSON(), null, "uninitialized consent loads no tag or inline config");
-  await update(true, "unknown"); assert.equal(renderer.toJSON(), null);
-  await update(true, "denied"); assert.equal(renderer.toJSON(), null);
+  await update(true, "unknown"); assert.equal(renderer.root.findAllByType("script").length, 2, "advanced mode loads scripts with denied defaults");
+  await update(true, "denied"); assert.equal(renderer.root.findAllByType("script").length, 2);
   await update(false, "granted"); assert.equal(renderer.toJSON(), null);
   await update(true, "granted");
   const scripts = renderer.root.findAllByType("script");
@@ -51,13 +51,13 @@ test("GA scripts and config require ready, explicitly granted consent; revocatio
   for (const key of ["ad_storage", "ad_user_data", "ad_personalization"]) assert.equal(granted[key], "denied");
   browser.gtag = (...args: unknown[]) => calls.push(args);
   await update(true, "denied");
-  assert.equal(renderer.toJSON(), null, "no tag is rendered after revocation");
+  assert.equal(renderer.root.findAllByType("script").length, 2, "tag remains loaded with denied consent after revocation");
   assert.equal(calls.at(-1)?.[0], "consent");
   assert.equal((calls.at(-1)?.[2] as any).analytics_storage, "denied");
   readyCallback(); // stale callback from before revocation
   assert.equal(flushed, 1);
   assert.equal(typeof browser.gtag, "function", "React unmount does NOT remove Google's loaded runtime");
-  assert.equal(calls.filter(args => args[0] === "config").length, 0, "revocation does not configure a new tag");
+  assert.equal(calls.filter(args => args[0] === "config").length, 0, "stale callback cannot configure again");
   await update(true, "granted"); assert.equal(renderer.root.findAllByType("script").length, 2);
   pathname = "/auth/callback";
   await update(true, "granted"); assert.equal(renderer.toJSON(), null, "sensitive routes remain excluded");
@@ -75,14 +75,14 @@ test("a delayed first GA onReady after rejection cannot initialize or grant any 
     "@/lib/analytics-privacy": { isSensitiveAnalyticsPath: () => false, sanitizeAnalyticsUrl: (s: string) => s },
     "@/lib/consent-mode": { googleConsentState },
     "@/lib/checkout-analytics": { readStoredAnalyticsConsent: () => consent.status },
-  }, { process: { env: { NEXT_PUBLIC_GA_ID: "G-TESTONLY" } }, window: { gtag: (...a: unknown[]) => calls.push(a) } });
+  }, { process: { env: { NEXT_PUBLIC_GA_ID: "G-TESTONLY" } }, window: { location: { href: "https://example.test/" }, gtag: (...a: unknown[]) => calls.push(a) } });
   let renderer!: ReactTestRenderer;
   await act(async () => { renderer = create(<GA />); });
   const ready = renderer.root.findAllByType("script")[1].props.onReady;
   consent = { ready: true, status: "denied" };
   ready();
-  assert.equal(calls.some(a => a[0] === "config"), false);
-  assert.deepEqual(calls.at(-1)?.[2], googleConsentState("denied"));
+  assert.equal(calls.some(a => a[0] === "config"), true, "advanced mode may configure cookieless measurement with denied consent");
+  assert.deepEqual(calls.filter(a => a[0] === "consent" && a[1] === "update").at(-1)?.[2], googleConsentState("denied"));
   await act(async () => renderer.unmount());
 });
 

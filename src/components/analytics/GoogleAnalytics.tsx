@@ -15,12 +15,12 @@ export default function GoogleAnalytics() {
   const pathname = usePathname();
   const configured = useRef(false);
 
-  const configureWhenConsented = () => {
+  const configureWhenReady = () => {
     const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
     // A cached/onReady callback may run after consent has been revoked.
     const current = readStoredAnalyticsConsent();
     gtag?.("consent", "update", googleConsentState(current));
-    if (!gtag || current !== "granted" || !GA_ID || isSensitiveAnalyticsPath(pathname)) return;
+    if (!gtag || !GA_ID || isSensitiveAnalyticsPath(pathname)) return;
     if (!configured.current) {
       gtag("js", new Date());
       gtag("config", GA_ID, {
@@ -30,7 +30,7 @@ export default function GoogleAnalytics() {
       });
       configured.current = true;
     }
-    flushPendingAnalyticsEvents();
+    if (current === "granted") flushPendingAnalyticsEvents();
   };
 
   useEffect(() => {
@@ -51,14 +51,15 @@ export default function GoogleAnalytics() {
 
   // Revocation still updates an already loaded tag in the effect above.
   // Unmounting Script alone does not unload Google's runtime or block its traffic.
-  if (!ready || status !== "granted") return null;
+  // Advanced Consent Mode: load the tag with denied defaults; consent never inferred.
+  if (!ready) return null;
 
   // Pagine con segreti nell'URL: GA4 non parte.
   if (isSensitiveAnalyticsPath(pathname)) return null;
 
   return (
     <>
-      <Script id="ga4-init" strategy="afterInteractive" onReady={configureWhenConsented}>
+      <Script id="ga4-init" strategy="afterInteractive" onReady={configureWhenReady}>
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){window.dataLayer.push(arguments);}
@@ -69,7 +70,7 @@ export default function GoogleAnalytics() {
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
         strategy="afterInteractive"
-        onReady={configureWhenConsented}
+        onReady={configureWhenReady}
       />
     </>
   );
