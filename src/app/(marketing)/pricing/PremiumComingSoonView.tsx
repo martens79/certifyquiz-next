@@ -38,10 +38,12 @@ import AlreadyPremiumNotice from "@/components/billing/AlreadyPremiumNotice";
 import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
+import PlanChangePanel from "@/components/billing/PlanChangePanel";
 
 type Lang = "it" | "es" | "en" | "fr";
 const RESUME_WAIT_MS = 6000;
 const WEEKLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED === "1";
+const QUARTERLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_QUARTERLY_ENABLED === "1";
 type Plan = "premium_weekly" | "premium_monthly" | "premium_quarterly" | "premium_annual";
 
 type Props = {
@@ -146,17 +148,26 @@ const NEW_TRIAL_COPY = {
   }
 };
 
+const QUARTERLY_COPY = {
+ it:{label:'Trimestrale',period:'Poi 23,90€ ogni 3 mesi, con rinnovo automatico.'},
+ en:{label:'Quarterly',period:'Then €23.90 every 3 months, with automatic renewal.'},
+ fr:{label:'Trimestriel',period:'Ensuite, 23,90€ tous les 3 mois, avec renouvellement automatique.'},
+ es:{label:'Trimestral',period:'Después, 23,90€ cada 3 meses, con renovación automática.'},
+};
 function revisedOffer(base: CopyEntry, lang: Lang, plan: Plan): CopyEntry {
   const text = NEW_TRIAL_COPY[lang];
-  const period = plan === "premium_weekly" ? text.weekly : plan === "premium_annual" ? text.annual : text.monthly;
+  const quarter=QUARTERLY_COPY[lang];
+  const plans=[...base.plans];
+  if(QUARTERLY_ENABLED)plans.splice(plans.findIndex(p=>p.id==='premium_annual'),0,{id:'premium_quarterly',label:quarter.label,price:lang==='en'?'€23.90':'23,90€',perMonth:quarter.period});
+  const period = plan === "premium_weekly" ? text.weekly : plan === "premium_annual" ? text.annual : plan==='premium_quarterly'?quarter.period:text.monthly;
   const disclosure = `${text.eligibility} ${period} ${text.cancel}`;
   return {...base,
-    plans: base.plans.map(p => ({...p, trialBadge: text.badge,
-      perMonth: p.id === "premium_weekly" ? text.weekly : p.id === "premium_annual" ? text.annual : text.monthly})),
+    plans: plans.map(p => ({...p, trialBadge: text.badge,
+      perMonth: p.id === "premium_weekly" ? text.weekly : p.id === "premium_annual" ? text.annual : p.id==='premium_quarterly'?quarter.period:text.monthly})),
     weeklyNote: disclosure, subCta: disclosure, subCtaMonthly: disclosure,
-    trialNote: disclosure, pizzaLine: text.eligibility, guaranteeDesc: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`,
+    trialNote: disclosure, pizzaLine: text.eligibility, guaranteeDesc: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${QUARTERLY_ENABLED?quarter.period:''} ${text.annual} ${text.cancel}`,
     trialPdfNotice: text.pdf,
-    faqs: base.faqs.map((q,i) => i === 0 || i === 2 ? {...q, answer: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`} : q),
+    faqs: base.faqs.map((q,i) => i === 0 || i === 2 ? {...q, answer: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${QUARTERLY_ENABLED?quarter.period:''} ${text.annual} ${text.cancel}`} : q),
   };
 }
 
@@ -573,7 +584,7 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className={`mt-6 grid ${plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
+    <div className={`mt-6 grid ${plans.length >= 4 ? 'grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4' : plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
@@ -1146,8 +1157,9 @@ function PremiumPricingView({ forceLang }: Props) {
     if (isLoading || inFlightRef.current) return;
     const plan: Plan = opts.plan ?? selectedPlan;
     if (plan === "premium_weekly" && !WEEKLY_ENABLED) return;
+    if (plan === "premium_quarterly" && !QUARTERLY_ENABLED) return;
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
-    const promoActive = plan !== "premium_weekly" && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
+    const promoActive = !['premium_weekly','premium_quarterly'].includes(plan) && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
     setNotice(null);
     setPaymentIssue(false);
     setAlreadyActive(false);
@@ -1283,6 +1295,7 @@ function PremiumPricingView({ forceLang }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-28 md:py-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        {QUARTERLY_ENABLED && authPremium && <PlanChangePanel lang={lang} />}
 
         {/* Hero */}
         <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-4 py-8 sm:px-6">

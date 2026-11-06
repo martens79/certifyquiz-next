@@ -1,0 +1,21 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {authFetch} from '@/lib/auth';
+type Lang='it'|'en'|'fr'|'es';
+const COPY={
+ it:{title:'Cambio piano a fine periodo',quarter:'23,90 € ogni 3 mesi',month:'9,99 € al mese',change:'Programma il cambio',cancel:'Annulla il cambio programmato',note:'Nessun addebito o conguaglio ora. Il nuovo prezzo si applica al prossimo periodo. Non viene concesso un altro trial.',pending:'Cambio previsto dal',error:'Cambio non disponibile. Verifica lo stato nel profilo prima di riprovare.'},
+ en:{title:'Change plan at period end',quarter:'€23.90 every 3 months',month:'€9.99 per month',change:'Schedule plan change',cancel:'Cancel scheduled change',note:'No charge or proration now. The new price applies from the next period. No additional trial.',pending:'Change effective from',error:'Plan change unavailable. Check your profile before retrying.'},
+ fr:{title:'Changer à la fin de la période',quarter:'23,90 € tous les 3 mois',month:'9,99 € par mois',change:'Programmer le changement',cancel:'Annuler le changement prévu',note:'Aucun débit ni prorata maintenant. Le nouveau prix s’applique à la prochaine période. Aucun nouvel essai.',pending:'Changement à partir du',error:'Changement indisponible. Vérifiez votre profil avant de réessayer.'},
+ es:{title:'Cambiar al final del período',quarter:'23,90 € cada 3 meses',month:'9,99 € al mes',change:'Programar el cambio',cancel:'Cancelar el cambio programado',note:'Sin cobros ni prorrateos ahora. El nuevo precio se aplica en el próximo período. Sin otra prueba.',pending:'Cambio a partir del',error:'Cambio no disponible. Revisa tu perfil antes de reintentar.'},
+};
+const PORTAL_NOTE={it:'Per disdire dal portale nel profilo, rimuovi prima la programmazione del cambio. Il piano e il periodo già pagati restano invariati.',en:'To cancel in the portal from your profile, first remove the plan change schedule. Your current paid plan and period stay unchanged.',fr:'Pour résilier dans le portail depuis votre profil, supprimez d’abord la programmation. Votre forfait et la période déjà payée restent inchangés.',es:'Para cancelar desde el portal de tu perfil, elimina primero la programación del cambio. El plan y el período ya pagados no cambian.'};
+type Status={status:string|null;plan:string|null;managedSchedule?:boolean;scheduledChange?:{plan:string;effectiveAt:number}|null};
+export default function PlanChangePanel({lang}:{lang:Lang}){
+ const [status,setStatus]=useState<Status|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(false);const request=useRef<string|null>(null);const text=COPY[lang];
+ const refresh=async()=>{const r=await authFetch('/api/backend/billing/subscription-status');if(r.ok)setStatus(await r.json());};
+ useEffect(()=>{refresh().catch(()=>setError(true));},[]);
+ if(status?.status!=='active'||!['premium_monthly','premium_quarterly'].includes(status.plan||''))return null;
+ const target=status.plan==='premium_monthly'?'premium_quarterly':'premium_monthly';
+ async function change(cancel:boolean){if(busy)return;setBusy(true);setError(false);request.current ||= crypto.randomUUID();try{const r=await authFetch('/api/backend/billing/'+(cancel?'cancel-plan-change':'schedule-plan-change'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:target,requestId:request.current})});if(!r.ok)throw Error();request.current=null;await refresh();}catch{setError(true);}finally{setBusy(false);}}
+ return <section className="my-4 rounded-xl border border-emerald-200 p-4"><h2 className="font-semibold">{text.title}</h2><p>{text.note}</p>{status.managedSchedule?<><p>{PORTAL_NOTE[lang]}</p>{status.scheduledChange&&<p>{text.pending} {new Intl.DateTimeFormat(lang,{dateStyle:'long',timeZone:'Europe/Rome'}).format(new Date(status.scheduledChange.effectiveAt*1000))}: {status.scheduledChange.plan==='premium_quarterly'?text.quarter:text.month}.</p>}<button type="button" disabled={busy} onClick={()=>change(true)} className="mt-2 rounded border px-3 py-2">{text.cancel}</button></>:<button type="button" disabled={busy} onClick={()=>change(false)} className="mt-2 rounded border px-3 py-2">{text.change}: {target==='premium_quarterly'?text.quarter:text.month}</button>}{error&&<p role="alert">{text.error}</p>}</section>;
+}
