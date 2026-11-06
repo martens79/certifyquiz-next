@@ -1,0 +1,47 @@
+name: GA4 Chromium consent browser
+on:
+  pull_request:
+    paths:
+      - 'src/components/analytics/**'
+      - 'src/lib/consent-mode.ts'
+      - 'src/lib/checkout-analytics.ts'
+      - 'tests/ga4-browser-consent.spec.ts'
+      - '.github/workflows/ga4-chromium-consent.yml'
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_GA_ID: G-TESTCONSENT
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Start local Next.js
+        run: |
+          npm run dev -- --hostname 127.0.0.1 > /tmp/cq-next.log 2>&1 &
+          echo $! > /tmp/cq-next.pid
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:3000/ -o /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/cq-next.log
+          exit 1
+      - name: Run isolated Chromium consent tests
+        run: npx playwright test tests/ga4-browser-consent.spec.ts --project=chromium --workers=1
+      - name: Upload browser traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ga4-browser-traces
+          path: |
+            test-results/
+            playwright-report/
+            /tmp/cq-next.log
+          retention-days: 5
