@@ -51,7 +51,8 @@ export default function GoogleAnalytics() {
 
   // Revocation still updates an already loaded tag in the effect above.
   // Unmounting Script alone does not unload Google's runtime or block its traffic.
-  // Advanced Consent Mode: load the tag with denied defaults; consent never inferred.\n  if (!ready) return null;
+  // Advanced Consent Mode: load the tag with denied defaults; consent never inferred.
+  if (!ready) return null;
 
   // Pagine con segreti nell'URL: GA4 non parte.
   if (isSensitiveAnalyticsPath(pathname)) return null;
