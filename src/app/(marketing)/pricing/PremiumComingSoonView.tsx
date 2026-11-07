@@ -151,7 +151,7 @@ const NEW_TRIAL_COPY = {
 function revisedOffer(base: CopyEntry, lang: Lang): CopyEntry {
   const text = NEW_TRIAL_COPY[lang];
   const monthlyDisclosure = `${text.monthly} ${text.cancelTrial}`;
-  const summary = `${text.monthly} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.annual}`.replace(/s+/g, " ").trim();
+  const summary = `${text.monthly} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.annual}`.replace(/\s+/g, " ").trim();
   return {...base,
     // Badge "3 giorni" solo sul mensile; gli altri piani non promettono alcuna prova.
     plans: base.plans.map(p => p.id === "premium_monthly" ? {...p, trialBadge: text.badge} : {...p, trialBadge: undefined}),
