@@ -29,6 +29,11 @@ test('weekly is hidden by default and visible in all four locales only when enab
    assert.equal(/3[,.]99/.test(html),enabled==='1');
    assert.match(html,/9[,.]99/);assert.match(html,/59[,.]90/);
    assert.match(html,/3 (giorni|days|días|jours)/);
+   // Trial advertised for the monthly plan only: the weekly/annual notes state immediate payment and no trial.
+   assert.match(html,/(solo sul piano mensile|monthly plan only|solo en el plan mensual|uniquement sur l’offre mensuelle)/);
+   assert.doesNotMatch(html,/(su qualunque piano|on any plan|con cualquier plan|pour chaque offre)/);
+   // The badge belongs to the monthly card (and its summary line) only; never to weekly/annual cards.
+   const badges=(html.match(/(3 giorni se idoneo|3 days if eligible|3 días si eres elegible|3 jours si éligible)/g)||[]).length;assert.ok(badges>=1&&badges<=2);
    assert.doesNotMatch(html,/7gg|7 days free|7 días gratis|7 jours gratuits/);
    assert.doesNotMatch(html,/59,90€ addebitati oggi|59.90 was charged/);
    if(enabled==='1')assert.match(html,/sm:grid-cols-3/);

@@ -74,10 +74,10 @@ const COPY = {
     es: "Con Premium desbloqueas también esta guía",
   },
   premiumTeaserNote: {
-    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Un trial di 3 giorni per nuovi utenti idonei; poi il prezzo del piano scelto, con rinnovo automatico.",
-    en: "All guides included, full explanations and AI Tutor. One 3-day trial for eligible new accounts, then your selected plan price with automatic renewal.",
-    fr: "Guides inclus, explications complètes et Tutor IA. Un essai de 3 jours pour les nouveaux comptes éligibles, puis le tarif choisi avec renouvellement automatique.",
-    es: "Guías incluidas, explicaciones completas y Tutor IA. Una prueba de 3 días para cuentas nuevas elegibles, después el precio elegido con renovación automática.",
+    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Prova gratuita di 3 giorni solo sul piano mensile, per gli account idonei; gli altri piani sono a pagamento immediato, con rinnovo automatico.",
+    en: "All guides included, full explanations and AI Tutor. Free 3-day trial on the monthly plan only, for eligible accounts; other plans are charged immediately, with automatic renewal.",
+    fr: "Guides inclus, explications complètes et Tutor IA. Essai gratuit de 3 jours uniquement sur l’offre mensuelle, pour les comptes éligibles ; les autres offres sont débitées immédiatement, avec renouvellement automatique.",
+    es: "Guías incluidas, explicaciones completas y Tutor IA. Prueba gratuita de 3 días solo en el plan mensual, para cuentas elegibles; los demás planes se cobran de inmediato, con renovación automática.",
   },
   premiumTeaserCta: {
     it: "Scopri Premium",
