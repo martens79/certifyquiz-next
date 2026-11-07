@@ -17,9 +17,10 @@ for(const width of [360,390,1280]){
   if(await reject.count())await reject.first().click();
   const weekly=page.getByRole('button',{name:/Settimanale/}).first();
   await expect(weekly).toBeVisible();await weekly.click();await expect(weekly).toHaveAttribute('aria-pressed','true');
-  await expect(page.getByText(/Un solo trial gratuito di 3 giorni/).first()).toBeVisible();
+  await expect(page.getByText(/Nessuna prova gratuita/).first()).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   const monthly=page.getByRole('button',{name:/Mensile/}).first();await monthly.click();
+  await expect(page.getByText(/Prova gratuita di 3 giorni solo sul piano mensile/).first()).toBeVisible();
   await expect(page.getByText(/Poi 9,99€ al mese/).first()).toBeVisible();
   await weekly.click();await page.getByRole('button',{name:'Accedi o registrati per continuare'}).first().click();
   await expect(page).toHaveURL(/login/);expect(decodeURIComponent(page.url())).toContain('premium_weekly');

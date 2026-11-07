@@ -108,56 +108,58 @@ type CopyEntry = {
   businessBannerCta: string;
 };
 
+// Policy approvata: la prova gratuita di 3 giorni esiste SOLO sul piano mensile (una volta, solo account idonei).
+// Settimanale, trimestrale e annuale: pagamento immediato. L'idoneita' e' decisa dal server; qui si descrive soltanto l'offerta.
 const NEW_TRIAL_COPY = {
-  "it": {
-    "eligibility": "Un solo trial gratuito di 3 giorni per i nuovi utenti idonei, su qualunque piano. Se non sei idoneo, il pagamento è immediato. Il checkout conferma le condizioni prima dell’adesione.",
-    "weekly": "Poi 3,99€ ogni 7 giorni, con rinnovo automatico.",
-    "monthly": "Poi 9,99€ al mese, con rinnovo automatico.",
-    "annual": "Poi 59,90€ ogni anno, con rinnovo automatico.",
-    "cancel": "Annulla dal profilo prima della fine del trial per evitare il primo addebito, oppure prima del rinnovo successivo.",
-    "badge": "3 giorni se idoneo",
-    "pdf": "Durante i 3 giorni di prova, guide PDF e mappe complete sono disponibili come anteprime. I download si sbloccano dopo il primo pagamento o con acquisto singolo."
+  it: {
+    monthly: "Prova gratuita di 3 giorni solo sul piano mensile, una sola volta e solo per gli account idonei. Poi 9,99€ al mese, con rinnovo automatico. Se non sei idoneo, il primo addebito di 9,99€ è immediato. Il checkout conferma le condizioni prima dell’adesione.",
+    cancelTrial: "Annulla dal profilo prima della fine della prova per evitare il primo addebito, oppure prima di ogni rinnovo.",
+    weekly: "3,99€ addebitati subito, poi ogni 7 giorni con rinnovo automatico. Nessuna prova gratuita. Annulla dal profilo prima del prossimo addebito.",
+    annual: "59,90€ addebitati subito, poi ogni anno con rinnovo automatico. Nessuna prova gratuita. Annulla dal profilo prima del rinnovo.",
+    badge: "3 giorni se idoneo",
+    pizza: "Solo il piano mensile include la prova gratuita di 3 giorni (se idoneo), oppure risparmia il 50% con l’annuale.",
+    pdf: "Durante la prova gratuita di 3 giorni, guide PDF e mappe complete sono disponibili come anteprime. I download si sbloccano dopo il primo pagamento o con acquisto singolo."
   },
-  "en": {
-    "eligibility": "One free 3-day trial per eligible new account, on any plan. Ineligible accounts pay immediately. Checkout confirms your terms before you subscribe.",
-    "weekly": "Then €3.99 every 7 days, automatically renewed.",
-    "monthly": "Then €9.99 per month, automatically renewed.",
-    "annual": "Then €59.90 per year, automatically renewed.",
-    "cancel": "Cancel from your profile before the trial ends to avoid the first charge, or before the next renewal.",
-    "badge": "3 days if eligible",
-    "pdf": "During the 3-day trial, full PDF guides and maps are preview-only. Downloads unlock after the first payment or an individual purchase."
+  en: {
+    monthly: "Free 3-day trial on the monthly plan only, once, and only for eligible accounts. Then €9.99 per month, automatically renewed. If you are not eligible, the first €9.99 charge is immediate. Checkout confirms your terms before you subscribe.",
+    cancelTrial: "Cancel from your profile before the trial ends to avoid the first charge, or before any renewal.",
+    weekly: "€3.99 charged today, then every 7 days with automatic renewal. No free trial. Cancel from your profile before the next charge.",
+    annual: "€59.90 charged today, then every year with automatic renewal. No free trial. Cancel from your profile before renewal.",
+    badge: "3 days if eligible",
+    pizza: "Only the monthly plan includes the free 3-day trial (if eligible), or save 50% with annual.",
+    pdf: "During the 3-day free trial, full PDF guides and maps are preview-only. Downloads unlock after the first payment or an individual purchase."
   },
-  "es": {
-    "eligibility": "Una única prueba gratuita de 3 días por cuenta nueva elegible, con cualquier plan. Si no eres elegible, el cobro es inmediato. El checkout confirma las condiciones antes de suscribirte.",
-    "weekly": "Después, 3,99€ cada 7 días, con renovación automática.",
-    "monthly": "Después, 9,99€ al mes, con renovación automática.",
-    "annual": "Después, 59,90€ al año, con renovación automática.",
-    "cancel": "Cancela desde tu perfil antes del fin de la prueba para evitar el primer cobro, o antes de la próxima renovación.",
-    "badge": "3 días si eres elegible",
-    "pdf": "Durante los 3 días de prueba, las guías PDF y mapas completos solo tienen vista previa. Las descargas se desbloquean tras el primer pago o una compra individual."
+  es: {
+    monthly: "Prueba gratuita de 3 días solo en el plan mensual, una sola vez y solo para cuentas elegibles. Después, 9,99€ al mes, con renovación automática. Si no eres elegible, el primer cobro de 9,99€ es inmediato. El checkout confirma las condiciones antes de suscribirte.",
+    cancelTrial: "Cancela desde tu perfil antes del fin de la prueba para evitar el primer cobro, o antes de cualquier renovación.",
+    weekly: "3,99€ cobrados hoy, después cada 7 días con renovación automática. Sin prueba gratuita. Cancela desde tu perfil antes del próximo cobro.",
+    annual: "59,90€ cobrados hoy, después cada año con renovación automática. Sin prueba gratuita. Cancela desde tu perfil antes de la renovación.",
+    badge: "3 días si eres elegible",
+    pizza: "Solo el plan mensual incluye la prueba gratuita de 3 días (si eres elegible), o ahorra un 50% con el anual.",
+    pdf: "Durante la prueba gratuita de 3 días, las guías PDF y mapas completos solo tienen vista previa. Las descargas se desbloquean tras el primer pago o una compra individual."
   },
-  "fr": {
-    "eligibility": "Un seul essai gratuit de 3 jours par nouveau compte éligible, pour chaque offre. Sans éligibilité, le paiement est immédiat. Le checkout confirme les conditions avant votre abonnement.",
-    "weekly": "Ensuite, 3,99€ tous les 7 jours, avec renouvellement automatique.",
-    "monthly": "Ensuite, 9,99€ par mois, avec renouvellement automatique.",
-    "annual": "Ensuite, 59,90€ par an, avec renouvellement automatique.",
-    "cancel": "Annulez depuis votre profil avant la fin de l’essai pour éviter le premier débit, ou avant le prochain renouvellement.",
-    "badge": "3 jours si éligible",
-    "pdf": "Pendant les 3 jours d’essai, les guides PDF et cartes complets sont disponibles en aperçu. Les téléchargements sont accessibles après le premier paiement ou un achat individuel."
+  fr: {
+    monthly: "Essai gratuit de 3 jours uniquement sur l’offre mensuelle, une seule fois et seulement pour les comptes éligibles. Ensuite, 9,99€ par mois, avec renouvellement automatique. Sans éligibilité, le premier débit de 9,99€ est immédiat. Le checkout confirme les conditions avant votre abonnement.",
+    cancelTrial: "Annulez depuis votre profil avant la fin de l’essai pour éviter le premier débit, ou avant tout renouvellement.",
+    weekly: "3,99€ débités aujourd’hui, puis tous les 7 jours avec renouvellement automatique. Sans essai gratuit. Annulez depuis votre profil avant le prochain débit.",
+    annual: "59,90€ débités aujourd’hui, puis chaque année avec renouvellement automatique. Sans essai gratuit. Annulez depuis votre profil avant le renouvellement.",
+    badge: "3 jours si éligible",
+    pizza: "Seule l’offre mensuelle inclut l’essai gratuit de 3 jours (si éligible), ou économisez 50% avec l’annuel.",
+    pdf: "Pendant l’essai gratuit de 3 jours, les guides PDF et cartes complets sont disponibles en aperçu. Les téléchargements sont accessibles après le premier paiement ou un achat individuel."
   }
 };
 
-function revisedOffer(base: CopyEntry, lang: Lang, plan: Plan): CopyEntry {
+function revisedOffer(base: CopyEntry, lang: Lang): CopyEntry {
   const text = NEW_TRIAL_COPY[lang];
-  const period = plan === "premium_weekly" ? text.weekly : plan === "premium_annual" ? text.annual : text.monthly;
-  const disclosure = `${text.eligibility} ${period} ${text.cancel}`;
+  const monthlyDisclosure = `${text.monthly} ${text.cancelTrial}`;
+  const summary = `${text.monthly} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.annual}`.replace(/s+/g, " ").trim();
   return {...base,
-    plans: base.plans.map(p => ({...p, trialBadge: text.badge,
-      perMonth: p.id === "premium_weekly" ? text.weekly : p.id === "premium_annual" ? text.annual : text.monthly})),
-    weeklyNote: disclosure, subCta: disclosure, subCtaMonthly: disclosure,
-    trialNote: disclosure, pizzaLine: text.eligibility, guaranteeDesc: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`,
+    // Badge "3 giorni" solo sul mensile; gli altri piani non promettono alcuna prova.
+    plans: base.plans.map(p => p.id === "premium_monthly" ? {...p, trialBadge: text.badge} : {...p, trialBadge: undefined}),
+    weeklyNote: text.weekly, subCta: text.annual, subCtaMonthly: monthlyDisclosure,
+    trialNote: monthlyDisclosure, pizzaLine: text.pizza, guaranteeDesc: summary,
     trialPdfNotice: text.pdf,
-    faqs: base.faqs.map((q,i) => i === 0 || i === 2 ? {...q, answer: `${text.eligibility} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.monthly} ${text.annual} ${text.cancel}`} : q),
+    faqs: base.faqs.map((q,i) => i === 0 ? {...q, answer: summary} : i === 2 ? {...q, answer: monthlyDisclosure} : q),
   };
 }
 
@@ -932,7 +934,7 @@ function PremiumPricingView({ forceLang }: Props) {
 
   // Visitatore non autenticato: il pulsante dice chiaramente che serve un account.
   const isAnonymous = !authLoading && !user;
-  const copy = revisedOffer(COPY[lang], lang, selectedPlan);
+  const copy = revisedOffer(COPY[lang], lang);
   const story = STORY[lang];
   const t: CopyEntry = isAnonymous
     ? { ...copy, cta: copy.ctaAnon, subCta: `${copy.anonNote} ${copy.subCta}`, subCtaMonthly: `${copy.anonNote} ${copy.subCtaMonthly}` }
