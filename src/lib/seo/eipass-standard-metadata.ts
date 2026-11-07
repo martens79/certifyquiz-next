@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 import { CERTS_BY_SLUG } from "@/certifications/registry";
 import { isComingSoonCertification } from "@/certifications/publication";
-import { EIPASS_STANDARD_LANDING_PATH, EIPASS_STANDARD_SLUG } from "@/lib/eipass-standard";
+import { EIPASS_STANDARD_LANDING_PATH, EIPASS_STANDARD_SLUG, eipassStandardCopy } from "@/lib/eipass-standard";
 
 export function eipassStandardMetadata(lang: string, siteUrl: string): Metadata {
   const reg = CERTS_BY_SLUG[EIPASS_STANDARD_SLUG];
@@ -19,7 +19,7 @@ export function eipassStandardMetadata(lang: string, siteUrl: string): Metadata 
   const title = reg.metaTitle?.it ?? reg.title.it;
   const description = reg.metaDescription?.it ?? reg.description.it;
   const image = `${base}/api/og?type=topic&title=${encodeURIComponent("EIPASS Standard")}&subtitle=${encodeURIComponent(
-    "Quiz di preparazione in arrivo"
+    eipassStandardCopy().ogSubtitle
   )}&category=fundamentals`;
 
   return {

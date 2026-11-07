@@ -18,6 +18,8 @@ type CertListClientItem = {
   category?: string | null;
   /** Landing-only certification: the card promises no quiz. */
   comingSoon?: boolean;
+  /** Replaces the "coming soon" pill text (EIPASS Standard with an available module). */
+  pillLabel?: string;
 };
 
 const UI = {
@@ -257,6 +259,7 @@ export function CertificationListClient({
               level={c.level ?? undefined}
               description={c.description ?? undefined}
               comingSoon={c.comingSoon}
+              pillLabel={c.pillLabel}
               lang={lang}
             />
           ))

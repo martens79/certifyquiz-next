@@ -115,12 +115,15 @@ test("a module is available only with status 'available' AND a valid topic id", 
   assert.equal(standard.getEipassStandardModuleHref({ ...base, status: "available", topicId: 570 }), "/it/quiz/topic/570");
 });
 
-test("tripwire: no module may be 'available' while the landing registry still says coming_soon", async () => {
-  const registry = readFileSync(new URL("../src/certifications/data/eipass-standard.ts", import.meta.url), "utf8");
-  const stillComingSoon = /publicationStatus:\s*"coming_soon"/.test(registry);
-  if (standard.hasAvailableEipassStandardModule()) {
-    assert.equal(stillComingSoon, false, "activating a module requires rewriting the landing copy and publicationStatus (docs/eipass-standard/M2_RELEASE.md)");
-  } else {
-    assert.equal(stillComingSoon, true);
-  }
+test("tripwire: the visible copy always follows the module availability", async () => {
+  const registry = (await import("../src/certifications/data/eipass-standard.ts")).default;
+  const copy = standard.eipassStandardCopy();
+  assert.equal(copy.partial, standard.hasAvailableEipassStandardModule());
+  assert.equal(registry.description.it, copy.description);
+  assert.equal(registry.metaTitle?.it, copy.metaTitle);
+  assert.equal(registry.metaDescription?.it, copy.metaDescription);
+  assert.equal(registry.level?.it, copy.statusLabel);
+  const text = JSON.stringify(registry);
+  if (copy.partial) assert.doesNotMatch(text, /non sono ancora disponibili quiz|sono in arrivo|Quiz di preparazione in arrivo/, "an available module must not be described as 'in arrivo'");
+  else assert.match(text, /in arrivo/);
 });

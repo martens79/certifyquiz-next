@@ -8,13 +8,14 @@
 import Link from "next/link";
 import { trackEvent } from "@/lib/analytics";
 import {
-  EIPASS_STANDARD_COMING_SOON_LABEL,
+  eipassStandardCopy,
   EIPASS_STANDARD_LANDING_PATH,
   EIPASS_STANDARD_LINK_EVENT,
   EIPASS_STANDARD_OFFICIAL_URL,
   EIPASS_USER_LANDING_PATH,
 } from "@/lib/eipass-standard";
 
+const COPY = eipassStandardCopy();
 const linkClass = "font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900";
 
 export function EipassStandardComingSoonPanel() {
@@ -27,13 +28,9 @@ export function EipassStandardComingSoonPanel() {
       className="mx-auto mt-4 max-w-5xl rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950"
     >
       <h2 id="eipass-standard-coming-soon" className="text-lg font-bold">
-        {EIPASS_STANDARD_COMING_SOON_LABEL}
+        {COPY.statusLabel}
       </h2>
-      <p className="mt-2 text-sm leading-6">
-        Stiamo preparando i quiz di allenamento per EIPASS Standard. Per ora questa pagina è solo informativa: non sono
-        ancora disponibili quiz, simulazioni, ripassi né pagine per singolo modulo. CertifyQuiz offre preparazione
-        indipendente e non rilascia la certificazione.
-      </p>
+      <p className="mt-2 text-sm leading-6">{COPY.panelText}</p>
       <ul className="mt-3 space-y-1 text-sm">
         <li>
           <a
@@ -62,7 +59,7 @@ export function EipassStandardComingSoonPanel() {
 export function EipassStandardPointer() {
   return (
     <p className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-800">
-      <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">In preparazione</span>
+      <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">{COPY.pointerLabel}</span>
       <Link
         href={EIPASS_STANDARD_LANDING_PATH}
         className={linkClass}
@@ -72,7 +69,7 @@ export function EipassStandardPointer() {
       >
         EIPASS Standard (DigComp 2.2)
       </Link>{" "}
-      è un percorso distinto da EIPASS 7 Moduli User. Per ora è disponibile solo la pagina informativa.
+      {COPY.pointerText}
     </p>
   );
 }

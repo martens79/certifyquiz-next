@@ -9,6 +9,7 @@ import { CERTS_BY_SLUG } from "@/certifications/registry";
 import { isCatalogListed, isComingSoonCertification } from "@/certifications/publication";
 import { mergeComingSoonCatalogEntries } from "@/lib/catalog-coming-soon";
 import { normalizeSlug } from "@/lib/cert-slug";
+import { EIPASS_STANDARD_SLUG, eipassStandardCopy } from "@/lib/eipass-standard";
 
 /* ------------------------- CANONICAL PATHS (PUBLIC) ------------------------- */
 /**
@@ -360,6 +361,7 @@ export default async function CertificationsListView({ lang }: ViewProps) {
             levelKey,
             category: c.category ?? null,
             comingSoon: isComingSoonCertification(CERTS_BY_SLUG[c.slug]) || undefined,
+            pillLabel: c.slug === EIPASS_STANDARD_SLUG ? eipassStandardCopy().cardPill : undefined,
           };
         })}
       />
