@@ -27,8 +27,8 @@ export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDAR
 /**
  * "available" is DORMANT: no module uses it today. A module becomes available only by a deliberate code change in this
  * file (status + topicId) together with the database activation of its topic (see docs/eipass-standard/M2_RELEASE.md);
- * a database flag alone never shows a link. The consistency test (tests/eipass-standard-modules.test.tsx) refuses an
- * "available" module while the landing still says "coming_soon".
+ * a database flag alone never shows a link. The visible copy follows the availability automatically
+ * (eipassStandardCopy below) and tests/eipass-standard-modules.test.tsx keeps the registry text equal to that helper.
  */
 export type EipassStandardModuleStatus = "coming_soon" | "available";
 
