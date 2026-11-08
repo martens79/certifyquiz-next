@@ -1,0 +1,25 @@
+name: premium-quarterly frontend contracts
+on:
+  pull_request:
+    paths:
+      - 'src/app/(marketing)/pricing/**'
+      - 'src/components/billing/**'
+      - 'tests/quarterly-pricing.test.tsx'
+      - '.github/workflows/premium-quarterly-tests.yml'
+permissions:
+  contents: read
+jobs:
+  feature-contracts:
+    runs-on: ubuntu-latest
+    env:
+      TSX_TSCONFIG_PATH: tsconfig.test.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: node --import tsx --test tests/quarterly-pricing.test.tsx tests/weekly-pricing.test.tsx tests/checkout-intent.test.ts

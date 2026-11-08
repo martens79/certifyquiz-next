@@ -15,6 +15,7 @@ const mocks:Record<string,unknown>={
  '@/hooks/useTwa':{useTwa:()=>false},'@/lib/billing-recovery':{},
  '@/components/billing/AlreadyPremiumNotice':noop,
  '@/components/billing/PaymentRecoveryNotice':noop,
+ '@/components/billing/PlanChangePanel':noop,
  '@/lib/twa':{},'@/components/twa/TwaNotice':noop,
 };
 test('weekly survives authentication redirect',()=>{
