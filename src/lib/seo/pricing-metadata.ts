@@ -16,24 +16,24 @@ const OG_LOCALE: Record<Locale, string> = { it: "it_IT", en: "en_US", fr: "fr_FR
 
 export const PRICING_SEO: Record<Locale, { title: string; description: string }> = {
   it: {
-    title: "CertifyQuiz Premium: prezzi e piani mensile e annuale",
+    title: "CertifyQuiz Premium: prezzi e piani di abbonamento",
     description:
-      "Scopri i piani Premium di CertifyQuiz, mensile o annuale: spiegazioni complete, ripasso degli errori, Mock Review, guide PDF, mappe concettuali e Tutor AI.",
+      "Scopri i piani Premium di CertifyQuiz, per il tuo esame: spiegazioni complete, ripasso degli errori, Mock Review, guide PDF, mappe concettuali e Tutor AI.",
   },
   en: {
-    title: "CertifyQuiz Premium: Pricing and Monthly or Annual Plans",
+    title: "CertifyQuiz Premium: Pricing and Subscription Plans",
     description:
-      "Compare CertifyQuiz Premium monthly and annual plans: full explanations, error review, Mock Review, PDF guides, concept maps and an AI Tutor.",
+      "Compare CertifyQuiz Premium subscription plans: full explanations, error review, Mock Review, PDF guides, concept maps and an AI Tutor.",
   },
   fr: {
-    title: "CertifyQuiz Premium : tarifs et offres mensuelle ou annuelle",
+    title: "CertifyQuiz Premium : tarifs et abonnements Premium",
     description:
-      "Découvrez les offres Premium de CertifyQuiz, mensuelle ou annuelle : explications complètes, révision des erreurs, Mock Review, guides PDF, cartes et tuteur IA.",
+      "Découvrez les offres Premium de CertifyQuiz, pour votre examen : explications complètes, révision des erreurs, Mock Review, guides PDF, cartes et tuteur IA.",
   },
   es: {
-    title: "CertifyQuiz Premium: precios y planes mensual o anual",
+    title: "CertifyQuiz Premium: precios y planes de suscripción",
     description:
-      "Descubre los planes Premium de CertifyQuiz, mensual o anual: explicaciones completas, repaso de errores, Mock Review, guías PDF, mapas conceptuales y Tutor AI.",
+      "Descubre los planes Premium de CertifyQuiz, para tu examen: explicaciones completas, repaso de errores, Mock Review, guías PDF, mapas conceptuales y Tutor AI.",
   },
 };
 

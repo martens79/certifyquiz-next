@@ -23,6 +23,7 @@ export function trackMetaPixel(
 }
 
 export const PREMIUM_PLAN_VALUES: Record<string, number> = {
+  premium_weekly: 3.99,
   premium_monthly: 9.99,
   premium_quarterly: 19.99,
   premium_annual: 59.90,
