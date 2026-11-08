@@ -6,7 +6,6 @@ import { clientModule } from "./helpers/client-component";
 import * as standardLib from "../src/lib/eipass-standard";
 import {
   EIPASS_STANDARD_LANDING_PATH,
-  EIPASS_STANDARD_LINK_EVENT,
   EIPASS_STANDARD_OFFICIAL_URL,
   EIPASS_USER_LANDING_PATH,
 } from "../src/lib/eipass-standard";
