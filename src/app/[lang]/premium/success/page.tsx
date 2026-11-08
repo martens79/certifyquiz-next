@@ -7,23 +7,26 @@ import { useAuth } from "@/components/auth/AuthProvider"; // <-- adatta se serve
 
 const COPY: Record<string, any> = {
   it: {
-    title: "Premium attivato",
-    monthlyDesc: "La prova gratuita di 7 giorni è attiva. Ora puoi accedere alle funzionalità Premium.",
-    annualDesc: "Il piano Premium annuale è attivo. Sono stati addebitati 59,90€ per 12 mesi.",
+    weeklyDesc: "Checkout completato. Verifica nel profilo lo stato confermato, l’eventuale prova gratuita e la data del prossimo addebito.",
+    title: "Checkout completato",
+    monthlyDesc: "Checkout completato. Verifica nel profilo lo stato confermato, l’eventuale prova gratuita e la data del prossimo addebito.",
+    annualDesc: "Checkout completato. Verifica nel profilo lo stato confermato, l’eventuale prova gratuita e la data del prossimo addebito.",
     quiz: "Vai ai quiz",
     home: "Torna alla home",
   },
   fr: {
-    title: "Premium activé",
-    monthlyDesc: "Votre essai gratuit de 7 jours est actif. Vous avez maintenant accès aux fonctionnalités Premium.",
-    annualDesc: "Votre abonnement Premium annuel est actif. 59,90€ ont été débités pour 12 mois.",
+    weeklyDesc: "Checkout terminé. Vérifiez dans votre profil le statut confirmé, l’éventuel essai gratuit et la date du prochain débit.",
+    title: "Checkout terminé",
+    monthlyDesc: "Checkout terminé. Vérifiez dans votre profil le statut confirmé, l’éventuel essai gratuit et la date du prochain débit.",
+    annualDesc: "Checkout terminé. Vérifiez dans votre profil le statut confirmé, l’éventuel essai gratuit et la date du prochain débit.",
     quiz: "Aller aux quiz",
     home: "Retour à l’accueil",
   },
   es: {
-    title: "Premium activado",
-    monthlyDesc: "Tu prueba gratuita de 7 días está activa. Ahora tienes acceso a las funciones Premium.",
-    annualDesc: "Tu plan Premium anual está activo. Se han cobrado 59,90€ por 12 meses.",
+    weeklyDesc: "Checkout completado. Comprueba en tu perfil el estado confirmado, la posible prueba gratuita y la fecha del próximo cobro.",
+    title: "Checkout completado",
+    monthlyDesc: "Checkout completado. Comprueba en tu perfil el estado confirmado, la posible prueba gratuita y la fecha del próximo cobro.",
+    annualDesc: "Checkout completado. Comprueba en tu perfil el estado confirmado, la posible prueba gratuita y la fecha del próximo cobro.",
     quiz: "Ir a los quiz",
     home: "Volver al inicio",
   },
@@ -33,6 +36,7 @@ export default function PremiumSuccessLangPage() {
   const { lang } = useParams() as { lang: string };
   const searchParams = useSearchParams();
   const isMonthly = searchParams.get("plan") !== "premium_annual";
+  const isWeekly = searchParams.get("plan") === "premium_weekly";
   const t = COPY[lang] ?? COPY.it;
 
   const { refreshMe } = useAuth();
@@ -55,7 +59,7 @@ export default function PremiumSuccessLangPage() {
   return (
     <main className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="text-3xl font-bold">{t.title}</h1>
-      <p className="mt-4 text-gray-600">{isMonthly ? t.monthlyDesc : t.annualDesc}</p>
+      <p className="mt-4 text-gray-600">{isWeekly ? t.weeklyDesc : isMonthly ? t.monthlyDesc : t.annualDesc}</p>
 
       <p className="mt-6 text-sm text-gray-500">
         {sync === "idle" && "Sincronizzazione Premium..."}

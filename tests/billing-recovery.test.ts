@@ -97,11 +97,12 @@ test("pricing: a payment-issue refusal shows the recovery banner instead of a ge
   assert.match(pricing, /requestPortalUrl\(\(\) => authFetch\("\/api\/backend\/billing\/create-portal-session"/);
 });
 
-test("trial length, PDF rules and promotions are not part of this change", () => {
+test("new three-day trial copy preserves PDF restrictions and payment-recovery wiring", () => {
   for (const source of [profile, pricing]) {
     assert.match(source, /skipTrial|premium_monthly|trial/i); // files still carry their original content
   }
-  assert.match(pricing, /7gg gratis/);
-  assert.match(pricing, /7 days free/);
+  assert.match(pricing, /3 giorni/);
+  assert.match(pricing, /3-day trial/);
+  assert.doesNotMatch(pricing, /7gg gratis|7 days free/);
   assert.match(pricing, /trialPdfNotice/);
 });

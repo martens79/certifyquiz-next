@@ -19,7 +19,7 @@
 import { normalizeCtaId, normalizeSlug } from "@/lib/commercial-origin";
 import { safeInternalRedirect, withConversionContext } from "@/lib/conversion-context";
 
-export const CHECKOUT_PLANS = ["premium_monthly", "premium_quarterly", "premium_annual"] as const;
+export const CHECKOUT_PLANS = ["premium_weekly", "premium_monthly", "premium_quarterly", "premium_annual"] as const;
 export type CheckoutPlan = (typeof CHECKOUT_PLANS)[number];
 
 export const CHECKOUT_SOURCE = "premium_checkout";
