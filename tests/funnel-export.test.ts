@@ -83,3 +83,15 @@ test("export vuoto: solo header, zero righe", async () => {
   assert.equal(csv, "event_id,event,user_key");
   assert.equal(rows, 0);
 });
+
+test("la vista diagnostica viene propagata a ogni pagina; il default non invia `view`", async () => {
+  const diag = pagedBackend([["a"], ["b"]]);
+  await fetchFunnelExportCsv({ fetchFn: diag.fetchFn, token: "tok", filters: { view: "diagnostic" } });
+  assert.deepEqual(diag.calls.map((c) => c.searchParams.get("view")), ["diagnostic", "diagnostic"]);
+
+  for (const filters of [{}, { view: "main" as const }]) {
+    const main = pagedBackend([["a"]]);
+    await fetchFunnelExportCsv({ fetchFn: main.fetchFn, token: "tok", filters });
+    assert.equal(main.calls[0].searchParams.has("view"), false);
+  }
+});

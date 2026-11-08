@@ -717,7 +717,7 @@ return (
                   <LegendItem code="paywall_viewed" text="È stato mostrato un blocco Premium/acquisto. Non significa che l’utente abbia comprato." />
                   <LegendItem code="checkout_started / checkout_created" text="È stata avviata la procedura di pagamento." />
                   <LegendItem code="purchase_completed" text="Il pagamento è stato confermato." />
-                  <LegendItem code="map_preview_viewed / guide_preview_viewed" text="È stata aperta l’anteprima di una mappa o guida." />
+                  <LegendItem code="map_preview_viewed / guide_preview_viewed" text="È stata aperta l’anteprima di una mappa o guida. Registrato ma nascosto qui: si legge in Funnel Events › Vista diagnostica." />
                   <LegendItem code="pwa_install_prompt_shown" text="È comparso l’invito a installare CertifyQuiz come app." />
                 </div>
                 <div>

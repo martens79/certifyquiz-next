@@ -268,6 +268,93 @@ test("CSV uses existing authenticated export, current filters and explicit ident
   await f.unmount();
 });
 
+test("main view is the default and never requests the diagnostic view; labels and suggestions hide preview events", async () => {
+  const f = fixture(async () => response(page()));
+  await f.mount();
+  assert.equal(f.requests.length, 1);
+  assert.equal(f.requests[0].url.searchParams.get("view"), "main");
+  assert.doesNotMatch(f.text(), /map_preview_viewed|guide_preview_viewed/);
+  assert.match(f.text(), /non compaiono qui/);
+  await f.unmount();
+});
+
+test("diagnostic view is sent to the server, resets the page, keeps other filters and is shown as such", async () => {
+  const previews = [
+    { ...event(7), event: "map_preview_viewed", cert_slug: "ccna" },
+    { ...event(6), event: "guide_preview_viewed", cert_slug: "isc2-cc" },
+  ];
+  const f = fixture(async (url) =>
+    response(
+      new URL(url, "https://fixture.test").searchParams.get("view") === "diagnostic"
+        ? page(previews, 1, 1)
+        : page(),
+    ),
+  );
+  await f.mount();
+  await f.change("select", 1, "it");
+  await f.click("Successiva");
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("page"), "2");
+  await f.change("select", 2, "diagnostic");
+  const last = f.requests.at(-1)!.url.searchParams;
+  assert.equal(last.get("view"), "diagnostic");
+  assert.equal(last.get("page"), "1");
+  assert.equal(last.get("lang"), "it");
+  assert.match(f.text(), /Anteprima mappa visualizzata/);
+  assert.match(f.text(), /Anteprima guida visualizzata/);
+  assert.match(f.text(), /Vista diagnostica/);
+  // Back to the main view.
+  await f.change("select", 2, "main");
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("view"), "main");
+  assert.doesNotMatch(f.text(), /Anteprima mappa visualizzata/);
+  await f.unmount();
+});
+
+test("unknown view values fall back to main; reset returns to the main view", async () => {
+  const f = fixture(async () => response(page()));
+  await f.mount();
+  await f.change("select", 2, "everything");
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("view"), "main");
+  await f.change("select", 2, "diagnostic");
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("view"), "diagnostic");
+  await f.click("Azzera filtri");
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("view"), "main");
+  await f.unmount();
+});
+
+test("asking for a preview event in the main view explains where it went", async () => {
+  const f = fixture(async () => response(page([], 1, 1)));
+  await f.mount();
+  await f.change("input", 0, "map_preview_viewed");
+  assert.match(f.text(), /vista diagnostica/);
+  await f.unmount();
+});
+
+test("CSV export follows the current view", async () => {
+  const f = fixture(async (url) => {
+    if (!url.includes("/export?")) return response(page());
+    return response({
+      ok: true,
+      columns: ["event"],
+      csv: "map_preview_viewed",
+      row_count: 1,
+      pagination: { page: 1, pages: 1, total: 1, snapshot_max_id: 10 },
+    });
+  });
+  await f.mount();
+  await act(async () => {
+    await f.button("Esporta CSV").props.onClick();
+  });
+  await act(async () => {});
+  assert.equal(f.requests.at(-1)!.url.searchParams.has("view"), false);
+  await f.change("select", 2, "diagnostic");
+  await act(async () => {
+    await f.button("Esporta CSV").props.onClick();
+  });
+  await act(async () => {});
+  assert.equal(f.requests.at(-1)!.url.searchParams.get("view"), "diagnostic");
+  await f.unmount();
+});
+
 test("export denial removes visible data and disables further exports", async () => {
   const f = fixture(async (url) =>
     url.includes("/export?") ? response({}, 403) : response(page()),
