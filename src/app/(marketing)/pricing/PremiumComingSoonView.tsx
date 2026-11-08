@@ -38,10 +38,12 @@ import AlreadyPremiumNotice from "@/components/billing/AlreadyPremiumNotice";
 import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
+import PlanChangePanel from "@/components/billing/PlanChangePanel";
 
 type Lang = "it" | "es" | "en" | "fr";
 const RESUME_WAIT_MS = 6000;
 const WEEKLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_WEEKLY_ENABLED === "1";
+const QUARTERLY_ENABLED = process.env.NEXT_PUBLIC_PREMIUM_QUARTERLY_ENABLED === "1";
 type Plan = "premium_weekly" | "premium_monthly" | "premium_quarterly" | "premium_annual";
 
 type Props = {
@@ -148,14 +150,23 @@ const NEW_TRIAL_COPY = {
   }
 };
 
-function revisedOffer(base: CopyEntry, lang: Lang): CopyEntry {
+const QUARTERLY_COPY = {
+  it: { label: 'Trimestrale', period: '19,90€ ogni 3 mesi', charge: "19,90€ addebitati subito, poi ogni 3 mesi con rinnovo automatico. Nessuna prova gratuita. Annulla dal profilo prima del rinnovo." },
+  en: { label: 'Quarterly', period: '€19.90 every 3 months', charge: "€19.90 charged today, then every 3 months with automatic renewal. No free trial. Cancel from your profile before renewal." },
+  fr: { label: 'Trimestriel', period: '19,90€ tous les 3 mois', charge: "19,90€ débités aujourd’hui, puis tous les 3 mois avec renouvellement automatique. Sans essai gratuit. Annulez depuis votre profil avant le renouvellement." },
+  es: { label: 'Trimestral', period: '19,90€ cada 3 meses', charge: "19,90€ cobrados hoy, después cada 3 meses con renovación automática. Sin prueba gratuita. Cancela desde tu perfil antes de la renovación." },
+};
+function revisedOffer(base: CopyEntry, lang: Lang, plan: Plan): CopyEntry {
   const text = NEW_TRIAL_COPY[lang];
-  const monthlyDisclosure = `${text.monthly} ${text.cancelTrial}`;
-  const summary = `${text.monthly} ${WEEKLY_ENABLED ? text.weekly : ""} ${text.annual}`.replace(/\s+/g, " ").trim();
+  const quarter = QUARTERLY_COPY[lang];
+  const plans = [...base.plans];
+  if (QUARTERLY_ENABLED) plans.splice(plans.findIndex(p => p.id === 'premium_annual'), 0, { id: 'premium_quarterly', label: quarter.label, price: lang === 'en' ? '€19.90' : '19,90€', perMonth: quarter.period });
+  const monthlyDisclosure = text.monthly + " " + text.cancelTrial;
+  const summary = [text.monthly, WEEKLY_ENABLED ? text.weekly : "", QUARTERLY_ENABLED ? quarter.charge : "", text.annual].join(" ").replace(/\s+/g, " ").trim();
   return {...base,
-    // Badge "3 giorni" solo sul mensile; gli altri piani non promettono alcuna prova.
-    plans: base.plans.map(p => p.id === "premium_monthly" ? {...p, trialBadge: text.badge} : {...p, trialBadge: undefined}),
-    weeklyNote: text.weekly, subCta: text.annual, subCtaMonthly: monthlyDisclosure,
+    // Badge "3 giorni" solo sul mensile; settimanale, trimestrale e annuale non promettono alcuna prova.
+    plans: plans.map(p => p.id === "premium_monthly" ? {...p, trialBadge: text.badge} : {...p, trialBadge: undefined}),
+    weeklyNote: text.weekly, subCta: plan === 'premium_quarterly' ? quarter.charge : text.annual, subCtaMonthly: monthlyDisclosure,
     trialNote: monthlyDisclosure, pizzaLine: text.pizza, guaranteeDesc: summary,
     trialPdfNotice: text.pdf,
     faqs: base.faqs.map((q,i) => i === 0 ? {...q, answer: summary} : i === 2 ? {...q, answer: monthlyDisclosure} : q),
@@ -575,7 +586,7 @@ function PlanSelector({
   popularLabel: string;
 }) {
   return (
-    <div className={`mt-6 grid ${plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
+    <div className={`mt-6 grid ${plans.length >= 4 ? 'grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4' : plans.length === 3 ? "grid-cols-1 gap-4 sm:grid-cols-3" : "grid-cols-2 gap-2.5"} sm:gap-3`}>
       {plans.map((plan) => {
         const isSelected = plan.id === selected;
         const activeBadge = plan.trialBadge ?? plan.badge;
@@ -933,7 +944,7 @@ function PremiumPricingView({ forceLang }: Props) {
 
   // Visitatore non autenticato: il pulsante dice chiaramente che serve un account.
   const isAnonymous = !authLoading && !user;
-  const copy = revisedOffer(COPY[lang], lang);
+  const copy = revisedOffer(COPY[lang], lang, selectedPlan);
   const story = STORY[lang];
   const t: CopyEntry = isAnonymous
     ? { ...copy, cta: copy.ctaAnon, subCta: `${copy.anonNote} ${copy.subCta}`, subCtaMonthly: `${copy.anonNote} ${copy.subCtaMonthly}` }
@@ -1148,8 +1159,9 @@ function PremiumPricingView({ forceLang }: Props) {
     if (isLoading || inFlightRef.current) return;
     const plan: Plan = opts.plan ?? selectedPlan;
     if (plan === "premium_weekly" && !WEEKLY_ENABLED) return;
+    if (plan === "premium_quarterly" && !QUARTERLY_ENABLED) return;
     // Il link promo si legge dall'URL: in una ripresa automatica lo stato isPromoLink non e' ancora aggiornato.
-    const promoActive = plan !== "premium_weekly" && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
+    const promoActive = !['premium_weekly','premium_quarterly'].includes(plan) && (isPromoLink || (new URLSearchParams(window.location.search).get("promo") || "").toLowerCase() === "thanks1month");
     setNotice(null);
     setPaymentIssue(false);
     setAlreadyActive(false);
@@ -1285,6 +1297,7 @@ function PremiumPricingView({ forceLang }: Props) {
   return (
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-28 md:py-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+        {QUARTERLY_ENABLED && authPremium && <PlanChangePanel lang={lang} />}
 
         {/* Hero */}
         <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-4 py-8 sm:px-6">
