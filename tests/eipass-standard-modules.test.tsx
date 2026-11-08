@@ -20,6 +20,8 @@ const OFFICIAL_TITLES = [
   "Creare presentazioni multimediali",
 ];
 
+const dormantModules = standard.EIPASS_STANDARD_MODULES.map((m) => ({ ...m, status: "coming_soon" as const, topicId: undefined }));
+
 async function render(props: Record<string, unknown> = {}) {
   let r!: ReturnType<typeof create>;
   await act(async () => { r = create(React.createElement(mod.default, props)); });
@@ -28,7 +30,7 @@ async function render(props: Record<string, unknown> = {}) {
 const flat = (r: ReturnType<typeof create>) => JSON.stringify(r.toJSON());
 
 test("modules block: seven official modules in order, each 'Prossimamente' with a disabled button", async () => {
-  const r = await render();
+  const r = await render({ modules: dormantModules });
   const items = r.root.findAllByType("li");
   assert.equal(items.length, 7);
   assert.deepEqual(items.map((li) => li.props["data-module"]), [1, 2, 3, 4, 5, 6, 7]);
@@ -51,7 +53,7 @@ test("modules block: seven official modules in order, each 'Prossimamente' with 
 });
 
 test("modules block: nothing is a link, nothing can start a session, no date and no availability claim", async () => {
-  const r = await render();
+  const r = await render({ modules: dormantModules });
   assert.equal(r.root.findAllByType("a").length, 0, "no link: no module page can answer 404");
   assert.equal(r.root.findAllByType("form").length + r.root.findAllByType("input").length, 0);
   const text = flat(r);
@@ -80,12 +82,26 @@ const withModule2Available = standard.EIPASS_STANDARD_MODULES.map((m) =>
   m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m,
 );
 
-test("dormant: today no module is available and the landing has no link at all", () => {
-  assert.equal(standard.hasAvailableEipassStandardModule(), false);
+test("activation state: only module 2 is available (topic 570); every other module has no link and no topic id", () => {
+  assert.equal(standard.hasAvailableEipassStandardModule(), true);
   for (const m of standard.EIPASS_STANDARD_MODULES) {
-    assert.equal(m.status, "coming_soon");
-    assert.equal(standard.getEipassStandardModuleHref(m), null);
+    if (m.number === 2) {
+      assert.equal(m.status, "available");
+      assert.equal(m.topicId, 570);
+      assert.equal(standard.getEipassStandardModuleHref(m), "/it/quiz/topic/570");
+    } else {
+      assert.equal(m.status, "coming_soon");
+      assert.equal(m.topicId, undefined);
+      assert.equal(standard.getEipassStandardModuleHref(m), null);
+    }
   }
+});
+
+test("production registry render: one link to /it/quiz/topic/570, six disabled 'Prossimamente' modules", async () => {
+  const r = await render();
+  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/570"]);
+  assert.equal(r.root.findAllByType("button").length, 6);
+  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 6);
 });
 
 test("available module 2: one link to its topic, one 'Disponibile', six disabled buttons, honest copy", async () => {
@@ -107,7 +123,7 @@ test("available module 2: one link to its topic, one 'Disponibile', six disabled
 });
 
 test("a module is available only with status 'available' AND a valid topic id", () => {
-  const base = standard.EIPASS_STANDARD_MODULES[1];
+  const base = dormantModules[1];
   assert.equal(standard.isEipassStandardModuleAvailable({ ...base, status: "available" }), false, "no topic id");
   assert.equal(standard.isEipassStandardModuleAvailable({ ...base, status: "available", topicId: 0 }), false);
   assert.equal(standard.isEipassStandardModuleAvailable({ ...base, status: "available", topicId: 5.5 }), false);
