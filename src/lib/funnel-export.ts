@@ -27,6 +27,8 @@ export type FunnelExportFilters = {
   lang?: string;
   cert?: string;
   date?: string;
+  // "main" (default) esclude le anteprime server-side; "diagnostic" mostra solo quelle.
+  view?: "main" | "diagnostic";
 };
 
 export type FetchLike = (url: string, init: { headers: Record<string, string> }) => Promise<{
@@ -70,6 +72,8 @@ export async function fetchFunnelExportCsv({
       cert: filters.cert ?? "all",
       date: filters.date ?? "all",
     });
+    // L'export segue la vista corrente: il default (nessun parametro) e' la vista principale.
+    if (filters.view === "diagnostic") params.set("view", "diagnostic");
     if (snapshotMaxId !== null) params.set("max_id", String(snapshotMaxId));
 
     const response = await fetchFn(`${baseUrl}?${params.toString()}`, {
