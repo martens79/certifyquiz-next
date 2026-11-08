@@ -39,6 +39,7 @@ import PaymentRecoveryNotice from "@/components/billing/PaymentRecoveryNotice";
 import { detectTwa, localeFromPathname } from "@/lib/twa";
 import TwaNotice from "@/components/twa/TwaNotice";
 import PlanChangePanel from "@/components/billing/PlanChangePanel";
+import BlackFridayOffer from '@/components/billing/BlackFridayOffer';
 
 type Lang = "it" | "es" | "en" | "fr";
 const RESUME_WAIT_MS = 6000;
@@ -1298,6 +1299,7 @@ function PremiumPricingView({ forceLang }: Props) {
     <main className="mx-auto max-w-6xl px-4 pt-8 pb-28 md:py-10">
       <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
         {QUARTERLY_ENABLED && authPremium && <PlanChangePanel lang={lang} />}
+        {process.env.NEXT_PUBLIC_BLACK_FRIDAY_2026_ENABLED==='1'&&<BlackFridayOffer lang={lang} authenticated={!!user} />}
 
         {/* Hero */}
         <section className="border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white px-4 py-8 sm:px-6">

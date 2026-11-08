@@ -16,6 +16,7 @@ const mocks:Record<string,unknown>={
  '@/components/billing/AlreadyPremiumNotice':noop,
  '@/components/billing/PaymentRecoveryNotice':noop,
  '@/components/billing/PlanChangePanel':noop,
+ '@/components/billing/BlackFridayOffer':noop,
  '@/lib/twa':{},'@/components/twa/TwaNotice':noop,
 };
 test('weekly survives authentication redirect',()=>{
