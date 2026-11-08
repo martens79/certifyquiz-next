@@ -24,8 +24,13 @@ export const EIPASS_STANDARD_OFFICIAL_URL =
 export const EIPASS_USER_LANDING_PATH = "/it/certificazioni/eipass";
 export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDARD_SLUG}`;
 
-/** Only "coming_soon" exists today: a second state is added together with the route that makes it real. */
-export type EipassStandardModuleStatus = "coming_soon";
+/**
+ * "available" is DORMANT: no module uses it today. A module becomes available only by a deliberate code change in this
+ * file (status + topicId) together with the database activation of its topic (see docs/eipass-standard/M2_RELEASE.md);
+ * a database flag alone never shows a link. The visible copy follows the availability automatically
+ * (eipassStandardCopy below) and tests/eipass-standard-modules.test.tsx keeps the registry text equal to that helper.
+ */
+export type EipassStandardModuleStatus = "coming_soon" | "available";
 
 export type EipassStandardModule = Readonly<{
   /** Official module number: also the display order. */
@@ -35,6 +40,8 @@ export type EipassStandardModule = Readonly<{
   /** DigComp 2.2 competence area the module belongs to. */
   digcompArea: Readonly<{ number: 1 | 2 | 3 | 4 | 5; name: string }>;
   status: EipassStandardModuleStatus;
+  /** Id of the module's topic (topics.id) in the database. Required, and used, only when status is "available". */
+  topicId?: number;
 }>;
 
 export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
@@ -51,6 +58,25 @@ export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
 export const EIPASS_STANDARD_MODULES_HEADING = "I 7 moduli d'esame";
 export const EIPASS_STANDARD_MODULE_SOON_LABEL = "Prossimamente";
 export const EIPASS_STANDARD_MODULE_BUTTON_LABEL = "Esercitazione non ancora disponibile";
+/** Labels of an AVAILABLE module: a short practice, never an exam simulation. */
+export const EIPASS_STANDARD_MODULE_AVAILABLE_LABEL = "Disponibile";
+export const EIPASS_STANDARD_MODULE_START_LABEL = "Inizia l'esercitazione breve";
+
+/** A module is available only with status "available" AND a valid topic id: anything else stays "Prossimamente". */
+export function isEipassStandardModuleAvailable(m: EipassStandardModule): boolean {
+  return m.status === "available" && Number.isInteger(m.topicId) && (m.topicId as number) > 0;
+}
+
+/** Link of an available module (Italian only); null for every other module, so no link can exist by accident. */
+export function getEipassStandardModuleHref(m: EipassStandardModule): string | null {
+  return isEipassStandardModuleAvailable(m) ? `/it/quiz/topic/${m.topicId}` : null;
+}
+
+export function hasAvailableEipassStandardModule(
+  modules: ReadonlyArray<EipassStandardModule> = EIPASS_STANDARD_MODULES,
+): boolean {
+  return modules.some(isEipassStandardModuleAvailable);
+}
 
 export function isEipassStandardSlug(slug: string | null | undefined): boolean {
   return slug === EIPASS_STANDARD_SLUG;
@@ -58,6 +84,77 @@ export function isEipassStandardSlug(slug: string | null | undefined): boolean {
 
 export function isEipassStandardLang(lang: string): boolean {
   return (EIPASS_STANDARD_LANGS as ReadonlyArray<string>).includes(lang);
+}
+
+/**
+ * Visible copy of the landing, the catalogue card and the metadata, derived from the module availability. With no
+ * available module it is exactly the original "in arrivo" text; as soon as a module is available (status + topicId in
+ * EIPASS_STANDARD_MODULES) every statement that says "no quiz yet" is replaced, so activating a module is a two-field change.
+ * Original text only: no coverage, equivalence or exam-simulation claim.
+ */
+export type EipassStandardCopy = Readonly<{
+  partial: boolean;
+  statusLabel: string;
+  panelText: string;
+  description: string;
+  metaTitle: string;
+  metaDescription: string;
+  guideTitle: string;
+  guideParagraph: string;
+  faqQuestion: string;
+  faqAnswer: string;
+  pointerLabel: string;
+  pointerText: string;
+  ogSubtitle: string;
+  cardPill: string | undefined;
+}>;
+
+export const EIPASS_STANDARD_PARTIAL_LABEL = "Primo modulo disponibile";
+
+export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> = EIPASS_STANDARD_MODULES): EipassStandardCopy {
+  const available = modules.filter(isEipassStandardModuleAvailable).map((m) => m.number);
+  if (available.length === 0) {
+    return {
+      partial: false,
+      statusLabel: "Quiz di preparazione in arrivo",
+      panelText:
+        "Stiamo preparando i quiz di allenamento per EIPASS Standard. Per ora questa pagina è solo informativa: non sono ancora disponibili quiz, simulazioni, ripassi né pagine per singolo modulo. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.",
+      description:
+        "EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, il quadro europeo delle competenze digitali dei cittadini, articolata in sette moduli d'esame. I quiz di preparazione di CertifyQuiz sono in arrivo: questa pagina è informativa e CertifyQuiz non rilascia la certificazione.",
+      metaTitle: "EIPASS Standard: 7 moduli e quiz in arrivo | CertifyQuiz",
+      metaDescription:
+        "Che cos'è EIPASS Standard, come si lega al DigComp 2.2 e in cosa differisce da EIPASS 7 Moduli User. Quiz di preparazione indipendenti in arrivo su CertifyQuiz.",
+      guideTitle: "Cosa sta preparando CertifyQuiz",
+      guideParagraph:
+        "Stiamo preparando quiz di allenamento indipendenti per i sette moduli. Oggi non sono ancora disponibili quiz, simulazioni, ripassi né pagine dedicate ai singoli moduli: questa pagina serve a informare e a misurare l'interesse. Quando saranno pronti, seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.",
+      faqQuestion: "I quiz di EIPASS Standard sono già disponibili su CertifyQuiz?",
+      faqAnswer: "No. I quiz di preparazione sono in arrivo. Per ora la pagina è solo informativa e non offre quiz, simulazioni o ripassi.",
+      pointerLabel: "In preparazione",
+      pointerText: "è un percorso distinto da EIPASS 7 Moduli User. Per ora è disponibile solo la pagina informativa.",
+      ogSubtitle: "Quiz di preparazione in arrivo",
+      cardPill: undefined,
+    };
+  }
+  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.join(", ")}`;
+  const whichCap = which.charAt(0).toUpperCase() + which.slice(1);
+  return {
+    partial: true,
+    statusLabel: EIPASS_STANDARD_PARTIAL_LABEL,
+    panelText: `Su CertifyQuiz è disponibile un'esercitazione breve per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento. Gli altri moduli sono in preparazione. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
+    description:
+      "EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, il quadro europeo delle competenze digitali dei cittadini, articolata in sette moduli d'esame. CertifyQuiz offre un'esercitazione breve e indipendente per il primo modulo disponibile; gli altri moduli sono in preparazione. CertifyQuiz non rilascia la certificazione.",
+    metaTitle: "EIPASS Standard: 7 moduli, primo quiz disponibile | CertifyQuiz",
+    metaDescription:
+      "EIPASS Standard e DigComp 2.2: che cos'è e differenze da EIPASS 7 Moduli User. Esercitazione breve e indipendente per il primo modulo; gli altri in preparazione.",
+    guideTitle: "Cosa offre CertifyQuiz oggi",
+    guideParagraph: `${whichCap}: un'esercitazione breve di allenamento, indipendente, con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Per gli altri moduli le esercitazioni sono in preparazione; seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.`,
+    faqQuestion: "Quali quiz di EIPASS Standard sono disponibili su CertifyQuiz?",
+    faqAnswer: `Per ora solo un'esercitazione breve per ${which}. Non è una simulazione dell'esame ufficiale. Gli altri moduli sono in preparazione.`,
+    pointerLabel: EIPASS_STANDARD_PARTIAL_LABEL,
+    pointerText: `è un percorso distinto da EIPASS 7 Moduli User. Per ora è disponibile un'esercitazione breve per ${which}; gli altri moduli sono in preparazione.`,
+    ogSubtitle: "Primo modulo disponibile",
+    cardPill: EIPASS_STANDARD_PARTIAL_LABEL,
+  };
 }
 
 /** The one visible status line of the landing. */

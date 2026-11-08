@@ -14,7 +14,7 @@
 
 import type { CertificationData } from "../types";
 import {
-  EIPASS_STANDARD_COMING_SOON_LABEL,
+  eipassStandardCopy,
   EIPASS_STANDARD_COUNTRIES,
   EIPASS_STANDARD_LANGS,
   EIPASS_STANDARD_MODULES,
@@ -23,11 +23,8 @@ import {
 } from "@/lib/eipass-standard";
 
 const IT_TITLE = "EIPASS Standard";
-const IT_DESCRIPTION =
-  "EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, il quadro europeo delle competenze digitali dei cittadini, articolata in sette moduli d'esame. I quiz di preparazione di CertifyQuiz sono in arrivo: questa pagina è informativa e CertifyQuiz non rilascia la certificazione.";
-const IT_META_TITLE = "EIPASS Standard: 7 moduli e quiz in arrivo | CertifyQuiz";
-const IT_META_DESCRIPTION =
-  "Che cos'è EIPASS Standard, come si lega al DigComp 2.2 e in cosa differisce da EIPASS 7 Moduli User. Quiz di preparazione indipendenti in arrivo su CertifyQuiz.";
+// Copy follows the module availability (lib/eipass-standard.ts): "in arrivo" while no module is available.
+const COPY = eipassStandardCopy();
 
 const GUIDE_IT = [
   {
@@ -56,17 +53,15 @@ const GUIDE_IT = [
     ],
   },
   {
-    title: "Cosa sta preparando CertifyQuiz",
-    paragraphs: [
-      "Stiamo preparando quiz di allenamento indipendenti per i sette moduli. Oggi non sono ancora disponibili quiz, simulazioni, ripassi né pagine dedicate ai singoli moduli: questa pagina serve a informare e a misurare l'interesse. Quando saranno pronti, seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.",
-    ],
+    title: COPY.guideTitle,
+    paragraphs: [COPY.guideParagraph],
   },
 ] as const;
 
 const FAQ_IT = [
   {
-    q: "I quiz di EIPASS Standard sono già disponibili su CertifyQuiz?",
-    a: "No. I quiz di preparazione sono in arrivo. Per ora la pagina è solo informativa e non offre quiz, simulazioni o ripassi.",
+    q: COPY.faqQuestion,
+    a: COPY.faqAnswer,
   },
   {
     q: "CertifyQuiz rilascia la certificazione EIPASS Standard?",
@@ -93,14 +88,14 @@ const EipassStandard: CertificationData = {
 
   title: { it: IT_TITLE, en: IT_TITLE, fr: IT_TITLE, es: IT_TITLE },
   level: {
-    it: EIPASS_STANDARD_COMING_SOON_LABEL,
-    en: EIPASS_STANDARD_COMING_SOON_LABEL,
-    fr: EIPASS_STANDARD_COMING_SOON_LABEL,
-    es: EIPASS_STANDARD_COMING_SOON_LABEL,
+    it: COPY.statusLabel,
+    en: COPY.statusLabel,
+    fr: COPY.statusLabel,
+    es: COPY.statusLabel,
   },
-  description: { it: IT_DESCRIPTION, en: IT_DESCRIPTION, fr: IT_DESCRIPTION, es: IT_DESCRIPTION },
-  metaTitle: { it: IT_META_TITLE, en: IT_META_TITLE, fr: IT_META_TITLE, es: IT_META_TITLE },
-  metaDescription: { it: IT_META_DESCRIPTION, en: IT_META_DESCRIPTION, fr: IT_META_DESCRIPTION, es: IT_META_DESCRIPTION },
+  description: { it: COPY.description, en: COPY.description, fr: COPY.description, es: COPY.description },
+  metaTitle: { it: COPY.metaTitle, en: COPY.metaTitle, fr: COPY.metaTitle, es: COPY.metaTitle },
+  metaDescription: { it: COPY.metaDescription, en: COPY.metaDescription, fr: COPY.metaDescription, es: COPY.metaDescription },
 
   // Informational only: titles WITHOUT slug, so the landing never links to a module page.
   topics: EIPASS_STANDARD_MODULES.map((m) => {

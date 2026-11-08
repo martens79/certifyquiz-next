@@ -11,6 +11,7 @@ level,
 description,
 badgeLabel,
 comingSoon,
+pillLabel,
 lang,
 }: {
 href: string;
@@ -21,10 +22,13 @@ description?: string | null;
 badgeLabel?: string;
 /** Landing-only certification (no quiz yet): no "try for free" promise, an explicit "coming soon" pill. */
 comingSoon?: boolean;
+/** Overrides the "coming soon" pill (EIPASS Standard once a module is available). */
+pillLabel?: string;
 lang: Locale;
 }) {
 const soonCta = lang === "it" ? "Scopri di più →" : lang === "fr" ? "En savoir plus →" : lang === "es" ? "Saber más →" : "Learn more →";
-const soonPill = lang === "it" ? "Prossimamente" : lang === "fr" ? "Bientôt disponible" : lang === "es" ? "Próximamente" : "Coming soon";
+const defaultSoonPill = lang === "it" ? "Prossimamente" : lang === "fr" ? "Bientôt disponible" : lang === "es" ? "Próximamente" : "Coming soon";
+const soonPill = pillLabel ?? defaultSoonPill;
 const cta = comingSoon
 ? soonCta
 : lang === "it"

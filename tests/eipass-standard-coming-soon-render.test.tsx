@@ -3,6 +3,7 @@ import test from "node:test";
 import React from "react";
 import { act, create } from "react-test-renderer";
 import { clientModule } from "./helpers/client-component";
+import * as standardLib from "../src/lib/eipass-standard";
 import {
   EIPASS_STANDARD_LANDING_PATH,
   EIPASS_STANDARD_LINK_EVENT,
@@ -16,10 +17,7 @@ const events: Array<{ name: string; params: Record<string, unknown> }> = [];
 const mod = clientModule("../../src/components/certification/EipassStandardComingSoon.tsx", {
   "next/link": { __esModule: true, default: (p: { href: string; children: React.ReactNode } & Record<string, unknown>) => React.createElement("a", p, p.children) },
   "@/lib/analytics": { trackEvent: (name: string, params: Record<string, unknown>) => events.push({ name, params }) },
-  "@/lib/eipass-standard": {
-    EIPASS_STANDARD_COMING_SOON_LABEL: "Quiz di preparazione in arrivo",
-    EIPASS_STANDARD_LANDING_PATH, EIPASS_STANDARD_LINK_EVENT, EIPASS_STANDARD_OFFICIAL_URL, EIPASS_USER_LANDING_PATH,
-  },
+  "@/lib/eipass-standard": standardLib,
 });
 
 const links = (node: ReturnType<typeof create>["root"]) => node.findAllByType("a");
