@@ -13,6 +13,7 @@ import {
   localeFromPathname,
 } from "../src/lib/twa.ts";
 import TwaNotice from "../src/components/twa/TwaNotice";
+import TwaPurchaseGate from "../src/components/twa/TwaPurchaseGate";
 
 function memoryStorage(initial: Record<string, string> = {}) {
   const map = new Map(Object.entries(initial));
@@ -183,4 +184,13 @@ test("bootstrap still detects native mode when storage is blocked", () => {
     {referrer: TWA_REFERRER_PREFIX, documentElement: {setAttribute: () => {active = true;}}},
     {search: "?cq_twa=0"});
   assert.equal(active, true);
+});
+
+test("TwaPurchaseGate: lato server il contenuto commerciale resta nell'HTML (SEO e web invariati)", () => {
+  const html = renderToStaticMarkup(
+    createElement(TwaPurchaseGate, { lang: "it" }, createElement("p", { id: "listino" }, "Team Starter da 49 €/mese"))
+  );
+  assert.match(html, /id="listino"/);
+  assert.match(html, /Team Starter da 49/);
+  assert.doesNotMatch(html, /non disponibile nell'app/i);
 });
