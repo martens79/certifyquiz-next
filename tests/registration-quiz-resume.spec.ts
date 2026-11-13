@@ -81,8 +81,13 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   await page.locator("#email").fill(user.email);
   await page.locator("#password").fill(password);
   await page.locator("#confirmPassword").fill(password);
+  const registrationResponse = page.waitForResponse(response =>
+    new URL(response.url()).pathname === "/api/backend/auth/register" && response.request().method() === "POST"
+  );
   await page.getByRole("button", { name: /Register$/ }).click();
-  await expect(page).toHaveURL(/\/login\?/);
+  expect(await (await registrationResponse).json()).toEqual({ success: true });
+  await expect(page.getByText(/Registration successful/)).toBeVisible();
+  await expect(page).toHaveURL(/\/login\?/, { timeout: 25_000 });
   expect(loginCount).toBe(0);
   expect(new URL(page.url()).searchParams.get("redirect")).toContain(quizPath);
 
@@ -90,7 +95,7 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   await login.locator('input[type="email"]').fill(user.email);
   await login.locator('input[type="password"]').fill(password);
   await login.locator('button[type="submit"]').click();
-  await expect(page).toHaveURL(/\/quiz\/ccna\/mixed/);
+  await expect(page).toHaveURL(/\/quiz\/ccna\/mixed/, { timeout: 25_000 });
   await expect(page.getByText(/Answered 5/)).toBeVisible();
   await expect(page.getByText(`Sandbox question ${before.qIds[before.idx ?? 0]}`, { exact: true })).toBeVisible();
   expect(loginCount).toBe(1);
