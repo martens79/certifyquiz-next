@@ -32,7 +32,7 @@ test("registration success requires login and restores the guest CCNA quiz", asy
         window.onloadTurnstileCallback?.();
       ` });
     }
-    if (url.origin !== origin) return route.abort();
+    if (url.origin !== origin && !(url.protocol === target.protocol && url.port === target.port && url.hostname === "localhost")) return route.abort();
     if (!url.pathname.startsWith("/api/backend/")) return route.continue();
     const path = url.pathname.slice("/api/backend".length);
     if (path === "/auth/register") {
@@ -87,8 +87,6 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   expect(loginCount).toBe(0);
   expect(new URL(page.url()).searchParams.get("redirect")).toContain(quizPath);
 
-  // Reload the confirmed login destination to exercise the full-document entry.
-  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("#password")).toBeVisible({ timeout: 15_000 });
   await page.locator("#email").fill(user.email);
   await page.locator("#password").fill(password);

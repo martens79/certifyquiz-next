@@ -6,7 +6,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { Locale } from '@/lib/i18n';
-import { langFromPathname, getLabel } from '@/lib/i18n';
+import { langFromPathname, getLabel, withLang } from '@/lib/i18n';
 import { acceptLoginToken, backendUrl } from '@/lib/auth';
 import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
 import { trackEvent, trackEventOnce, trackFunnelEventOnce } from '@/lib/analytics';
@@ -274,7 +274,7 @@ export default function RegisterPageClient() {
           event: 'registration_completed', cert_slug: conversion.certificationSlug,
           topic_slug: conversion.topicSlug, lang,
         });
-      const loginHref = withConversionContext(`/${lang}/login`, conversion);
+      const loginHref = withConversionContext(withLang(lang, '/login'), conversion);
       setTimeout(() => router.replace(loginHref), 1200);
     } catch (err: unknown) {
       resetTurnstile();
@@ -428,7 +428,7 @@ export default function RegisterPageClient() {
 
         <p className="text-sm mt-4 text-center text-gray-700">
           {String(getLabel({ it: 'Hai già un account?', en: 'Already have an account?' }, lang))}{' '}
-          <Link href={withConversionContext(`/${lang}/login`, conversion)} className="text-blue-600 hover:underline font-semibold">
+          <Link href={withConversionContext(withLang(lang, '/login'), conversion)} className="text-blue-600 hover:underline font-semibold">
             {String(getLabel({ it: 'Accedi', en: 'Login' }, lang))}
           </Link>
         </p>

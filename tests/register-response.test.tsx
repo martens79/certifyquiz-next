@@ -25,7 +25,7 @@ for (const response of [
         useRouter: () => ({ replace: (url: string) => redirects.push(url) }),
         useSearchParams: () => params,
       },
-      "@/lib/i18n": { langFromPathname: () => "it", getLabel: (labels: { it: string }) => labels.it },
+      "@/lib/i18n": { langFromPathname: () => "it", getLabel: (labels: { it: string }) => labels.it, withLang: (lang: string, path: string) => lang === "en" ? path : `/${lang}${path}` },
       "@/lib/auth": { acceptLoginToken: () => {}, backendUrl: (path: string) => path },
       "@/lib/auth-session": { authGeneration: () => 0, assertAuthGeneration: () => {} },
       "@/lib/analytics": {
