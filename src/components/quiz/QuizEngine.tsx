@@ -757,7 +757,7 @@ const openFeedback = () => {
   const userKeyPart = user?.id != null ? `user:${user.id}` : 'anon';
   const scopedKey = `${storageScope}:${effectiveMode}:${userKeyPart}`;
 
-  const trackedMilestones = useMemo(() => new Set<number>(), [scopedKey]);
+  const milestoneTrackingRef = useRef<{ scope: string; tracked: Set<number> } | null>(null);
 
   useEffect(() => {
     assessmentStartedTrackedRef.current = false;
@@ -1353,7 +1353,10 @@ const openFeedback = () => {
 
   const trackQuestionMilestone = useCallback((question: HTMLParagraphElement | null) => {
     if (!question || blockReview) return;
-    return observeQuizQuestionMilestone(question, idx + 1, trackedMilestones, reached => {
+    if (milestoneTrackingRef.current?.scope !== scopedKey) {
+      milestoneTrackingRef.current = { scope: scopedKey, tracked: new Set<number>() };
+    }
+    return observeQuizQuestionMilestone(question, idx + 1, milestoneTrackingRef.current.tracked, reached => {
       trackQuizEvent("quiz_question_reached", {
         language: lang,
         quiz_mode: effectiveMode,
@@ -1362,7 +1365,7 @@ const openFeedback = () => {
         source_page: "quiz",
       });
     });
-  }, [idx, lang, effectiveMode, context?.certificationSlug, blockReview, trackedMilestones]);
+  }, [idx, lang, effectiveMode, context?.certificationSlug, blockReview, scopedKey]);
 
   useEffect(() => {
     latestProgressRef.current = {
