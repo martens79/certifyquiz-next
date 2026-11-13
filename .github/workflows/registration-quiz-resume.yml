@@ -1,0 +1,29 @@
+name: Registration and quiz resume
+on:
+  pull_request:
+    paths:
+      - 'src/app/[lang]/register/**'
+      - 'tests/register-response.test.tsx'
+      - 'tests/registration-quiz-resume.spec.ts'
+      - 'playwright.registration-quiz-resume.config.ts'
+      - '.github/workflows/registration-quiz-resume.yml'
+permissions:
+  contents: read
+jobs:
+  isolated-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: node --import tsx --test tests/register-response.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+      - run: npx playwright test --config playwright.registration-quiz-resume.config.ts
