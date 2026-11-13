@@ -87,10 +87,12 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   expect(loginCount).toBe(0);
   expect(new URL(page.url()).searchParams.get("redirect")).toContain(quizPath);
 
-  const login = page.locator("form").filter({ has: page.locator('input[type="password"]') });
-  await login.locator('input[type="email"]').fill(user.email);
-  await login.locator('input[type="password"]').fill(password);
-  await login.locator('button[type="submit"]').click();
+  // Reload the confirmed login destination to exercise the full-document entry.
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("#password")).toBeVisible({ timeout: 15_000 });
+  await page.locator("#email").fill(user.email);
+  await page.locator("#password").fill(password);
+  await page.locator("form").filter({ has: page.locator("#password") }).locator('button[type="submit"]').click();
   await expect(page).toHaveURL(/\/quiz\/ccna\/mixed/, { timeout: 25_000 });
   await expect(page.getByText(/Answered 5/)).toBeVisible();
   await expect(page.getByText(`Sandbox question ${before.qIds[before.idx ?? 0]}`, { exact: true })).toBeVisible();
