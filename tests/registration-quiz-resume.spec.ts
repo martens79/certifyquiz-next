@@ -81,7 +81,7 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   await page.locator("#email").fill(user.email);
   await page.locator("#password").fill(password);
   await page.locator("#confirmPassword").fill(password);
-  await page.locator('form button[type="submit"]').click();
+  await page.getByRole("button", { name: /Register$/ }).click();
   await expect(page).toHaveURL(/\/login\?/);
   expect(loginCount).toBe(0);
   expect(new URL(page.url()).searchParams.get("redirect")).toContain(quizPath);
