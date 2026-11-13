@@ -22,6 +22,7 @@ type FormDataState = {
 };
 
 type RegisterSuccess = {
+  success?: boolean;
   token?: string;
   user?: {
     id: number;
@@ -240,6 +241,12 @@ export default function RegisterPageClient() {
         });
         router.replace(redirectParam || `/${lang}/profile`);
         return;
+      }
+
+      if (data?.success !== true) {
+        throw new Error(
+          String(getLabel({ it: 'Errore nella registrazione', en: 'Registration error' }, lang))
+        );
       }
 
       // Altrimenti messaggio di conferma e redirect al login (porta con sé il redirect)
