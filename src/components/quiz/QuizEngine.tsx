@@ -2,7 +2,8 @@
 'use client';
 
 import { trackEventOnce, studyEngagementKey } from '@/lib/analytics';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { observeQuizQuestionMilestone } from '@/lib/quiz-question-milestone';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -645,7 +646,6 @@ const openFeedback = () => {
   const assessmentStartedTrackedRef = useRef(false);
   const studyStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
-  const milestoneTrackedRef = useRef(new Set<number>());
   const abandonedTrackedRef = useRef(false);
   const latestProgressRef = useRef({ idx: 0, finished: false, answered: 0 });
   const premiumClickedRef = useRef(false);
@@ -757,11 +757,12 @@ const openFeedback = () => {
   const userKeyPart = user?.id != null ? `user:${user.id}` : 'anon';
   const scopedKey = `${storageScope}:${effectiveMode}:${userKeyPart}`;
 
+  const trackedMilestones = useMemo(() => new Set<number>(), [scopedKey]);
+
   useEffect(() => {
     assessmentStartedTrackedRef.current = false;
     studyStartedTrackedRef.current = false;
     completedTrackedRef.current = false;
-    milestoneTrackedRef.current.clear();
     abandonedTrackedRef.current = false;
   }, [scopedKey]);
 
@@ -1350,19 +1351,18 @@ const openFeedback = () => {
     conversionContext.score,
   ]);
 
-  useEffect(() => {
-    const reached = idx + 1;
-    if (![1, 5, 10, 20, 40].includes(reached)) return;
-    if (milestoneTrackedRef.current.has(reached)) return;
-    milestoneTrackedRef.current.add(reached);
-    trackQuizEvent("quiz_question_reached", {
-      language: lang,
-      quiz_mode: effectiveMode,
-      question_milestone: reached,
-      certification_slug: context?.certificationSlug ?? null,
-      source_page: "quiz",
+  const trackQuestionMilestone = useCallback((question: HTMLParagraphElement | null) => {
+    if (!question || blockReview) return;
+    return observeQuizQuestionMilestone(question, idx + 1, trackedMilestones, reached => {
+      trackQuizEvent("quiz_question_reached", {
+        language: lang,
+        quiz_mode: effectiveMode,
+        question_milestone: reached,
+        certification_slug: context?.certificationSlug ?? null,
+        source_page: "quiz",
+      });
     });
-  }, [idx, lang, effectiveMode, context?.certificationSlug]);
+  }, [idx, lang, effectiveMode, context?.certificationSlug, blockReview, trackedMilestones]);
 
   useEffect(() => {
     latestProgressRef.current = {
@@ -3489,7 +3489,7 @@ return (
               </pre>
             </figure>
           )}
-          <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
+          <p ref={trackQuestionMilestone} className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 
         {/* feedback (sempre disponibile se onFeedback è passato) */}

@@ -13,7 +13,8 @@
       "codex/premium-weekly-20261105": false,
       "feat/premium-quarterly-local-20261106": false,
       "feat/black-friday-2026-local-20261106": false,
-      "integration/premium-final-20261109": false
+      "integration/premium-final-20261109": false,
+      "codex/fix-quiz-question-milestone-20261113": false
     }
   }
 }
