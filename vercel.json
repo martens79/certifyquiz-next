@@ -14,6 +14,7 @@
       "feat/premium-quarterly-local-20261106": false,
       "feat/black-friday-2026-local-20261106": false,
       "integration/premium-final-20261109": false,
+      "codex/fix-registration-response-20261113": false,
       "codex/fix-quiz-question-milestone-20261113": false
     }
   }
