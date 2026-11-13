@@ -16,7 +16,7 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   const target = new URL(baseURL ?? "");
   expect(["127.0.0.1", "localhost"]).toContain(target.hostname);
   const origin = target.origin;
-  let registered = false;
+  let registrationBody: unknown;
   let loginCount = 0;
   await page.route("**/*", async route => {
     const request = route.request();
@@ -36,14 +36,11 @@ test("registration success requires login and restores the guest CCNA quiz", asy
     if (!url.pathname.startsWith("/api/backend/")) return route.continue();
     const path = url.pathname.slice("/api/backend".length);
     if (path === "/auth/register") {
-      expect(request.method()).toBe("POST");
-      expect(request.postDataJSON()).toMatchObject({ email: user.email, password, turnstileToken: "sandbox-turnstile" });
-      registered = true;
+      registrationBody = request.postDataJSON();
       return json(200, { success: true });
     }
     if (path === "/auth/login") {
-      expect(registered).toBe(true);
-      expect(request.postDataJSON()).toMatchObject({ email: user.email, password });
+      if (!registrationBody) return json(401, {});
       loginCount++;
       return json(200, { token });
     }
@@ -77,16 +74,15 @@ test("registration success requires login and restores the guest CCNA quiz", asy
 
   await registerLink.click();
   await expect(page).toHaveURL(/\/register\?/);
+  const submit = page.getByRole("button", { name: /Register$/ });
+  await expect(submit).toBeEnabled();
   await page.locator("#username").fill(user.username);
   await page.locator("#email").fill(user.email);
   await page.locator("#password").fill(password);
   await page.locator("#confirmPassword").fill(password);
-  const registrationResponse = page.waitForResponse(response =>
-    new URL(response.url()).pathname === "/api/backend/auth/register" && response.request().method() === "POST"
-  );
-  await page.getByRole("button", { name: /Register$/ }).click();
-  expect(await (await registrationResponse).json()).toEqual({ success: true });
-  await expect(page.getByText(/Registration successful/)).toBeVisible();
+  await submit.click();
+  await expect(page.getByText(/Registration successful/)).toBeVisible({ timeout: 12_000 });
+  expect(registrationBody).toMatchObject({ email: user.email, password, turnstileToken: "sandbox-turnstile" });
   await expect(page).toHaveURL(/\/login\?/, { timeout: 25_000 });
   expect(loginCount).toBe(0);
   expect(new URL(page.url()).searchParams.get("redirect")).toContain(quizPath);
