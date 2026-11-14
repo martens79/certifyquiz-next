@@ -168,6 +168,7 @@ export default function FunnelEventsClient({ token }: { token: string }) {
   };
   const params = new URLSearchParams({
     ...filters,
+    hide_resource_previews: "1",
     page: String(query.page),
     limit: String(LIMIT),
   }).toString();

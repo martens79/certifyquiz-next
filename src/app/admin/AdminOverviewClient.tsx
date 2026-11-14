@@ -301,6 +301,7 @@ const allCertificationPerformance =
     lang: langFilter,
     cert: certFilter,
     date: dateFilter,
+    hide_resource_previews: "1",
   });
 
   const [
