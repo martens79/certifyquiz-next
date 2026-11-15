@@ -11,7 +11,7 @@ type Props = {
   topicSlug?: string;
   correctCount?: number;
   totalAnswered?: number;
-  onBack?: () => void;
+  backHref?: string;
 };
 
 const COPY = {
@@ -58,10 +58,10 @@ const COPY = {
     es: 'Entrar',
   },
   back: {
-    it: 'Continua senza account',
-    en: 'Continue without account',
-    fr: 'Continuer sans compte',
-    es: 'Continuar sin cuenta',
+    it: 'Esci dal quiz',
+    en: 'Leave quiz',
+    fr: 'Quitter le quiz',
+    es: 'Salir del cuestionario',
   },
 };
 
@@ -71,7 +71,7 @@ export default function RegistrationGate({
   topicSlug,
   correctCount = 0,
   totalAnswered = 5,
-  onBack,
+  backHref,
 }: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -150,14 +150,13 @@ export default function RegistrationGate({
         </a>
       </p>
 
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
+      {backHref && (
+        <a
+          href={backHref}
           className="mx-auto block text-xs text-gray-400 underline underline-offset-2 hover:text-gray-600"
         >
           {COPY.back[lang]}
-        </button>
+        </a>
       )}
     </div>
   );
