@@ -98,6 +98,26 @@ import { useQuizTutor } from '@/components/quiz/QuizTutorContext';
 // ------------------------------------------------------------------
 // Local labels (indipendenti da QuizDict)
 // ------------------------------------------------------------------
+// Batch grading supplies verdicts without drawing on the explanation quota.
+async function gradeTrainingAnswers(
+  pending: { question_id: number; answer_id: number }[],
+  lang: Locale,
+) {
+  const grades: Record<string, AnswerCheckResult> = {};
+  for (const batch of chunk(pending, 200)) {
+    const response = await evaluateAnswers(batch, lang);
+    for (const grade of response.results ?? []) {
+      if (grade.correct_answer_id != null && !(grade as { error?: string }).error) {
+        grades[String(grade.question_id)] = grade;
+      }
+    }
+    if (batch.some(({ question_id }) => !grades[String(question_id)])) {
+      throw new Error('Incomplete training evaluation');
+    }
+  }
+  return grades;
+}
+
 const L = {
   training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
   exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
@@ -126,6 +146,9 @@ const L = {
   gotoUnShort: { it: 'Non risolta', en: 'Unanswered', fr: 'Non répondue', es: 'Sin responder' },
 
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
+  gradeLoading: { it: 'Verifica delle risposte...', en: 'Checking answers...', fr: 'Vérification des réponses...', es: 'Comprobando respuestas...' },
+  gradeError: { it: 'Impossibile verificare le risposte.', en: 'Could not check answers.', fr: 'Impossible de vérifier les réponses.', es: 'No se pudieron comprobar las respuestas.' },
+  gradeRetry: { it: 'Riprova', en: 'Try again', fr: 'Réessayer', es: 'Reintentar' },
   summaryTitle: { it: 'Risultato esame', en: 'Exam summary', fr: 'Résumé de l’examen', es: 'Resumen del examen' },
   questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
   correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
@@ -401,7 +424,7 @@ export default function QuizEngine({
   const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();
   const versionedTrainingRef=useRef<VersionedTrainingClient|null>(null);
-  const versionedCheckingRef=useRef(new Set<string>());
+  const answerCheckingRef=useRef(new Set<string>());
   const [versionedReload,setVersionedReload]=useState(0);
   useEffect(()=>{const reconnect=()=>{if(versionedTrainingRef.current)setVersionedReload(n=>n+1);};window.addEventListener('online',reconnect);return()=>window.removeEventListener('online',reconnect);},[]);
 
@@ -1855,31 +1878,63 @@ clearProgress(`${storageScope}:assessment`);
     return Math.round((ok / questions.length) * 100);
   }, [marked, questions, results]);
 
+  const [blockGrades, setBlockGrades] = useState<{
+    questions: Question[];
+    results: Record<string, AnswerCheckResult>;
+  } | null>(null);
+  const [blockGradeError, setBlockGradeError] = useState(false);
+  const [blockGradeRetry, setBlockGradeRetry] = useState(0);
+  const blockResults = useMemo(() => ({
+    ...(blockGrades?.questions === questions ? blockGrades.results : {}),
+    ...results,
+  }), [blockGrades, questions, results]);
+
+  const pendingBlockGrades = useMemo(() => {
+    if (!hydrated || loading || !blockPaused || effectiveMode !== 'training' || !blockSize || versionedTrainingRef.current) return [];
+    return questions.slice(Math.max(0, idx - blockSize), idx)
+      .filter((q) => marked[q.id] != null && !blockResults[String(q.id)])
+      .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
+  }, [hydrated, loading, blockPaused, effectiveMode, blockSize, questions, idx, marked, blockResults]);
+
+  useEffect(() => {
+    if (!pendingBlockGrades.length) return;
+    let active = true;
+    setBlockGradeError(false);
+    void gradeTrainingAnswers(pendingBlockGrades, lang).then((grades) => {
+      if (!active) return;
+      setBlockGrades((previous) => ({
+        questions,
+        results: { ...(previous?.questions === questions ? previous.results : {}), ...grades },
+      }));
+    }).catch(() => {
+      if (active) setBlockGradeError(true);
+    });
+    return () => { active = false; };
+  }, [pendingBlockGrades, lang, questions, blockGradeRetry, scopedKey]);
+
   const blockResult = useMemo(() => {
     if (!blockPaused || effectiveMode !== 'training' || !blockSize) return null;
 
     // next() ha già avanzato idx alla prima domanda del blocco successivo.
-    // Il blocco appena concluso è quindi [idx - blockSize, idx), senza
-    // dipendere dall'ordine delle chiavi di marked o da query aggiuntive.
     return calculateCompletedBlock({
       questions,
       marked,
-      results,
+      results: blockResults,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, blockResults]);
 
   const blockWrongPositions = useMemo(() => {
     if (!blockPaused || effectiveMode !== 'training' || !blockSize) return [];
     return getCompletedBlockWrongPositions({
       questions,
       marked,
-      results,
+      results: blockResults,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, blockResults]);
 
   /* ----------------------------- HANDLER ------------------------------ */
   // Aggiorna quota e limite spiegazioni dalla risposta del server. Usata sia
@@ -1911,10 +1966,12 @@ clearProgress(`${storageScope}:assessment`);
   // Valutazione finale in corso, o fallita a tempo scaduto: le risposte sono quelle
   // gia' date e non devono cambiare sotto la valutazione/il retry.
   if (!versionedTrainingRef.current && (finishingRef.current || finishError?.expired)) return;
-  if(versionedTrainingRef.current){if(resultOf(q.id)||versionedCheckingRef.current.has(String(q.id))||(marked[q.id]!=null&&String(marked[q.id])!==String(a.id)))return;versionedCheckingRef.current.add(String(q.id));}
-  // Una nuova scelta supera il re-check del ripristino: la verifica la fa
-  // questo handler, una volta sola.
-  restoredAnsweredRef.current.delete(String(q.id));
+  const key = String(q.id);
+  if (!isTestLike) {
+    if (blockResults[key] || restoredAnsweredRef.current.has(key) || answerCheckingRef.current.has(key)) return;
+    if (marked[q.id] != null && String(marked[q.id]) !== String(a.id)) return;
+    answerCheckingRef.current.add(key);
+  }
   const engagementKey = studyEngagementKey(storageScope,effectiveMode);
   trackEventOnce(engagementKey, 'study_engaged', {
     language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
@@ -1924,7 +1981,7 @@ clearProgress(`${storageScope}:assessment`);
     lang, metadata: { quiz_mode: effectiveMode },
   });
   setMarked((m) => ({ ...m, [q.id]: a.id }));
-  if (!isLoggedIn) increment(); // ✅ aggiunto
+  if (!isLoggedIn && (isTestLike || marked[q.id] == null)) increment(); // ✅ aggiunto
 
   // Paywall Phase 2: in training la correttezza (e la spiegazione, se
   // spettante) arrivano dal server ORA, dopo la risposta. In exam/assessment
@@ -1938,6 +1995,9 @@ clearProgress(`${storageScope}:assessment`);
       applyCheckedAccess(checked);
     } catch (err) {
       console.error("Errore answers/check:", err);
+      setMarked((current) => ({ ...current }));
+    } finally {
+      answerCheckingRef.current.delete(key);
     }
   }
 
@@ -1974,7 +2034,6 @@ clearProgress(`${storageScope}:assessment`);
     // sbagliata che sia.
     void recordPostGateQuestion(q.id);
   }
-  versionedCheckingRef.current.delete(String(q.id));
 };
 
   const next = () => {
@@ -2148,26 +2207,10 @@ const goToFirstUnanswered = () => {
         }
       }
     } else if (effectiveMode === 'training') {
-      // Training: la correttezza arriva domanda per domanda da /answers/check, ma
-      // dopo un ripristino (reload, altro device) `results` e' vuoto e viene
-      // ricostruito solo per le domande che l'utente rivede. Quelle risposte
-      // prima del ripristino e mai riviste contavano come errate. Si valutano in
-      // blocco quelle senza verdetto (senza spiegazioni, senza consumare quota).
-      // Non si fondono in `results`: la spiegazione viene richiesta alla prima
-      // visita dal re-check, come sempre.
-      const unevaluated = questions
-        .filter((q) => marked[q.id] != null && !results[String(q.id)])
+      const pending = questions
+        .filter((q) => marked[q.id] != null && !blockResults[String(q.id)])
         .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
-      if (unevaluated.length > 0) {
-        const fresh: Record<string, AnswerCheckResult> = {};
-        for (const part of chunk(unevaluated, 200)) {
-          const res = await evaluateAnswers(part, lang);
-          for (const r of res.results || []) {
-            if (!(r as { error?: string }).error) fresh[String(r.question_id)] = r;
-          }
-        }
-        evaluated = { ...results, ...fresh };
-      }
+      evaluated = { ...blockResults, ...await gradeTrainingAnswers(pending, lang) };
     }
     } catch (err) {
       console.error("Errore valutazione risposte:", err);
@@ -2180,6 +2223,7 @@ const goToFirstUnanswered = () => {
       attemptRef.current = closeAttempt(attemptRef.current, timeExpired ? 'expired' : 'completed');
       saveExamAttempt(attemptRef.current);
     }
+    setResults(evaluated);
     completedRef.current = true;
     setFinishError(null);
     setFinished(true);
@@ -2560,6 +2604,21 @@ const submitAssessmentReport = async () => {
   const gradient = `bg-gradient-to-b ${categoryColor} text-white`;
 
   /* ---------------------- CHECKPOINT BLOCCO TRAINING ---------------------- */
+  if (pendingBlockGrades.length > 0) {
+    return (
+      <div className="min-h-screen grid place-content-center gap-4" role="status">
+        {blockGradeError ? (
+          <>
+            <p>{label('gradeError', lang)}</p>
+            <button type="button" onClick={() => setBlockGradeRetry((n) => n + 1)}>
+              {label('gradeRetry', lang)}
+            </button>
+          </>
+        ) : <p>{label('gradeLoading', lang)}</p>}
+      </div>
+    );
+  }
+
   if (blockPaused && effectiveMode === 'training' && blockSize && blockResult) {
     return (
       <BlockResultsScreen
@@ -2688,7 +2747,7 @@ const assessmentCopy =
         const chosenId = markedMap?.[q.id];
         const correctId = resultOf(q.id)?.correct_answer_id ?? null;
         const rightAns = correctId != null ? q.answers.find((a) => String(a.id) === String(correctId)) : undefined;
-        const chosenAns = q.answers.find((a) => a.id === chosenId);
+        const chosenAns = q.answers.find((a) => String(a.id) === String(chosenId));
 
         if (!rightAns || chosenId == null || String(chosenId) === String(rightAns.id)) return null;
 
@@ -3606,7 +3665,7 @@ return (
                 key={String(a.id)}
                 type="button"
                 onClick={() => choose(q, a)}
-                disabled={!!blockReview}
+                disabled={!!blockReview || (!isTestLike && (!!blockResults[String(q.id)] || restoredAnsweredRef.current.has(String(q.id)) || answerCheckingRef.current.has(String(q.id)) || (chosen != null && String(chosen) !== String(a.id))))}
                 className={`w-full text-left rounded-2xl px-4 py-3 min-h-[56px] leading-snug whitespace-normal transition border-2 ${btnClasses} ${blockReview ? 'cursor-default' : ''}`}
               >
                 {a.text}
