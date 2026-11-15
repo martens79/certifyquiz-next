@@ -34,6 +34,10 @@ for (const lang of ["en", "it", "fr", "es"] as const) {
     expect(inventoryResponse.status()).toBe(200);
     const inventory = await inventoryResponse.json();
     expect(inventory.total).toBeGreaterThan(0);
+    await expect(page).toHaveTitle(/Apple Device Support/);
+    const description = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(description).toBeTruthy();
+    expect(description).not.toMatch(/\b(?:45|240)\b/);
     await expect(page.locator("body")).toContainText(String(inventory.total));
     await expect(page.locator("body")).not.toContainText("9L0-3023");
     await expect(page.getByRole("combobox", { name: "Language" })).toHaveValue(lang);
