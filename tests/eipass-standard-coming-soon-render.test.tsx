@@ -6,7 +6,6 @@ import { clientModule } from "./helpers/client-component";
 import * as standardLib from "../src/lib/eipass-standard";
 import {
   EIPASS_STANDARD_LANDING_PATH,
-  EIPASS_STANDARD_LINK_EVENT,
   EIPASS_STANDARD_OFFICIAL_URL,
   EIPASS_USER_LANDING_PATH,
 } from "../src/lib/eipass-standard";
@@ -14,11 +13,16 @@ import {
 (globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true;
 
 const events: Array<{ name: string; params: Record<string, unknown> }> = [];
-const mod = clientModule("../../src/components/certification/EipassStandardComingSoon.tsx", {
+const dormantModules = standardLib.EIPASS_STANDARD_MODULES.map((m) => ({ ...m, status: "coming_soon" as const, topicId: undefined }));
+const dormantLib = { ...standardLib, eipassStandardCopy: () => standardLib.eipassStandardCopy(dormantModules) };
+const mocksFor = (lib: Record<string, unknown>) => ({
   "next/link": { __esModule: true, default: (p: { href: string; children: React.ReactNode } & Record<string, unknown>) => React.createElement("a", p, p.children) },
   "@/lib/analytics": { trackEvent: (name: string, params: Record<string, unknown>) => events.push({ name, params }) },
-  "@/lib/eipass-standard": standardLib,
+  "@/lib/eipass-standard": lib,
 });
+const src = "../../src/components/certification/EipassStandardComingSoon.tsx";
+const mod = clientModule(src, mocksFor(dormantLib)); // the wording while no module is available
+const activeMod = clientModule(src, mocksFor(standardLib)); // production registry: module 2 available
 
 const links = (node: ReturnType<typeof create>["root"]) => node.findAllByType("a");
 const text = (renderer: ReturnType<typeof create>) => JSON.stringify(renderer.toJSON());
@@ -59,4 +63,18 @@ test("User-landing pointer: 'In preparazione', links only to the Standard landin
   assert.deepEqual(a.map((x) => x.props.href), [EIPASS_STANDARD_LANDING_PATH]);
   await act(async () => { a[0].props.onClick(); });
   assert.deepEqual(JSON.parse(JSON.stringify(events)), [{ name: "eipass_standard_link_click", params: { link_target: "standard_coming_soon", source_page: "eipass_user_landing" } }]);
+});
+
+test("module 2 available: the panel and the pointer say so, with the same two real links and nothing promising an exam simulation", async () => {
+  let r!: ReturnType<typeof create>;
+  await act(async () => { r = create(React.createElement(activeMod.EipassStandardComingSoonPanel)); });
+  assert.match(text(r), /Primo modulo disponibile/);
+  assert.match(text(r), /esercitazione breve per il Modulo 2/);
+  assert.doesNotMatch(text(r), /solo informativa|non sono\s+ancora disponibili quiz|in arrivo/i);
+  assert.deepEqual(links(r.root).map((x) => x.props.href), [EIPASS_STANDARD_OFFICIAL_URL, EIPASS_USER_LANDING_PATH]);
+  let p!: ReturnType<typeof create>;
+  await act(async () => { p = create(React.createElement(activeMod.EipassStandardPointer)); });
+  assert.match(text(p), /Primo modulo disponibile/);
+  assert.doesNotMatch(text(p), /In preparazione|solo la pagina informativa/);
+  assert.deepEqual(links(p.root).map((x) => x.props.href), [EIPASS_STANDARD_LANDING_PATH]);
 });
