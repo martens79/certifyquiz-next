@@ -644,6 +644,7 @@ const openFeedback = () => {
   const [remaining, setRemaining] = useState<number | null>(null);
   const tickRef = useRef<number | null>(null);
   const startedAtRef = useRef<number | null>(null);
+  const practiceStartedAtRef = useRef<number | null>(null);
   const assessmentStartedTrackedRef = useRef(false);
   const studyStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
@@ -830,6 +831,7 @@ const openFeedback = () => {
           for(const [qid,aid]of Object.entries(a.state.marked)){if(aid!=null&&!restored[qid]){try{restored[qid]=await transport.checkAnswer(Number(qid),aid);}catch(e){console.warn('Pending versioned answer remains ungraded',e);}}}
           if(!alive)return;
           setPool(active);setQuestions(active);setMarked(a.state.marked);setResults(restored);setReviewLater(new Set(a.state.reviewLater));setIdx(Math.min(a.state.currentIndex,active.length-1));seedRef.current=a.seed;startedAtRef.current=a.startedAt;revRef.current=a.rev;setRemaining(null);
+          practiceStartedAtRef.current = a.startedAt;
           setFinished(a.state.completed===true);setLastSummary(a.state.summary?{...a.state.summary,marked:a.state.marked,durationSec:null,mode:'training'}:null);setReviewMode(false);setBlockPaused(false);setBlockReview(null);
           return;
         }
@@ -1113,6 +1115,7 @@ const openFeedback = () => {
 
         if (canRestore && source!.kind === 'local') {
           const p = source!.data;
+          practiceStartedAtRef.current = effectiveMode === 'training' ? p.practiceStartedAt ?? null : null;
 
           setMarked(p.marked ?? {});
           setReviewLater(new Set(p.reviewLater ?? []));
@@ -1152,6 +1155,7 @@ const openFeedback = () => {
         } else if (canRestore && source!.kind === 'db') {
           const row = source!.data;
           const st = row.state ?? {};
+          practiceStartedAtRef.current = null;
 
           setMarked(st.marked ?? {});
           setReviewLater(new Set(st.reviewLater ?? []));
@@ -1177,7 +1181,8 @@ const openFeedback = () => {
           setReviewLater(new Set());
           setIdx(0);
           setRemaining(total);
-          startedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
+          startedAtRef.current = null;
+          practiceStartedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
           clearProgress(scopedKey);
 
           // rev non riparte mai da 0 se sapevamo di una riga DB (anche se
@@ -1448,6 +1453,7 @@ clearProgress(`${storageScope}:assessment`);
     // training che resta appesa dopo lo switch a exam).
     setBlockPaused(false);
     startedAtRef.current = null;
+    practiceStartedAtRef.current = null;
   };
 
   /* -------------------------------------------------------------
@@ -1472,6 +1478,7 @@ clearProgress(`${storageScope}:assessment`);
 
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
     tickRef.current = null;
+    startedAtRef.current = null;
     setRemaining(null);
   }, [effectiveMode, effectiveDuration, questions.length]);
 
@@ -1572,6 +1579,7 @@ clearProgress(`${storageScope}:assessment`);
       mode: effectiveMode,
       remainingSec: remaining,
       startedAt: startedAtRef.current,
+      practiceStartedAt: effectiveMode === 'training' ? practiceStartedAtRef.current : undefined,
       idx,
       seed: seedRef.current ?? undefined,
       rev: revRef.current,
@@ -2087,7 +2095,9 @@ const goToFirstUnanswered = () => {
   }
 
   const examAttempt = effectiveMode === 'exam' ? attemptRef.current : null;
-  const startedAt = examAttempt?.startedAt ?? startedAtRef.current;
+  const startedAt = effectiveMode === 'training'
+    ? practiceStartedAtRef.current
+    : examAttempt?.startedAt ?? startedAtRef.current;
   const endedAt = Math.min(Date.now(), examAttempt?.deadlineAt ?? Infinity);
   const elapsedSec = startedAt == null ? null : Math.max(0, Math.floor((endedAt - startedAt) / 1000));
   const total = questions.length;
@@ -2200,6 +2210,11 @@ const goToFirstUnanswered = () => {
 
   const correct = serverCorrect ?? correctCount;
 
+  // Preserve the existing analytics duration independently of the result card.
+  const analyticsDurationSec = startedAtRef.current != null
+    ? Math.floor((Date.now() - startedAtRef.current) / 1000)
+    : 0;
+
   // I dettagli per-question possono mancare volutamente nel Mock FREE:
   // in quel caso nessuna risposta corretta viene ricostruita sul client.
   const attempts = questions.map((q) => {
@@ -2262,7 +2277,7 @@ const goToFirstUnanswered = () => {
         total_questions: total,
         correct,
         score_pct: serverScorePct,
-        duration_sec: elapsedSec,
+        duration_sec: analyticsDurationSec,
       }
     );
     trackQuizEvent("quiz_result_viewed", {
@@ -2432,7 +2447,8 @@ const submitAssessmentReport = async () => {
   setReviewLater(new Set());
   setFinished(false);
   setLastSummary(null);
-  startedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
+  startedAtRef.current = null;
+  practiceStartedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
   setReviewMode(false);
   setBlockPaused(false);
   setBlockReview(null);

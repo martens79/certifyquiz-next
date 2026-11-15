@@ -23,6 +23,9 @@ export type PersistPayload = {
   // Timestamp di inizio quiz (per timer reale)
   startedAt: number | null;
 
+  // Local anchor for the training result card.
+  practiceStartedAt?: number | null;
+
   // ✅ NEW
   // Indice della domanda corrente
   // Opzionale per compatibilità con quiz salvati in passato
