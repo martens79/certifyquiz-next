@@ -9,7 +9,8 @@ import type { Locale } from "@/lib/i18n";
 import { withLang } from "@/lib/i18n";
 import NotificationBell from "@/components/push/NotificationBell";
 
-import { authMe } from "@/lib/apiClient";
+import { authMe, authLogout } from "@/lib/apiClient";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, isLogoutPending, onAuthBoundaryChange } from '@/lib/auth-session';
 import {
   getToken,
   getUser,
@@ -50,6 +51,31 @@ export default function HeaderAuthSlot({
   // Stato auth SOLO lato client (inizialmente null per SSR match)
   const [user, setUserState] = useState<MinimalUser | null>(null);
   const [loading, setLoading] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const logoutMessage = { it: 'Disconnesso su questo dispositivo. Uscita dal server non confermata.', en: 'Signed out on this device. Server sign-out is not confirmed.', fr: 'Déconnecté sur cet appareil. Déconnexion du serveur non confirmée.', es: 'Sesión cerrada en este dispositivo. El cierre en el servidor no está confirmado.' }[lang];
+  const retryLabel = { it: 'Riprova', en: 'Retry', fr: 'Réessayer', es: 'Reintentar' }[lang];
+  async function signOut() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await authLogout();
+      setOpen(false);
+      onNavigate?.();
+      router.push(withLang(lang, '/login'));
+    } catch { /* Persistent boundary keeps the user signed out; show retry below. */ }
+    finally { setLoggingOut(false); setLogoutPending(isLogoutPending()); }
+  }
+  function LogoutNotice() {
+    // "Non confermata" vale solo a richiesta conclusa: durante l'invio (loggingOut) la conferma e' ancora in corso,
+    // quindi l'avviso non va mostrato. Dopo un errore/timeout (finally) o dopo un reload con pending persistente resta.
+    return logoutPending && !loggingOut ? <div role="alert" className="max-w-xs text-xs text-red-700">{logoutMessage} <button type="button" disabled={loggingOut} onClick={signOut} className="underline">{retryLabel}</button></div> : null;
+  }
+  useEffect(() => {
+    const update = () => { setLogoutPending(isLogoutPending()); if (isExplicitlyLoggedOut()) { setUserState(null); setLoading(false); } };
+    update();
+    return onAuthBoundaryChange(update);
+  }, []);
 
   // Dropdown (desktop)
   const [open, setOpen] = useState(false);
@@ -83,6 +109,7 @@ export default function HeaderAuthSlot({
     if (refreshInFlight.current) return refreshInFlight.current;
 
     refreshInFlight.current = (async () => {
+      const generation = authGeneration();
       const t = getToken();
       if (!t) {
         setUserState(null);
@@ -96,6 +123,7 @@ export default function HeaderAuthSlot({
       setLoading(true);
       try {
         const me = await authMe(); // { user }
+        assertAuthGeneration(generation);
         const u: MinimalUser = {
           id: me.user.id,
           email: me.user.email,
@@ -108,6 +136,7 @@ export default function HeaderAuthSlot({
         setUser(u, true);
         setUserState(u);
       } catch (e: any) {
+        if (generation !== authGeneration() || isExplicitlyLoggedOut()) return;
         const status = e?.status ?? e?.response?.status;
 
         // Logout SOLO se token non valido
@@ -120,6 +149,7 @@ export default function HeaderAuthSlot({
       } finally {
         setLoading(false);
         refreshInFlight.current = null;
+        if (generation !== authGeneration() && !isExplicitlyLoggedOut() && getToken()) queueMicrotask(() => { void refreshMe(); });
       }
     })();
 
@@ -232,7 +262,7 @@ export default function HeaderAuthSlot({
 
   // Drawer: semplice (niente dropdown)
   if (variant === "drawer") {
-    if (!isAuthed) return <RenderLoggedOutDrawer />;
+    if (!isAuthed) return <><RenderLoggedOutDrawer /><LogoutNotice /></>;
 
     return (
       <div className="flex items-center gap-2">
@@ -256,11 +286,8 @@ export default function HeaderAuthSlot({
 
         <button
           type="button"
-          onClick={() => {
-            logout();
-            onNavigate?.();
-            router.push(withLang(lang, "/login"));
-          }}
+          disabled={loggingOut}
+          onClick={signOut}
           className="rounded-md border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
         >
           {ui.logout}
@@ -270,7 +297,7 @@ export default function HeaderAuthSlot({
   }
 
   // Desktop: non loggato
-  if (!isAuthed) return <RenderLoggedOutDesktop />;
+  if (!isAuthed) return <><RenderLoggedOutDesktop /><LogoutNotice /></>;
 
   // Desktop: loggato
   return (
@@ -324,11 +351,8 @@ export default function HeaderAuthSlot({
 
           <button
             type="button"
-            onClick={() => {
-              logout();
-              setOpen(false);
-              router.push(withLang(lang, "/login"));
-            }}
+            disabled={loggingOut}
+            onClick={signOut}
             className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
           >
             <span>{ui.logout}</span>

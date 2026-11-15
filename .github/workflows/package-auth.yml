@@ -1,0 +1,41 @@
+name: Sequential mock and package authentication
+on:
+  pull_request:
+    paths: ['src/lib/package-intent.ts', 'src/components/certification/CertificationPackageOffers.tsx', 'src/components/quiz/MockCompleteLink.tsx', 'src/components/quiz/QuizEngine.tsx', 'tests/package-auth*', 'tests/package-intent*', 'tests/mock-package-flow.spec.ts', 'tests/mock-complete*', 'tests/helpers/package-flow.ts', 'tests/helpers/sprint2a-ssr.cjs', 'playwright.sequential-conversion.config.ts', 'playwright.package-auth.config.ts', '.github/workflows/package-auth.yml']
+permissions:
+  contents: read
+jobs:
+  isolated:
+    name: sequential-integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      API_BASE_URL: http://127.0.0.1:8298/api
+      API_BASE_URL_DEV: http://127.0.0.1:8298/api
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+      NEXT_TELEMETRY_DISABLED: '1'
+      E2E_BASE_URL: http://127.0.0.1:3117
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: node --import tsx --test tests/mock-complete-link.test.tsx tests/package-auth.test.tsx tests/package-intent.test.ts tests/checkout-intent.test.ts tests/analytics-funnel-event.test.ts tests/analytics-privacy.test.ts tests/automated-client.test.ts tests/conversion-tracking.test.ts tests/commercial-packages.test.ts tests/google-analytics-consent.test.tsx
+      - run: npx eslint src/lib/package-intent.ts src/components/certification/CertificationPackageOffers.tsx src/components/quiz/MockCompleteLink.tsx tests/mock-complete-link.test.tsx tests/package-auth.test.tsx tests/package-intent.test.ts tests/package-auth.spec.ts tests/mock-package-flow.spec.ts tests/helpers/package-flow.ts playwright.sequential-conversion.config.ts
+      - name: Isolated production build and browser tests
+        run: |
+          node tests/helpers/sprint2a-ssr.cjs > /tmp/fixture.log 2>&1 &
+          node -e "require('fs').writeFileSync('/tmp/isolation.json', JSON.stringify({testRunId:'ccst-r02-sprint2apackageauthci',backendOrigin:'http://127.0.0.1:8298'}))"
+          export CCST_E2E_CONFIG=/tmp/isolation.json
+          npm run build
+          npx next start -H 127.0.0.1 -p 3117 > /tmp/frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3117/es/certificaciones/ccna >/dev/null && break; sleep 1; done
+          npx playwright test -c playwright.sequential-conversion.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: package-auth-evidence, path: 'test-results/'}

@@ -37,6 +37,8 @@ export const articleBySlugLang = groq`
   "publishedAt": coalesce(publishedAt, date),
   "coverUrl": coalesce(coverImage.asset->url, cover.asset->url),
 
+  "audioUrl": audio.asset->url,
+
   // ✅ nuovo + fallback vecchio
   "body": coalesce(body, content),
 

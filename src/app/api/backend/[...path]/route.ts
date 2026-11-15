@@ -94,18 +94,33 @@ async function proxy(req: Request, path: string[]) {
   const body =
     method === "GET" || method === "HEAD" ? undefined : await req.arrayBuffer();
 
-  const res = await fetch(url, { method, headers, body, redirect: "manual" });
+  const versioned = path[0] === 'ccst-versioned-training';
+  let res: Response;
+  let completeBody: ArrayBuffer | undefined;
+  for (let attempt=0;;attempt++) {
+    try {
+      res = await fetch(url, { method, headers, body, redirect: "manual", ...(versioned ? {cache:'no-store' as const} : {}) });
+      // Large multilingual attempts must not be returned as a successful partial JSON stream.
+      if(versioned)completeBody=await res.arrayBuffer();
+      break;
+    } catch (error) {
+      if(!versioned)throw error;
+      if(method==='GET'&&attempt===0)continue;
+      return Response.json({error:'UPSTREAM_UNAVAILABLE'},{status:502,headers:{...corsHeaders(req),'Cache-Control':'no-store'}});
+    }
+  }
 
   // Copia headers risposta in modo safe
   const outHeaders = new Headers(res.headers);
   outHeaders.delete("content-encoding"); // evita mismatch se runtime ricompone
   outHeaders.delete("content-length");
+  if(versioned)outHeaders.set('Cache-Control','no-store');
 
   // ✅ Aggiungi CORS anche alle risposte (non rompe, ma rende stabile)
   const ch = corsHeaders(req);
   Object.entries(ch).forEach(([k, v]) => outHeaders.set(k, v));
 
-  return new Response(res.body, { status: res.status, headers: outHeaders });
+  return new Response(versioned ? completeBody : res.body, { status: res.status, headers: outHeaders });
 }
 
 // ✅ Next 15+: params è async

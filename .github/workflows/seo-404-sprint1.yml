@@ -1,0 +1,63 @@
+name: SEO 404 Sprint 1
+on:
+  pull_request:
+    paths:
+      - 'src/middleware.ts'
+      - 'src/lib/legacyRedirects.ts'
+      - 'tests/legacy-redirects.test.ts'
+      - 'tests/seo-404-sprint1.spec.ts'
+      - 'tests/helpers/seo-404-*.mjs'
+      - 'tests/helpers/seo-404-*.cjs'
+      - 'docs/seo-404-sprint1/**'
+      - 'playwright.seo404.config.ts'
+      - '.github/workflows/seo-404-sprint1.yml'
+permissions:
+  contents: read
+jobs:
+  routing-and-quiz:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      API_BASE_URL: http://127.0.0.1:8468/api
+      API_BASE_URL_DEV: http://127.0.0.1:8468/api
+      NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      SANITY_READ_TOKEN: ''
+      INTERNAL_SERVER_TOKEN: ''
+      TSX_TSCONFIG_PATH: tsconfig.test.json
+      E2E_BASE_URL: http://localhost:3368
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Lint changed routing and test files
+        run: npx --no-install eslint src/middleware.ts src/lib/legacyRedirects.ts tests/legacy-redirects.test.ts tests/seo-404-sprint1.spec.ts playwright.seo404.config.ts tests/helpers/seo-404-backend.mjs tests/helpers/seo-404-sanity.cjs
+      - name: Routing, metadata, indexability and sitemap contracts
+        run: node --import tsx --test tests/legacy-redirects.test.ts tests/certification-indexability.test.ts tests/topic-indexability-language.test.ts tests/sitemap-backend-calls.test.ts tests/certifications-list-metadata.test.ts tests/ccst-cybersecurity-metadata.test.ts tests/microsoft-ai-metadata.test.ts tests/eipass-standard-sitemap.test.ts
+      - name: Isolated build and usable quiz regression
+        run: |
+          mkdir -p .tmp/seo-404
+          node tests/helpers/seo-404-backend.mjs > .tmp/seo-404/backend.log 2>&1 &
+          node -e "require('fs').writeFileSync('.tmp/seo-404/isolation.json', JSON.stringify({testRunId:'ccst-r02-seo404sprint120261028',backendOrigin:'http://127.0.0.1:8468'}))"
+          export CCST_E2E_CONFIG="$PWD/.tmp/seo-404/isolation.json"
+          export NODE_OPTIONS="--require=$PWD/tests/helpers/seo-404-sanity.cjs"
+          set -o pipefail
+          npm run build 2>&1 | tee .tmp/seo-404/build.log
+          npx next start -H 127.0.0.1 -p 3368 > .tmp/seo-404/frontend.log 2>&1 &
+          node --input-type=module -e "for(let i=0;i<60;i++){try{if((await fetch('http://localhost:3368/it/quiz/data-analytics-foundations/mixed')).ok)process.exit(0)}catch{}await new Promise(r=>setTimeout(r,1000))}process.exit(1)"
+          npx playwright test -c playwright.seo404.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: seo-404-sprint1-evidence
+          path: |
+            .tmp/seo-404/*.log
+            test-results/
+          include-hidden-files: true

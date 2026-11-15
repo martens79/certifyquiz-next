@@ -18,24 +18,24 @@ const CERTS: { slug: string; label: string }[] = [
 
 const COPY: Record<Locale, { eyebrow: string; heading: string; body: string }> = {
   it: {
-    eyebrow: "10 DOMANDE VERE, NESSUNA EMAIL PER INIZIARE",
+    eyebrow: "10 DOMANDE DI PRATICA, NESSUNA EMAIL PER INIZIARE",
     heading: "Ma prima: quanto sei pronto davvero?",
-    body: "Scegli una delle certificazioni più richieste e scopri a che punto sei — domande vere dal pool d'esame, risultato immediato.",
+    body: "Scegli la certificazione che stai preparando e prova 10 domande in stile esame dalla raccolta di CertifyQuiz. Risultato immediato.",
   },
   en: {
-    eyebrow: "10 REAL QUESTIONS, NO EMAIL TO START",
+    eyebrow: "10 PRACTICE QUESTIONS, NO EMAIL TO START",
     heading: "But first: how ready are you, really?",
-    body: "Pick one of the certifications people ask about most, and find out where you stand — real questions from the exam pool, instant result.",
+    body: "Choose the certification you are preparing for and try 10 exam-style questions from the CertifyQuiz question bank. Get your result immediately.",
   },
   fr: {
-    eyebrow: "10 VRAIES QUESTIONS, SANS EMAIL POUR COMMENCER",
+    eyebrow: "10 QUESTIONS D’ENTRAÎNEMENT, SANS EMAIL POUR COMMENCER",
     heading: "Mais d'abord : êtes-vous vraiment prêt ?",
-    body: "Choisissez l'une des certifications les plus demandées et découvrez où vous en êtes — de vraies questions issues de la banque d'examen, résultat immédiat.",
+    body: "Choisissez la certification que vous préparez et essayez 10 questions de type examen de la banque CertifyQuiz. Résultat immédiat.",
   },
   es: {
-    eyebrow: "10 PREGUNTAS REALES, SIN EMAIL PARA EMPEZAR",
+    eyebrow: "10 PREGUNTAS DE PRÁCTICA, SIN EMAIL PARA EMPEZAR",
     heading: "Pero antes: ¿qué tan preparado estás de verdad?",
-    body: "Elige una de las certificaciones más solicitadas y descubre en qué punto estás — preguntas reales del banco de examen, resultado inmediato.",
+    body: "Elige la certificación que estás preparando y prueba 10 preguntas tipo examen del banco de CertifyQuiz. Resultado inmediato.",
   },
 };
 

@@ -15,14 +15,46 @@ export function isPlannedCertification(cert: CertificationData | null | undefine
   return cert?.publicationStatus === "planned";
 }
 
+/** Landing-only publication: the landing is public, everything else of the certification stays 404. */
+export function isComingSoonCertification(cert: CertificationData | null | undefined): boolean {
+  return cert?.publicationStatus === "coming_soon";
+}
+
 export function isPlannedPreviewEnabled(env: Env = process.env): boolean {
   return env[PLANNED_PREVIEW_ENV] === "1" && env.VERCEL_ENV !== "production" && env.NODE_ENV !== "production";
 }
 
-/** Public discovery surfaces (lists, category pages) never show planned certifications. */
+/**
+ * Public discovery surfaces (lists, category pages, home) never show planned or coming-soon certifications:
+ * a coming-soon landing is reachable by its URL, the sitemap and one contextual link, not by the catalogue.
+ */
 export function isPubliclyListed(
   slug: string,
   registry: Readonly<Record<string, CertificationData | undefined>>
 ): boolean {
-  return !isPlannedCertification(registry[slug]);
+  const cert = registry[slug];
+  return !isPlannedCertification(cert) && !isComingSoonCertification(cert);
+}
+
+/**
+ * Catalogue list only: a coming-soon certification flagged `listedInCatalog` appears in the catalogue of the
+ * languages it is offered in (EIPASS Standard: Italian). Home and category pages keep using isPubliclyListed.
+ */
+export function isCatalogListed(
+  slug: string,
+  registry: Readonly<Record<string, CertificationData | undefined>>,
+  lang: string
+): boolean {
+  if (isPubliclyListed(slug, registry)) return true;
+  const cert = registry[slug];
+  return isComingSoonCertification(cert) && cert?.listedInCatalog === true && isCertificationOfferedInLang(cert, lang);
+}
+
+/** Language routes of a certification: only the languages in its launch scope exist (default: all). */
+export function isCertificationOfferedInLang(
+  cert: CertificationData | null | undefined,
+  lang: string
+): boolean {
+  const languages = cert?.launchScope?.languages;
+  return !languages || (languages as ReadonlyArray<string>).includes(lang);
 }

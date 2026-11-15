@@ -1,13 +1,35 @@
 // src/components/quiz/QuizEngine.tsx
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { trackEventOnce, studyEngagementKey } from '@/lib/analytics';
+import { observeQuizQuestionMilestone } from '@/lib/quiz-question-milestone';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
-import { loadProgress, saveProgress, clearProgress } from '@/lib/quiz-storage';
+import {
+  loadProgress,
+  saveProgress,
+  clearProgress,
+  loadSnapshot,
+  saveSnapshot,
+  pruneStaleSnapshots,
+} from '@/lib/quiz-storage';
+import {
+  buildSnapshot,
+  restoreSnapshot,
+  isTransientFetchError,
+  examRemainingAfterAway,
+  wasDeliveredToPremium,
+  SNAPSHOT_TTL_MS,
+} from '@/lib/quiz-session';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
+import {
+  readExamAttempt, saveExamAttempt, clearExamAttempt, createExamAttempt,
+  attemptRemaining, checkpointAttempt, closeAttempt, sameAttemptQuestions,
+  type ExamAttempt,
+} from '@/lib/exam-attempt';
 import {
   calculateCompletedBlock,
   getCompletedBlockWrongPositions,
@@ -20,12 +42,14 @@ import {
   isPostGateHardLocked,
   shouldReportPostGateAnswer,
   isPostGateLimitError,
+  shouldShowPremiumUpsell,
 } from '@/lib/quiz-explanation-access';
 import {
   claimBlockReviewGateOpening,
   explanationPaywallParams,
 } from '@/lib/quiz-block-review-tracking';
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import {
   checkAnswer,
   evaluateAnswers,
@@ -33,6 +57,15 @@ import {
   type AnswerCheckResult,
 } from "@/lib/apiClient";
 import { apiFetch } from "@/lib/auth";
+import {
+  adoptServerRev,
+  chunk,
+  clearPendingClose,
+  closeServerProgress,
+  readPendingClose,
+  savePendingClose,
+} from "@/lib/quiz-progress-sync";
+import {VersionedTrainingError,type VersionedTrainingClient} from '@/lib/ccst-versioned-training';
 import { trackMetaPixel } from "@/lib/metaPixel";
 import {
   getAnonymousSessionId,
@@ -55,6 +88,9 @@ import PremiumTeaserBox from '@/components/premium/PremiumTeaserBox';
 
 
 import RegistrationGate from '@/components/quiz/RegistrationGate';
+import MockCompleteLink from '@/components/quiz/MockCompleteLink';
+import SaveResultBanner from '@/components/quiz/SaveResultBanner';
+import { createAttemptId } from '@/lib/save-exam-outbox';
 import { useGuestQuizCount } from '@/hooks/useGuestQuizCount';
 import { useQuizTutor } from '@/components/quiz/QuizTutorContext';
 
@@ -281,6 +317,7 @@ type Props = {
 
   /** Carica IL POOL di domande (idealmente molte, es. 500 max). */
   fetchQuestions: () => Promise<Question[]>;
+  resolveVersionedTraining?: () => Promise<VersionedTrainingClient | null>;
 
   /** Chiave base per autosave locale (internamente separiamo per mode). */
   storageScope: string;
@@ -343,6 +380,7 @@ type Props = {
 export default function QuizEngine({
   lang,
   fetchQuestions,
+  resolveVersionedTraining,
   storageScope,
   categoryColor = 'from-blue-900 to-blue-700',
   initialMode = 'training',
@@ -362,6 +400,10 @@ export default function QuizEngine({
   const searchParams = useSearchParams();
   const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();
+  const versionedTrainingRef=useRef<VersionedTrainingClient|null>(null);
+  const versionedCheckingRef=useRef(new Set<string>());
+  const [versionedReload,setVersionedReload]=useState(0);
+  useEffect(()=>{const reconnect=()=>{if(versionedTrainingRef.current)setVersionedReload(n=>n+1);};window.addEventListener('online',reconnect);return()=>window.removeEventListener('online',reconnect);},[]);
 
   // i18n quiz microcopy
   const tQuiz = getDict(lang).quiz;
@@ -390,6 +432,10 @@ export default function QuizEngine({
   // il Gruppo B dell'esperimento Rewarded Ads): serve per il testo del gate,
   // che altrimenti resterebbe hardcoded su "10" anche per chi ha un limite diverso.
   const [wrongExpLimit, setWrongExpLimit] = useState<number>(10);
+  // true SOLO se il server ha detto che le spiegazioni sono illimitate per questa
+  // certificazione (Premium, o pacchetto Study/Complete posseduto): serve a non
+  // mostrare upsell per una risorsa che l'utente ha gia'. Mai dedotto dal client.
+  const [explanationsUnlimited, setExplanationsUnlimited] = useState(false);
   const [experimentVariant, setExperimentVariant] = useState<string | null>(null);
   // Domande sbloccate via rewarded ad in questa sessione: bypassano il gate
   // senza toccare wrongExpLeft (il reward non è credito extra, è mirato a
@@ -436,12 +482,19 @@ export default function QuizEngine({
 useEffect(() => {
   if (!isLoggedIn || isPremiumUser) return;
 
+  // Il contesto puo' ricevere certificationId DOPO il mount: una risposta della
+  // richiesta senza certificazione (vista FREE) non deve sovrascrivere quella,
+  // corretta, della richiesta con certificazione.
+  let alive = true;
+
   apiFetch(`/me/explanation-status${context?.certificationId ? `?certification_id=${context.certificationId}` : ""}`)
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     })
     .then((data) => {
+      if (!alive) return;
+      setExplanationsUnlimited(data.unlimited === true);
       if (data.unlimited) setWrongExpLeft(null);
       else setWrongExpLeft(data.remaining ?? 0);
       if (typeof data.limit === "number") setWrongExpLimit(data.limit);
@@ -455,7 +508,14 @@ useEffect(() => {
     .catch((err) => {
       console.error("Errore explanation-status:", err);
     });
+
+  return () => {
+    alive = false;
+  };
 }, [isLoggedIn, isPremiumUser, context?.certificationId]);
+
+  // Upsell Premium: solo per chi non ha gia' le spiegazioni illimitate.
+  const showPremiumUpsell = shouldShowPremiumUpsell({ isPremiumUser, explanationsUnlimited });
 
   // Chiamato quando l'utente free (già oltre l'explanation gate) risponde a
   // una domanda, corretta o sbagliata che sia — vedi isPostGateHardLocked.
@@ -524,6 +584,7 @@ useEffect(() => {
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [versionedConflict,setVersionedConflict]=useState(false);
   const [, setActionsOpen] = useState(false);
 
 const [fbOpen, setFbOpen] = useState(false);
@@ -585,7 +646,6 @@ const openFeedback = () => {
   const assessmentStartedTrackedRef = useRef(false);
   const studyStartedTrackedRef = useRef(false);
   const completedTrackedRef = useRef(false);
-  const milestoneTrackedRef = useRef(new Set<number>());
   const abandonedTrackedRef = useRef(false);
   const latestProgressRef = useRef({ idx: 0, finished: false, answered: 0 });
   const premiumClickedRef = useRef(false);
@@ -631,6 +691,47 @@ const openFeedback = () => {
   // fresco, rev 0) potrebbe far partire una PUT che compete con la
   // riconciliazione stessa.
   const hydratedRef = useRef(false);
+  // Specchio di hydratedRef come stato: serve solo a far ripartire gli effect
+  // di autosave quando l'idratazione finisce (un ref non innesca render).
+  // La decisione "posso scrivere?" resta quella sincrona del ref.
+  const [hydrated, setHydrated] = useState(false);
+  const [attemptClosed, setAttemptClosed] = useState(false);
+  const [loadGeneration, setLoadGeneration] = useState(0);
+  const attemptRef = useRef<ExamAttempt | null>(null);
+  const attemptClockRef = useRef<{ left: number; perfAt: number } | null>(null);
+
+  // Completamento: la valutazione finale e' in corso / e' fallita (recuperabile).
+  // Il quiz diventa "finished" solo quando la valutazione ha avuto successo: un
+  // errore di rete o un 5xx non devono produrre uno 0% artificiale ne' cancellare
+  // le risposte. `expired` = l'errore e' avvenuto a tempo scaduto (input bloccato).
+  const [finishing, setFinishing] = useState(false);
+  const [finishError, setFinishError] = useState<{ expired: boolean } | null>(null);
+  const finishingRef = useRef(false);
+  // true dal momento in cui il quiz e' concluso: nessuna PUT di progresso deve
+  // piu' partire (debounce gia' armato, pagehide, visibilitychange). Il server
+  // ignora comunque le PUT tardive dello stesso seed (tombstone).
+  const completedRef = useRef(false);
+  // Identificativo stabile del risultato concluso (registrazione in cronologia):
+  // nasce a ogni valutazione riuscita e viaggia in summary.attemptId; i retry
+  // del salvataggio lo riusano (vedi save-exam-outbox).
+  const resultAttemptIdRef = useRef<string | null>(null);
+  // Una scrittura DB debounced e' armata e non ancora partita (per il flush allo smontaggio).
+  const dbFlushPendingRef = useRef(false);
+  const dbFlushRef = useRef<(() => Promise<void>) | null>(null);
+
+  // Inizio del countdown exam appena ripristinato: l'effect di init del timer
+  // (piu' sotto) azzera startedAtRef a ogni cambio di questions.length, cioe'
+  // proprio subito dopo il ripristino. Questo ref porta il valore ripristinato
+  // oltre quel reset, cosi' il tempo trascorso lontano dalla pagina resta
+  // contato invece di tornare al valore pieno.
+  const pendingExamStartRef = useRef<number | null>(null);
+
+  // Id (stringa) delle domande che al ripristino risultavano gia' risposte.
+  // Il feedback del server (risposta corretta/spiegazione) non e' persistito
+  // di proposito: per queste domande viene richiesto di nuovo, una volta, al
+  // momento in cui l'utente le rivede (vedi effect di re-check).
+  const restoredAnsweredRef = useRef(new Set<string>());
+  const recheckAttemptedRef = useRef(new Set<string>());
 
   // Ancora per il countdown exam quando la fonte è il server (sync riuscito
   // via GET o PUT): {remainingAtSync, perfAtSync}. Il tick calcola SOLO un
@@ -656,11 +757,12 @@ const openFeedback = () => {
   const userKeyPart = user?.id != null ? `user:${user.id}` : 'anon';
   const scopedKey = `${storageScope}:${effectiveMode}:${userKeyPart}`;
 
+  const milestoneTrackingRef = useRef<{ scope: string; tracked: Set<number> } | null>(null);
+
   useEffect(() => {
     assessmentStartedTrackedRef.current = false;
     studyStartedTrackedRef.current = false;
     completedTrackedRef.current = false;
-    milestoneTrackedRef.current.clear();
     abandonedTrackedRef.current = false;
   }, [scopedKey]);
 
@@ -702,17 +804,68 @@ const openFeedback = () => {
     let alive = true;
     const controller = new AbortController();
     hydratedRef.current = false;
+    setHydrated(false);
 
     (async () => {
       setLoading(true);
       setErr(null);
+      setVersionedConflict(false);
+      setAttemptClosed(false);
+      attemptRef.current = null;
+      attemptClockRef.current = null;
+      // Nuova sessione di lavoro: si riabilitano le scritture di progresso e si
+      // azzera un eventuale errore di completamento del tentativo precedente.
+      completedRef.current = false;
+      setFinishError(null);
 
       try {
-        const qs = await fetchQuestions();
+        const transport=effectiveMode==='training'?await resolveVersionedTraining?.():null;
+        if(!alive)return;
+        versionedTrainingRef.current=transport||null;
+        if(transport){
+          const a=await transport.open();if(!alive)return;
+          const active=a.questions.map(q=>({...q,exhibit:q.exhibit as Question['exhibit']}));
+          const restored:Record<string,AnswerCheckResult>={...(a.state.evaluations||{})};
+          for(const [qid,aid]of Object.entries(a.state.marked)){if(aid!=null&&!restored[qid]){try{restored[qid]=await transport.checkAnswer(Number(qid),aid);}catch(e){console.warn('Pending versioned answer remains ungraded',e);}}}
+          if(!alive)return;
+          setPool(active);setQuestions(active);setMarked(a.state.marked);setResults(restored);setReviewLater(new Set(a.state.reviewLater));setIdx(Math.min(a.state.currentIndex,active.length-1));seedRef.current=a.seed;startedAtRef.current=a.startedAt;revRef.current=a.rev;setRemaining(null);
+          setFinished(a.state.completed===true);setLastSummary(a.state.summary?{...a.state.summary,marked:a.state.marked,durationSec:Math.max(0,Math.floor((Date.now()-a.startedAt)/1000)),mode:'training'}:null);setReviewMode(false);setBlockPaused(false);setBlockReview(null);
+          return;
+        }
+        const storedAttempt = effectiveMode === 'exam' ? readExamAttempt(scopedKey) : { exists: false, attempt: null };
+        if (storedAttempt.exists && (!storedAttempt.attempt || attemptRemaining(storedAttempt.attempt) <= 0)) {
+          if (storedAttempt.attempt) {
+            attemptRef.current = storedAttempt.attempt.status === 'active'
+              ? closeAttempt(storedAttempt.attempt, 'expired') : storedAttempt.attempt;
+            saveExamAttempt(attemptRef.current);
+          }
+          setRemaining(0);
+          setQuestions([]);
+          setPool([]);
+          setResults({});
+          setAttemptClosed(true);
+          return;
+        }
+        let qs: Question[] = [];
+        let fetchError: unknown = null;
+        try {
+          qs = await fetchQuestions();
+        } catch (e) {
+          fetchError = e;
+        }
         if (!alive) return;
 
+        // Solo un guasto di trasporto (rete, 5xx, 429) puo' essere assorbito
+        // dallo snapshot, e solo piu' sotto. Ogni altro errore (401, paywall,
+        // lock post-gate, mock non disponibile) segue il percorso di sempre.
+        if (fetchError && !isTransientFetchError(fetchError)) throw fetchError;
+
         const poolQ = Array.isArray(qs) ? qs : [];
-        setPool(poolQ);
+        if (!fetchError) setPool(poolQ);
+
+        pendingExamStartRef.current = null;
+        restoredAnsweredRef.current = new Set();
+        recheckAttemptedRef.current = new Set();
 
         let local = loadProgress(scopedKey) as any;
 
@@ -729,8 +882,16 @@ const openFeedback = () => {
           const anonKey = `${storageScope}:${effectiveMode}:anon`;
           const anonLocal = loadProgress(anonKey) as any;
           if (anonLocal) {
+            // Anche le domande consegnate seguono il progresso: senza, il
+            // ripristino dopo il login (pool casuale) non avrebbe da dove
+            // ricostruire la sessione. Si rietichetta per il nuovo account;
+            // la validazione resta quella di sempre (TTL, mode, lingua).
+            const anonSnap = loadSnapshot(anonKey) as any;
             saveProgress(scopedKey, anonLocal);
             clearProgress(anonKey);
+            if (anonSnap && typeof anonSnap === 'object') {
+              saveSnapshot(scopedKey, { ...anonSnap, scope: scopedKey, userKey: userKeyPart });
+            }
             local = anonLocal;
             migratedFromAnon = true;
           }
@@ -767,6 +928,35 @@ const openFeedback = () => {
           }
         }
         if (!alive) return;
+
+        // ---- tentativo gia' concluso ----
+        // A fine quiz il server sostituisce la riga con un tombstone
+        // (row.completed): non e' una sessione da ripristinare. Lo stesso vale se
+        // la chiusura non era andata a buon fine su questo device (marker locale):
+        // la si ritenta e la riga si tratta come chiusa. Si conserva solo il pavimento
+        // di rev, cosi' il nuovo tentativo non viene scartato dal guard >= del server.
+        let dbFloorRev: number | null = null;
+        if (dbRow) {
+          const pendingClose = readPendingClose(scopedKey);
+          if (pendingClose && !dbRow.completed && pendingClose.seed === dbRow.seed) {
+            void closeServerProgress(apiFetch, { topicId: topicId as number, lang, mode: effectiveMode, ...pendingClose })
+              .then((ok) => { if (ok) clearPendingClose(scopedKey); });
+            dbRow = { ...dbRow, completed: true };
+          } else if (pendingClose) {
+            clearPendingClose(scopedKey);
+          }
+          if (dbRow.completed) {
+            dbFloorRev = Number(dbRow.rev) + 1;
+            // Un salvataggio locale dello stesso tentativo chiuso (concluso da un altro
+            // dispositivo) e' obsoleto; uno con seed diverso e' un tentativo piu' recente.
+            if (local && local.seed === dbRow.seed) {
+              clearProgress(scopedKey);
+              local = null;
+            }
+            dbRow = null;
+          }
+        }
+        const dbRevFloor = dbEligible ? (dbRow ? Number(dbRow.rev) + 1 : dbFloorRev ?? 0) : 0;
 
         // ---- scelta della fonte ----
         // (1) rete giù -> locale se c'è, mai azzerare un progresso che sta
@@ -815,11 +1005,64 @@ const openFeedback = () => {
         // il perché), stessa garanzia: se il pool è cambiato da quando la
         // riga/il salvataggio è stato scritto, non ripristinare idx/risposte
         // su un ordine che non corrisponde più.
-        const canRestore =
+        const idMatch =
           !!source &&
           (source.kind === 'local'
             ? Array.isArray(source.data.qIds) && arraysEqual(source.data.qIds, activeIds)
             : typeof source.data.qidsHash === 'number' && hashIds(activeIds) === source.data.qidsHash);
+
+        // Il pool appena scaricato non ricostruisce la sessione salvata
+        // (MIXED e mock-exam estraggono un campione casuale a ogni fetch): si
+        // ripristinano le domande GIA' CONSEGNATE dallo snapshot. Solo se il
+        // server ha appena confermato l'accesso con un pool non vuoto, oppure
+        // e' irraggiungibile per un guasto di trasporto: un paywall, un lock
+        // post-gate o un 403 hanno gia' interrotto il flusso sopra.
+        let snapshotQuestions: Question[] | null = null;
+        if (!idMatch && source?.kind === 'local' && (poolQ.length > 0 || fetchError)) {
+          snapshotQuestions = restoreSnapshot(loadSnapshot(scopedKey), {
+            scope: scopedKey,
+            userKey: userKeyPart,
+            mode: effectiveMode,
+            lang,
+            // A premium delivery requires a fresh positive server decision.
+            isPremium: isPremiumUser && !fetchError,
+            qIds: Array.isArray(source.data.qIds) ? source.data.qIds : undefined,
+          });
+        }
+        if (snapshotQuestions) {
+          active = snapshotQuestions;
+          activeIds = active.map((q) => q.id);
+        }
+
+        let canRestore = idMatch || !!snapshotQuestions;
+
+        // Unavailable authorization/payload is not a definitive invalidation.
+        if (fetchError && !canRestore) throw fetchError;
+
+        // An existing attempt may never silently become a different exam,
+        // even if its progress/snapshot vanished or can no longer be restored.
+        if (effectiveMode === 'exam' && (storedAttempt.exists || !!source) &&
+          (!canRestore || (storedAttempt.exists && (!storedAttempt.attempt ||
+           !sameAttemptQuestions(storedAttempt.attempt, activeIds) ||
+           (source?.kind === 'local' && source.data.attemptId && source.data.attemptId !== storedAttempt.attempt.attemptId))))) {
+          if (storedAttempt.attempt) {
+            attemptRef.current = closeAttempt(storedAttempt.attempt, 'unavailable');
+          } else {
+            attemptRef.current = closeAttempt(createExamAttempt({
+              scope: scopedKey, totalSec: effectiveDuration ?? Math.max(1, active.length) * 60,
+              qIds: [], seed: candidateSeed,
+            }), 'unavailable');
+          }
+          // Keep the old evidence if storage cannot persist the tombstone.
+          if (saveExamAttempt(attemptRef.current)) clearProgress(scopedKey);
+          setQuestions([]); setPool([]); setResults({}); setRemaining(0);
+          setAttemptClosed(true);
+          return;
+        }
+
+        // Pool irraggiungibile e nessuno snapshot valido: errore come prima.
+        if (fetchError && !canRestore) throw fetchError;
+        if (fetchError && snapshotQuestions) setPool(snapshotQuestions);
 
         // Se il candidato non è valido (pool cambiato, o nessuna fonte),
         // il seed candidato NON va riusato per la sessione nuova: genero un
@@ -834,10 +1077,36 @@ const openFeedback = () => {
           activeIds = active.map((q) => q.id);
         }
         seedRef.current = seed;
+        // A restored session must obtain feedback for the current account.
+        // Never reuse explanations/results from the previous in-memory scope.
+        setResults({});
         setQuestions(active);
 
         const total =
           effectiveDuration === null ? null : effectiveDuration ?? active.length * 60;
+
+        if (effectiveMode === 'exam' && total != null && active.length > 0) {
+          const legacyLeft = storedAttempt.attempt
+            ? Math.max(0, Math.min(total, typeof source?.data.remainingSec === 'number' ? source.data.remainingSec : total))
+            : canRestore && source?.kind === 'local'
+            ? examRemainingAfterAway({ remainingSec: source.data.remainingSec, savedAt: source.data.savedAt, totalSec: total })
+            : canRestore && source?.kind === 'db' && typeof source.data.remainingSec === 'number'
+              ? Math.max(0, Math.min(total, source.data.remainingSec)) : total;
+          const attempt = storedAttempt.attempt ?? createExamAttempt({ scope: scopedKey, totalSec: total, remainingSec: legacyLeft, qIds: activeIds, seed });
+          const left = Math.min(attemptRemaining(attempt), legacyLeft);
+          attemptRef.current = checkpointAttempt(attempt, left);
+          const saved = saveExamAttempt(attemptRef.current);
+          if (!saved && !storedAttempt.exists) {
+            throw new Error('Exam attempt cannot be saved. Enable browser storage and retry.');
+          }
+          attemptClockRef.current = { left, perfAt: performance.now() };
+          if (left === 0) {
+            setRemaining(0);
+            setQuestions([]); setPool([]); setResults({});
+            setAttemptClosed(true);
+            return;
+          }
+        }
 
         examServerSyncRef.current = null;
 
@@ -847,17 +1116,38 @@ const openFeedback = () => {
           setMarked(p.marked ?? {});
           setReviewLater(new Set(p.reviewLater ?? []));
           setIdx(Math.min(p.idx ?? 0, Math.max(0, active.length - 1)));
+          restoredAnsweredRef.current = new Set(
+            Object.entries(p.marked ?? {})
+              .filter(([, v]) => v != null)
+              .map(([k]) => String(k))
+          );
 
-          if (total == null) setRemaining(null);
-          else setRemaining(Math.min(total, p.remainingSec ?? total));
-
-          startedAtRef.current = p.startedAt ?? null;
+          if (total == null) {
+            setRemaining(null);
+            startedAtRef.current = p.startedAt ?? null;
+          } else if (effectiveMode === 'exam') {
+            // Il tempo passato lontano dalla pagina conta. Si riparte dalla
+            // scadenza, non da startedAt: l'effect di init del timer azzera
+            // startedAtRef al cambio delle domande (vedi pendingExamStartRef).
+            const left = attemptRef.current ? attemptRemaining(attemptRef.current) : examRemainingAfterAway({
+              remainingSec: p.remainingSec,
+              savedAt: p.savedAt,
+              totalSec: total,
+            });
+            const startedAt = Date.now() - (total - left) * 1000;
+            setRemaining(left);
+            startedAtRef.current = startedAt;
+            pendingExamStartRef.current = startedAt;
+          } else {
+            setRemaining(Math.min(total, p.remainingSec ?? total));
+            startedAtRef.current = p.startedAt ?? null;
+          }
           // Mai sotto il pavimento noto della DB (se una riga esiste, anche
           // scartata/non usata come fonte, es. nel caso di migrazione
           // anon->user sopra): altrimenti la prima PUT verrebbe scartata in
           // silenzio dal guard >= lato server, e il progresso appena
           // ripristinato non si sincronizzerebbe mai.
-          revRef.current = Math.max(p.rev ?? 0, dbEligible && dbRow ? dbRow.rev + 1 : 0);
+          revRef.current = Math.max(p.rev ?? 0, dbRevFloor);
         } else if (canRestore && source!.kind === 'db') {
           const row = source!.data;
           const st = row.state ?? {};
@@ -865,6 +1155,11 @@ const openFeedback = () => {
           setMarked(st.marked ?? {});
           setReviewLater(new Set(st.reviewLater ?? []));
           setIdx(Math.min(row.currentIndex ?? 0, Math.max(0, active.length - 1)));
+          restoredAnsweredRef.current = new Set(
+            Object.entries(st.marked ?? {})
+              .filter(([, v]) => v != null)
+              .map(([k]) => String(k))
+          );
           startedAtRef.current = null;
 
           if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
@@ -888,20 +1183,46 @@ const openFeedback = () => {
           // scartata per hash non combaciante): altrimenti la prima PUT del
           // nuovo tentativo verrebbe scartata in silenzio dal guard >= lato
           // server, e l'utente gioca una sessione intera mai persistita.
-          revRef.current = dbEligible && dbRow ? dbRow.rev + 1 : 0;
+          revRef.current = dbRevFloor;
         }
+
+        // Checkpoint di blocco: ripristinato solo se l'indice e' davvero su un
+        // confine di blocco (altrimenti il riepilogo non avrebbe senso).
+        const restoredIdx = canRestore && source?.kind === 'local' ? Number(source.data.idx ?? 0) : 0;
+        const restoredBlockPaused =
+          canRestore &&
+          source?.kind === 'local' &&
+          effectiveMode === 'training' &&
+          !!blockSize &&
+          !!source.data.blockPaused &&
+          restoredIdx > 0 &&
+          restoredIdx % blockSize === 0;
 
         setFinished(false);
         setLastSummary(null);
         setReviewMode(false);
-        setBlockPaused(false);
+        setBlockPaused(restoredBlockPaused);
         setBlockReview(null);
       } catch (e: unknown) {
         if (!alive) return;
+        if(e instanceof VersionedTrainingError&&e.status===409&&e.server&&e.pending){setVersionedConflict(true);return;}
+
+        // A rejected reload may follow an in-place account/scope change.
+        // Drop the previous session before hydration enables autosave again.
+        // Otherwise it would be written under the new user's storage key.
+        setQuestions([]);
+        setPool([]);
+        setResults({});
 
         const err: any = e;
         const status: number | undefined =
           typeof err?.status === 'number' ? err.status : undefined;
+
+        // Only a definitive denial after the HTTP client's refresh path may
+        // invalidate this scope; transport/malformed/5xx keep saved progress.
+        if (status === 401 || status === 403 || status === 404 || status === 410) {
+          clearProgress(scopedKey);
+        }
 
         if (status === 401) {
           setErr(
@@ -934,6 +1255,7 @@ const openFeedback = () => {
         if (alive) {
           setLoading(false);
           hydratedRef.current = true;
+          setHydrated(true);
         }
       }
     })();
@@ -943,7 +1265,7 @@ const openFeedback = () => {
       controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchQuestions, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId]);
+  }, [fetchQuestions, resolveVersionedTraining, versionedReload, scopedKey, effectiveMode, effectiveDuration, effectiveLimit, isLoggedIn, context?.topicId, loadGeneration]);
 
     // ✅ Analytics — traccia quando un assessment/free test viene realmente avviato.
   // Usiamo un ref per evitare eventi doppi causati da re-render o Strict Mode.
@@ -965,7 +1287,8 @@ const openFeedback = () => {
       total_questions: questions.length,
     };
     trackQuizEvent('assessment_started', assessmentStartProperties);
-    trackQuizEvent('diagnostic_quiz_started', assessmentStartProperties);
+    // diagnostic_quiz_started was a duplicate alias; historical series stays intact.
+    trackQuizEvent('quiz_loaded', assessmentStartProperties);
     trackFunnelEventOnce(
       `assessment_started:${storageScope}`,
       {
@@ -994,6 +1317,10 @@ const openFeedback = () => {
     if (loading || err || !questions.length || studyStartedTrackedRef.current) return;
     studyStartedTrackedRef.current = true;
 
+    trackQuizEvent('quiz_loaded', {
+      language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
+    });
+    // Legacy metric remains a content load; study_engaged measures the first answer.
     trackQuizEvent('study_started', {
       language: lang,
       quiz_mode: effectiveMode,
@@ -1024,19 +1351,21 @@ const openFeedback = () => {
     conversionContext.score,
   ]);
 
-  useEffect(() => {
-    const reached = idx + 1;
-    if (![1, 5, 10, 20, 40].includes(reached)) return;
-    if (milestoneTrackedRef.current.has(reached)) return;
-    milestoneTrackedRef.current.add(reached);
-    trackQuizEvent("quiz_question_reached", {
-      language: lang,
-      quiz_mode: effectiveMode,
-      question_milestone: reached,
-      certification_slug: context?.certificationSlug ?? null,
-      source_page: "quiz",
+  const trackQuestionMilestone = useCallback((question: HTMLParagraphElement | null) => {
+    if (!question || blockReview) return;
+    if (milestoneTrackingRef.current?.scope !== scopedKey) {
+      milestoneTrackingRef.current = { scope: scopedKey, tracked: new Set<number>() };
+    }
+    return observeQuizQuestionMilestone(question, idx + 1, milestoneTrackingRef.current.tracked, reached => {
+      trackQuizEvent("quiz_question_reached", {
+        language: lang,
+        quiz_mode: effectiveMode,
+        question_milestone: reached,
+        certification_slug: context?.certificationSlug ?? null,
+        source_page: "quiz",
+      });
     });
-  }, [idx, lang, effectiveMode, context?.certificationSlug]);
+  }, [idx, lang, effectiveMode, context?.certificationSlug, blockReview, scopedKey]);
 
   useEffect(() => {
     latestProgressRef.current = {
@@ -1126,7 +1455,10 @@ clearProgress(`${storageScope}:assessment`);
 
   useEffect(() => {
     if (effectiveMode === 'exam') {
-      startedAtRef.current = null;
+      // Dopo un ripristino il countdown riparte dalla scadenza ricostruita,
+      // non da zero (vedi pendingExamStartRef). Si consuma una volta sola.
+      startedAtRef.current = pendingExamStartRef.current;
+      pendingExamStartRef.current = null;
 
       const total =
         effectiveDuration === null ? null : effectiveDuration ?? questions.length * 60;
@@ -1144,7 +1476,9 @@ clearProgress(`${storageScope}:assessment`);
   }, [effectiveMode, effectiveDuration, questions.length]);
 
   useEffect(() => {
-    if (effectiveMode !== 'exam' || finished) {
+    // finishError.expired: con la valutazione fallita a tempo scaduto il loop non
+    // deve rilanciare doFinish a ogni frame; l'utente usa "Riprova".
+    if (effectiveMode !== 'exam' || finished || attemptClosed || finishError?.expired || !hydrated || !attemptRef.current) {
       if (tickRef.current) cancelAnimationFrame(tickRef.current);
       tickRef.current = null;
       return;
@@ -1179,6 +1513,11 @@ clearProgress(`${storageScope}:assessment`);
         rest = Math.max(0, total - elapsed);
       }
 
+      if (attemptRef.current && attemptClockRef.current) {
+        rest = Math.max(0, Math.min(rest, attemptRemaining(attemptRef.current),
+          Math.floor(attemptClockRef.current.left - (performance.now() - attemptClockRef.current.perfAt) / 1000)));
+      }
+
       setRemaining(rest);
 
       if (rest === 0) {
@@ -1197,10 +1536,29 @@ clearProgress(`${storageScope}:assessment`);
   // doFinish reads the latest quiz state; including it would restart the RAF
   // loop on every render and disturb timer scheduling.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining]);
+  }, [effectiveMode, finished, effectiveDuration, questions.length, remaining, hydrated, attemptClosed, finishError?.expired]);
 
   /* -------------------------- AUTOSAVE LOCALE ------------------------- */
   useEffect(() => {
+    // Nessuna scrittura finche' il load/ripristino non e' concluso. Al mount lo
+    // stato e' quello vuoto iniziale (qIds=[], idx=0): scriverlo qui, un frame
+    // dopo il mount ma PRIMA che l'effect asincrono di load legga il
+    // salvataggio, distruggeva il progresso che stava per essere ripristinato
+    // (reload, tab scartata dal browser mobile, ritorno dal background). Vale
+    // anche al cambio di scopedKey (login/logout, cambio mode): finche' il
+    // load non e' finito, lo stato in memoria appartiene alla chiave
+    // PRECEDENTE e non va scritto sotto quella nuova. Senza domande non c'e'
+    // nulla di valido da salvare (errore di load, pool vuoto, paywall).
+    if (!hydratedRef.current || questions.length === 0) return;
+    // Quiz concluso: il salvataggio e' stato cancellato da doFinish e non deve
+    // risorgere (un ripristino riaprirebbe un quiz gia' chiuso).
+    if (finished || attemptClosed) return;
+
+    if(versionedTrainingRef.current){
+      if(finished)return;
+      void versionedTrainingRef.current.save({marked:Object.fromEntries(Object.entries(marked).map(([q,a])=>[q,a==null?null:Number(a)])),reviewLater:[...reviewLater].map(Number),currentIndex:idx}).catch(e=>console.warn('Versioned progress retained for retry',e));
+      return;
+    }
     // Nuova "versione" dello stato a ogni cambiamento significativo. Sale
     // anche per i cambi innescati dal ripristino nel load effect (non solo
     // dalle azioni utente): non è un problema, resta monotono, che è
@@ -1217,9 +1575,18 @@ clearProgress(`${storageScope}:assessment`);
       idx,
       seed: seedRef.current ?? undefined,
       rev: revRef.current,
+      savedAt: Date.now(),
+      blockPaused: effectiveMode === 'training' ? blockPaused : false,
+      attemptId: effectiveMode === 'exam' ? attemptRef.current?.attemptId : undefined,
     };
 
-    const flush = () => saveProgress(scopedKey, payload);
+    const flush = () => {
+      saveProgress(scopedKey, payload);
+      if (effectiveMode === 'exam' && attemptRef.current?.scope === scopedKey && remaining != null) {
+        attemptRef.current = checkpointAttempt(attemptRef.current, remaining);
+        saveExamAttempt(attemptRef.current);
+      }
+    };
     const id = requestAnimationFrame(flush);
 
     // Chrome (e altri) sospendono i callback rAF nei tab in background: senza
@@ -1239,7 +1606,34 @@ clearProgress(`${storageScope}:assessment`);
       document.removeEventListener('visibilitychange', onHide);
       window.removeEventListener('pagehide', flush);
     };
-  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey]);
+  }, [questions, marked, reviewLater, effectiveMode, remaining, idx, scopedKey, loading, hydrated, finished, blockPaused, attemptClosed]);
+
+  /* ------------------- SNAPSHOT DOMANDE CONSEGNATE ------------------- */
+  // Effetto separato da quello sopra, di proposito: l'autosave gira a ogni
+  // secondo in exam (cambia `remaining`), mentre le domande consegnate
+  // cambiano solo a inizio sessione, al ripristino e al Restart. Scrivere
+  // qui l'intero set a ogni tick sarebbe un costo senza alcun beneficio.
+  // Contiene solo il payload gia' ricevuto dal browser (vedi lib/quiz-session):
+  // mai correttezza, risposta corretta o spiegazione.
+  useEffect(() => {
+    if (versionedTrainingRef.current || !hydratedRef.current || questions.length === 0 || finished) return;
+    const snapshot = buildSnapshot({
+      scope: scopedKey,
+      userKey: userKeyPart,
+      mode: effectiveMode,
+      lang,
+      // l'etichetta premium si fissa alla consegna: non si perde se il premium
+      // scade a sessione aperta
+      isPremium:
+        isPremiumUser ||
+        wasDeliveredToPremium(loadSnapshot(scopedKey), questions.map((q) => q.id)),
+      questions,
+    });
+    if (snapshot) {
+      saveSnapshot(scopedKey, snapshot);
+      pruneStaleSnapshots(SNAPSHOT_TTL_MS.training);
+    }
+  }, [questions, scopedKey, userKeyPart, effectiveMode, lang, isPremiumUser, hydrated, finished]);
 
   /* -------------------------- SYNC DB (resume cross-device) -------------------------
      Effetto separato da quello locale sopra, deliberatamente: quello locale
@@ -1252,9 +1646,17 @@ clearProgress(`${storageScope}:assessment`);
   useEffect(() => {
     const topicId = context?.topicId;
     const dbSyncEnabled = isLoggedIn && effectiveMode !== 'assessment' && !!topicId;
+    dbFlushPendingRef.current = false;
+    dbFlushRef.current = null;
+    if(versionedTrainingRef.current)return;
     if (!dbSyncEnabled) return;
 
     const flushDb = async () => {
+      if(versionedTrainingRef.current)return;
+      dbFlushPendingRef.current = false;
+      // Quiz concluso: lo stato e' stato chiuso lato server (tombstone). Un
+      // debounce gia' armato o un pagehide non devono piu' scrivere.
+      if (completedRef.current) return;
       // Gate di idratazione: finché il load effect non ha concluso la
       // riconciliazione locale/DB, non scrivere — altrimenti una PUT con
       // seed fresco e rev 0 competerebbe con la riconciliazione stessa
@@ -1320,11 +1722,13 @@ clearProgress(`${storageScope}:assessment`);
         const row = data?.row;
         if (!row) return;
 
-        // Incondizionato: è così che un client con rev disallineato (rete
-        // caduta prima, riga DB sconosciuta) si autocorregge al primo giro
-        // riuscito, invece di continuare a scrivere con un rev troppo
-        // basso che il guard server-side scarta in silenzio per sempre.
-        revRef.current = row.rev;
+        // Un client con rev piu' basso di quello del server (rete caduta
+        // prima, riga DB sconosciuta) si autocorregge al primo giro riuscito,
+        // invece di continuare a scrivere con un rev troppo basso che il
+        // guard server-side scarta in silenzio per sempre. Non si scende mai:
+        // una risposta lenta con rev inferiore a quello nel frattempo salito
+        // in locale farebbe partire la PUT successiva sotto il rev gia' sul server.
+        revRef.current = adoptServerRev(revRef.current, row.rev);
 
         if (effectiveMode === 'exam' && typeof row.remainingSec === 'number') {
           examServerSyncRef.current = { remainingAtSync: row.remainingSec, perfAtSync: performance.now() };
@@ -1335,6 +1739,11 @@ clearProgress(`${storageScope}:assessment`);
     };
 
     const timeoutId = setTimeout(flushDb, 2500);
+    // Scrittura armata e non ancora partita: se il componente si smonta prima
+    // dei 2,5 s (navigazione client-side, che non emette pagehide), la invia
+    // l'effect di smontaggio qui sotto.
+    dbFlushPendingRef.current = true;
+    dbFlushRef.current = flushDb;
 
     const onHideDb = () => {
       if (document.hidden) {
@@ -1351,6 +1760,59 @@ clearProgress(`${storageScope}:assessment`);
       window.removeEventListener('pagehide', flushDb);
     };
   }, [questions, marked, reviewLater, effectiveMode, idx, scopedKey, isLoggedIn, context?.topicId, lang, effectiveDuration]);
+
+  // Smontaggio (navigazione client-side verso un'altra pagina): se c'e' una PUT
+  // armata dal debounce la si invia ora, con keepalive. Le altre uscite (chiusura
+  // tab, background) passano da pagehide/visibilitychange gestiti sopra.
+  useEffect(() => {
+    return () => {
+      if (dbFlushPendingRef.current) void dbFlushRef.current?.();
+    };
+  }, []);
+
+  /* ------------- RE-CHECK DELLE RISPOSTE RIPRISTINATE (training) -------------
+     Correttezza e spiegazione non vengono mai salvate lato client (Paywall
+     Phase 2): dopo un ripristino `results` e' vuoto. Quando l'utente rivede
+     una domanda gia' risposta, il feedback viene richiesto di nuovo al
+     server — la stessa /answers/check di choose(), idempotente per
+     (utente, domanda): la quota FREE e' consumata al primo tentativo, qui
+     non si consuma altro e una spiegazione gia' concessa viene riconsegnata.
+     Una sola richiesta per domanda e solo per quelle presenti al ripristino
+     (una risposta nuova la verifica choose()). Se fallisce, la domanda resta
+     neutra e si riprova alla prossima visita.
+  --------------------------------------------------------------------- */
+  const recheckPosition = blockReview?.positions[blockReview.cursor] ?? idx;
+  useEffect(() => {
+    if (versionedTrainingRef.current || !hydrated || finished || effectiveMode !== 'training') return;
+    const q = questions[recheckPosition];
+    if (!q) return;
+    const key = String(q.id);
+    const chosen = marked[q.id];
+    if (chosen == null) return;
+    if (!restoredAnsweredRef.current.has(key)) return;
+    if (results[key] || recheckAttemptedRef.current.has(key)) return;
+
+    recheckAttemptedRef.current.add(key);
+    let alive = true;
+    (async () => {
+      try {
+        const checked = await checkAnswer(q.id, chosen, lang);
+        if (!alive) return;
+        mergeResults([checked]);
+        applyCheckedAccess(checked);
+      } catch (err) {
+        recheckAttemptedRef.current.delete(key); // riprova alla prossima visita
+        console.error("Errore answers/check (ripristino):", err);
+      }
+    })();
+
+    return () => {
+      alive = false;
+      recheckAttemptedRef.current.delete(key);
+    };
+    // mergeResults/applyCheckedAccess leggono solo setter e props correnti
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, finished, effectiveMode, recheckPosition, questions, marked, results, lang]);
 
   /* ----------------------------- DERIVATI ----------------------------- */
   const answeredCount = useMemo(
@@ -1402,25 +1864,65 @@ clearProgress(`${storageScope}:assessment`);
     return calculateCompletedBlock({
       questions,
       marked,
+      results,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
 
   const blockWrongPositions = useMemo(() => {
     if (!blockPaused || effectiveMode !== 'training' || !blockSize) return [];
     return getCompletedBlockWrongPositions({
       questions,
       marked,
+      results,
       nextQuestionIndex: idx,
       blockSize,
     });
-  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions]);
+  }, [blockPaused, blockSize, effectiveMode, idx, marked, questions, results]);
 
   /* ----------------------------- HANDLER ------------------------------ */
+  // Aggiorna quota e limite spiegazioni dalla risposta del server. Usata sia
+  // da choose() sia dal re-check dopo un ripristino: la regola e' una sola.
+  const applyCheckedAccess = (checked: AnswerCheckResult) => {
+    const remaining = checked.explanation_access?.remaining;
+    if (checked.explanation_access?.unlimited) {
+      setExplanationsUnlimited(true);
+      setWrongExpLeft(null);
+    } else if (typeof remaining === "number") {
+      setWrongExpLeft(remaining);
+      if (remaining === 0 && checked.explanation_access?.consumed) {
+        trackQuizEvent('free_limit_reached', {
+          language: lang,
+          certification_slug: context?.certificationSlug ?? null,
+          limit_type: 'wrong_explanations',
+          limit: checked.explanation_access?.limit ?? wrongExpLimit,
+        });
+      }
+    }
+    if (typeof checked.explanation_access?.limit === "number") {
+      setWrongExpLimit(checked.explanation_access.limit);
+    }
+  };
+
  const choose = async (q: Question, a: Answer) => {
   setActionsOpen(false);
   if (blockReview) return;
+  // Valutazione finale in corso, o fallita a tempo scaduto: le risposte sono quelle
+  // gia' date e non devono cambiare sotto la valutazione/il retry.
+  if (!versionedTrainingRef.current && (finishingRef.current || finishError?.expired)) return;
+  if(versionedTrainingRef.current){if(resultOf(q.id)||versionedCheckingRef.current.has(String(q.id))||(marked[q.id]!=null&&String(marked[q.id])!==String(a.id)))return;versionedCheckingRef.current.add(String(q.id));}
+  // Una nuova scelta supera il re-check del ripristino: la verifica la fa
+  // questo handler, una volta sola.
+  restoredAnsweredRef.current.delete(String(q.id));
+  const engagementKey = studyEngagementKey(storageScope,effectiveMode);
+  trackEventOnce(engagementKey, 'study_engaged', {
+    language: lang, quiz_mode: effectiveMode, certification_slug: context?.certificationSlug ?? null,
+  });
+  trackFunnelEventOnce(engagementKey, {
+    event: 'study_engaged', cert_slug: context?.certificationSlug ?? null, topic_slug: context?.topicSlug ?? null,
+    lang, metadata: { quiz_mode: effectiveMode },
+  });
   setMarked((m) => ({ ...m, [q.id]: a.id }));
   if (!isLoggedIn) increment(); // ✅ aggiunto
 
@@ -1431,25 +1933,9 @@ clearProgress(`${storageScope}:assessment`);
   let checked: AnswerCheckResult | null = resultOf(q.id) ?? null;
   if (!isTestLike && !checked) {
     try {
-      checked = await checkAnswer(q.id, a.id, lang);
+      checked = versionedTrainingRef.current?await versionedTrainingRef.current.checkAnswer(Number(q.id),Number(a.id)):await checkAnswer(q.id, a.id, lang);
       mergeResults([checked]);
-      const remaining = checked.explanation_access?.remaining;
-      if (checked.explanation_access?.unlimited) {
-        setWrongExpLeft(null);
-      } else if (typeof remaining === "number") {
-        setWrongExpLeft(remaining);
-        if (remaining === 0 && checked.explanation_access?.consumed) {
-          trackQuizEvent('free_limit_reached', {
-            language: lang,
-            certification_slug: context?.certificationSlug ?? null,
-            limit_type: 'wrong_explanations',
-            limit: checked.explanation_access?.limit ?? wrongExpLimit,
-          });
-        }
-      }
-      if (typeof checked.explanation_access?.limit === "number") {
-        setWrongExpLimit(checked.explanation_access.limit);
-      }
+      applyCheckedAccess(checked);
     } catch (err) {
       console.error("Errore answers/check:", err);
     }
@@ -1488,6 +1974,7 @@ clearProgress(`${storageScope}:assessment`);
     // sbagliata che sia.
     void recordPostGateQuestion(q.id);
   }
+  versionedCheckingRef.current.delete(String(q.id));
 };
 
   const next = () => {
@@ -1575,9 +2062,29 @@ const goToFirstUnanswered = () => {
 };
 
  async function doFinish(timeExpired = false) {
-  void timeExpired;
-  setFinished(true);
-  setMockReviewGate(null);
+  // Un solo completamento alla volta: doppio click, timer scaduto durante una
+  // valutazione in corso o retry sovrapposto non devono duplicare salvataggi.
+  // completedRef copre anche il frame del timer d'esame che scatta tra la fine di
+  // runFinish e il re-render con finished=true (altrimenti: seconda valutazione e
+  // seconda registrazione con un nuovo attemptId).
+  if (finishingRef.current || completedRef.current) return;
+  finishingRef.current = true;
+  setFinishing(true);
+  try {
+    await runFinish(timeExpired);
+  } finally {
+    finishingRef.current = false;
+    setFinishing(false);
+  }
+}
+
+ async function runFinish(timeExpired: boolean) {
+  const isVersioned = !!versionedTrainingRef.current;
+  // CCST versionato: flusso invariato (chiude e valuta con il proprio client).
+  if (isVersioned) {
+    setFinished(true);
+    setMockReviewGate(null);
+  }
 
   const total = questions.length;
 
@@ -1587,9 +2094,20 @@ const goToFirstUnanswered = () => {
   // include i dettagli per-question solo se il server autorizza mock_review.
   let evaluated = results;
   let serverCorrect: number | null = null;
+  if(versionedTrainingRef.current){try{
+    for(const q of questions){if(marked[q.id]!=null&&!evaluated[String(q.id)]){const r=await versionedTrainingRef.current.checkAnswer(Number(q.id),Number(marked[q.id]));evaluated={...evaluated,[String(q.id)]:r};}}
+    const completed=await versionedTrainingRef.current.complete();serverCorrect=completed.state.summary?.correct??null;setResults(evaluated);
+  }catch(e){setFinished(false);console.error('Versioned completion failed',e);return;}}
 
-  if (isTestLike) {
+  // Valutazione finale. Il quiz NON e' "finished" finche' non ha successo: se la
+  // chiamata fallisce (rete, 5xx, 429) si esce qui senza chiudere l'attempt,
+  // senza salvare un risultato, senza cancellare il progresso, e si mostra un
+  // errore con "Riprova". Prima l'errore veniva solo loggato e il punteggio
+  // risultava 0% (salvato davvero in quiz_results via onFinish).
+  if (!isVersioned) {
+    setMockReviewGate(null);
     try {
+    if (isTestLike) {
       if (effectiveMode === 'exam' && context?.certificationId) {
         const submitted = questions.map((q) => ({
           question_id: Number(q.id),
@@ -1629,9 +2147,42 @@ const goToFirstUnanswered = () => {
           for (const r of res.results || []) evaluated[String(r.question_id)] = r;
         }
       }
+    } else if (effectiveMode === 'training') {
+      // Training: la correttezza arriva domanda per domanda da /answers/check, ma
+      // dopo un ripristino (reload, altro device) `results` e' vuoto e viene
+      // ricostruito solo per le domande che l'utente rivede. Quelle risposte
+      // prima del ripristino e mai riviste contavano come errate. Si valutano in
+      // blocco quelle senza verdetto (senza spiegazioni, senza consumare quota).
+      // Non si fondono in `results`: la spiegazione viene richiesta alla prima
+      // visita dal re-check, come sempre.
+      const unevaluated = questions
+        .filter((q) => marked[q.id] != null && !results[String(q.id)])
+        .map((q) => ({ question_id: Number(q.id), answer_id: Number(marked[q.id]) }));
+      if (unevaluated.length > 0) {
+        const fresh: Record<string, AnswerCheckResult> = {};
+        for (const part of chunk(unevaluated, 200)) {
+          const res = await evaluateAnswers(part, lang);
+          for (const r of res.results || []) {
+            if (!(r as { error?: string }).error) fresh[String(r.question_id)] = r;
+          }
+        }
+        evaluated = { ...results, ...fresh };
+      }
+    }
     } catch (err) {
       console.error("Errore valutazione risposte:", err);
+      setFinishError({ expired: timeExpired });
+      return;
     }
+
+    // Valutazione riuscita: da qui il tentativo e' concluso.
+    if (effectiveMode === 'exam' && attemptRef.current) {
+      attemptRef.current = closeAttempt(attemptRef.current, timeExpired ? 'expired' : 'completed');
+      saveExamAttempt(attemptRef.current);
+    }
+    completedRef.current = true;
+    setFinishError(null);
+    setFinished(true);
   }
 
   let correctCount = 0;
@@ -1667,6 +2218,9 @@ const goToFirstUnanswered = () => {
   });
 
   const serverScorePct = total > 0 ? Math.round((correct / total) * 100) : 0;
+  // Sempre nuovo a ogni completamento riuscito: un id rimasto da un quiz precedente
+  // farebbe passare un risultato diverso per un duplicato lato server.
+  resultAttemptIdRef.current = createAttemptId();
   const summary: QuizSummary & { mode: Mode; attempts: typeof attempts } = {
     total,
     correct,
@@ -1675,6 +2229,7 @@ const goToFirstUnanswered = () => {
     durationSec: elapsedSec,
     mode: effectiveMode,
     attempts,
+    attemptId: resultAttemptIdRef.current,
   };
 
   setLastSummary(summary);
@@ -1720,13 +2275,36 @@ const goToFirstUnanswered = () => {
     });
   }
 
-  try {
-    await onFinish?.(summary);
-  } catch {
-    /* ignore */
-  }
+  // Registrazione in cronologia: parte subito (la parte sincrona dell'onFinish
+  // scrive la voce write-ahead in localStorage PRIMA di clearProgress) ma non
+  // blocca la chiusura del progresso. Un fallimento NON e' ignorato: lo stato
+  // vive nello store dell'outbox e SaveResultBanner lo mostra con il retry.
+  const savePromise = (async () => {
+    try {
+      if (!versionedTrainingRef.current) await onFinish?.(summary);
+    } catch (err) {
+      console.error('Registrazione del risultato in cronologia non riuscita:', err);
+    }
+  })();
 
   clearProgress(scopedKey);
+
+  // Chiusura lato server del progresso (tombstone legato al seed): senza, la riga
+  // quiz_progress restava e il quiz concluso risorgeva alla riapertura. Se la
+  // chiamata non riesce si lascia un marker locale e si ritenta al prossimo caricamento.
+  const closeTopicId = context?.topicId;
+  if (!isVersioned && isLoggedIn && effectiveMode !== 'assessment' && closeTopicId && seedRef.current != null) {
+    const closing = {
+      seed: seedRef.current,
+      rev: revRef.current,
+      qidsHash: hashIds(questions.map((q) => q.id)),
+    };
+    const closed = await closeServerProgress(apiFetch, { topicId: closeTopicId, lang, mode: effectiveMode, ...closing });
+    if (closed) clearPendingClose(scopedKey);
+    else savePendingClose(scopedKey, closing);
+  }
+
+  await savePromise;
 }
 
 const submitAssessmentReport = async () => {
@@ -1826,8 +2404,23 @@ const submitAssessmentReport = async () => {
   }
 };
 
-  const restart = () => {
+  const restart = async () => {
+  if(versionedTrainingRef.current){try{await versionedTrainingRef.current.restart();setVersionedReload(n=>n+1);}catch(e){console.error('Versioned restart failed',e);}return;}
+  completedRef.current = false;
+  resultAttemptIdRef.current = null;
+  setFinishError(null);
   clearProgress(scopedKey);
+  if (effectiveMode === 'exam') {
+    clearExamAttempt(scopedKey);
+    attemptRef.current = null;
+    attemptClockRef.current = null;
+    setAttemptClosed(false);
+    setLoadGeneration(n => n + 1); // Fresh authorization/pool after explicit intent.
+    return;
+  }
+  pendingExamStartRef.current = null;
+  restoredAnsweredRef.current = new Set();
+  recheckAttemptedRef.current = new Set();
 
   assessmentStartedTrackedRef.current = false;
   completedTrackedRef.current = false;
@@ -1895,7 +2488,7 @@ const submitAssessmentReport = async () => {
               : "You've used up the free questions available after the explanation limit. Go Premium to keep going without limits."}
           </p>
           <Link
-            href={`${pricingPath(lang)}?source=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+            href={`${pricingPath(lang)}?source=post_gate_quiz_limit&cta=post_gate_quiz_limit${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
             onClick={() => {
               const cohort = user?.id != null ? readPostGateCohort(user.id) : null;
               trackQuizEvent('premium_cta_clicked', {
@@ -1906,12 +2499,12 @@ const submitAssessmentReport = async () => {
               });
               trackFunnelEvent({
                 event: "premium_clicked_post_gate_quiz_limit",
-                email: user?.email || null,
                 cert_slug: context?.certificationSlug ?? null,
                 topic_slug: context?.topicSlug ?? null,
                 lang,
                 paywall_type: "post_explanation_quiz_limit",
                 gate_instance_id: cohort?.gateInstanceId ?? null,
+                metadata: premiumClickMetadata("post_gate_quiz_limit"),
               });
             }}
             className="inline-block rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-600"
@@ -1931,7 +2524,23 @@ const submitAssessmentReport = async () => {
 
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
-  if (err) return <div className="min-h-screen grid place-items-center text-red-600">{err}</div>;
+  if(versionedConflict)return <div className="min-h-screen grid place-items-center"><div role="alert" className="max-w-lg p-6 space-y-4"><p>{({en:'This session changed on another device. Your unsent progress is retained locally. Continue with the saved session and keep a local backup of the unsent copy.',it:'La sessione è cambiata su un altro dispositivo. I progressi non inviati sono conservati localmente. Continua con la sessione salvata mantenendo una copia locale dei progressi non inviati.',fr:'La session a changé sur un autre appareil. Votre progression non envoyée est conservée localement. Continuez avec la session enregistrée en gardant une copie locale.',es:'La sesión cambió en otro dispositivo. El progreso no enviado se conserva localmente. Continúa con la sesión guardada manteniendo una copia local.'})[lang]}</p><button type="button" className="rounded bg-emerald-600 p-3" onClick={async()=>{try{await versionedTrainingRef.current?.useServerProgress();setVersionedReload(n=>n+1);}catch(e){setErr(e instanceof Error?e.message:'Retry failed');}}}>{({en:'Use saved session',it:'Usa la sessione salvata',fr:'Utiliser la session enregistrée',es:'Usar la sesión guardada'})[lang]}</button>{err&&<p>{err}</p>}</div></div>;
+  if (err) return <div className="min-h-screen grid place-items-center p-6">
+    <div className="space-y-4 text-center"><p className="text-red-600">{err}</p>
+      <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={() => setLoadGeneration(n => n + 1)}>
+        {lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Retry'}
+      </button>
+    </div>
+  </div>;
+  if (attemptClosed && effectiveMode === 'exam') {
+    return <div data-testid="exam-attempt-closed" className="min-h-screen grid place-items-center p-6">
+      <div className="space-y-4 text-center">
+        <h1 className="text-xl font-bold">{lang === 'it' ? 'Tentativo d’esame concluso o non ripristinabile' : lang === 'fr' ? 'Tentative terminée ou non récupérable' : lang === 'es' ? 'Intento finalizado o no recuperable' : 'Exam attempt ended or cannot be resumed'}</h1>
+        <p>{lang === 'it' ? 'Per iniziare un nuovo tentativo, premi Ricomincia.' : lang === 'fr' ? 'Démarrez une nouvelle tentative pour continuer.' : lang === 'es' ? 'Inicia un nuevo intento para continuar.' : 'Start a new attempt to continue.'}</p>
+        <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={restart}>{label('restart', lang)}</button>
+      </div>
+    </div>;
+  }
   if (!questions.length) {
     // Il batch Training può essere vuoto perché il backend l'ha rifiutato
     // (Fase A, enforcement server-side su /questions* con mode=training)
@@ -2101,6 +2710,9 @@ const assessmentCopy =
       <div className={`min-h-screen ${gradient}`}>
         <div className="mobile-safe-top max-w-3xl mx-auto px-4 pt-20 pb-28">
           <div className="bg-white text-gray-900 rounded-2xl shadow-xl p-6 space-y-4">
+            {!isAssessmentResult && lastSummary?.attemptId && (
+              <SaveResultBanner lang={lang} userId={user?.id} attemptId={lastSummary.attemptId} />
+            )}
             {isAssessmentResult ? (
   <div className="space-y-3">
     <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-800">
@@ -2325,9 +2937,10 @@ const assessmentCopy =
                     ? 'Revisa cada pregunta de la simulación con tu respuesta y la correcta. Incluido en el pase Complete de la certificación y en Premium.'
                     : 'Review every simulation question with your answer and the correct one. Included in the certification Complete pass and in Premium.'}
                 </p>
+                {context?.certificationSlug && <MockCompleteLink lang={lang} certificationSlug={context.certificationSlug} />}
                 <a
                   href={(() => {
-                    const q = new URLSearchParams({ source: 'mock_review' });
+                    const q = new URLSearchParams({ source: 'mock_review', cta: 'mock_review' });
                     if (context?.certificationSlug) q.set('certification_slug', context.certificationSlug);
                     return `${pricingPath(lang)}?${q.toString()}`;
                   })()}
@@ -2360,7 +2973,7 @@ const assessmentCopy =
               </div>
             )}
 
-            {isAssessmentResult && (
+            {isAssessmentResult && !explanationsUnlimited && (
   <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
     <h2 className="text-lg font-bold text-gray-950">
       🔒 {lang === 'it'
@@ -2410,10 +3023,12 @@ const assessmentCopy =
     topic_slug: context?.topicSlug ?? null,
     lang,
     score: scorePct,
+    metadata: premiumClickMetadata("quiz_result_unlock"),
   });
 
   const pricing = new URL(pricingPath(lang), window.location.origin);
   pricing.searchParams.set("source", "quiz_result");
+  pricing.searchParams.set("cta", "quiz_result_unlock");
   if (context?.certificationSlug) pricing.searchParams.set("certification_slug", context.certificationSlug);
   router.push(`${pricing.pathname}${pricing.search}`);
 }}
@@ -2431,7 +3046,7 @@ const assessmentCopy =
 )}
 
            {/* ✅ Upsell consentito SOLO a fine quiz (non invasivo) */}
-{!isAssessmentResult && !isPremiumUser && (
+{!isAssessmentResult && showPremiumUpsell && (
   <div className="pt-2">
     <PremiumTeaserBox
       lang={lang}
@@ -2493,10 +3108,10 @@ const assessmentCopy =
         : "Retry quiz"}
     </button>
 
-    {!isPremiumUser && (
+    {showPremiumUpsell && (
       <button
         type="button"
-        onClick={() => router.push(pricingPath(lang))}
+        onClick={() => router.push(withCtaParam(pricingPath(lang), "quiz_result_upsell"))}
         className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
       >
         {lang === "it"
@@ -2877,7 +3492,7 @@ return (
               </pre>
             </figure>
           )}
-          <p className="font-medium leading-relaxed text-[17px]">{q.question}</p>
+          <p ref={trackQuestionMilestone} className="font-medium leading-relaxed text-[17px]">{q.question}</p>
         </div>
 
         {/* feedback (sempre disponibile se onFeedback è passato) */}
@@ -2956,7 +3571,10 @@ return (
           {q.answers.map((a) => {
             const isChosen = chosen === a.id;
             const isRight = isAnswerCorrect(q.id, a.id);
-            const showFeedback = !isTestLike && chosen != null;
+            // Il verdetto e' del server: finche' non e' arrivato (risposta
+            // appena data, o domanda ripristinata dopo un reload) la scelta
+            // resta neutra invece di apparire "sbagliata".
+            const showFeedback = !isTestLike && chosen != null && !!serverResult;
 
             let btnClasses =
               'bg-white text-gray-900 border border-white/20 hover:bg-white/90';
@@ -3101,7 +3719,7 @@ return (
                 : 'Ask "why did I get this wrong?" and get a tailored explanation, not generic text. Unlimited with Premium.'}
             </p>
             <Link
-              href={`${pricingPath(lang)}?source=explanation_paywall${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
+              href={`${pricingPath(lang)}?source=explanation_paywall&cta=wrong_explanation_locked${context?.certificationSlug ? `&certification_slug=${encodeURIComponent(context.certificationSlug)}` : ""}`}
               onClick={() => {
                 const cohort = user?.id != null
                   ? getOrCreatePostGateCohort(user.id, q.id)
@@ -3117,11 +3735,11 @@ return (
                 // ✅ Tracking click Premium nel funnel (DB), oltre a GA4 sopra
                 trackFunnelEvent({
                   event: "premium_clicked_locked_explanation",
-                  email: user?.email || null,
                   cert_slug: context?.certificationSlug ?? null,
                   topic_slug: context?.topicSlug ?? null,
                   lang,
                   gate_instance_id: cohort?.gateInstanceId ?? null,
+                  metadata: premiumClickMetadata("wrong_explanation_locked"),
                 });
               }}
               className="mt-2 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-600"
@@ -3167,6 +3785,33 @@ return (
         />
       </div>
     </div>
+
+    {/* ERRORE DI VALUTAZIONE FINALE (recuperabile: risposte e progresso conservati) */}
+    {finishError && (
+      <div
+        role="alert"
+        data-testid="finish-error"
+        className="mb-3 rounded-xl border border-amber-300/60 bg-amber-500/20 p-3 text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <span>
+          {lang === 'it'
+            ? 'Non siamo riusciti a calcolare il risultato. Le tue risposte sono state conservate: riprova.'
+            : lang === 'fr'
+            ? "Impossible de calculer le résultat. Vos réponses sont conservées : réessayez."
+            : lang === 'es'
+            ? 'No pudimos calcular el resultado. Tus respuestas se han conservado: inténtalo de nuevo.'
+            : "We couldn't calculate your result. Your answers have been kept: please try again."}
+        </span>
+        <button
+          type="button"
+          className="px-3 py-2 rounded-lg bg-white text-gray-900 text-sm font-semibold disabled:opacity-60"
+          disabled={finishing}
+          onClick={() => doFinish(finishError.expired)}
+        >
+          {lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Try again'}
+        </button>
+      </div>
+    )}
 
     {/* NAV BAR */}
     <div className="rounded-xl bg-black/20 backdrop-blur border border-white/10 p-2">

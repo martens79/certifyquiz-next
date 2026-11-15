@@ -2,9 +2,12 @@
 
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { analyticsUserStateFrom, trackEventOnce } from "@/lib/analytics";
+import { analyticsUserStateFrom, trackEventOnce, trackFunnelEventOnce } from "@/lib/analytics";
+
+import { useConsent } from "./ConsentProvider";
 
 export default function CertificationAnalytics({ slug, id, language }: { slug: string; id?: number; language: string }) {
+  const { status: consentStatus } = useConsent();
   const { loading, user } = useAuth();
   useEffect(() => {
     if (loading) return;
@@ -15,6 +18,9 @@ export default function CertificationAnalytics({ slug, id, language }: { slug: s
       user_state: analyticsUserStateFrom(user),
       source_page: "certification",
     });
-  }, [loading, user, slug, id, language]);
+    trackFunnelEventOnce(`certification_viewed:${slug}:${language}`, {
+      event: "certification_viewed", cert_slug: slug, lang: language,
+    });
+  }, [loading, user, slug, id, language, consentStatus]);
   return null;
 }

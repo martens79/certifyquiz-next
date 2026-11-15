@@ -1,4 +1,4 @@
-const CACHE_NAME = "certifyquiz-v3";
+const CACHE_NAME = "certifyquiz-v4";
 
 const OFFLINE_URL = "/offline.html";
 
@@ -29,6 +29,14 @@ self.addEventListener("fetch", (event) => {
 
   event.respondWith(
     fetch(event.request).catch(() => {
+      // An HTML navigation fallback is never an API response or a script.
+      // Preserve a transport failure so callers can safely resume/retry.
+      if (event.request.mode !== "navigate") {
+        return new Response("Service unavailable", {
+          status: 503,
+          headers: { "Content-Type": "text/plain", "Cache-Control": "no-store" },
+        });
+      }
       return caches.match(event.request).then((cached) => {
         if (cached) return cached;
 

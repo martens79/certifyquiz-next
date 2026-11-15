@@ -1,0 +1,68 @@
+name: Isolated frontend build
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'package*.json'
+      - 'next.config.mjs'
+      - '.github/workflows/frontend-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      API_BASE_URL: http://127.0.0.1:9/api
+      API_BASE_URL_DEV: http://127.0.0.1:9/api
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      SANITY_READ_TOKEN: ''
+      INTERNAL_SERVER_TOKEN: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: CCST historical and W1 transport compatibility
+        run: node --import tsx --test tests/ccst-r03-attempt-validation.test.tsx
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+      - name: Isolate production-mode API rewrites
+        run: |
+          node -e "require('fs').writeFileSync(process.env.RUNNER_TEMP + '/cq-build.json', JSON.stringify({testRunId:'ccst-r02-buildvalidation20261024',backendOrigin:'http://127.0.0.1:9'}))"
+          echo "CCST_E2E_CONFIG=$RUNNER_TEMP/cq-build.json" >> "$GITHUB_ENV"
+      - name: Lint changed frontend contracts
+        run: >-
+          npx --no-install eslint
+          src/components/packages/PackageSuccess.tsx
+          src/components/analytics/GoogleAnalytics.tsx
+          src/components/analytics/ConsentProvider.tsx
+          src/components/analytics/MetaPixel.tsx
+          src/components/CookieBanner.tsx
+          src/lib/auth.ts src/lib/consent-mode.ts src/lib/checkout-analytics.ts src/lib/metaPixel.ts
+          tests/package-success.test.tsx tests/google-analytics-consent.test.tsx
+          tests/conversion-tracking.test.ts tests/helpers/client-component.ts
+      - name: Full Next.js build (includes typecheck)
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee build.log
+          test -s .next/BUILD_ID
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isolated-frontend-build
+          path: |
+            build.log
+            .next/BUILD_ID
+          include-hidden-files: true

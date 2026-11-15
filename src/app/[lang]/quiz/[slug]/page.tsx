@@ -16,6 +16,7 @@ import { getCategoryStyle, CERT_CATEGORY_BY_SLUG } from "@/lib/certs";
 import { locales, isLocale, type Locale } from "@/lib/i18n";
 import { categoryPath, type CategoryKey } from "@/lib/paths";
 import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from "@/lib/apple-device-support-release";
+import { EIPASS_USER_COPY, eipassTopicRow, orderEipassTopics } from "@/lib/eipass-user-release";
 
 export const runtime = "nodejs";
 export const revalidate = 60;
@@ -173,7 +174,7 @@ function shortCertName(slug: string) {
     "ccna": "CCNA",
     "cissp": "CISSP",
     "ceh": "CEH",
-    "eipass": "EIPASS",
+    "eipass": "EIPASS 7 Moduli User",
     "ecdl": "ECDL",
     "icdl": "ICDL",
   };
@@ -189,6 +190,7 @@ const SEO_BASE: Record<Locale, { quizLabel: string; desc: string }> = {
 };
 
 function priorityQuizSeo(lang: Locale, slug: string, certName: string) {
+  if (slug === "eipass") return { title: EIPASS_USER_COPY.metaTitle[lang], description: EIPASS_USER_COPY.description[lang] };
   if (slug === "ccna") {
     return {
       it: { title: "Quiz CCNA per argomento", description: "Scegli un argomento CCNA 200-301 e allenati con domande dedicate prima della simulazione completa." },
@@ -463,7 +465,8 @@ export default async function QuizTopicsPage({
   const styleCategoryKey: CategoryKey = rawCategoryKey === "default" ? "base" : rawCategoryKey;
   const css = getCategoryStyle(styleCategoryKey);
 
-  const topics = await fetchTopics(certId);
+  const rawTopics = await fetchTopics(certId);
+  const topics = resolvedSlug === "eipass" && certId === 3 ? orderEipassTopics(rawTopics.map(eipassTopicRow)) : rawTopics;
   // topic gate: only PLC Fundamentals today; the notice is for users who are not entitled
   const gatedPool = resolvedSlug === INDUSTRIAL_AUTOMATION_CERT_SLUG && topics.some((t) => t.access_tier === "premium");
   const categoryName = categoryLabel(rawCategoryKey, L);
@@ -494,7 +497,7 @@ export default async function QuizTopicsPage({
       ? "Lancer le quiz mixte →"
       : "Iniciar quiz mixto →";
 
-  const mockLabel =
+  const mockLabel = resolvedSlug === "eipass" ? EIPASS_USER_COPY.practiceTitle[L] :
   L === "it"
     ? "Simulazione d'esame"
     : L === "en"
@@ -503,7 +506,7 @@ export default async function QuizTopicsPage({
     ? "Examen blanc"
     : "Simulación de examen";
 
-const mockDesc =
+const mockDesc = resolvedSlug === "eipass" ? EIPASS_USER_COPY.practiceNotice[L] :
   L === "it"
     ? "Simulazione d’esame con timer e punteggio finale."
     : L === "en"
@@ -512,7 +515,7 @@ const mockDesc =
     ? "Examen blanc avec chronomètre et score final."
     : "Simulación de examen con temporizador y puntuación final.";
 
-const mockCta =
+const mockCta = resolvedSlug === "eipass" ? `${EIPASS_USER_COPY.practiceTitle[L]} →` :
   L === "it"
     ? "Avvia simulazione 🎯 →"
     : L === "en"

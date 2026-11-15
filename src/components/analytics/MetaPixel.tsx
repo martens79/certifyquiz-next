@@ -1,18 +1,31 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { isSensitiveAnalyticsPath } from "@/lib/analytics-privacy";
 import { useConsent } from "@/components/analytics/ConsentProvider";
+import { marketingConsentGranted } from "@/lib/consent-mode";
 
 export default function MetaPixel() {
   const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const { status, ready } = useConsent();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (!ready || marketingConsentGranted()) return;
+    const fbq = (window as typeof window & { fbq?: (...args: unknown[]) => void }).fbq;
+    fbq?.("consent", "revoke");
+  }, [ready, status]);
 
   if (!PIXEL_ID) {
     console.warn("[MetaPixel] NEXT_PUBLIC_META_PIXEL_ID is missing");
     return null;
   }
 
-  if (!ready || status !== "granted") return null;
+  if (!ready || status !== "granted" || !marketingConsentGranted()) return null;
+
+  // Pagine con segreti nell'URL (reset password, ritorno da Google, esito pagamento): il Pixel non parte.
+  if (isSensitiveAnalyticsPath(pathname)) return null;
 
   return (
     <>

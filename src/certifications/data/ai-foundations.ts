@@ -164,7 +164,7 @@ const AIFoundations = {
         "Prima certificazione AI proprietaria creata da CertifyQuiz.",
         "Pensata per principianti assoluti e utenti non tecnici.",
         "Focus pratico su strumenti AI moderni e prompt engineering.",
-        "Ottimo punto di partenza prima di AI-900 o AWS AI Practitioner.",
+        "Ottimo punto di partenza prima di AI-901 o AWS AI Practitioner.",
         "Approccio semplice, moderno e orientato al mondo reale.",
       ],
 
@@ -172,7 +172,7 @@ const AIFoundations = {
         "First proprietary AI certification created by CertifyQuiz.",
         "Designed for absolute beginners and non-technical users.",
         "Practical focus on modern AI tools and prompt engineering.",
-        "Excellent starting point before AI-900 or AWS AI Practitioner.",
+        "Excellent starting point before AI-901 or AWS AI Practitioner.",
         "Simple, modern, and real-world oriented approach.",
       ],
 
@@ -180,7 +180,7 @@ const AIFoundations = {
         "Première certification IA propriétaire créée par CertifyQuiz.",
         "Conçue pour les débutants complets et les profils non techniques.",
         "Approche pratique centrée sur les outils IA modernes et le prompt engineering.",
-        "Excellent point de départ avant AI-900 ou AWS AI Practitioner.",
+        "Excellent point de départ avant AI-901 ou AWS AI Practitioner.",
         "Approche simple, moderne et orientée vers le monde réel.",
       ],
 
@@ -188,7 +188,7 @@ const AIFoundations = {
         "Primera certificación propia de IA creada por CertifyQuiz.",
         "Diseñada para principiantes absolutos y usuarios no técnicos.",
         "Enfoque práctico sobre herramientas modernas de IA y prompt engineering.",
-        "Excelente punto de partida antes de AI-900 o AWS AI Practitioner.",
+        "Excelente punto de partida antes de AI-901 o AWS AI Practitioner.",
         "Enfoque simple, moderno y orientado al mundo real.",
       ],
     },
@@ -206,7 +206,7 @@ const AIFoundations = {
         },
 
         {
-          q: "È utile prima di AI-900?",
+          q: "È utile prima di AI-901?",
           a: "Sì. AI Foundations è progettata proprio come base introduttiva prima di certificazioni AI più avanzate.",
         },
       ],
@@ -223,7 +223,7 @@ const AIFoundations = {
         },
 
         {
-          q: "Is it useful before AI-900?",
+          q: "Is it useful before AI-901?",
           a: "Yes. AI Foundations is specifically designed as an introductory step before advanced AI certifications.",
         },
       ],
@@ -240,7 +240,7 @@ const AIFoundations = {
         },
 
         {
-          q: "Est-ce utile avant AI-900 ?",
+          q: "Est-ce utile avant AI-901 ?",
           a: "Oui. AI Foundations a été conçue comme étape introductive avant des certifications IA avancées.",
         },
       ],
@@ -257,7 +257,7 @@ const AIFoundations = {
         },
 
         {
-          q: "¿Es útil antes de AI-900?",
+          q: "¿Es útil antes de AI-901?",
           a: "Sí. AI Foundations fue diseñada como base introductoria antes de certificaciones avanzadas de IA.",
         },
       ],

@@ -5,6 +5,8 @@ import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackEvent, trackFunnelEvent, userStatusFrom } from "@/lib/analytics";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
+import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 
 type Props = {
   lang: Locale;
@@ -81,7 +83,7 @@ export default function PremiumResourcesCta({
   if (isPremium) {
     return (
       <p className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
-        ✅ {t.already}
+        ✅ {certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumNotice[lang] : t.already}
       </p>
     );
   }
@@ -95,13 +97,13 @@ export default function PremiumResourcesCta({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-bold text-slate-900">
-            ⭐ {t.title(certificationName)}
+            ⭐ {certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumTitle[lang] : t.title(certificationName)}
           </p>
-          <p className="mt-0.5 text-xs leading-snug text-slate-700">{voci}</p>
+          <p className="mt-0.5 text-xs leading-snug text-slate-700">{certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumNotice[lang] : voci}</p>
         </div>
 
         <Link
-          href={pricingPath(lang)}
+          href={withCtaParam(pricingPath(lang), "certification_card")}
           onClick={() => {
             trackEvent("certification_premium_card_clicked", {
               certification_id: certificationId,
@@ -117,10 +119,10 @@ export default function PremiumResourcesCta({
             // certificazione e non contribuiva mai a funnel_events.
             trackFunnelEvent({
               event: "premium_clicked",
-              email: user?.email || null,
               cert_slug: certificationSlug,
               topic_slug: null,
               lang,
+              metadata: premiumClickMetadata("certification_card"),
             });
           }}
           className="inline-flex shrink-0 items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-600"

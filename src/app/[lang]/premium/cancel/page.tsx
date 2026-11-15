@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { isLocale, pricingPath } from "@/lib/paths";
 
 const COPY: Record<string, any> = {
   it: {
@@ -34,7 +35,7 @@ export default function PremiumCancelLangPage() {
       <p className="mb-10 text-gray-600">{t.desc}</p>
 
       <div className="flex flex-col gap-4">
-        <Link href={`/${lang}/prezzi`} className="bg-black text-white px-6 py-3 rounded-lg">
+        <Link href={pricingPath(isLocale(lang) ? lang : "it")} className="bg-black text-white px-6 py-3 rounded-lg">
           {t.retry}
         </Link>
         <Link href={`/${lang}`} className="border px-6 py-3 rounded-lg">

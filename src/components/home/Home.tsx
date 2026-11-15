@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import GeoRecommendations from "./GeoRecommendations";
 import Image from "next/image";
 import React from "react";
 
@@ -546,6 +547,8 @@ export default function Home({
           <MobileCertFinder lang={safeLang} certs={finderCerts} categories={finderCategories} />
         </div>
       </header>
+
+      <GeoRecommendations lang={safeLang} />
 
       {/* Preparation tools precede motivation. Finder stays inside the compact mobile hero. */}
       <div className="flex flex-col">

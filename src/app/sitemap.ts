@@ -7,6 +7,8 @@ import { isReviewSeoIntentDistinct, selectIndexableReviewClusterItems, type Revi
 import { isArticleIndexable } from "@/lib/seo/article-indexability";
 import { isCertificationIndexable } from "@/lib/seo/certification-indexability";
 import { isTopicIndexable } from "@/lib/seo/topic-indexability";
+import { EIPASS_STANDARD_LANDING_PATH, isEipassStandardSlug } from "@/lib/eipass-standard";
+import { pricingPath } from "@/lib/paths";
 
 export const revalidate = 3600;
 
@@ -238,9 +240,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // The API still exposes two legacy registry slugs. Publish only their final
   // public destinations so every certification URL in the sitemap is a 200.
+  // EIPASS Standard is never derived from the backend list: its only URL is the static Italian landing below, even
+  // if a database row (and, one day, a question inventory) exists (no EN/FR/ES page exists for it).
   const canonicalCerts = Array.from(
     new Map(
-      certs.map((cert) => {
+      certs.filter((cert) => !isEipassStandardSlug(cert.slug)).map((cert) => {
         const slug = canonicalCertificationSlug(cert.slug);
         return [slug, { ...cert, slug }] as const;
       })
@@ -293,6 +297,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   changeFrequency: "weekly",
   priority: 0.75,
 },
+          // Pagina Premium: URL canonico per lingua (pricingPath), stesso set di hreflang delle metadata.
+          {
+            url: `${SITE}${pricingPath(lang)}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.7,
+          },
           // Statiche lingua
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}`,
@@ -368,6 +378,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "weekly" as const,
             priority: 0.8,
           })),
+
+          // EIPASS Standard "coming soon": the ONE Standard URL in the sitemap. Static and Italian only (no other
+          // language page exists); never derived from the backend, which has no Standard certification.
+          ...(lang === "it"
+            ? [{ url: `${SITE}${EIPASS_STANDARD_LANDING_PATH}`, changeFrequency: "monthly" as const, priority: 0.6 }]
+            : []),
 
           ...appleTopics[lang].map(slug => ({
             url: `${base}/${listSegment}/apple-device-support/${slug}`,

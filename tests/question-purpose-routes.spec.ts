@@ -1,5 +1,8 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
+// Keep page.route mocks authoritative in production builds too.
+test.use({ serviceWorkers: "block" });
+
 // Paywall Phase 1 / Opzione A, step B: lo SCOPO del fetch lo decide la ROUTE.
 // Le pagine reali (API intercettata, nessun backend) devono usare:
 //   training    -> /questions/:id, /questions-mixed/:id   (mode=training, mai exam/assessment)

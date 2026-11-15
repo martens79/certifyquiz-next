@@ -84,6 +84,8 @@ export function middleware(req: NextRequest) {
     pathname.startsWith("/api") ||
     pathname === "/robots.txt" ||
     pathname === "/ads.txt" ||
+    // Digital Asset Links (app Android TWA): risposta statica, senza cookie ne' redirect.
+    pathname.startsWith("/.well-known/") ||
     pathname.startsWith("/sitemap") ||
     pathname === "/favicon.ico"
   ) {
@@ -302,10 +304,14 @@ if (pathname.startsWith("/it/quiz/data-analytics-foundations/")) {
     ""
   );
 
-  return redirect301(
-    req,
-    `/it/certificazioni/data-analytics-foundations/${topicSlug}`
-  );
+  // Runtime quiz modes are real routes, not legacy SEO topic slugs.
+  // Keep assessment/training queries on mixed and preserve mock-exam too.
+  if (topicSlug !== "mixed" && topicSlug !== "mock-exam") {
+    return redirect301(
+      req,
+      `/it/certificazioni/data-analytics-foundations/${topicSlug}`
+    );
+  }
 }
 // Legacy hub IBM Security
 if (pathname === "/hub/ibm-security") {

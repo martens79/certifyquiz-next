@@ -39,7 +39,7 @@ const ICDL: CertificationData = {
   },
 
   description: {
-    it: "La certificazione ECDL, oggi conosciuta come ICDL, è uno dei percorsi più noti per certificare competenze informatiche e digitali di base. Include uso del computer, gestione file, Internet, sicurezza informatica, elaborazione testi, fogli di calcolo, basi di dati e presentazioni. È utile per studenti, lavoratori, docenti, personale ATA e candidati ai concorsi che vogliono dimostrare competenze digitali riconosciute a livello internazionale.",
+    it: "La certificazione ECDL, oggi conosciuta come ICDL, è il programma di AICA per certificare competenze informatiche e digitali di base. Include uso del computer, gestione file, Internet, sicurezza informatica, elaborazione testi, fogli di calcolo, basi di dati e presentazioni. ICDL Full Standard è accreditata Accredia. Per le graduatorie ATA e per i punteggi GPS 2026/28 contano però le certificazioni di enti accreditati Accredia e conformi a DigComp 2.2 o DigCompEdu: AICA propone come CIAD la certificazione “DigComp 2.2 per utente qualificato di computer”, che chi ha una ICDL Full Standard valida può ottenere con un test di conformità. Verifica sempre il bando.",
     en: "The ICDL certification validates essential digital and computer skills, including computer use, file management, internet, IT security, word processing, spreadsheets, databases and presentations. It is useful for students, workers and professionals who want to prove internationally recognized digital competence.",
     fr: "La certification ICDL valide des compétences numériques et informatiques essentielles : utilisation de l’ordinateur, gestion des fichiers, Internet, sécurité informatique, traitement de texte, tableurs, bases de données et présentations.",
     es: "La certificación ICDL valida competencias digitales e informáticas esenciales: uso del ordenador, gestión de archivos, Internet, seguridad informática, procesamiento de textos, hojas de cálculo, bases de datos y presentaciones.",
@@ -165,6 +165,10 @@ const ICDL: CertificationData = {
           text: "Spreadsheets — Modulo ufficiale",
           url: "https://icdl.org/workforce/spreadsheets/",
         },
+        {
+          text: "AICA — DigComp 2.2 per utente qualificato del computer (CIAD)",
+          url: "https://www.aicanet.it/digcomp2-2-per-utente-qualificato-del-computer",
+        },
       ],
       en: [
         {
@@ -259,28 +263,28 @@ const ICDL: CertificationData = {
 
     whyChoose: {
       it: [
-        "È una delle certificazioni informatiche più conosciute e riconosciute a livello internazionale.",
-        "Aiuta a dimostrare competenze digitali utili per studio, lavoro e concorsi.",
-        "È molto scelta da studenti, docenti, personale ATA e lavoratori.",
-        "I quiz aiutano a verificare competenze pratiche, non solo conoscenze teoriche.",
+        "È un programma internazionale ICDL, gestito in Italia da AICA; ICDL Full Standard è accreditata Accredia.",
+        "Aiuta a dimostrare competenze digitali di base utili per studio e lavoro.",
+        "Per ATA e GPS verifica il titolo richiesto: oggi conta la certificazione AICA DigComp 2.2 (CIAD), non la sola ICDL Full Standard.",
+        "I quiz aiutano a verificare le conoscenze e a individuare gli argomenti da ripassare.",
         "È una buona base prima di affrontare certificazioni IT più avanzate.",
       ],
       en: [
-        "It is one of the most recognized digital skills certifications worldwide.",
+        "It is an international ICDL programme, run in Italy by AICA.",
         "It helps demonstrate practical skills for study, work and professional growth.",
         "It is suitable for students, workers and professionals.",
         "Quizzes help verify practical competence, not just theory.",
         "It is a strong foundation before more advanced IT certifications.",
       ],
       fr: [
-        "C’est l’une des certifications de compétences numériques les plus reconnues au monde.",
+        "C’est un programme international ICDL, géré en Italie par l’AICA.",
         "Elle aide à démontrer des compétences pratiques pour les études, le travail et l’évolution professionnelle.",
         "Elle convient aux étudiants, travailleurs et professionnels.",
         "Les quiz permettent de vérifier des compétences pratiques, pas seulement la théorie.",
         "C’est une base solide avant des certifications IT plus avancées.",
       ],
       es: [
-        "Es una de las certificaciones de competencias digitales más reconocidas a nivel mundial.",
+        "Es un programa internacional ICDL, gestionado en Italia por AICA.",
         "Ayuda a demostrar habilidades prácticas para estudiar, trabajar y crecer profesionalmente.",
         "Es adecuada para estudiantes, trabajadores y profesionales.",
         "Los quizzes ayudan a comprobar competencias prácticas, no solo teoría.",
@@ -295,12 +299,12 @@ const ICDL: CertificationData = {
           a: "ECDL era il nome storico della certificazione in Europa. Oggi il nome internazionale è ICDL, ma in Italia molte persone cercano ancora ECDL.",
         },
         {
-          q: "ICDL è utile per docenti, ATA e concorsi?",
-          a: "Sì, è spesso scelta per dimostrare competenze digitali. Il valore preciso e l’eventuale punteggio dipendono sempre dal bando e dalla tabella titoli aggiornata.",
+          q: "ICDL vale per docenti, ATA e concorsi?",
+          a: "Dipende dal bando. Per le GPS 2026/28 il Ministero valuta solo certificazioni di enti accreditati Accredia e conformi a DigComp 2.2 o DigCompEdu (una per framework). Per le graduatorie ATA la CIAD è richiesta come titolo di accesso, tranne che per i collaboratori scolastici. AICA propone come CIAD la certificazione “DigComp 2.2 per utente qualificato di computer”: chi ha una ICDL Full Standard valida può ottenerla con un test di conformità, mentre la sola ICDL Full Standard non è presentata da AICA come CIAD. Controlla il bando e la banca dati Accredia.",
         },
         {
           q: "CertifyQuiz rilascia la certificazione ICDL ufficiale?",
-          a: "No. CertifyQuiz offre quiz, simulazioni e materiali di preparazione. L’esame ufficiale va sostenuto tramite enti e test center autorizzati.",
+          a: "No. CertifyQuiz offre quiz ed esercitazioni di preparazione indipendente. L’esame ufficiale va sostenuto tramite AICA e i test center autorizzati.",
         },
         {
           q: "Conviene prepararsi con i quiz?",

@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { diaryLabels } from "@/lib/blog-categories";
+import { isLocale } from "@/lib/i18n";
 
 export const runtime = "edge";
 
@@ -59,6 +61,13 @@ const themes = {
     badge: "#2563eb",
     icon: "✅",
   },
+  diary: {
+    bg: "#020617",
+    panel: "#1e293b",
+    accent: "#94a3b8",
+    badge: "#475569",
+    icon: "✍️",
+  },
 };
 
 export async function GET(req: Request) {
@@ -108,6 +117,10 @@ export async function GET(req: Request) {
 
     label = blogTexts.label;
     subtitle = blogTexts.subtitle;
+    if (category === "diary") {
+      label = diaryLabels[isLocale(lang) ? lang : "en"];
+      subtitle = searchParams.get("subtitle") || "CertifyQuiz";
+    }
   }
 
   const bigIcon =

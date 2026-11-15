@@ -1,5 +1,6 @@
 // src/app/[lang]/quiz/[slug]/mixed/page.tsx
 'use client';
+import { EIPASS_USER_COPY } from '@/lib/eipass-user-release';
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
@@ -20,10 +21,11 @@ import {
   getMockExamQuestions,
   getCertificationPoolTotal,
   getCertificationBySlug,
-  saveExam,
   type Question as ApiQuestion,
   getAccessToken,
 } from '@/lib/apiClient';
+import { recordQuizResult } from '@/lib/quiz-result-save';
+import SaveResultBanner from '@/components/quiz/SaveResultBanner';
 
 import { getExamSpecForCert } from '@/lib/exam-specs';
 import { APPLE_DEVICE_SUPPORT_SLUG, APPLE_DEVICE_SUPPORT_MOCK_NOTICE } from '@/lib/apple-device-support-release';
@@ -179,10 +181,16 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
 );
   const [poolTotal, setPoolTotal] = useState<number | null>(null);
   const [globalPoolTotal, setGlobalPoolTotal] = useState<number | null>(null);
+  // true quando la chiamata dei conteggi e' conclusa (con esito o con errore).
+  // Il quiz viene montato solo da quel momento: `trainingCap` ed `examSpec`
+  // dipendono da poolTotal e, se cambiassero dopo il mount, il motore
+  // rifarebbe il fetch del pool (un nuovo set casuale) a sessione gia' avviata.
+  const [poolTotalSettled, setPoolTotalSettled] = useState(false);
 
-  const certName = useMemo(() => currentSlug.replace(/-/g, ' '), [currentSlug]);
+  const certName = useMemo(() => currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.replace(/-/g, " "), [currentSlug, currentLang]);
   const copy = COPY[currentLang] ?? COPY.it;
-const { isPremiumUser, premiumLocked, isAdmin } = useAuth();
+  const isEipassUser = currentSlug === "eipass";
+const { isPremiumUser, premiumLocked, isAdmin, user } = useAuth();
 const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
   useEffect(() => {
@@ -214,6 +222,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     let cancelled = false;
     setPoolTotal(null);
     setGlobalPoolTotal(null);
+    setPoolTotalSettled(false);
 
     (async () => {
       try {
@@ -233,6 +242,8 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
           setPoolTotal(null);
           setGlobalPoolTotal(null);
         }
+      } finally {
+        if (!cancelled) setPoolTotalSettled(true);
       }
     })();
 
@@ -289,6 +300,18 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     return raw.map(normalizeMixedQuestion);
   }, [certId, currentLang, trainingCap, mode, isAssessmentMode]);
 
+  // Identita' stabile: il motore rifa' il fetch del pool ogni volta che questa
+  // funzione cambia. Una arrow inline qui significava "nuovo set casuale di
+  // domande a ogni re-render della pagina" (refresh del token, bfcache, ...).
+  // Cambia solo quando cambiano davvero i parametri della richiesta (fetchPool).
+  const fetchQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      return await fetchPool();
+    } catch (e: any) {
+      throw e;
+    }
+  }, [fetchPool]);
+
   if (isResolvingCert) {
     return <div className="mx-auto max-w-3xl p-6 text-center text-sm text-slate-600">Caricamento quiz…</div>;
   }
@@ -316,7 +339,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
           </h1>
 
           <p className="mt-2 text-sm md:text-base text-slate-700">
-            {copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}
+            {isEipassUser ? EIPASS_USER_COPY.mixedDescription[currentLang] : <>{copy.introA} <strong>{copy.bullets.k_mixed}</strong> {copy.introB}</>}
           </p>
 
           <ul className="mt-4 grid gap-1 text-sm text-slate-700 list-disc pl-5">
@@ -324,7 +347,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
               {copy.bullets.a} <strong>{copy.bullets.k_pool}</strong>
               {currentLang === 'en' ? '' : '.'}
             </li>
-            {currentSlug !== APPLE_DEVICE_SUPPORT_SLUG && <li>
+            {!isEipassUser && currentSlug !== APPLE_DEVICE_SUPPORT_SLUG && <li>
               {copy.bullets.b} <strong>{copy.bullets.k_exam}</strong> +{' '}
               <strong>{copy.bullets.k_timer}</strong>.
             </li>}
@@ -347,7 +370,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
             </span>{' '}
             · {copy.stats.trainingCap}:{' '}
             <span className="font-semibold">{trainingCap.toLocaleString()}</span>{' '}
-            · {copy.stats.exam}:{' '}
+            · {isEipassUser ? EIPASS_USER_COPY.practiceTitle[currentLang] : copy.stats.exam}:{' '}
             <span className="font-semibold">
               {examSpec.questions.toLocaleString()} {copy.stats.questions}
             </span>
@@ -370,8 +393,14 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
       )}
 
       {/* Quiz (solo se NON coming soon) */}
-      {!isComingSoon && (
+      {!isComingSoon && !poolTotalSettled && (
+        <div className="mx-auto max-w-5xl px-4 mt-6 pb-10 text-center text-sm text-slate-600">
+          Caricamento quiz…
+        </div>
+      )}
+      {!isComingSoon && poolTotalSettled && (
         <div className="mx-auto max-w-5xl px-4 mt-6 pb-10">
+  <SaveResultBanner lang={currentLang} userId={user?.id} leftover />
   <QuizEngine
   key={`${currentSlug}:${currentLang}`}
   lang={currentLang}
@@ -385,7 +414,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
 
   context={{
   kind: 'mixed',
-  certificationName: currentSlug.toUpperCase(),
+  certificationName: currentSlug === "eipass" ? EIPASS_USER_COPY.name[currentLang] : currentSlug.toUpperCase(),
   certificationSlug: currentSlug,
   certificationId: certId,
   backHref: withLang(currentLang, `/quiz/${currentSlug}`),
@@ -421,14 +450,7 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
   }}
 
   onModeChange={(m) => setMode(m)}
-  fetchQuestions={async () => {
-    try {
-      return await fetchPool();
-    } catch (e: any) {
-      if (e?.status === 401) return [];
-      throw e;
-    }
-  }}
+  fetchQuestions={fetchQuestions}
   onFeedback={async ({ questionId, type, description }) => {
     const token = getAccessToken();
     try {
@@ -451,24 +473,22 @@ const isAuthenticated = !!getAccessToken(); // ✅ utente loggato (guest check)
     }
   }}
   onFinish={async (s: any) => {
-    try {
-      const finishedMode =
-  s?.mode === 'exam' || s?.mode === 'training' || s?.mode === 'assessment'
-    ? s.mode
-    : mode;
+    const finishedMode =
+      s?.mode === 'exam' || s?.mode === 'training' || s?.mode === 'assessment'
+        ? s.mode
+        : mode;
 
-if (finishedMode === 'assessment') return;
+    if (finishedMode === 'assessment') return;
 
-      await saveExam({
-        certification_id: certId,
-        totalQuestions: s.total,
-        correctAnswers: s.correct,
-        isExam: finishedMode === 'exam',
-        attempts: s.attempts,
-      });
-    } catch {
-      // best-effort
-    }
+    // Un fallimento NON e' ingoiato: lo stato (e il retry) vive nell'outbox e
+    // SaveResultBanner lo mostra nella schermata finale.
+    await recordQuizResult({
+      userId: user?.id,
+      scope: `mixed:${currentSlug}:${currentLang}`,
+      summary: s,
+      certificationId: certId,
+      isExam: finishedMode === 'exam',
+    });
   }}
   backToHref={withLang(currentLang, `/quiz/${currentSlug}`)}
 />

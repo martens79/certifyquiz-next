@@ -1,5 +1,6 @@
 // src/lib/server/certs.ts
 import "server-only";
+import { EIPASS_USER_COPY, EIPASS_USER_OFFICIAL_URL } from "@/lib/eipass-user-release";
 
 /**
  * Base URL del backend lato SERVER.
@@ -81,10 +82,11 @@ async function serverJson<T>(
  * Tag: certs:list
  */
 export async function getCertificationsListRSC(revalidateSeconds = 300) {
-  return serverJson<CertListItem[]>("/certifications", {
+  const rows = await serverJson<CertListItem[]>("/certifications", {
     revalidate: revalidateSeconds,
     tags: [CERTS_LIST_TAG],
   });
+  return rows.map((row) => row.id === 3 && row.slug === "eipass" ? { ...row, name: EIPASS_USER_COPY.name.it, name_en: EIPASS_USER_COPY.name.en, name_fr: EIPASS_USER_COPY.name.fr, name_es: EIPASS_USER_COPY.name.es, description: EIPASS_USER_COPY.description.it, description_en: EIPASS_USER_COPY.description.en, description_fr: EIPASS_USER_COPY.description.fr, description_es: EIPASS_USER_COPY.description.es, official_url: EIPASS_USER_OFFICIAL_URL } : row);
 }
 
 /**

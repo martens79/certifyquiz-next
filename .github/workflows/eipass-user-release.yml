@@ -1,0 +1,84 @@
+name: EIPASS User editorial contracts
+on:
+  pull_request:
+    paths:
+      - 'src/lib/eipass-user-release.ts'
+      - 'src/lib/server/topic-page.ts'
+      - 'src/certifications/data/EIPASS.ts'
+      - 'src/components/certification/PremiumResourcesCta.tsx'
+      - 'tests/eipass-user-release.test.tsx'
+      - 'tests/eipass-mixed-copy.test.tsx'
+      - 'tests/eipass-editorial.spec.ts'
+      - 'playwright.eipass.config.ts'
+      - 'src/app/**/quiz/**/mixed/page.tsx'
+      - 'tests/fixtures/eipass-user/**'
+      - 'docs/eipass-release1/**'
+      - '.github/workflows/eipass-user-release.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editorial-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Editorial, SEO, access and navigation regressions
+        env:
+          TSX_TSCONFIG_PATH: tsconfig.test.json
+          NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+        run: >-
+          node --import tsx --test tests/eipass-user-release.test.tsx tests/eipass-mixed-copy.test.tsx
+          tests/quiz-explanation-access.test.ts tests/topic-premium-required.test.tsx
+          tests/topic-indexability-language.test.ts tests/mock-complete-link.test.tsx
+          tests/premium-click-origin.test.ts tests/checkout-intent.test.ts
+          tests/auth-logout.test.ts tests/isc2-practice-coverage.test.ts
+          tests/pmp-practice-coverage.test.ts
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      API_BASE_URL: http://127.0.0.1:8459/api
+      API_BASE_URL_DEV: http://127.0.0.1:8459/api
+      NEXT_PUBLIC_SITE_URL: https://www.certifyquiz.com
+      NEXT_PUBLIC_SANITY_PROJECT_ID: e2edummy
+      NEXT_PUBLIC_SANITY_DATASET: test
+      NEXT_PUBLIC_GA_ID: ''
+      NEXT_PUBLIC_META_PIXEL_ID: ''
+      SANITY_READ_TOKEN: ''
+      INTERNAL_SERVER_TOKEN: ''
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Use the runner's preinstalled Google Chrome
+        run: google-chrome --version
+      - name: Isolated build, SSR and desktop/mobile browsers (no deployment)
+        run: |
+          node -e "require('fs').writeFileSync('/tmp/eipass-isolation.json', JSON.stringify({testRunId:'ccst-r02-eipassbrowserci20261026',backendOrigin:'http://127.0.0.1:8459'}))"
+          export CCST_E2E_CONFIG=/tmp/eipass-isolation.json
+          node tests/helpers/eipass-editorial-backend.mjs > /tmp/eipass-fixture.log 2>&1 &
+          npm run build
+          npx --no-install next start -H 127.0.0.1 -p 3459 > /tmp/eipass-frontend.log 2>&1 &
+          for i in $(seq 1 60); do curl -fsS http://127.0.0.1:3459/it/certificazioni/eipass >/dev/null && break; sleep 1; done
+          node scripts/verify-eipass-editorial-ssr.mjs
+          npx --no-install playwright test -c playwright.eipass.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eipass-browser-evidence
+          path: |
+            .tmp/eipass-browser*
+            /tmp/eipass-fixture.log
+            /tmp/eipass-frontend.log
+          include-hidden-files: true

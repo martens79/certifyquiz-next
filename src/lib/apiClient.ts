@@ -3,9 +3,11 @@
 // ⚠️ Usare SOLO lato client. Per SEO (RSC/ISR) usare i fetcher server in src/lib/server/*
 
 export const API_PREFIX = "/api/backend";
+import { decodeApiJson, unavailableApiResponse, validateQuestionPayload } from '@/lib/api-response';
 
 /*─────────────────────────────── AUTH (SINGLE SOURCE OF TRUTH) ───────────────────────────────*/
-import { getToken, setToken, clearToken, setUser } from "@/lib/auth";
+import { getToken, setToken, clearToken, setUser, logout, acceptLoginToken } from "@/lib/auth";
+import { authGeneration, assertAuthGeneration, isExplicitlyLoggedOut, beginExplicitLogout, confirmServerLogout } from './auth-session';
 
 
 /** Compat API: usata in giro nel codice */
@@ -21,8 +23,7 @@ export function setAccessToken(token: string | null, remember = true) {
 
 /** Pulisce token + user cache */
 export function clearAuth() {
-  clearToken();
-  setUser(null);
+  logout();
 }
 
 /*─────────────────────────────── TIPI BASE ───────────────────────────────*/
@@ -57,6 +58,12 @@ export type Question = {
 export type QuestionsResponse = Question[] | { questions: Question[] };
 
 export type SaveExamRequest = {
+  /**
+   * UUID stabile del risultato concluso. Il backend lo usa per l'idempotenza:
+   * un retry (anche dopo una risposta persa) non crea una seconda riga di
+   * cronologia ne' un secondo aggiornamento di user_question_stats.
+   */
+  attemptId?: string;
   topicId?: number | null;
   certification_id: number;
   totalQuestions: number;
@@ -64,9 +71,12 @@ export type SaveExamRequest = {
   isExam: boolean;
 
   // ✅ NEW: per ripasso errori
+  // Forma emessa dal QuizEngine; il backend accetta anche la storica
+  // {question_id, selected_answer_id}.
   attempts?: Array<{
-    question_id: number;
-    selected_answer_id: number;
+    questionId: number;
+    chosenAnswerId: number;
+    isCorrect?: boolean;
   }>;
 };
 
@@ -240,27 +250,33 @@ import { isTokenRemembered } from "@/lib/auth";
 
 // Evita refresh concorrenti: se più fetch autenticate scadono nello stesso istante,
 // condividono la stessa richiesta POST /auth/refresh invece di spararne una a testa.
-let refreshInFlight: Promise<{ token: string | null; status: number | null }> | null = null;
+let refreshInFlight: { generation: string; promise: Promise<{ token: string | null; status: number | null }> } | null = null;
 
 async function refreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
-  if (refreshInFlight) return refreshInFlight;
-  refreshInFlight = doRefreshAccessToken().finally(() => {
-    refreshInFlight = null;
+  const generation = authGeneration();
+  assertAuthGeneration(generation);
+  if (refreshInFlight?.generation === generation) return refreshInFlight.promise;
+  const promise = doRefreshAccessToken(generation).finally(() => {
+    if (refreshInFlight?.promise === promise) refreshInFlight = null;
   });
-  return refreshInFlight;
+  refreshInFlight = { generation, promise };
+  return promise;
 }
 
-async function doRefreshAccessToken(): Promise<{ token: string | null; status: number | null }> {
+async function doRefreshAccessToken(generation: string): Promise<{ token: string | null; status: number | null }> {
   const attempt = async () => {
+    assertAuthGeneration(generation);
     const res = await fetch(joinUrl(API_PREFIX, "/auth/refresh"), {
       method: "POST",
       credentials: "include",
       headers: { accept: "application/json" },
     });
+    assertAuthGeneration(generation);
 
     if (!res.ok) return { ok: false as const, status: res.status };
 
     const data = (await res.json()) as { ok?: boolean; token?: string };
+    assertAuthGeneration(generation);
     return { ok: true as const, status: res.status, token: data?.token ?? null };
   };
 
@@ -295,6 +311,7 @@ async function doRefreshAccessToken(): Promise<{ token: string | null; status: n
 }
 
 async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
+  const generation = authGeneration();
   const {
     method = "GET",
     body,
@@ -304,6 +321,13 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
     withCredentials = false,
     headers = {},
   } = opts;
+  const ensureCurrent = () => assertAuthGeneration(generation, !auth);
+  ensureCurrent();
+  const parseCurrent = async (response: Response) => {
+    const value = await parseJson<T>(response);
+    ensureCurrent();
+    return value;
+  };
 
   const url = joinUrl(API_PREFIX, path);
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
@@ -323,42 +347,57 @@ async function apiFetch<T>(path: string, opts: FetchOpts = {}): Promise<T> {
 // ✅ Se auth=true, includi SEMPRE i cookie (rt) per refresh/rotate/sessione stabile
 // Se vuoi forzare include anche su endpoint pubblici, puoi passare withCredentials=true.
 if (auth || withCredentials) init.credentials = "include";
+  if (isExplicitlyLoggedOut() && !withCredentials) init.credentials = 'omit';
   if (body != null) init.body = isForm ? body : JSON.stringify(body);
 
   const res = await fetch(url, init);
+  ensureCurrent();
 
   // 401 → tenta refresh una volta (solo se auth=true)
  // 401 → tenta refresh una volta (solo se auth=true)
-if (res.status === 401 && auth && retry) {
+if (res.status === 401 && (auth || !!token) && retry) {
+  // Il token puo' essere cambiato mentre la richiesta era in volo (tipico: ritorno da Google, dove il
+  // callback salva il token mentre il bootstrap anonimo ha gia' chiesto /auth/me senza). Quel 401 e'
+  // "vecchio": si riprova con il token attuale invece di cancellare la sessione appena creata.
+  const currentToken = getAccessToken();
+  if (currentToken && currentToken !== token) {
+    const hCurrent = new Headers(h);
+    hCurrent.set("authorization", `Bearer ${currentToken}`);
+    const resCurrent = await fetch(url, { ...init, headers: hCurrent });
+    ensureCurrent();
+    if (!resCurrent.ok) throw await toApiError(resCurrent);
+    return parseCurrent(resCurrent);
+  }
   const { token: newTok, status: refreshStatus } = await refreshAccessToken();
+  ensureCurrent();
 
   if (newTok) {
     const h2 = new Headers(h);
     h2.set("authorization", `Bearer ${newTok}`);
     const res2 = await fetch(url, { ...init, headers: h2 });
+    ensureCurrent();
     if (!res2.ok) throw await toApiError(res2);
-    return parseJson<T>(res2);
+    return parseCurrent(res2);
   }
 
-  // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato)
+  // ✅ logout SOLO se refresh è davvero “non autorizzato” (rt scaduto/revocato) e nel frattempo
+  // non e' arrivato un token nuovo (non si cancella una sessione appena creata).
   if (refreshStatus === 401 || refreshStatus === 403) {
-    clearAuth();
+    if (getAccessToken() === token) clearAuth();
+    else throw await toApiError(res);
+  } else {
+    // A failed transport/5xx refresh does not establish that rights expired.
+    // Keep the session and distinguish it from a definitive auth rejection.
+    throw unavailableApiResponse('Authentication service temporarily unavailable');
   }
 }
 
   if (!res.ok) throw await toApiError(res);
-  return parseJson<T>(res);
+  return parseCurrent(res);
 }
 
 async function parseJson<T>(res: Response): Promise<T> {
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return (await res.json()) as T;
-  const text = await res.text();
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return text as unknown as T;
-  }
+  return decodeApiJson<T>(res);
 }
 
 async function toApiError(res: Response) {
@@ -400,6 +439,7 @@ export type LoginResponse = {
 };
 
 export async function authLogin(email: string, password: string, remember = false) {
+  const generation = authGeneration();
   const data = await apiPost<LoginResponse>(
     "/auth/login",
     { email, password, remember },
@@ -408,7 +448,7 @@ export async function authLogin(email: string, password: string, remember = fals
   );
 
   // ✅ token + user cache (stabile per header)
-  if (data?.token) setAccessToken(data.token, remember);
+  if (data?.token) acceptLoginToken(data.token, remember, generation);
   if (data?.user) {
     setUser(
       {
@@ -425,12 +465,22 @@ export async function authLogin(email: string, password: string, remember = fals
   return data;
 }
 
-export async function authLogout() {
-  try {
-    await apiPost<{ ok: true }>("/auth/logout", {}, false, true);
-  } finally {
-    clearAuth();
-  }
+let logoutInFlight: Promise<void> | null = null;
+export function authLogout(): Promise<void> {
+  if (logoutInFlight) return logoutInFlight;
+  // Clear the outgoing user's cache before masking identity; anonymous study survives.
+  clearAuth();
+  const generation = beginExplicitLogout();
+  const promise = (async () => {
+    const response = await fetch(`${API_PREFIX}/auth/logout`, {
+      method: 'POST', credentials: 'include', cache: 'no-store',
+      headers: { 'content-type': 'application/json' }, body: '{}', signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error('Server logout failed');
+    confirmServerLogout(generation);
+  })().finally(() => { if (logoutInFlight === promise) logoutInFlight = null; });
+  logoutInFlight = promise;
+  return promise;
 }
 
 export const authRegister = (payload: { email: string; password: string; username: string; role?: string }) =>
@@ -492,7 +542,7 @@ export const getQuestionsByTopic = (
 
   if (opts?.mode) params.set("mode", opts.mode);
 
-  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false);
+  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false).then(validateQuestionPayload);
 };
 
 export const getMixedQuestions = (
@@ -509,7 +559,7 @@ export const getMixedQuestions = (
   return apiGet<{ poolTotal?: number; questions: Question[] }>(
     `/questions-mixed/${id}?${params.toString()}`,
     false
-  );
+  ).then(validateQuestionPayload);
 };
 
 export type PurposeQuestionsResponse = {
@@ -523,16 +573,16 @@ export type PurposeQuestionsResponse = {
 // ASSESSMENT ("free test"): sempre FREE, il server decide conteggio (10),
 // shuffle e strict-per-lingua. Nessun limit/shuffle/strict/mode dal client.
 export const getAssessmentQuestions = (certificationId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/assessment/questions/${certificationId}?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/assessment/questions/${certificationId}?lang=${lang}`, false).then(validateQuestionPayload);
 
 // ASSESSMENT di topic: topic page in modalita' assessment, Review Module
 // Assessment e micro-quiz delle Review.
 export const getTopicAssessmentQuestions = (topicId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/assessment/topics/${topicId}/questions?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/assessment/topics/${topicId}/questions?lang=${lang}`, false).then(validateQuestionPayload);
 
 // MOCK EXAM: spec, conteggio, blueprint e selezione li decide il server.
 export const getMockExamQuestions = (certificationId: number | string, lang: Locale = "it") =>
-  apiGet<PurposeQuestionsResponse>(`/mock-exam/questions/${certificationId}?lang=${lang}`, false);
+  apiGet<PurposeQuestionsResponse>(`/mock-exam/questions/${certificationId}?lang=${lang}`, false).then(validateQuestionPayload);
 
 // Solo conteggio (nessun contenuto): sostituisce le "sonde" limit=1 sulle
 // route del question bank.
@@ -628,7 +678,8 @@ export const evaluateMockExam = (
   );
 
 /*─────────────────────────────── RESULTS / STATS ───────────────────────────────*/
-export const saveExam = (payload: SaveExamRequest) => apiPost<SaveExamResponse>("/save-exam", payload, true);
+export const saveExam = (payload: SaveExamRequest, opts: { signal?: AbortSignal } = {}) =>
+  apiFetch<SaveExamResponse>("/save-exam", { method: "POST", body: payload, auth: true, signal: opts.signal });
 export const saveResult = (payload: SaveResultRequest) =>
   apiPost<{ success: boolean; streakUpdated?: boolean }>("/save-result", payload, true);
 

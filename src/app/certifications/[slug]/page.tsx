@@ -78,8 +78,8 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
   },
   "cisco-ccst-cybersecurity": {
     title: "Cisco CCST Cybersecurity – Practice Test 2026 | CertifyQuiz",
-    description:
-      "Prepare for Cisco CCST Cybersecurity with practice questions covering threats, malware, network security and social engineering. Start free.",
+    // Keep the reviewed description in the registry as the single source.
+    description: getRegistryCertBySlug("cisco-ccst-cybersecurity")?.metaDescription?.en,
   },
   "ccst": {
     title: "Cisco CCST Certification – Networking & Cybersecurity Practice Test | CertifyQuiz",
@@ -92,9 +92,9 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
       "Prepare for CEH 312-50 with 1,800+ exam-style questions, a timed 125-question simulation and offensive labs. Covers recon, network and web attacks. Start free.",
   },
   "microsoft-ai": {
-    title: "Microsoft AI-900 Practice Test 2026 – Azure AI Fundamentals | CertifyQuiz",
+    title: "Microsoft AI-901 Practice Test 2026 | Azure AI Fundamentals",
     description:
-      "Prepare for the Microsoft AI-900 exam with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
+      "Prepare for the Microsoft AI-901 exam (formerly AI-900) with practice questions on AI concepts, machine learning, computer vision, NLP and generative AI. Start free.",
   },
   "comptia-network-plus": {
     title: "CompTIA Network+ Practice Test 2026 – Network+ Quiz | CertifyQuiz",

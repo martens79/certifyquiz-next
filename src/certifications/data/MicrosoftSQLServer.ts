@@ -181,6 +181,12 @@ const MicrosoftSQLServer = {
     },
 
     // ✅ SEO booster (manteniamo la tua idea, ma più “search intent” + practice)
+    currentCertificationHeading: {
+      it: 'Qual è la certificazione SQL "attuale"?',
+      en: "What is the current SQL certification?",
+      fr: 'Quelle est la certification SQL "actuelle" ?',
+      es: '¿Cuál es la certificación SQL "actual"?',
+    },
     currentCertification: {
       it: [
         "Molti cercano “Microsoft SQL Server certification 2021/2023”: oggi Microsoft punta soprattutto su certificazioni role-based nell’area Azure Data.",

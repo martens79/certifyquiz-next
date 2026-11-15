@@ -276,12 +276,14 @@ export default function AdminOrganizationsClient() {
     }
   }
 
-  async function removeMember(userId: number) {
+  async function removeMember(userId: number, revoke = false) {
     if (!token || !detailOrg) return;
-    const revoke = window.confirm(
-      "Rimuovere questa persona dall'azienda e disattivare il suo Premium?\n\nPremi Annulla per rimuoverla mantenendo Premium attivo (es. se ha un proprio abbonamento separato)."
+    const confirmed = window.confirm(
+      revoke
+        ? "Rimuovere questa persona dall'azienda e disattivare il suo Premium? Procedi solo dopo aver verificato che non abbia un abbonamento personale."
+        : "Rimuovere questa persona dall'azienda mantenendo il suo Premium attivo?"
     );
-    // window.confirm: OK = true (revoke premium), Annulla = false (keep premium)
+    if (!confirmed) return;
     try {
       const res = await fetch(
         `/api/backend/admin/organizations/${detailOrg.id}/members/${userId}?revokePremium=${revoke ? "true" : "false"}`,
@@ -577,7 +579,10 @@ export default function AdminOrganizationsClient() {
                           </td>
                           <td style={S.td}>
                             <button onClick={() => removeMember(m.id)} style={S.dangerLink}>
-                              Rimuovi
+                              Rimuovi (mantieni Premium)
+                            </button>
+                            <button onClick={() => removeMember(m.id, true)} style={S.dangerLink}>
+                              Rimuovi e revoca Premium
                             </button>
                           </td>
                         </tr>

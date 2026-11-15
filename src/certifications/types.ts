@@ -58,6 +58,11 @@ export type ExamBlueprint = Readonly<{
   /** Articolo del blog CertifyQuiz collegato a questa certificazione (es. guida alle domande d'esame). */
   relatedArticleUrl?: string | null;
   relatedArticleTitle?: string | null;
+  /** Lingua dell'articolo di `relatedArticleUrl`. Se diversa dalla lingua della pagina,
+   *  il link dichiara esplicitamente la lingua del contenuto (fallback senza traduzione). */
+  relatedArticleLang?: "it" | "en" | "fr" | "es";
+  /** Versioni tradotte dell'articolo, solo dove esistono davvero (URL verificati). */
+  relatedArticleByLang?: Partial<Record<"it" | "en" | "fr" | "es", Readonly<{ url: string; title: string }>>>;
   domains: ReadonlyArray<ExamDomain>;
   /** Sotto-esami quando la certificazione richiede più esami separati
    *  (es. CompTIA A+ Core 1 + Core 2, Cisco CCNP core + concentrazione).
@@ -170,7 +175,27 @@ export type CertificationData = {
 
   slug: string;
   /** Planned entries are registry contracts only: they must not render or be indexed. */
-  publicationStatus?: "published" | "planned";
+  /**
+   * "planned" = registry contract only (404, unlisted). "coming_soon" = ONLY the landing is public (HTTP 200,
+   * indexable) with no quiz, topic pages or practice: it never declares the preparation available.
+   * Absent / "published" = fully public.
+   */
+  publicationStatus?: "published" | "planned" | "coming_soon";
+  /**
+   * Only meaningful for "coming_soon": list the landing in the public catalogue (and only in the languages of
+   * `launchScope`). Home and category pages never list a coming-soon certification.
+   */
+  listedInCatalog?: boolean;
+  /**
+   * Where the certification is offered. Language and country are separate axes:
+   * `languages` decides which language routes exist (the others are 404),
+   * `countries` is the target market (ISO 3166-1 alpha-2) and never drives routing.
+   * Absent = no restriction (historical behaviour).
+   */
+  launchScope?: Readonly<{
+    languages: ReadonlyArray<Lang>;
+    countries: ReadonlyArray<string>;
+  }>;
   imageUrl: string;
   officialUrl: string;
   companyProductsUrl?: string;

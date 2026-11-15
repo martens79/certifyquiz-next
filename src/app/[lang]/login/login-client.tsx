@@ -11,12 +11,14 @@ import { langFromPathname, getLabel, withLang } from "@/lib/i18n";
 import {
   backendUrl,
   getToken,
-  setToken,
+  acceptLoginToken,
   authHeader,
   setUser, // ✅ salva l’utente in cache locale
 } from "@/lib/auth";
 import { authMe } from "@/lib/apiClient";
+import { authGeneration, assertAuthGeneration } from '@/lib/auth-session';
 import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
+import { CHECKOUT_SOURCE, checkoutAuthBanner } from "@/lib/checkout-intent";
 
 type Props = {
   initialLang: Locale;
@@ -62,6 +64,7 @@ export default function LoginPageClient({ initialLang }: Props) {
     let alive = true;
 
     (async () => {
+      const generation = authGeneration();
       const token = getToken();
       if (!token) {
         setLoading(false);
@@ -72,6 +75,7 @@ export default function LoginPageClient({ initialLang }: Props) {
         const me = await authMe();
 
         if (!alive) return;
+        assertAuthGeneration(generation);
 
         // Popola cache utente così la topbar cambia subito.
         setUser(me.user, true);
@@ -95,6 +99,7 @@ export default function LoginPageClient({ initialLang }: Props) {
     if (submitting || navigatingRef.current) return;
     setError(null);
     setSubmitting(true);
+    const generation = authGeneration();
 
     try {
       const res = await fetch(backendUrl("/auth/login"), {
@@ -153,7 +158,8 @@ export default function LoginPageClient({ initialLang }: Props) {
       if (!data?.token) throw new Error("Token mancante");
 
       // ✅ salva token con remember
-      setToken(data.token, remember);
+      acceptLoginToken(data.token, remember, generation);
+      const signedInGeneration = authGeneration();
 
       // ✅ carica /auth/me e salva utente (così la topbar si aggiorna subito)
       try {
@@ -165,13 +171,15 @@ export default function LoginPageClient({ initialLang }: Props) {
         });
         if (meRes.ok) {
           const me = await meRes.json();
-          setUser(me, remember);
+          assertAuthGeneration(signedInGeneration);
+          setUser(me.user ?? me, remember);
         }
       } catch {
         // se fallisce /auth/me non bloccare il login
       }
 
       // ✅ redirect finale (una sola volta)
+      assertAuthGeneration(signedInGeneration);
       if (!navigatingRef.current) {
         navigatingRef.current = true;
         router.replace(redirectParam || withLang(lang, "/profile"));
@@ -200,6 +208,12 @@ export default function LoginPageClient({ initialLang }: Props) {
         <h2 className="text-2xl font-bold text-center text-blue-700">
           🔑 {String(getLabel({ it: "Accedi", en: "Login" }, lang))}
         </h2>
+
+        {conversion.source === CHECKOUT_SOURCE && (
+          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900" data-testid="checkout-auth-banner">
+            {checkoutAuthBanner(lang)}
+          </p>
+        )}
 
    <a
   href={googleHref}

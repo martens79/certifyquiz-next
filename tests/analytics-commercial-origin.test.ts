@@ -26,6 +26,11 @@ Object.defineProperty(globalThis, "navigator", {
   configurable: true,
 });
 
+Object.defineProperty(globalThis, "localStorage", { configurable:true, value:{
+  getItem:(key:string)=>key === "cq_cookie_consent" ? '{"accepted":true}' : null,
+  setItem:()=>{},
+}});
+
 const analyticsModule = import("../src/lib/analytics.ts");
 const payloadAt = async (index: number) => JSON.parse(await beaconCalls[index].blob.text());
 

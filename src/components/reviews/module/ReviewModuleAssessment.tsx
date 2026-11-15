@@ -1,5 +1,7 @@
 "use client";
 
+import { useCallback } from "react";
+
 import QuizEngine from "@/components/quiz/QuizEngine";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { getTopicAssessmentQuestions, type Question as ApiQuestion } from "@/lib/apiClient";
@@ -51,6 +53,24 @@ export default function ReviewModuleAssessment({
 }: Props) {
   const { isPremiumUser, premiumLocked, user } = useAuth();
 
+  // Identita' stabile: il motore rifa' il fetch (un nuovo campione casuale)
+  // ogni volta che la funzione cambia, e questo componente si ri-renderizza a
+  // ogni aggiornamento di useAuth (es. refresh del token).
+  const fetchQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+    try {
+      // Route di ASSESSMENT di topic: il server decide scopo, conteggio
+      // (10), shuffle e strict-per-lingua. `questionLimit` resta il
+      // taglio editoriale della UI (blockSize/limitsByMode): il server
+      // non ne consegna mai piu' di ASSESSMENT_QUESTION_COUNT (10), che
+      // coincide con il valore usato da tutte le strutture esistenti.
+      const res = await getTopicAssessmentQuestions(topicId, lang);
+      const raw: ApiQuestion[] = res.questions;
+      return (raw ?? []).map(normalizeQuestion);
+    } catch {
+      return [];
+    }
+  }, [topicId, lang]);
+
   return (
     <QuizEngine
       lang={lang}
@@ -72,20 +92,7 @@ export default function ReviewModuleAssessment({
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin",
       }}
-      fetchQuestions={async (): Promise<UiQuestion[]> => {
-        try {
-          // Route di ASSESSMENT di topic: il server decide scopo, conteggio
-          // (10), shuffle e strict-per-lingua. `questionLimit` resta il
-          // taglio editoriale della UI (blockSize/limitsByMode): il server
-          // non ne consegna mai piu' di ASSESSMENT_QUESTION_COUNT (10), che
-          // coincide con il valore usato da tutte le strutture esistenti.
-          const res = await getTopicAssessmentQuestions(topicId, lang);
-          const raw: ApiQuestion[] = res.questions;
-          return (raw ?? []).map(normalizeQuestion);
-        } catch {
-          return [];
-        }
-      }}
+      fetchQuestions={fetchQuestions}
       onFinish={async (summary: QuizSummary & { mode: "training" | "exam" | "assessment" }) => {
         if (summary.mode !== "assessment") return;
         onFinish({ total: summary.total ?? 0, correct: summary.correct ?? 0, scorePct: summary.scorePct ?? 0 });

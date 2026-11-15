@@ -6,29 +6,10 @@ import { ChevronDown } from "lucide-react";
 type QA = { q: string; a: string };
 
 type Props = {
-  items?: QA[];
+  items: QA[];
 };
 
-const DEFAULT_FAQS: QA[] = [
-  {
-    q: "Posso provarlo prima di pagare?",
-    a: "Sì. Scrivici e attiviamo una prova gratuita di 7 giorni per il tuo team, le stesse condizioni del piano Premium individuale.",
-  },
-  {
-    q: "Ogni persona del team ha un account separato?",
-    a: "Sì, ogni membro ha login e progressi individuali. Il referente aziendale vede una dashboard aggregata con lo stato di tutto il team.",
-  },
-  {
-    q: "Quali certificazioni sono incluse?",
-    a: "Tutte le 33+ certificazioni disponibili su CertifyQuiz: AWS, Cisco, Microsoft, CompTIA, ISC2, CEH e molte altre, in italiano, inglese, francese e spagnolo.",
-  },
-  {
-    q: "Come funziona la fatturazione?",
-    a: "Una fattura unica per l'azienda, niente carte di credito multiple da gestire. Su richiesta è possibile fatturare annualmente.",
-  },
-];
-
-export default function FaqAccordion({ items = DEFAULT_FAQS }: Props) {
+export default function FaqAccordion({ items }: Props) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (

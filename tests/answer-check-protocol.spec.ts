@@ -1,5 +1,13 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
+test.setTimeout(120_000);
+
+// L'app registra /sw.js (produzione) con skipWaiting + clients.claim: appena il service worker prende
+// il controllo della pagina, le sue fetch NON passano da page.route() e raggiungono la rete reale
+// (500 sul proxy /api/backend -> "No questions." nel mock exam, in modo intermittente). Si blocca il
+// service worker nel contesto di test: e' irrilevante per il protocollo risposta -> verdetto.
+test.use({ serviceWorkers: "block" });
+
 // Paywall Phase 2 — protocollo domanda -> risposta -> spiegazione.
 // Il payload della domanda non contiene ne' `is_correct` ne' `explanation`:
 // la UI deve prendere correttezza e spiegazione da POST /answers/check
@@ -34,9 +42,12 @@ async function intercept(
   page: Page,
   opts: { count?: number; check?: CheckBody; onCheck?: (body: any) => void; evaluateCorrect?: boolean } = {}
 ) {
-  const seen: { checks: any[]; evaluates: any[] } = { checks: [], evaluates: [] };
+  const seen: { checks: any[]; evaluates: any[]; mockEvaluates: any[] } = { checks: [], evaluates: [], mockEvaluates: [] };
   await page.route("**/api/backend/me", (r) => r.fulfill({ status: 401, contentType: "application/json", body: "{}" }));
   await page.route("**/api/backend/auth/**", (r) => r.fulfill({ status: 401, contentType: "application/json", body: "{}" }));
+  await page.route("**/api/backend/topics/meta/by-topic/**", (r) =>
+    r.fulfill({ json: { topic: { id: 85, title_en: "Network fundamentals", certification_id: 10, is_active: 1 } } })
+  );
   await page.route("**/api/backend/question-pool/**", (r) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ poolTotal: 100 }) })
   );
@@ -86,6 +97,17 @@ async function intercept(
   await page.route("**/api/backend/save-exam", (r) =>
     r.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) })
   );
+  await page.route("**/api/backend/mock-exam/evaluate/*", (r) => {
+    const body = r.request().postDataJSON();
+    seen.mockEvaluates.push(body);
+    const total = body.answers.length;
+    const answered = body.answers.filter((a: any) => a.answer_id != null).length;
+    const correct = opts.evaluateCorrect === false ? 0 : answered;
+    return r.fulfill({ json: {
+      summary: { total, answered, correct, wrong: total - correct, percentage: Math.round(100 * correct / total), passed: correct === total },
+      reviewAvailable: false, reviewReason: "premium_required", details: [],
+    } });
+  });
   await page.route("**/api/backend/funnel-event", (r) => r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
   return seen;
 }
@@ -150,10 +172,48 @@ test.describe("protocollo risposta -> spiegazione", () => {
     await answer.click({ timeout: 15_000 });
     await page.waitForTimeout(500);
     expect(seen.checks, "durante l'esame non si chiede mai la correttezza").toHaveLength(0);
+    expect(seen.mockEvaluates, "prima della fine non si valuta il mock").toHaveLength(0);
 
     await page.getByRole("button", { name: /Finish exam|Termina|Finisci/i }).first().click();
     await expect(page.getByText(/Punteggio|Score|Risultato|Result/i).first()).toBeVisible({ timeout: 20_000 });
-    expect(seen.evaluates.length, "una valutazione in blocco a fine esame").toBeGreaterThan(0);
+    expect(seen.mockEvaluates, "una valutazione in blocco a fine esame").toHaveLength(1);
+    expect(seen.evaluates, "il mock usa il proprio contratto, non quello assessment").toHaveLength(0);
     expect(seen.checks, "il mock non usa il canale con le spiegazioni").toHaveLength(0);
   });
 });
+
+// Feedback #36: hold the server response behind a deterministic barrier.
+for (const mobile of [false, true]) {
+  test('training pending verdict stays ungraded '+(mobile ? 'mobile' : 'desktop'), async ({ page }) => {
+    if (mobile) await page.setViewportSize({ width: 390, height: 844 });
+    await intercept(page);
+    let release!: () => void;
+    const barrier = new Promise<void>(resolve => { release = resolve; });
+    let requested!: () => void;
+    const arrived = new Promise<void>(resolve => { requested = resolve; });
+    await page.route('**/api/backend/answers/check', async route => {
+      const body = route.request().postDataJSON();
+      requested();
+      await barrier;
+      await route.fulfill({ json: {
+        question_id: body.question_id, correct: true, correct_answer_id: RIGHT.id,
+        explanation: EXPLANATION_TEXT,
+        explanation_access: { granted: true, reason: 'guest', unlimited: false },
+      }});
+    });
+    await page.goto('/en/quiz/topic/85');
+    const button = page.getByRole('button', { name: RIGHT.text });
+    await expect(button).toBeVisible({ timeout: 40000 });
+    await dismissConsent(page);
+    await button.click();
+    await arrived;
+    try {
+      await expect(button).not.toContainText('✗');
+      await expect(button).not.toHaveClass(/bg-red-500/);
+      await expect(button).not.toContainText('✓');
+    } finally { release(); }
+    await expect(button).toContainText('✓');
+    await expect(button).not.toHaveClass(/bg-red-500/);
+    await expect(page.getByText(EXPLANATION_TEXT)).toBeVisible();
+  });
+}

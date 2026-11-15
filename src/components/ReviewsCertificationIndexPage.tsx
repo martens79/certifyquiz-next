@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { isEipassStandardSlug } from "@/lib/eipass-standard";
 import { getCertTopicReviews, type Locale } from "@/lib/data";
 import { certPath, reviewsCertPath, reviewsPath, roadmapPath } from "@/lib/paths";
 import ReviewAccessList from "@/components/reviews/ReviewAccessList";
@@ -99,6 +101,8 @@ export async function generateReviewsCertificationMetadata({
   certSlug,
 }: Props): Promise<Metadata> {
   const t = labels[lang];
+  // EIPASS Standard is coming soon: no reviews index (404 in every language).
+  if (isEipassStandardSlug(certSlug)) return { robots: { index: false, follow: false } };
   const { certification } = await getCertTopicReviews(certSlug, lang);
 
   if (!certification) {
@@ -137,6 +141,7 @@ export async function generateReviewsCertificationMetadata({
 
 export default async function ReviewsCertificationIndexPage({ lang, certSlug }: Props) {
   const t = labels[lang];
+  if (isEipassStandardSlug(certSlug)) notFound();
   const { certification, items } = await getCertTopicReviews(certSlug, lang);
 
   if (!certification) {

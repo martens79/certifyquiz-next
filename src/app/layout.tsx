@@ -9,6 +9,8 @@ import RootShellClient from "@/components/layout/RootShellClient";
 import { AuthProvider } from "@/components/auth/AuthProvider"; // ✅ aggiungi
 import ChatbotWidget from "@/components/ChatbotWidget";
 import { QuizTutorProvider } from "@/components/quiz/QuizTutorContext";
+import TwaGuard from "@/components/twa/TwaGuard";
+import { TWA_BOOTSTRAP_SCRIPT } from "@/lib/twa";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -53,7 +55,12 @@ export default async function RootLayout({
 
   return (
     <html lang={lang} suppressHydrationWarning>
+      <head>
+        {/* App Android (TWA): imposta data-twa prima del primo paint. Fuori dalla TWA e' un no-op. */}
+        <script dangerouslySetInnerHTML={{ __html: TWA_BOOTSTRAP_SCRIPT }} />
+      </head>
       <body className={`${inter.variable} ${manrope.variable}`}>
+        <TwaGuard />
         <ConsentProvider>
           <GoogleAnalytics />
           <MetaPixel />

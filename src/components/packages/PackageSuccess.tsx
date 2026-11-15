@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import { trackEventOnce } from "@/lib/analytics";
@@ -16,16 +16,35 @@ const T={it:{wait:"Verifica del pagamento…",ok:"Accesso attivato",pending:"Pag
 
 export default function PackageSuccess({lang}:{lang:Locale}){
   const q=useSearchParams();const id=q.get("order_id");
+  const pathname=usePathname();
   const[data,setData]=useState<Order|null>(null);const[failed,setFailed]=useState(false);
-  const paidRef=useRef(false);
+  const[loginRequired,setLoginRequired]=useState(false);
   useEffect(()=>{
+    setData(null);setFailed(false);setLoginRequired(false);
     if(!id){setFailed(true);return}
     let alive=true;
-    const load=()=>apiFetch(`/packages/orders/${encodeURIComponent(id)}`).then(r=>r.ok?r.json():Promise.reject()).then(v=>{if(!alive)return;setData(v.order);if(v.order?.status==="paid"){paidRef.current=true;clearInterval(timer)}}).catch(()=>{if(alive)setFailed(true)});
-    load();
-    // Polling solo finche' il webhook non ha segnato l'ordine pagato.
-    const timer=setInterval(()=>{if(!paidRef.current)load()},2500);
-    return()=>{alive=false;clearInterval(timer)}
+    let stopped=false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const controller=new AbortController();
+    const load=async()=>{
+      try {
+        // apiFetch attempts refresh first; a returned 401 is definitive.
+        const response=await apiFetch(`/packages/orders/${encodeURIComponent(id)}`,{signal:controller.signal},{redirectOnUnauthorized:false});
+        if(!alive)return;
+        if(response.status===401){stopped=true;setLoginRequired(true);return}
+        if(!response.ok)throw new Error("Order temporarily unavailable");
+        const value=await response.json();
+        if(!alive)return;
+        setData(value.order);setFailed(false);
+        stopped=value.order?.status==="paid";
+      } catch {
+        if(alive)setFailed(true);
+      }
+      // Schedule only after completion: slow requests cannot overlap.
+      if(alive&&!stopped)timer=setTimeout(load,2500);
+    };
+    void load();
+    return()=>{alive=false;stopped=true;clearTimeout(timer);controller.abort()}
   },[id]);
   useEffect(()=>{
     // Il purchase_completed autorevole e' scritto dal webhook in funnel_events;
@@ -34,6 +53,11 @@ export default function PackageSuccess({lang}:{lang:Locale}){
     trackEventOnce(`package_purchase_viewed:${id}`,"package_purchase_viewed",{language:lang,certification_slug:data.certification_slug,product_type:data.tier});
   },[data,id,lang]);
   const t=T[lang];const prefix=lang==="en"?"":`/${lang}`;
+  if(loginRequired){
+    const labels={it:"Accedi per verificare il tuo ordine",en:"Log in to verify your order",fr:"Connectez-vous pour vérifier votre commande",es:"Inicia sesión para verificar tu pedido"};
+    const returnTo=`${pathname||`${prefix}/packages/success`}${q.toString()?`?${q.toString()}`:""}`;
+    return <main className="mx-auto max-w-xl p-6"><h1 className="text-2xl font-black">{labels[lang]}</h1><Link className="mt-5 inline-block rounded-lg bg-blue-700 px-4 py-3 font-bold text-white" href={`${prefix}/login?redirect=${encodeURIComponent(returnTo)}`}>{labels[lang]}</Link></main>;
+  }
   if(failed)return <main className="mx-auto max-w-xl p-6"><h1 className="text-2xl font-black">{t.fail}</h1></main>;
   const paid=data?.status==="paid";
   const until=paid?activeUntilLabel(data?.expires_at,lang):null;

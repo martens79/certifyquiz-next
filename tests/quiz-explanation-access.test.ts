@@ -8,6 +8,7 @@ import {
   isPostGateLimitError,
   isWrongExplanationLocked,
   shouldReportPostGateAnswer,
+  shouldShowPremiumUpsell,
 } from '../src/lib/quiz-explanation-access.ts';
 import { readFileSync } from 'node:fs';
 
@@ -134,4 +135,54 @@ test('QuizEngine.recordPostGateQuestion does not filter on client state read at 
   assert.ok(!/postGateApplicable/.test(body), 'recordPostGateQuestion must not depend on a mount-time applicable flag');
   assert.match(body, /shouldReportPostGateAnswer\(/);
   assert.ok(!/postGateApplicable/.test(source), 'the stale applicable state must not exist anymore');
+});
+
+// ---- Upsell Premium e spiegazioni gia' possedute ------------------------
+// Decisione 13/10/2026: chi ha un pacchetto con `explanation` (Study/Complete)
+// non deve vedere upsell Premium per le spiegazioni che ha gia'.
+
+test('shouldShowPremiumUpsell: FREE senza spiegazioni illimitate vede l’upsell', () => {
+  assert.equal(shouldShowPremiumUpsell({ isPremiumUser: false, explanationsUnlimited: false }), true);
+});
+
+test('shouldShowPremiumUpsell: pacchetto con spiegazioni illimitate (dal server) nasconde l’upsell', () => {
+  assert.equal(shouldShowPremiumUpsell({ isPremiumUser: false, explanationsUnlimited: true }), false);
+});
+
+test('shouldShowPremiumUpsell: Premium/admin non vedono mai l’upsell', () => {
+  assert.equal(shouldShowPremiumUpsell({ isPremiumUser: true, explanationsUnlimited: false }), false);
+  assert.equal(shouldShowPremiumUpsell({ isPremiumUser: true, explanationsUnlimited: true }), false);
+});
+
+test('QuizEngine: gli upsell Premium a fine quiz dipendono dal server, non solo da isPremiumUser', () => {
+  const source = readFileSync(new URL('../src/components/quiz/QuizEngine.tsx', import.meta.url), 'utf8');
+
+  // lo stato nasce solo da risposte del server
+  assert.match(source, /setExplanationsUnlimited\(data\.unlimited === true\)/);
+  assert.match(source, /explanation_access\?\.unlimited\) \{\s*setExplanationsUnlimited\(true\)/);
+  assert.match(source, /shouldShowPremiumUpsell\(\{ isPremiumUser, explanationsUnlimited \}\)/);
+
+  // PremiumTeaserBox e "Sblocca spiegazioni Premium" passano da showPremiumUpsell
+  const teaser = source.indexOf('<PremiumTeaserBox');
+  assert.ok(teaser > 0, 'PremiumTeaserBox not found');
+  assert.match(source.slice(teaser - 200, teaser), /showPremiumUpsell/);
+  assert.ok(!/!isAssessmentResult && !isPremiumUser/.test(source), 'PremiumTeaserBox must not depend on isPremiumUser alone');
+
+  const unlockButton = source.indexOf('Unlock Premium explanations');
+  assert.ok(unlockButton > 0, 'unlock explanations CTA not found');
+  assert.match(source.slice(unlockButton - 700, unlockButton), /showPremiumUpsell && \(/);
+
+  // il box "Review completa con Premium" dell'assessment non e' mostrato a chi ha le spiegazioni
+  assert.match(source, /isAssessmentResult && !explanationsUnlimited/);
+});
+
+test('QuizEngine: la risposta a /me/explanation-status senza certificazione non sovrascrive quella corretta', () => {
+  const source = readFileSync(new URL('../src/components/quiz/QuizEngine.tsx', import.meta.url), 'utf8');
+  const start = source.indexOf('apiFetch(`/me/explanation-status');
+  assert.ok(start > 0, 'explanation-status fetch not found');
+  const before = source.slice(Math.max(0, start - 600), start);
+  const after = source.slice(start, start + 2500);
+  assert.match(before, /let alive = true/);
+  assert.match(after, /if \(!alive\) return;/);
+  assert.match(after, /alive = false;/);
 });

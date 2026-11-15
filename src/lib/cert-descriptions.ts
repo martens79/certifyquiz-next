@@ -1,3 +1,4 @@
+import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 // src/lib/cert-descriptions.ts
 // Centralized short, technical card descriptions for certification boxes inside category pages.
 // Goals: better UX + "non-empty" SEO perception, without DB/API/parse.
@@ -180,12 +181,7 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
   },
 
   /* --------------------------- Base / Digital --------------------------- */
-  "eipass": {
-    it: "Competenze digitali: internet, produttività, sicurezza e strumenti essenziali per studio e lavoro.",
-    en: "Digital literacy: internet, productivity, security and essential tools for study and work.",
-    fr: "Compétences numériques : internet, productivité, sécurité et outils essentiels.",
-    es: "Alfabetización digital: internet, productividad, seguridad y herramientas esenciales.",
-  },
+  "eipass": EIPASS_USER_COPY.description,
   "pekit": {
     it: "Alfabetizzazione digitale: operazioni al PC, gestione file, internet, sicurezza e produttività.",
     en: "Digital literacy: PC operations, file management, internet, security and productivity.",
@@ -229,16 +225,16 @@ const CERT_CARD_DESCRIPTIONS: DescRegistry = {
 
  /* ---------------------------------- AI -------------------------------- */
 "microsoft-ai": {
-  it: "Microsoft AI-900: concetti AI, machine learning, computer vision, NLP, responsible AI e servizi Azure.",
-  en: "Microsoft AI-900: AI concepts, machine learning, computer vision, NLP, responsible AI and Azure services.",
-  fr: "Microsoft AI-900 : concepts IA, machine learning, vision, NLP, IA responsable et services Azure.",
-  es: "Microsoft AI-900: conceptos de IA, machine learning, visión, NLP, IA responsable y servicios Azure.",
+  it: "Microsoft AI-901 (ex AI-900): concetti e capacità dell’AI, responsible AI e soluzioni AI con Microsoft Foundry.",
+  en: "Microsoft AI-901 (formerly AI-900): AI concepts and capabilities, responsible AI and AI solutions with Microsoft Foundry.",
+  fr: "Microsoft AI-901 (anciennement AI-900) : concepts et capacités de l’IA, IA responsable et solutions IA avec Microsoft Foundry.",
+  es: "Microsoft AI-901 (antes AI-900): conceptos y capacidades de IA, IA responsable y soluciones de IA con Microsoft Foundry.",
 },
 "microsoft-ai-fundamentals": {
-  it: "Microsoft AI-900: concetti AI, machine learning, computer vision, NLP, responsible AI e servizi Azure.",
-  en: "Microsoft AI-900: AI concepts, machine learning, computer vision, NLP, responsible AI and Azure services.",
-  fr: "Microsoft AI-900 : concepts IA, machine learning, vision, NLP, IA responsable et services Azure.",
-  es: "Microsoft AI-900: conceptos de IA, machine learning, visión, NLP, IA responsable y servicios Azure.",
+  it: "Microsoft AI-901 (ex AI-900): concetti e capacità dell’AI, responsible AI e soluzioni AI con Microsoft Foundry.",
+  en: "Microsoft AI-901 (formerly AI-900): AI concepts and capabilities, responsible AI and AI solutions with Microsoft Foundry.",
+  fr: "Microsoft AI-901 (anciennement AI-900) : concepts et capacités de l’IA, IA responsable et solutions IA avec Microsoft Foundry.",
+  es: "Microsoft AI-901 (antes AI-900): conceptos y capacidades de IA, IA responsable y soluciones de IA con Microsoft Foundry.",
 },
 "ai-foundations": {
   it: "Fondamenti AI CertifyQuiz: concetti base, machine learning, prompt, uso pratico e limiti dei modelli.",

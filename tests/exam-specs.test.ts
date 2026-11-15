@@ -7,8 +7,10 @@ import { EXAM_SPECS_BY_CERT_ID, getExamSpecForCert } from "../src/lib/exam-specs
 // La spec di CCST Cybersecurity era registrata sull'id 12 (inesistente): la mock-exam
 // ricadeva sul fallback generico (fino a 60 domande) invece di 50 domande in 60 minuti.
 
-test("CCST Cybersecurity (id 34) has its own spec: 50 questions in 60 minutes", () => {
-  assert.deepEqual(getExamSpecForCert(34, 300), { questions: 50, durationSec: 3600 });
+// CCST Cybersecurity: l'esame Cisco 100-160 dura 50 minuti; Cisco non dichiara il numero di domande
+// (50 e' una scelta di prodotto). Deve coincidere con MOCK_EXAM_SPECS[34] del backend.
+test("CCST Cybersecurity (id 34) has its own spec: 50 questions in 50 minutes", () => {
+  assert.deepEqual(getExamSpecForCert(34, 300), { questions: 50, durationSec: 3000 });
 });
 
 test("the spec is no longer registered under the non-existent id 12", () => {

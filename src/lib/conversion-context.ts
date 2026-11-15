@@ -31,6 +31,25 @@ export function safeInternalRedirect(value: string | null | undefined): string |
   return value;
 }
 
+/**
+ * Destinazione dopo il login (anche Google): solo percorsi interni, con gli alias
+ * del profilo. Respinge "//host", "/\host", sequenze codificate e caratteri di controllo.
+ */
+export function safePostAuthRedirect(value: string | null | undefined): string {
+  const safe = safeInternalRedirect(value);
+  if (!safe) return "/";
+  if (safe === "/it/profilo") return "/it/profile";
+  if (safe === "/profilo") return "/profile";
+  return safe;
+}
+
+/** Keep the validated destination when OAuth needs to return to sign-in. */
+export function buildPostAuthRecoveryHref(value: string | null | undefined): string {
+  const redirect = safePostAuthRedirect(value);
+  const locale = redirect.match(/^\/(it|fr|es)(?:[/?#]|$)/)?.[1];
+  return withConversionContext(locale ? `/${locale}/login` : "/login", { redirect });
+}
+
 export function parseConversionScore(value: string | number | null | undefined): number | null {
   if (value === null || value === undefined || value === "") return null;
   const score = Number(value);

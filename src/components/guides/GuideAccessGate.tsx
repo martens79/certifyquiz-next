@@ -1,18 +1,24 @@
 "use client";
 
+import { checkoutRequest } from "@/lib/checkout-analytics";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
+import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import { withLang } from "@/lib/i18n";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useTwa } from "@/hooks/useTwa";
+import TwaNotice from "@/components/twa/TwaNotice";
 import {
   analyticsUserStateFrom,
   getAnonymousSessionId,
   getAnonymousVisitorId,
   trackEvent,
+  trackCheckoutCreated,
   trackFunnelEvent,
   trackFunnelEventOnce,
 } from "@/lib/analytics";
@@ -21,6 +27,7 @@ type Props = {
   lang: Locale;
   slug: string;
   price: number;
+  trialRestricted?: boolean;
 };
 
 const COPY = {
@@ -67,16 +74,16 @@ const COPY = {
     es: "Con Premium desbloqueas también esta guía",
   },
   premiumTeaserNote: {
-    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Prova gratis 7 giorni, poi 9,99€/mese.",
-    en: "All guides included, full explanations and AI Tutor. Try free for 7 days, then €9.99/month.",
-    fr: "Tous les guides inclus, explications complètes et Tutor IA. Essayez gratuitement 7 jours, puis 9,99€/mois.",
-    es: "Todas las guías incluidas, explicaciones completas y Tutor IA. Prueba gratis 7 días, luego 9,99€/mes.",
+    it: "Tutte le guide incluse, spiegazioni complete e Tutor AI. Prova gratuita di 3 giorni solo sul piano mensile, per gli account idonei; gli altri piani sono a pagamento immediato, con rinnovo automatico.",
+    en: "All guides included, full explanations and AI Tutor. Free 3-day trial on the monthly plan only, for eligible accounts; other plans are charged immediately, with automatic renewal.",
+    fr: "Guides inclus, explications complètes et Tutor IA. Essai gratuit de 3 jours uniquement sur l’offre mensuelle, pour les comptes éligibles ; les autres offres sont débitées immédiatement, avec renouvellement automatique.",
+    es: "Guías incluidas, explicaciones completas y Tutor IA. Prueba gratuita de 3 días solo en el plan mensual, para cuentas elegibles; los demás planes se cobran de inmediato, con renovación automática.",
   },
   premiumTeaserCta: {
-    it: "Inizia 7 giorni gratis",
-    en: "Start 7 days free",
-    fr: "Commencer 7 jours gratuits",
-    es: "Empieza 7 días gratis",
+    it: "Scopri Premium",
+    en: "Explore Premium",
+    fr: "Découvrir Premium",
+    es: "Descubre Premium",
   },
 } as const;
 
@@ -97,7 +104,18 @@ function formatPrice(lang: Locale, price: number) {
   }).format(price);
 }
 
-export default function GuideAccessGate({ lang, slug, price }: Props) {
+/**
+ * Nell'app Android (TWA) il gate non offre acquisto ne' link a Premium
+ * (app "consumption-only" per Google Play): resta solo l'accesso con l'account.
+ * Sul web non cambia nulla.
+ */
+export default function GuideAccessGate(props: Props) {
+  const isTwa = useTwa();
+  if (isTwa) return <TwaNotice lang={props.lang} variant="guide" />;
+  return <GuideAccessGateInner {...props} />;
+}
+
+function GuideAccessGateInner({ lang, slug, price, trialRestricted }: Props) {
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -152,6 +170,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       cert_slug: slug,
       topic_slug: null,
       lang,
+      metadata: premiumClickMetadata("guide_gate"),
     });
   }
 
@@ -168,7 +187,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
         guide_slug: slug,
         purchase_type: "single_guide",
       });
-      trackEvent("checkout_started", {
+      trackEvent("checkout_attempted", {
         language: lang,
         user_state: analyticsUserStateFrom(user),
         source_page: "guide_preview",
@@ -178,17 +197,20 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       // Percorso commerciale dell'acquisto singolo: stesso filo di identita'
       // del checkout Premium. La certificazione la risolve il backend dalla guida.
       trackFunnelEvent({
-        event: "checkout_started",
+        event: "checkout_attempted",
         cert_slug: slug,
         topic_slug: null,
         lang,
         paywall_type: "guide",
         metadata: { product_type: "guide", purchase_type: "single_guide", origin_cert_slug: slug },
       });
+      const checkoutContext = await checkoutRequest(`guide:${slug}:${lang}`);
       const res = await apiFetch(`/guides/${encodeURIComponent(slug)}/checkout`, {
         method: "POST",
         body: JSON.stringify({
           lang,
+          checkout_request_id: checkoutContext.requestId,
+          analytics: checkoutContext.analytics,
           session_id: getAnonymousSessionId() ?? null,
           visitor_id: getAnonymousVisitorId() ?? null,
           paywall_type: "guide",
@@ -201,6 +223,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
         throw new Error("checkout_failed");
       }
 
+      trackCheckoutCreated(data.sessionId, {purchase_type:"single_guide", guide_slug:slug, language:lang});
       window.location.href = data.url;
     } catch {
       setError(COPY.error[lang]);
@@ -210,7 +233,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
   const redirect = encodeURIComponent(pathname ?? `/guide/${slug}`);
   const loginHref = withLang(lang, `/login?redirect=${redirect}`);
-  const premiumHref = `${pricingPath(lang)}?source=guide_preview&guide_slug=${encodeURIComponent(slug)}`;
+  const premiumHref = `${pricingPath(lang)}?source=guide_preview&guide_slug=${encodeURIComponent(slug)}&cta=guide_gate`;
 
   return (
     <div className="mx-auto max-w-md rounded-2xl bg-white p-6 text-gray-900 shadow-xl sm:p-8">
@@ -220,6 +243,12 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
 
       <h2 className="mb-1 text-xl font-semibold text-gray-900">{COPY.title[lang]}</h2>
       <p className="mb-6 text-sm text-gray-600">{gateDescription}</p>
+
+      {trialRestricted && (
+        <p role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          {{ it: "Durante la prova Premium puoi consultare l’anteprima, ma non scaricare il PDF completo. Il download si attiva dopo il primo pagamento oppure acquistando questa guida.", en: "During your Premium trial you can view the preview, but cannot download the full PDF. Downloads unlock after the first payment or by buying this guide.", fr: "Pendant votre essai Premium, vous pouvez consulter l’aperçu, mais pas télécharger le PDF complet. Le téléchargement est débloqué après le premier paiement ou l’achat de ce guide.", es: "Durante tu prueba Premium puedes ver la vista previa, pero no descargar el PDF completo. La descarga se habilita tras el primer pago o al comprar esta guía." }[lang]}
+        </p>
+      )}
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
@@ -249,7 +278,7 @@ export default function GuideAccessGate({ lang, slug, price }: Props) {
       ) : (
         <>
           <Link
-            href={pricingPath(lang)}
+            href={withCtaParam(pricingPath(lang), "guide_gate")}
             onClick={trackPremiumGateClick}
             className="mb-3 flex w-full items-center justify-center rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90"
           >
