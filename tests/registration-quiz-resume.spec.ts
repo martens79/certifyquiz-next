@@ -74,8 +74,8 @@ test(leave ? "guest can leave at the five-question gate" : "registration success
   const before = await snapshot("anon");
 
   if (leave) {
-    await page.getByRole("button", { name: "Leave quiz" }).click();
-    await expect(page).not.toHaveURL(new RegExp(quizPath + "$"));
+    await page.getByRole("link", { name: "Leave quiz" }).click();
+    await expect(page).toHaveURL(/\/en\/quiz\/ccna$/, { timeout: 20_000 });
     await page.goto(quizPath);
     await expect(registerLink).toBeVisible();
     expect(Object.keys((await snapshot("anon"))?.marked ?? {})).toHaveLength(5);

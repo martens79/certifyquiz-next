@@ -126,7 +126,6 @@ const L = {
   gotoUnShort: { it: 'Non risolta', en: 'Unanswered', fr: 'Non répondue', es: 'Sin responder' },
 
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
-  trainingSummaryTitle: { it: 'Risultato allenamento', en: 'Practice summary', fr: 'Résumé de l’entraînement', es: 'Resumen de la práctica' },
   summaryTitle: { it: 'Risultato esame', en: 'Exam summary', fr: 'Résumé de l’examen', es: 'Resumen del examen' },
   questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
   correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
@@ -137,6 +136,7 @@ const L = {
   seePremium: { it: 'Scopri Premium', en: 'See Premium', fr: 'Découvrir Premium', es: 'Descubrir Premium' },
   wrongSummaryTitle: { it: 'Domande da rivedere', en: 'Questions to review', fr: 'Questions à revoir', es: 'Preguntas para revisar' },
   yourAnswer: { it: 'Tua risposta:', en: 'Your answer:', fr: 'Votre réponse :', es: 'Tu respuesta:' },
+  trainingSummaryTitle: { it: 'Risultato allenamento', en: 'Practice summary', fr: 'Résumé de l’entraînement', es: 'Resumen de la práctica' },
   correctAnswer: { it: 'Risposta corretta:', en: 'Correct answer:', fr: 'Bonne réponse :', es: 'Respuesta correcta:' },
 } as const;
 
@@ -3279,7 +3279,7 @@ if (!isLoggedIn && registerLimitReached && !isAssessment) {
           topicSlug={context?.topicSlug}
           correctCount={correctSoFar}
           totalAnswered={Math.min(answeredValues.length, 5)}
-          onBack={() => router.push(backToHref || context?.backHref || withLang(lang, '/quiz-home'))}
+          backHref={backToHref || context?.backHref || withLang(lang, '/quiz-home')}
         />
       </div>
     </div>
