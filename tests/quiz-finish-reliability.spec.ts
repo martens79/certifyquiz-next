@@ -162,6 +162,11 @@ test("training interrupted by a reload: answers given before the reload are scor
   expect(captured.saveExam[0].correctAnswers).toBe(total);
   expect(captured.saveExam[0].totalQuestions).toBe(total);
   expect(await bodyText(page)).toContain("100%");
+  await expect(page.getByRole("heading", { name: "Practice summary" })).toBeVisible();
+  await expect(page.getByText("Duration", { exact: true })).toBeVisible();
+  await expect(page.getByText("--:--", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Extra question variants", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Error review", { exact: true })).toHaveCount(0);
   expect(captured.batchCalls).toBe(1);
 });
 
@@ -200,6 +205,7 @@ test("mock exam completed normally: score from the server, saved once", async ({
   await page.getByRole("button", { name: /Finish exam/i }).first().click();
   await expect.poll(() => captured.saveExam.length).toBe(1);
   expect(captured.saveExam[0]).toMatchObject({ totalQuestions: 50, correctAnswers: 5, isExam: true });
+  await expect(page.getByRole("heading", { name: "Exam summary" })).toBeVisible();
   expect(await bodyText(page)).toContain("10%");
   await expect(page.getByTestId("finish-error")).toHaveCount(0);
 });
@@ -318,6 +324,8 @@ test("cross-device: device B resumes device A's progress; once B finishes, A res
     expect(await readHeader(B.page)).toMatchObject({ index: 5, answered: 4 });
 
     await answerToEnd(B.page);
+    await expect(B.page.getByRole("heading", { name: "Practice summary" })).toBeVisible();
+    await expect(B.page.getByText("Duration", { exact: true })).toHaveCount(0);
     await expect.poll(() => progress.completes.length).toBe(1);
 
     // A riapre con il proprio salvataggio locale (stesso tentativo, ormai chiuso): niente quiz risorto

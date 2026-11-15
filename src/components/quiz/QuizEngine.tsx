@@ -126,6 +126,7 @@ const L = {
   gotoUnShort: { it: 'Non risolta', en: 'Unanswered', fr: 'Non répondue', es: 'Sin responder' },
 
   score: { it: 'Punteggio', en: 'Score', fr: 'Score', es: 'Puntuación' },
+  trainingSummaryTitle: { it: 'Risultato allenamento', en: 'Practice summary', fr: 'Résumé de l’entraînement', es: 'Resumen de la práctica' },
   summaryTitle: { it: 'Risultato esame', en: 'Exam summary', fr: 'Résumé de l’examen', es: 'Resumen del examen' },
   questionsLabel: { it: 'domande', en: 'questions', fr: 'questions', es: 'preguntas' },
   correctLabel: { it: 'Corrette', en: 'Correct', fr: 'Correctes', es: 'Correctas' },
@@ -829,7 +830,7 @@ const openFeedback = () => {
           for(const [qid,aid]of Object.entries(a.state.marked)){if(aid!=null&&!restored[qid]){try{restored[qid]=await transport.checkAnswer(Number(qid),aid);}catch(e){console.warn('Pending versioned answer remains ungraded',e);}}}
           if(!alive)return;
           setPool(active);setQuestions(active);setMarked(a.state.marked);setResults(restored);setReviewLater(new Set(a.state.reviewLater));setIdx(Math.min(a.state.currentIndex,active.length-1));seedRef.current=a.seed;startedAtRef.current=a.startedAt;revRef.current=a.rev;setRemaining(null);
-          setFinished(a.state.completed===true);setLastSummary(a.state.summary?{...a.state.summary,marked:a.state.marked,durationSec:Math.max(0,Math.floor((Date.now()-a.startedAt)/1000)),mode:'training'}:null);setReviewMode(false);setBlockPaused(false);setBlockReview(null);
+          setFinished(a.state.completed===true);setLastSummary(a.state.summary?{...a.state.summary,marked:a.state.marked,durationSec:null,mode:'training'}:null);setReviewMode(false);setBlockPaused(false);setBlockReview(null);
           return;
         }
         const storedAttempt = effectiveMode === 'exam' ? readExamAttempt(scopedKey) : { exists: false, attempt: null };
@@ -1176,7 +1177,7 @@ const openFeedback = () => {
           setReviewLater(new Set());
           setIdx(0);
           setRemaining(total);
-          startedAtRef.current = null;
+          startedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
           clearProgress(scopedKey);
 
           // rev non riparte mai da 0 se sapevamo di una riga DB (anche se
@@ -1471,7 +1472,6 @@ clearProgress(`${storageScope}:assessment`);
 
     if (tickRef.current) cancelAnimationFrame(tickRef.current);
     tickRef.current = null;
-    startedAtRef.current = null;
     setRemaining(null);
   }, [effectiveMode, effectiveDuration, questions.length]);
 
@@ -2086,6 +2086,10 @@ const goToFirstUnanswered = () => {
     setMockReviewGate(null);
   }
 
+  const examAttempt = effectiveMode === 'exam' ? attemptRef.current : null;
+  const startedAt = examAttempt?.startedAt ?? startedAtRef.current;
+  const endedAt = Math.min(Date.now(), examAttempt?.deadlineAt ?? Infinity);
+  const elapsedSec = startedAt == null ? null : Math.max(0, Math.floor((endedAt - startedAt) / 1000));
   const total = questions.length;
 
   // Exam/assessment non valutano durante il tentativo (nessun feedback che
@@ -2195,11 +2199,6 @@ const goToFirstUnanswered = () => {
   }
 
   const correct = serverCorrect ?? correctCount;
-
-  const elapsedSec =
-    startedAtRef.current != null
-      ? Math.floor((Date.now() - startedAtRef.current) / 1000)
-      : 0;
 
   // I dettagli per-question possono mancare volutamente nel Mock FREE:
   // in quel caso nessuna risposta corretta viene ricostruita sul client.
@@ -2433,7 +2432,7 @@ const submitAssessmentReport = async () => {
   setReviewLater(new Set());
   setFinished(false);
   setLastSummary(null);
-  startedAtRef.current = null;
+  startedAtRef.current = effectiveMode === 'training' ? Date.now() : null;
   setReviewMode(false);
   setBlockPaused(false);
   setBlockReview(null);
@@ -2596,7 +2595,7 @@ const submitAssessmentReport = async () => {
     const scorePct = lastSummary?.scorePct ?? 0;
     const wrong = total - correct;
     const duration =
-      lastSummary && lastSummary.durationSec ? fmt(lastSummary.durationSec) : '--:--';
+      lastSummary?.durationSec != null ? fmt(lastSummary.durationSec) : null;
 
     const backUrl = backToHref || withLang(lang, '/quiz-home');
     const markedMap = lastSummary?.marked ?? marked;
@@ -2740,7 +2739,7 @@ const assessmentCopy =
 ) : (
   <>
     <h1 className="text-2xl font-semibold mb-2">
-      {label('summaryTitle', lang)}
+      {label(effectiveMode === 'training' ? 'trainingSummaryTitle' : 'summaryTitle', lang)}
     </h1>
     <p className="text-sm text-gray-600">
       {label('score', lang)} {scorePct}% · {total} {label('questionsLabel', lang)}
@@ -2748,7 +2747,7 @@ const assessmentCopy =
   </>
 )}
 
-            <div className="grid grid-cols-3 gap-3 text-center text-sm">
+            <div className={`grid ${duration == null ? "grid-cols-2" : "grid-cols-3"} gap-3 text-center text-sm`}>
               <div className="bg-emerald-50 rounded-xl p-3">
                 <div className="text-xs uppercase text-emerald-700">
                   {label('correctLabel', lang)}
@@ -2767,14 +2766,14 @@ const assessmentCopy =
                   {wrong}
                 </div>
               </div>
-              <div className="bg-slate-50 rounded-xl p-3">
+              {duration != null && <div className="bg-slate-50 rounded-xl p-3">
                 <div className="text-xs uppercase text-slate-700">
                   {label('durationLabel', lang)}
                 </div>
                 <div className="text-xl font-semibold text-slate-900">
                   {duration}
                 </div>
-              </div>
+              </div>}
             </div>
 
             {isAssessmentResult && (
@@ -3203,7 +3202,6 @@ const canGoNext =
    1. REGISTRATION GATE (guest, dopo 5 domande)
       - utente non loggato che ha risposto >= 5 domande
       - mostra RegistrationGate con score parziale
-      - escape hatch: "Continua senza account" (onBack vuoto)
       - NON scatta in modalità assessment
 
    2. PREMIUM GATE (free loggato, dopo 20 domande) — MAI IMPLEMENTATO.
@@ -3281,7 +3279,7 @@ if (!isLoggedIn && registerLimitReached && !isAssessment) {
           topicSlug={context?.topicSlug}
           correctCount={correctSoFar}
           totalAnswered={Math.min(answeredValues.length, 5)}
-          onBack={() => {}}
+          onBack={() => router.push(backToHref || context?.backHref || withLang(lang, '/quiz-home'))}
         />
       </div>
     </div>

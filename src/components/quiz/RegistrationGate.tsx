@@ -58,10 +58,10 @@ const COPY = {
     es: 'Entrar',
   },
   back: {
-    it: 'Continua senza account',
-    en: 'Continue without account',
-    fr: 'Continuer sans compte',
-    es: 'Continuar sin cuenta',
+    it: 'Esci dal quiz',
+    en: 'Leave quiz',
+    fr: 'Quitter le quiz',
+    es: 'Salir del cuestionario',
   },
 };
 

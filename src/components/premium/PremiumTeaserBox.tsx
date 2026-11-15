@@ -29,10 +29,10 @@ const COPY = {
     es: "Preparación completa con Premium",
   },
   features: {
-    it: ["Spiegazioni complete", "Varianti extra delle domande", "Ripasso errori"],
-    en: ["Full explanations", "Extra question variants", "Error review"],
-    fr: ["Explications complètes", "Variantes supplémentaires", "Révision des erreurs"],
-    es: ["Explicaciones completas", "Variantes extra", "Repaso de errores"],
+    it: ["Spiegazioni complete"],
+    en: ["Full explanations"],
+    fr: ["Explications complètes"],
+    es: ["Explicaciones completas"],
   },
   cta: {
     it: "Scopri Premium",

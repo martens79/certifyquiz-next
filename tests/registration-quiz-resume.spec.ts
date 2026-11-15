@@ -12,7 +12,8 @@ const questions = Array.from({ length: 8 }, (_, i) => ({
 
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, serviceWorkers: "block" });
 
-test("registration success requires login and restores the guest CCNA quiz", async ({ page, baseURL }) => {
+for (const leave of [false, true]) {
+test(leave ? "guest can leave at the five-question gate" : "registration success requires login and restores the guest CCNA quiz", async ({ page, baseURL }) => {
   const target = new URL(baseURL ?? "");
   expect(["127.0.0.1", "localhost"]).toContain(target.hostname);
   const origin = target.origin;
@@ -72,6 +73,14 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   await expect.poll(async () => Object.keys((await snapshot("anon"))?.marked ?? {}).length).toBe(5);
   const before = await snapshot("anon");
 
+  if (leave) {
+    await page.getByRole("button", { name: "Leave quiz" }).click();
+    await expect(page).not.toHaveURL(new RegExp(quizPath + "$"));
+    await page.goto(quizPath);
+    await expect(registerLink).toBeVisible();
+    expect(Object.keys((await snapshot("anon"))?.marked ?? {})).toHaveLength(5);
+    return;
+  }
   await registerLink.click();
   await expect(page).toHaveURL(/\/register\?/);
   const submit = page.getByRole("button", { name: /Register$/ });
@@ -96,3 +105,4 @@ test("registration success requires login and restores the guest CCNA quiz", asy
   await expect(page.getByText(`Sandbox question ${before.qIds[before.idx ?? 0]}`, { exact: true })).toBeVisible();
   expect(loginCount).toBe(1);
 });
+}
