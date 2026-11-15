@@ -115,8 +115,8 @@ async function waitForQuiz(page: Page) {
   await dismissCookieBanner(page);
   await page.waitForTimeout(1200);
 }
-async function setup(page: Page, context: BrowserContext, progress?: ProgressServer) {
-  const backend = new FakeBackend({ user: USER });
+async function setup(page: Page, context: BrowserContext, progress?: ProgressServer, user = USER) {
+  const backend = new FakeBackend({ user });
   await backend.seedBrowserSession(context);
   await backend.install(page);
   const captured = newCaptured();
@@ -150,7 +150,7 @@ async function answerToEnd(page: Page) {
 }
 
 test("training interrupted by a reload: answers given before the reload are scored", async ({ page, context }) => {
-  const { captured } = await setup(page, context);
+  const { captured } = await setup(page, context, undefined, { ...USER, premium: false });
   await openQuiz(page, MIXED_URL);
   const total = (await readHeader(page))!.total;
   await answerQuestions(page, 3);
@@ -165,6 +165,7 @@ test("training interrupted by a reload: answers given before the reload are scor
   await expect(page.getByRole("heading", { name: "Practice summary" })).toBeVisible();
   await expect(page.getByText("Duration", { exact: true })).toBeVisible();
   await expect(page.getByText("--:--", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Full explanations", { exact: true })).toBeVisible();
   await expect(page.getByText("Extra question variants", { exact: true })).toHaveCount(0);
   await expect(page.getByText("Error review", { exact: true })).toHaveCount(0);
   expect(captured.batchCalls).toBe(1);
