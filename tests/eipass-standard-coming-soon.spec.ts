@@ -1,7 +1,11 @@
 import {test,expect,type Page} from '@playwright/test';
+import {eipassStandardExpectation} from './helpers/eipass-standard-expectation';
 
 // Browser checks of the hydrated landing (what an SSR smoke cannot see: client-rendered blocks, click events).
 // Every external request is blocked; analytics is a stub that records calls, so nothing leaves the browser.
+// The expected state (dormant: all "Prossimamente"; partial: only the available modules are links, the others stay
+// disabled) is derived from the module registry; see tests/helpers/eipass-standard-expectation.ts.
+const EXP=eipassStandardExpectation();
 const LANDING='/it/certificazioni/eipass-standard';
 const OFFICIAL='https://it.eipass.com/certificazioni-informatiche/eipass-standard-digcomp/';
 const MODULES=["I fondamenti dell'ICT",'Navigare e cercare informazioni sul Web','Comunicare e collaborare in Rete','Sicurezza informatica','Creare documenti elettronici','Creare e gestire fogli di lavoro','Creare presentazioni multimediali'];
@@ -20,18 +24,22 @@ async function prepare(page:Page,consent:boolean){
   });
 }
 
-test('hydrated landing: coming-soon message, 7 modules, no Premium/quiz/package CTA, no module links',async({page})=>{
+test('hydrated landing: status message, 7 modules, no Premium/package CTA, module links only for available modules',async({page})=>{
   await prepare(page,false);
   const res=await page.goto(LANDING);
   expect(res?.status()).toBe(200);
-  await expect(page.getByRole('heading',{name:'Quiz di preparazione in arrivo'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:EXP.statusHeading})).toBeVisible();
   await page.waitForLoadState('networkidle');
   const main=page.locator('main');
   const text=await main.innerText();
   for(const m of MODULES) expect(text).toContain(m);
-  expect(text).not.toMatch(/Passa a Premium|Preparazione completa|Inizia il quiz|Avvia (il )?quiz|Simulazione d.esame|Materiale di studio|Acquista|€/i);
+  expect(text).not.toMatch(/Passa a Premium|Preparazione completa|Inizia il quiz|Avvia (il )?quiz|Materiale di studio|Acquista|€/i);
+  for(const re of EXP.mustSay) expect(text,String(re)).toMatch(re);
+  for(const re of EXP.mustNotSay) expect(text,String(re)).not.toMatch(re);
+  for(const re of EXP.neverSay) expect(text,String(re)).not.toMatch(re);
   const hrefs=await main.locator('a').evaluateAll(as=>as.map(a=>(a as HTMLAnchorElement).getAttribute('href')||''));
-  expect(hrefs.filter(h=>/eipass-standard\//.test(h)||/\/quiz\/|\/ripass|\/scenari|mock-exam|\/premium|\/prezzi|checkout/i.test(h))).toEqual([]);
+  expect(hrefs.filter(h=>/eipass-standard\//.test(h)||/\/ripass|\/scenari|mock-exam|\/premium|\/prezzi|checkout/i.test(h))).toEqual([]);
+  expect(hrefs.filter(h=>/\/quiz\//.test(h)).sort(),'quiz links = one topic link per available module (none when dormant)').toEqual([...EXP.availableHrefs].sort());
   expect(hrefs).toContain(OFFICIAL);
   expect(hrefs).toContain('/it/certificazioni/eipass');
   // the layout holds on a phone: no horizontal scroll
@@ -43,7 +51,7 @@ test('hydrated landing: coming-soon message, 7 modules, no Premium/quiz/package 
   expect(await page.locator('link[rel="alternate"][hreflang]').count()).toBe(0);
 });
 
-test('seven modules, each "Prossimamente" with a disabled button: nothing starts, no request, no navigation',async({page})=>{
+test('seven modules: available ones link to their topic, every other one is "Prossimamente" with a disabled button that starts nothing',async({page})=>{
   await prepare(page,true);
   const requests:string[]=[];
   page.on('request',r=>{const u=new URL(r.url());if(u.pathname.startsWith('/api/backend/')||/\/quiz\/|attempt|session/i.test(u.pathname))requests.push(r.method()+' '+u.pathname);});
@@ -54,8 +62,18 @@ test('seven modules, each "Prossimamente" with a disabled button: nothing starts
   await expect(items).toHaveCount(7);
   for(let i=0;i<7;i++){
     const li=items.nth(i);
+    const m=EXP.modules[i];
     await expect(li).toContainText(MODULES[i]);
+    if(m.available){
+      await expect(li.getByText('Disponibile',{exact:true})).toBeVisible();
+      await expect(li.getByText('Prossimamente',{exact:true})).toHaveCount(0);
+      await expect(li.getByRole('button')).toHaveCount(0);
+      const link=li.getByRole('link',{name:"Inizia l'esercitazione breve"});
+      await expect(link).toHaveAttribute('href',m.href as string);
+      continue;
+    }
     await expect(li.getByText('Prossimamente',{exact:true})).toBeVisible();
+    await expect(li.getByRole('link')).toHaveCount(0);
     const btn=li.getByRole('button',{name:'Esercitazione non ancora disponibile'});
     await expect(btn).toBeDisabled();
     await expect(btn).toHaveAttribute('aria-disabled','true');
@@ -63,7 +81,8 @@ test('seven modules, each "Prossimamente" with a disabled button: nothing starts
   }
   await expect(page).toHaveURL(new RegExp(LANDING+'$'));
   expect(requests.slice(before),'clicking a disabled button sends nothing').toEqual([]);
-  expect(await page.locator('main li[data-module] a').count()).toBe(0);
+  expect(await page.locator('main li[data-module] a').count()).toBe(EXP.availableCount);
+  expect(await page.locator('main li[data-module] button[disabled]').count()).toBe(EXP.disabledCount);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(1);
 });
@@ -74,9 +93,12 @@ test('the Italian catalogue lists EIPASS Standard once and it opens the landing;
   const card=page.locator('a[href="'+LANDING+'"]');
   await expect(card.first()).toBeVisible();
   expect(await card.count()).toBeGreaterThanOrEqual(1);
+  const cardText=await card.first().innerText(); // read before navigating away
+  expect(cardText,'catalogue card pill').toContain(EXP.cataloguePill);
+  expect(cardText).not.toMatch(/simulazione|garantit/i);
   await card.first().click();
   await expect(page).toHaveURL(new RegExp(LANDING+'$'));
-  await expect(page.getByRole('heading',{name:'Quiz di preparazione in arrivo'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:EXP.statusHeading})).toBeVisible();
   for(const p of ['/certifications','/fr/certifications','/es/certificaciones','/it']){
     expect(await (await request.get(p)).text(),p).not.toContain('eipass-standard');
   }
@@ -109,10 +131,10 @@ test('the Italian EIPASS 7 Moduli User landing carries the "In preparazione" poi
   await page.goto('/it/certificazioni/eipass');
   const pointer=page.getByRole('link',{name:'EIPASS Standard (DigComp 2.2)'});
   await expect(pointer).toBeVisible();
-  await expect(page.getByText('In preparazione',{exact:true})).toBeVisible();
+  await expect(page.getByText(EXP.userPointerLabel,{exact:true})).toBeVisible();
   await pointer.click();
   await expect(page).toHaveURL(new RegExp(LANDING+'$'));
-  await expect(page.getByRole('heading',{name:'Quiz di preparazione in arrivo'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:EXP.statusHeading})).toBeVisible();
 });
 
 test('every other Standard URL is a real 404 (status code, not a soft page)',async({request})=>{

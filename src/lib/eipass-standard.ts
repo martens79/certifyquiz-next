@@ -46,7 +46,8 @@ export type EipassStandardModule = Readonly<{
 
 export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
   { number: 1, title: "I fondamenti dell'ICT", digcompArea: { number: 5, name: "Risolvere problemi" }, status: "coming_soon" },
-  { number: 2, title: "Navigare e cercare informazioni sul Web", digcompArea: { number: 1, name: "Alfabetizzazione su informazioni e dati" }, status: "coming_soon" },
+  // Module 2 is the first module with a short practice. topicId = topics.id of the module in the database (verified in Production on 2026-11-05: certification 79, topics 569-575).
+  { number: 2, title: "Navigare e cercare informazioni sul Web", digcompArea: { number: 1, name: "Alfabetizzazione su informazioni e dati" }, status: "available", topicId: 570 },
   { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" }, status: "coming_soon" },
   { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "coming_soon" },
   { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
@@ -143,7 +144,7 @@ export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> 
     panelText: `Su CertifyQuiz è disponibile un'esercitazione breve per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento. Gli altri moduli sono in preparazione. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
     description:
       "EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, il quadro europeo delle competenze digitali dei cittadini, articolata in sette moduli d'esame. CertifyQuiz offre un'esercitazione breve e indipendente per il primo modulo disponibile; gli altri moduli sono in preparazione. CertifyQuiz non rilascia la certificazione.",
-    metaTitle: "EIPASS Standard: 7 moduli, primo quiz disponibile | CertifyQuiz",
+    metaTitle: "EIPASS Standard: 7 moduli e primo quiz | CertifyQuiz",
     metaDescription:
       "EIPASS Standard e DigComp 2.2: che cos'è e differenze da EIPASS 7 Moduli User. Esercitazione breve e indipendente per il primo modulo; gli altri in preparazione.",
     guideTitle: "Cosa offre CertifyQuiz oggi",

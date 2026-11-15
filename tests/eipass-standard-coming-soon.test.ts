@@ -15,6 +15,7 @@ import { isTopicIndexable } from "../src/lib/seo/topic-indexability.ts";
 import { eipassStandardMetadata } from "../src/lib/seo/eipass-standard-metadata.ts";
 import {
   EIPASS_STANDARD_COMING_SOON_LABEL,
+  eipassStandardCopy,
   EIPASS_STANDARD_LANDING_PATH,
   EIPASS_STANDARD_MODULES,
   EIPASS_STANDARD_OFFICIAL_URL,
@@ -67,7 +68,8 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, in the Italia
 test("seven modules in official order; informational only: no module carries a slug or link", () => {
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.number), [1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.title), OFFICIAL_TITLES);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), Array(7).fill("coming_soon"), "no module is available");
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["coming_soon", "available", "coming_soon", "coming_soon", "coming_soon", "coming_soon", "coming_soon"], "only module 2 is available");
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [undefined, 570, undefined, undefined, undefined, undefined, undefined], "only module 2 has a topic id");
   const reg = CERTS_BY_SLUG[SLUG];
   assert.equal(reg.topics.length, 7);
   for (const t of reg.topics) {
@@ -176,11 +178,12 @@ test("copy: states 'in arrivo', original, DigComp 2.2 and the User difference; n
   const faq = JSON.stringify(reg.extraContent?.faq?.it);
   const all = [reg.description.it, reg.metaTitle?.it, reg.metaDescription?.it, guide, faq].join(" ");
   assert.equal(EIPASS_STANDARD_COMING_SOON_LABEL, "Quiz di preparazione in arrivo");
-  assert.equal(reg.level?.it, EIPASS_STANDARD_COMING_SOON_LABEL);
+  assert.equal(reg.level?.it, eipassStandardCopy().statusLabel);
+  assert.equal(eipassStandardCopy().statusLabel, "Primo modulo disponibile", "module 2 is available");
   assert.match(all, /DigComp 2\.2/);
   assert.match(guide, /Differenze rispetto a EIPASS 7 Moduli User/);
   assert.match(all, /non rilascia/i);
-  assert.match(all, /in arrivo/i);
+  assert.match(all, /in preparazione/i, "the other modules are still in preparation");
   assert.doesNotMatch(all, /inizia il quiz|quiz gratuit|simulazione d'esame|copertura completa|garantit|replica|punti in graduatoria|\bCIAD\b|\bGPS\b|Accredia|accreditat/i);
   assert.equal(reg.imageUrl, "/images/certifications/eipass-standard.svg", "original illustration, not the EIPASS logo");
   assert.notEqual(reg.imageUrl, CERTS_BY_SLUG["eipass"].imageUrl);

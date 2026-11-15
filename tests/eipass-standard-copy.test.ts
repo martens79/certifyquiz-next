@@ -8,11 +8,12 @@ import {
   hasAvailableEipassStandardModule,
 } from "../src/lib/eipass-standard.ts";
 
-const withModule2 = EIPASS_STANDARD_MODULES.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m));
-const withoutTopicId = EIPASS_STANDARD_MODULES.map((m) => (m.number === 2 ? { ...m, status: "available" as const } : m));
+const dormant = EIPASS_STANDARD_MODULES.map((m) => ({ ...m, status: "coming_soon" as const, topicId: undefined }));
+const withModule2 = dormant.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m));
+const withoutTopicId = EIPASS_STANDARD_MODULES.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: undefined } : m));
 
 test("copy, dormant: exactly the original 'in arrivo' wording", () => {
-  const c = eipassStandardCopy(EIPASS_STANDARD_MODULES);
+  const c = eipassStandardCopy(dormant);
   assert.equal(c.partial, false);
   assert.equal(c.statusLabel, "Quiz di preparazione in arrivo");
   assert.equal(c.metaTitle, "EIPASS Standard: 7 moduli e quiz in arrivo | CertifyQuiz");
@@ -41,7 +42,7 @@ test("copy, module 2 available: nothing says 'no quiz yet', nothing promises an 
 });
 
 test("copy: SEO lengths stay within the usual limits in both states", () => {
-  for (const mods of [EIPASS_STANDARD_MODULES, withModule2]) {
+  for (const mods of [dormant, withModule2]) {
     const c = eipassStandardCopy(mods);
     assert.ok(c.metaTitle.length <= 65, `title ${c.metaTitle.length}`);
     assert.ok(c.metaDescription.length <= 170, `description ${c.metaDescription.length}`);
@@ -50,5 +51,5 @@ test("copy: SEO lengths stay within the usual limits in both states", () => {
 
 test("a module 'available' without a valid topic id changes nothing", () => {
   assert.equal(hasAvailableEipassStandardModule(withoutTopicId), false);
-  assert.deepEqual(eipassStandardCopy(withoutTopicId), eipassStandardCopy(EIPASS_STANDARD_MODULES));
+  assert.deepEqual(eipassStandardCopy(withoutTopicId), eipassStandardCopy(dormant));
 });
