@@ -10,7 +10,7 @@ import {
 
 const dormant = EIPASS_STANDARD_MODULES.map((m) => ({ ...m, status: "coming_soon" as const, topicId: undefined }));
 const withModule2 = dormant.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m));
-const withoutTopicId = EIPASS_STANDARD_MODULES.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: undefined } : m));
+const withoutTopicId = dormant.map((m) => (m.number === 2 ? { ...m, status: "available" as const, topicId: undefined } : m));
 
 test("copy, dormant: exactly the original 'in arrivo' wording", () => {
   const c = eipassStandardCopy(dormant);

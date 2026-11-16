@@ -68,8 +68,8 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, in the Italia
 test("seven modules in official order; informational only: no module carries a slug or link", () => {
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.number), [1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.title), OFFICIAL_TITLES);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["coming_soon", "available", "coming_soon", "coming_soon", "coming_soon", "coming_soon", "coming_soon"], "only module 2 is available");
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [undefined, 570, undefined, undefined, undefined, undefined, undefined], "only module 2 has a topic id");
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["coming_soon", "available", "coming_soon", "coming_soon", "coming_soon", "coming_soon", "available"]);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [undefined, 570, undefined, undefined, undefined, undefined, 575]);
   const reg = CERTS_BY_SLUG[SLUG];
   assert.equal(reg.topics.length, 7);
   for (const t of reg.topics) {
@@ -179,7 +179,7 @@ test("copy: states 'in arrivo', original, DigComp 2.2 and the User difference; n
   const all = [reg.description.it, reg.metaTitle?.it, reg.metaDescription?.it, guide, faq].join(" ");
   assert.equal(EIPASS_STANDARD_COMING_SOON_LABEL, "Quiz di preparazione in arrivo");
   assert.equal(reg.level?.it, eipassStandardCopy().statusLabel);
-  assert.equal(eipassStandardCopy().statusLabel, "Primo modulo disponibile", "module 2 is available");
+  assert.equal(eipassStandardCopy().statusLabel, "Moduli disponibili");
   assert.match(all, /DigComp 2\.2/);
   assert.match(guide, /Differenze rispetto a EIPASS 7 Moduli User/);
   assert.match(all, /non rilascia/i);

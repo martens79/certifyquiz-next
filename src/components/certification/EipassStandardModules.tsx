@@ -32,7 +32,7 @@ export default function EipassStandardModules({
       </h2>
       <p className="mb-3 text-sm text-gray-700">
         {anyAvailable
-          ? "Titoli e ordine seguono il programma ufficiale (rev. 02/2024). Le esercitazioni disponibili sono brevi e indicate modulo per modulo; gli altri moduli arriveranno in seguito."
+          ? "Titoli e ordine seguono il programma pubblico (rev. 02/2024). Le esercitazioni indipendenti sono brevi e indicate modulo per modulo."
           : "Titoli e ordine seguono il programma ufficiale (rev. 02/2024). Per ora nessun modulo ha esercitazioni disponibili: lo segnaleremo qui, modulo per modulo."}
       </p>
       <ol className="grid grid-cols-1 gap-3 md:grid-cols-2">
