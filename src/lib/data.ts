@@ -4,6 +4,7 @@ import "server-only";
 import { internalApiHeaders } from "@/lib/server/internal-api";
 import { backendGetJson } from "@/lib/server/backend-fetch";
 import type { ReviewModuleStructure } from "@/lib/review-module-types";
+import type { MapAccess } from "@/lib/map-access";
 
 /**
  * Data layer SEO-friendly con ISR:
@@ -188,7 +189,7 @@ export type MapOverviewItem = {
   map_count: number | null;
   certification_slug: string;
   certification_name: string;
-  access: "premium" | "locked";
+  access: MapAccess;
 };
 
 export async function getMapsList(lang: Locale): Promise<MapOverviewItem[]> {
