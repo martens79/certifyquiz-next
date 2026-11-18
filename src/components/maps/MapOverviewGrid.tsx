@@ -7,6 +7,7 @@ import type { Locale } from "@/lib/paths";
 import { pricingPath } from "@/lib/paths";
 import { premiumClickMetadata } from "@/lib/commercial-origin";
 import type { MapOverviewItem } from "@/lib/data";
+import { canDownloadMap } from "@/lib/map-access";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { trackEvent, trackFunnelEvent, userStatusFrom, type UserStatus } from "@/lib/analytics";
@@ -110,7 +111,7 @@ const LABELS = {
 const ACTION_BASE =
   "inline-flex min-h-[44px] items-center justify-center rounded-xl border px-4 py-2 text-center text-sm font-semibold transition";
 
-function MapCard({
+export function MapCard({
   lang,
   item,
   access,
@@ -265,7 +266,7 @@ function MapCard({
           👁️ {t.preview}
         </a>
 
-        {access === "premium" ? (
+        {canDownloadMap(access) ? (
           <button
             type="button"
             onClick={handleDownload}
