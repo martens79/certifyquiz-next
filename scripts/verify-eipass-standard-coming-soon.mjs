@@ -136,7 +136,7 @@ for (const path of ['/', '/it', '/certifications', '/fr/certifications', '/es/ce
   assert.ok(it.includes(`href="${LANDING}"`), 'the Italian EIPASS 7 Moduli User landing links to the Standard landing');
   assert.ok(text.includes(EXP.userPointerLabel), `User landing pointer says "${EXP.userPointerLabel}"`);
   assert.match(text, /percorso distinto da EIPASS 7 Moduli User/);
-  if (EXP.dormant) assert.match(text, /disponibile solo la pagina informativa/); else assert.match(text, /esercitazione breve per il Modulo/);
+  if (EXP.dormant) assert.match(text, /disponibile solo la pagina informativa/); else assert.match(text, /esercitazion[ei] brev[ei] per (?:il Modulo|i moduli)/);
   assert.doesNotMatch(text, /garantit[oi]|supererai/, 'the User pointer promises nothing');
   assert.match(it, /<meta name="robots" content="index, follow"|<meta name="robots" content="noindex/, 'User robots untouched (whatever it was)');
   checked++;

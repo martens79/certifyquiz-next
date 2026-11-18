@@ -65,16 +65,16 @@ test("User-landing pointer: 'In preparazione', links only to the Standard landin
   assert.deepEqual(JSON.parse(JSON.stringify(events)), [{ name: "eipass_standard_link_click", params: { link_target: "standard_coming_soon", source_page: "eipass_user_landing" } }]);
 });
 
-test("module 2 available: the panel and the pointer say so, with the same two real links and nothing promising an exam simulation", async () => {
+test("modules 2 and 7 available: the panel and the pointer say so, with the same two real links and nothing promising an exam simulation", async () => {
   let r!: ReturnType<typeof create>;
   await act(async () => { r = create(React.createElement(activeMod.EipassStandardComingSoonPanel)); });
-  assert.match(text(r), /Primo modulo disponibile/);
-  assert.match(text(r), /esercitazione breve per il Modulo 2/);
+  assert.match(text(r), /Moduli disponibili/);
+  assert.match(text(r), /esercitazioni brevi per i moduli 2 e 7/);
   assert.doesNotMatch(text(r), /solo informativa|non sono\s+ancora disponibili quiz|in arrivo/i);
   assert.deepEqual(links(r.root).map((x) => x.props.href), [EIPASS_STANDARD_OFFICIAL_URL, EIPASS_USER_LANDING_PATH]);
   let p!: ReturnType<typeof create>;
   await act(async () => { p = create(React.createElement(activeMod.EipassStandardPointer)); });
-  assert.match(text(p), /Primo modulo disponibile/);
+  assert.match(text(p), /Moduli disponibili/);
   assert.doesNotMatch(text(p), /In preparazione|solo la pagina informativa/);
   assert.deepEqual(links(p.root).map((x) => x.props.href), [EIPASS_STANDARD_LANDING_PATH]);
 });

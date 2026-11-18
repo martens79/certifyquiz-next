@@ -52,7 +52,7 @@ export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
   { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "coming_soon" },
   { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
   { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
-  { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
+  { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 575 },
 ] as const;
 
 /** Module card copy: no date, no promise, nothing that suggests a practice session exists. */
@@ -136,25 +136,27 @@ export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> 
       cardPill: undefined,
     };
   }
-  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.join(", ")}`;
+  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.join(" e ")}`;
+  const multiple = available.length > 1;
+  const label = multiple ? "Moduli disponibili" : EIPASS_STANDARD_PARTIAL_LABEL;
+  const practice = multiple ? "sono disponibili esercitazioni brevi" : "è disponibile un'esercitazione breve";
   const whichCap = which.charAt(0).toUpperCase() + which.slice(1);
   return {
     partial: true,
-    statusLabel: EIPASS_STANDARD_PARTIAL_LABEL,
-    panelText: `Su CertifyQuiz è disponibile un'esercitazione breve per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento. Gli altri moduli sono in preparazione. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
-    description:
-      "EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, il quadro europeo delle competenze digitali dei cittadini, articolata in sette moduli d'esame. CertifyQuiz offre un'esercitazione breve e indipendente per il primo modulo disponibile; gli altri moduli sono in preparazione. CertifyQuiz non rilascia la certificazione.",
-    metaTitle: "EIPASS Standard: 7 moduli e primo quiz | CertifyQuiz",
+    statusLabel: label,
+    panelText: `Su CertifyQuiz ${practice} per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento. Gli altri moduli sono in preparazione. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
+    description: `EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, articolata in sette moduli d'esame. CertifyQuiz offre esercitazioni indipendenti per ${which}. Gli altri moduli sono in preparazione. CertifyQuiz non rilascia la certificazione.`,
+    metaTitle: multiple ? "EIPASS Standard: 7 moduli e quiz | CertifyQuiz" : "EIPASS Standard: 7 moduli e primo quiz | CertifyQuiz",
     metaDescription:
-      "EIPASS Standard e DigComp 2.2: che cos'è e differenze da EIPASS 7 Moduli User. Esercitazione breve e indipendente per il primo modulo; gli altri in preparazione.",
+      `EIPASS Standard e DigComp 2.2. Esercitazioni indipendenti per ${which}. Gli altri moduli sono in preparazione.`,
     guideTitle: "Cosa offre CertifyQuiz oggi",
-    guideParagraph: `${whichCap}: un'esercitazione breve di allenamento, indipendente, con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Per gli altri moduli le esercitazioni sono in preparazione; seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.`,
+    guideParagraph: `${whichCap}: esercitazioni brevi e indipendenti con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Per gli altri moduli le esercitazioni sono in preparazione; seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.`,
     faqQuestion: "Quali quiz di EIPASS Standard sono disponibili su CertifyQuiz?",
-    faqAnswer: `Per ora solo un'esercitazione breve per ${which}. Non è una simulazione dell'esame ufficiale. Gli altri moduli sono in preparazione.`,
-    pointerLabel: EIPASS_STANDARD_PARTIAL_LABEL,
-    pointerText: `è un percorso distinto da EIPASS 7 Moduli User. Per ora è disponibile un'esercitazione breve per ${which}; gli altri moduli sono in preparazione.`,
-    ogSubtitle: "Primo modulo disponibile",
-    cardPill: EIPASS_STANDARD_PARTIAL_LABEL,
+    faqAnswer: `Per ora ${practice} per ${which}. Non è una simulazione dell'esame ufficiale. Gli altri moduli sono in preparazione.`,
+    pointerLabel: label,
+    pointerText: `è un percorso distinto da EIPASS 7 Moduli User. Per ora ${practice} per ${which}; gli altri moduli sono in preparazione.`,
+    ogSubtitle: label,
+    cardPill: label,
   };
 }
 

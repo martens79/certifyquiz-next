@@ -22,6 +22,7 @@ export function eipassStandardExpectation(modules: ReadonlyArray<EipassStandardM
   }));
   const availableHrefs = list.filter((m) => m.available).map((m) => m.href as string);
   const dormant = availableHrefs.length === 0;
+  const availableLabel = availableHrefs.length === 1 ? "Primo modulo disponibile" : "Moduli disponibili";
   return {
     dormant,
     modules: list,
@@ -30,15 +31,15 @@ export function eipassStandardExpectation(modules: ReadonlyArray<EipassStandardM
     availableCount: availableHrefs.length,
     disabledCount: list.length - availableHrefs.length,
     /** The status heading of the landing panel. */
-    statusHeading: dormant ? "Quiz di preparazione in arrivo" : "Primo modulo disponibile",
+    statusHeading: dormant ? "Quiz di preparazione in arrivo" : availableLabel,
     /** Catalogue card pill. */
-    cataloguePill: dormant ? "Prossimamente" : "Primo modulo disponibile",
+    cataloguePill: dormant ? "Prossimamente" : availableLabel,
     /** Pill on the Italian EIPASS 7 Moduli User landing pointer. */
-    userPointerLabel: dormant ? "In preparazione" : "Primo modulo disponibile",
+    userPointerLabel: dormant ? "In preparazione" : availableLabel,
     /** Phrases that must appear in the landing content. */
     mustSay: dormant
       ? [/solo informativa/, /non sono ancora disponibili quiz/]
-      : [/esercitazione breve/, /non una simulazione dell'esame ufficiale/, /senza alcuna garanzia di superamento/, /Gli altri moduli sono in preparazione/],
+      : [/esercitazion[ei] brev[ei]/, /non una simulazione dell'esame ufficiale/, /senza alcuna garanzia di superamento/, /Gli altri moduli sono in preparazione/],
     /** Phrases that must NOT appear in the landing content. */
     mustNotSay: dormant
       ? [/Primo modulo disponibile/, /Inizia l'esercitazione breve/, /\bDisponibile\b/]

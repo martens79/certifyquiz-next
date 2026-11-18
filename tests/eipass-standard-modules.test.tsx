@@ -78,17 +78,19 @@ test("modules block source: no router, fetch or handler; the only link is the gu
 });
 
 // ---------------------------------------------------------------- dormant "available" state (module 2 release)
-const withModule2Available = standard.EIPASS_STANDARD_MODULES.map((m) =>
+const withModule2Available = dormantModules.map((m) =>
   m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m,
 );
 
-test("activation state: only module 2 is available (topic 570); every other module has no link and no topic id", () => {
+test("activation state: modules 2 and 7 have links; other modules are coming soon", () => {
   assert.equal(standard.hasAvailableEipassStandardModule(), true);
+  const topics = new Map([[2, 570], [7, 575]]);
   for (const m of standard.EIPASS_STANDARD_MODULES) {
-    if (m.number === 2) {
+    const topicId = topics.get(m.number);
+    if (topicId !== undefined) {
       assert.equal(m.status, "available");
-      assert.equal(m.topicId, 570);
-      assert.equal(standard.getEipassStandardModuleHref(m), "/it/quiz/topic/570");
+      assert.equal(m.topicId, topicId);
+      assert.equal(standard.getEipassStandardModuleHref(m), `/it/quiz/topic/${topicId}`);
     } else {
       assert.equal(m.status, "coming_soon");
       assert.equal(m.topicId, undefined);
@@ -97,11 +99,11 @@ test("activation state: only module 2 is available (topic 570); every other modu
   }
 });
 
-test("production registry render: one link to /it/quiz/topic/570, six disabled 'Prossimamente' modules", async () => {
+test("registry render: links to modules 2 and 7, five disabled 'Prossimamente' modules", async () => {
   const r = await render();
-  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/570"]);
-  assert.equal(r.root.findAllByType("button").length, 6);
-  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 6);
+  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/570", "/it/quiz/topic/575"]);
+  assert.equal(r.root.findAllByType("button").length, 5);
+  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 5);
 });
 
 test("available module 2: one link to its topic, one 'Disponibile', six disabled buttons, honest copy", async () => {
