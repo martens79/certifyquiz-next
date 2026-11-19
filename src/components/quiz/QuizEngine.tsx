@@ -3838,7 +3838,12 @@ return (
   })()}
   {/* fonti verificabili: componente SEPARATO dal blocco spiegazione; il server decide cosa consegnare */}
   {!isTestLike && chosen != null && serverResult && (
-    <VerifiedSources sources={serverResult.sources} lang={lang} />
+    <VerifiedSources
+      key={`sources-${q.id}`}
+      sources={serverResult.sources}
+      lang={lang}
+      explanationGranted={serverResult.explanation_access?.granted}
+    />
   )}
       </div>
 {/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
