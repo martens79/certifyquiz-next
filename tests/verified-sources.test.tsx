@@ -19,10 +19,10 @@ const B = { id: 1, level: 'B', kind: 'explanation', title: 'IP Version 6 Address
 const A = { id: 2, level: 'A', kind: 'background', title: 'Campus design', publisher: 'Cisco', language: 'en', url: 'https://www.cisco.com/c/en/us/x', locator: 'Cap. 3' };
 // Contenuto del pannello (stessa lista che si vede dopo aver toccato il pulsante).
 const html = (sources: unknown, lang = 'it') => {
-  const list = visibleSources(sources);
+  const list = visibleSources(sources, true); // pannello: stessa lista di un utente con spiegazione concessa
   return list.length === 0 ? '' : renderToStaticMarkup(React.createElement(SourcesList, { list, lang }));
 };
-const closedHtml = (sources: unknown, lang = 'it', explanationGranted?: boolean) =>
+const closedHtml = (sources: unknown, lang = 'it', explanationGranted: boolean | undefined = true) =>
   renderToStaticMarkup(React.createElement(VerifiedSources, { sources, lang, explanationGranted }));
 
 test('nessuna fonte, undefined o payload non valido: non rende nulla', () => {
@@ -128,16 +128,35 @@ test('pulsante accessibile: area tattile >= 44px, aria-haspopup, aria-expanded, 
   assert.match(out, /focus-visible:outline/);
 });
 
-test('explanation_access.granted === false: le fonti B non sono mai visibili, le A restano come da backend', () => {
-  const onlyB = visibleSources([B], false);
-  assert.equal(onlyB.length, 0);
-  assert.equal(closedHtml([B], 'it', false), '', 'solo B + spiegazione bloccata: nemmeno il pulsante');
-  const mixed = visibleSources([B, A], false);
-  assert.deepEqual(Array.from(mixed, (s: any) => s.id), [2]);
+test('fonti B visibili SOLO con explanation_access.granted === true; le A restano consultabili', () => {
+  const Bbg = { ...B, id: 3, kind: 'background' }; // B con kind 'background': il backend puo' produrla
+  for (const g of [false, undefined, null, 'true', 1, 0, {}] as unknown[]) {
+    const v = visibleSources([B, Bbg, A], g as boolean);
+    assert.deepEqual(Array.from(v, (s: any) => s.id), [2], `granted=${String(g)}`);
+    assert.equal(visibleSources([B, Bbg], g as boolean).length, 0, `solo B, granted=${String(g)}`);
+  }
+  assert.equal(closedHtml([B, Bbg], 'it', false), '', 'solo B + spiegazione bloccata: nemmeno il pulsante');
+  assert.equal(renderToStaticMarkup(React.createElement(VerifiedSources, { sources: [B], lang: 'it' })), '', 'granted assente: nessuna B');
   assert.match(closedHtml([B, A], 'it', false), /Consulta le fonti/);
-  // granted true o non indicato: nessun filtro lato client
-  assert.equal(visibleSources([B, A], true).length, 2);
-  assert.equal(visibleSources([B, A], undefined).length, 2);
+  assert.deepEqual(Array.from(visibleSources([B, Bbg, A], true), (s: any) => s.id), [1, 3, 2]);
+});
+
+test('combinazioni level/kind incoerenti e valori sconosciuti sono rifiutati, non convertiti', () => {
+  const bad: Array<[string, Record<string, unknown>]> = [
+    ['A con kind explanation', { level: 'A', kind: 'explanation' }],
+    ['level sconosciuto', { level: 'X' }], ['level minuscolo', { level: 'a' }], ['level assente', { level: undefined }],
+    ['kind sconosciuto', { kind: 'foo' }], ['kind assente', { kind: undefined }], ['kind maiuscolo', { kind: 'Explanation' }],
+    ['level non stringa', { level: 1 }], ['__proto__ come level', { level: '__proto__' }],
+    ['id oltre MAX_SAFE_INTEGER', { id: 2 ** 53 }], ['id Infinity', { id: Infinity }], ['id zero', { id: 0 }], ['id negativo', { id: -1 }], ['id decimale', { id: 1.5 }], ['id stringa', { id: '3' }], ['id NaN', { id: NaN }], ['id assente', { id: undefined }],
+    ['lingua sconosciuta', { language: 'de' }], ['lingua assente', { language: undefined }],
+  ];
+  for (const [label, patch] of bad) {
+    assert.equal(usableSources([{ ...B, ...patch }]).length, 0, label);
+    assert.equal(usableSources([{ ...A, ...patch }]).length, 0, label + ' (su A)');
+  }
+  // una riga scartata non altera le altre; le combinazioni valide restano accettate
+  const mixed = usableSources([{ ...A, level: 'X' }, A, { ...B, kind: 'background' }, B]);
+  assert.deepEqual(Array.from(mixed, (s: any) => `${s.level}/${s.kind}`), ['A/background', 'B/background', 'B/explanation']);
 });
 
 function nodeMock(el: { type: string }) {
@@ -150,7 +169,7 @@ let triggerMock: any;
 const find = (r: ReactTestRenderer, type: string) => r.root.findAll((n) => n.type === type);
 const text = (r: ReactTestRenderer) => JSON.stringify(r.toJSON());
 
-async function mount(sources: unknown, lang = 'it', explanationGranted?: boolean) {
+async function mount(sources: unknown, lang = 'it', explanationGranted: boolean | undefined = true) {
   dialogMock = { open: false, showModal() { this.open = true; }, setAttribute() {} };
   triggerMock = { focusCalls: 0, focus() { this.focusCalls += 1; } };
   fakeDocument.body.style.overflow = 'auto';
@@ -256,4 +275,11 @@ test('usableSources e SOURCES_COPY: quattro lingue complete per i nuovi testi', 
     assert.equal(c.open, BUTTON_LABEL[lang]);
   }
   assert.equal(usableSources([B]).length, 1);
+});
+
+test('QuizEngine: le fonti vengono lette solo dal risultato del server, dopo la risposta', () => {
+  assert.equal((engine.match(/serverResult\.sources/g) || []).length, 1);
+  const i = engine.indexOf('<VerifiedSources');
+  assert.match(engine.slice(i - 140, i), /!isTestLike && chosen != null && serverResult/);
+  assert.match(engine.slice(i, i + 260), /explanationGranted=\{serverResult\.explanation_access\?\.granted\}/);
 });

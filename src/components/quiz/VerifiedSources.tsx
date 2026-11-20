@@ -58,24 +58,35 @@ export function isSafeHttpsUrl(value: unknown): value is string {
   }
 }
 
-/** Difesa in profondita': scarta righe malformate o con URL non HTTPS, senza mai lanciare. */
+/**
+ * Difesa in profondita': scarta righe malformate, con URL non HTTPS o con valori fuori contratto,
+ * senza mai lanciare e SENZA convertire in silenzio. Contratto del backend (toPublicSource):
+ * level 'A' (certificazione/argomento) => kind sempre 'background';
+ * level 'B' (domanda) => kind 'explanation' oppure 'background'. Ogni altra combinazione e' rifiutata.
+ */
+const KINDS_BY_LEVEL: Record<string, readonly string[]> = { A: ['background'], B: ['explanation', 'background'] };
+
 export function usableSources(input: unknown): VerifiedSource[] {
   if (!Array.isArray(input)) return [];
   const out: VerifiedSource[] = [];
   for (const s of input) {
     if (!s || typeof s !== 'object') continue;
     const r = s as Record<string, unknown>;
+    if (typeof r.id !== 'number' || !Number.isSafeInteger(r.id) || r.id <= 0) continue;
+    if (typeof r.level !== 'string' || typeof r.kind !== 'string') continue;
+    if (!Object.prototype.hasOwnProperty.call(KINDS_BY_LEVEL, r.level) || !KINDS_BY_LEVEL[r.level].includes(r.kind)) continue;
+    if (typeof r.language !== 'string' || !LANGS.includes(r.language)) continue;
     if (!isSafeHttpsUrl(r.url)) continue;
     if (typeof r.title !== 'string' || !r.title.trim()) continue;
     if (typeof r.publisher !== 'string' || !r.publisher.trim()) continue;
     if (typeof r.locator !== 'string' || !r.locator.trim()) continue;
     out.push({
-      id: Number(r.id),
-      level: r.level === 'B' ? 'B' : 'A',
-      kind: r.kind === 'explanation' ? 'explanation' : 'background',
+      id: r.id,
+      level: r.level as VerifiedSource['level'],
+      kind: r.kind as VerifiedSource['kind'],
       title: r.title,
       publisher: r.publisher,
-      language: (LANGS.includes(String(r.language)) ? r.language : 'en') as Locale,
+      language: r.language as Locale,
       url: r.url,
       locator: r.locator,
       ...(typeof r.version === 'string' && r.version ? { version: r.version } : {}),
@@ -111,12 +122,14 @@ function SourceItem({ source, lang }: { source: VerifiedSource; lang: Locale }) 
 
 /**
  * Filtro di sola sicurezza: il client non concede mai accessi, puo' solo NON mostrare.
- * Se il server ha negato la spiegazione (explanation_access.granted === false) nessuna
- * fonte di livello spiegazione (B) deve diventare visibile, anche se il payload ne portasse.
+ * Rispecchia il backend (includeLevelB = explanation_access.granted === true): le fonti di
+ * livello B (domanda) sono visibili SOLO se la spiegazione e' esplicitamente concessa (true).
+ * Con false, null, undefined o qualunque altro valore restano solo le A. Il filtro e' sul
+ * LIVELLO, non sul kind: una B con kind 'background' e' pur sempre una B.
  */
 export function visibleSources(input: unknown, explanationGranted?: boolean): VerifiedSource[] {
   const list = usableSources(input);
-  return explanationGranted === false ? list.filter((s) => s.kind !== 'explanation') : list;
+  return explanationGranted === true ? list : list.filter((s) => s.level === 'A');
 }
 
 export function SourcesList({ list, lang }: { list: VerifiedSource[]; lang: Locale }) {
@@ -204,7 +217,7 @@ export default function VerifiedSources({
 }: {
   sources?: unknown;
   lang: Locale;
-  /** explanation_access.granted dal server: se `false`, le fonti B non vengono mai mostrate. */
+  /** explanation_access.granted dal server: le fonti B sono mostrate solo se esattamente `true`. */
   explanationGranted?: boolean;
 }) {
   const list = visibleSources(sources, explanationGranted);
