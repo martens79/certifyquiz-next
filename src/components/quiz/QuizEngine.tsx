@@ -56,6 +56,7 @@ import {
   evaluateMockExam,
   type AnswerCheckResult,
 } from "@/lib/apiClient";
+import VerifiedSources from "./VerifiedSources";
 import { apiFetch } from "@/lib/auth";
 import {
   adoptServerRev,
@@ -3835,6 +3836,15 @@ return (
     // una chiamata del client (lo fa il server in /answers/check).
     return null;
   })()}
+  {/* fonti verificabili: componente SEPARATO dal blocco spiegazione; il server decide cosa consegnare */}
+  {!isTestLike && chosen != null && serverResult && (
+    <VerifiedSources
+      key={`sources-${q.id}`}
+      sources={serverResult.sources}
+      lang={lang}
+      explanationGranted={serverResult.explanation_access?.granted}
+    />
+  )}
       </div>
 {/* ===================== BOTTOM (fixed) + PROGRESS (attached) ===================== */}
 <div className="fixed inset-x-0 bottom-0 z-30">
