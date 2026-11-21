@@ -229,7 +229,7 @@ test('real PWA update v3 to v4 removes old assets and preserves the current snap
     await page.evaluate(async () => { const c = await caches.open('certifyquiz-v3'); await c.put('/__qa-stale.js', new Response('OBSOLETE_ASSET')); });
     version = 4;
     await page.evaluate(async () => { const reg = await navigator.serviceWorker.ready; await reg.update(); });
-    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 20_000 }).toEqual(['certifyquiz-v4']);
+    await expect.poll(() => page.evaluate(() => caches.keys()), { timeout: 20_000 }).toEqual([/CACHE_NAME = "([^"]+)"/.exec(newScript)![1]]);
     await open(page); expect(await readHeader(page)).toEqual(before);
     expect(await page.evaluate(async () => (await fetch('/__qa-stale.js')).text())).toBe('CURRENT_ASSET');
     await context.route('**/__qa-stale.js', r => r.abort('internetdisconnected'));

@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Offline | CertifyQuiz</title>
+  <meta name="robots" content="noindex" />
+  <title>Page unavailable | CertifyQuiz</title>
 
   <style>
     body {
@@ -35,38 +36,108 @@
       line-height: 1.6;
     }
 
-    a {
+    .where {
+      font-size: 13px;
+      color: #64748b;
+      word-break: break-all;
+    }
+
+    button,
+    a.btn {
       display: inline-block;
       margin-top: 16px;
       background: #0f172a;
       color: white;
       text-decoration: none;
       padding: 12px 18px;
+      border: 0;
       border-radius: 12px;
+      font: inherit;
       font-weight: 600;
+      cursor: pointer;
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <h1>📡 You're offline</h1>
+  <div class="card" role="alert" aria-live="polite">
+    <h1 id="cq-title">We couldn't load this page</h1>
 
-    <p>
-      CertifyQuiz cannot be reached right now.
-    </p>
+    <p id="cq-text1">The page did not load. This may be a temporary network or service issue.</p>
 
-    <p>
-      Check your Internet connection and try again.
-    </p>
+    <p id="cq-text2">Please try again in a few moments.</p>
 
-    <p>
-      Previously visited pages may still be available.
-    </p>
+    <p class="where" id="cq-where"></p>
 
-    <a href="/">
-      Try Again
-    </a>
+    <button type="button" id="cq-retry">Try again</button>
+    <noscript><a class="btn" href="/">CertifyQuiz</a></noscript>
   </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // Served by the service worker in place of a navigation that failed at network level:
+      // the document URL is therefore the ORIGINAL requested URL, and reload() re-requests it.
+      var COPY = {
+        en: { t: "We couldn't load this page", a: "The page did not load. This may be a temporary network or service issue.", b: "Please try again in a few moments.", r: "Try again", p: "Page:" },
+        it: { t: "Impossibile caricare la pagina", a: "La pagina non si è caricata. Potrebbe trattarsi di un problema temporaneo di rete o del servizio.", b: "Riprova tra qualche istante.", r: "Riprova", p: "Pagina:" },
+        fr: { t: "Impossible de charger la page", a: "La page ne s'est pas chargée. Il peut s'agir d'un problème temporaire de réseau ou de service.", b: "Veuillez réessayer dans quelques instants.", r: "Réessayer", p: "Page :" },
+        es: { t: "No se pudo cargar la página", a: "La página no se cargó. Puede tratarse de un problema temporal de red o del servicio.", b: "Inténtalo de nuevo en unos instantes.", r: "Reintentar", p: "Página:" }
+      };
+
+      // Locale of the failed URL wins (/it, /fr, /es); EN root pages follow the browser language.
+      function resolveLang(pathname, languages) {
+        var m = /^\/(it|fr|es|en)(?:\/|$)/.exec(pathname || "");
+        if (m) return m[1];
+        var list = languages || [];
+        for (var i = 0; i < list.length; i++) {
+          var code = String(list[i] || "").slice(0, 2).toLowerCase();
+          if (COPY[code]) return code;
+        }
+        return "en";
+      }
+
+      // Direct visits to /offline.html have no original page to retry: go to the site root.
+      function retryPlan(pathname, lang) {
+        if (pathname === "/offline.html") return { type: "assign", url: lang === "en" ? "/" : "/" + lang };
+        return { type: "reload" };
+      }
+
+      var api = {
+        COPY: COPY,
+        resolveLang: resolveLang,
+        retryPlan: retryPlan,
+        nav: {
+          reload: function () { location.reload(); },
+          assign: function (url) { location.assign(url); }
+        }
+      };
+      window.cqOffline = api;
+
+      var lang = resolveLang(location.pathname, navigator.languages || [navigator.language]);
+      var c = COPY[lang];
+      document.documentElement.lang = lang;
+      document.title = c.t + " | CertifyQuiz";
+      document.getElementById("cq-title").textContent = c.t;
+      document.getElementById("cq-text1").textContent = c.a;
+      document.getElementById("cq-text2").textContent = c.b;
+      document.getElementById("cq-retry").textContent = c.r;
+      // Host + path only: the query string and hash can carry one-time tokens (e.g. /auth/callback).
+      if (location.pathname !== "/offline.html") {
+        document.getElementById("cq-where").textContent = c.p + " " + location.host + location.pathname;
+      }
+
+      function retry() {
+        var plan = retryPlan(location.pathname, lang);
+        if (plan.type === "assign") api.nav.assign(plan.url);
+        else api.nav.reload();
+      }
+
+      document.getElementById("cq-retry").addEventListener("click", retry);
+      // When connectivity returns, try once automatically (never loops: one shot per page load).
+      window.addEventListener("online", retry, { once: true });
+    })();
+  </script>
 </body>
 </html>
