@@ -113,6 +113,12 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     title: getRegistryCertBySlug("lfs101")?.metaTitle?.en,
     description: getRegistryCertBySlug("lfs101")?.metaDescription?.en,
   },
+  // AI-103 (slug storico azure-ai-102-*): senza override l'EN usa il titolo AI-102
+  // del backend. Si usa la copy del registry, già allineata a quella IT/FR/ES.
+  "azure-ai-102-ai-engineer-associate": {
+    title: getRegistryCertBySlug("azure-ai-102-ai-engineer-associate")?.metaTitle?.en,
+    description: getRegistryCertBySlug("azure-ai-102-ai-engineer-associate")?.metaDescription?.en,
+  },
 };
 
 function getCategoryFromSlug(slug: string) {

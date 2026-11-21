@@ -31,11 +31,19 @@ const AZURE_AI_102 = {
     ],
   },
 
+  lifecycleStatus: "needs-review",
+  lifecycleNotice: {
+    it: "AI-102 è stato ritirato. AI-103 segue un programma aggiornato. Il nostro banco di domande è attualmente in revisione per allinearsi ai nuovi obiettivi ufficiali. Alcuni contenuti potrebbero ancora riferirsi al programma precedente.",
+    en: "AI-102 has been retired. AI-103 follows an updated syllabus. Our question bank is currently under review to align with the new official objectives. Some content may still refer to the previous syllabus.",
+    fr: "L'examen AI-102 a été retiré. AI-103 suit un programme mis à jour. Notre banque de questions est actuellement en cours de révision afin de s'aligner sur les nouveaux objectifs officiels. Certains contenus peuvent encore faire référence à l'ancien programme.",
+    es: "AI-102 ha sido retirado. AI-103 sigue un programa actualizado. Nuestro banco de preguntas se encuentra actualmente en revisión para alinearse con los nuevos objetivos oficiales. Algunos contenidos pueden seguir haciendo referencia al programa anterior.",
+  },
+
   title: {
-    it: "Azure AI-103 – Quiz e Simulazione Esame AI Apps and Agents Developer",
-    en: "AI-103 Practice Test 2026 – Azure AI Apps and Agents Developer",
-    fr: "Azure AI-103 – Quiz et Simulation Examen AI Apps and Agents Developer",
-    es: "Azure AI-103 – Quiz y Simulación de Examen AI Apps and Agents Developer",
+    it: "Azure AI-103 – Domande di pratica per AI Apps and Agents Developer",
+    en: "AI-103 Practice Questions – Azure AI Apps and Agents Developer",
+    fr: "Azure AI-103 – Questions d'entraînement AI Apps and Agents Developer",
+    es: "Azure AI-103 – Preguntas de práctica AI Apps and Agents Developer",
   },
 
   level: {
@@ -46,24 +54,24 @@ const AZURE_AI_102 = {
   },
 
   description: {
-    it: "Preparati all'esame Microsoft Azure AI-103 Azure AI Apps and Agents Developer Associate (ex AI-102) con quiz in stile esame, modalità training e simulazioni. Allenati su Microsoft Foundry, soluzioni agentic e generative AI, visione artificiale, analisi testo e knowledge mining.",
-    en: "Practice for the Microsoft Azure AI-103 Azure AI Apps and Agents Developer Associate exam (formerly AI-102) with exam-style questions, training mode, and realistic practice across Microsoft Foundry, generative AI and agentic solutions, computer vision, text analysis, and information extraction.",
-    fr: "Préparez l'examen Microsoft Azure AI-103 Azure AI Apps and Agents Developer Associate (anciennement AI-102) avec des quiz type examen, un mode entraînement et des séries réalistes sur Microsoft Foundry, solutions generative AI et agentic, vision par ordinateur, analyse de texte et knowledge mining.",
-    es: "Prepárate para el examen Microsoft Azure AI-103 Azure AI Apps and Agents Developer Associate (antes AI-102) con quizzes tipo examen, modo entrenamiento y práctica realista sobre Microsoft Foundry, soluciones generative AI y agentic, visión artificial, análisis de texto y knowledge mining.",
+    it: "Domande di pratica collegate all'esame Microsoft Azure AI-103 (ex AI-102) su servizi Azure AI, generative AI, visione artificiale, analisi del testo ed estrazione di informazioni. Il banco di domande è in revisione per allinearsi agli obiettivi ufficiali attuali: usalo come esercizio, insieme alla guida di studio ufficiale Microsoft.",
+    en: "Practice questions related to the Microsoft Azure AI-103 exam (formerly AI-102) on Azure AI services, generative AI, computer vision, text analysis and information extraction. The question bank is under review to align with the current official objectives: use it as practice alongside the official Microsoft study guide.",
+    fr: "Questions d'entraînement liées à l'examen Microsoft Azure AI-103 (anciennement AI-102) sur les services Azure AI, l'IA générative, la vision par ordinateur, l'analyse de texte et l'extraction d'informations. La banque de questions est en cours de révision pour s'aligner sur les objectifs officiels actuels : utilisez-la comme entraînement, avec le guide d'étude officiel de Microsoft.",
+    es: "Preguntas de práctica relacionadas con el examen Microsoft Azure AI-103 (antes AI-102) sobre servicios Azure AI, IA generativa, visión artificial, análisis de texto y extracción de información. El banco de preguntas está en revisión para alinearse con los objetivos oficiales actuales: úsalo como práctica junto con la guía de estudio oficial de Microsoft.",
   },
 
   metaTitle: {
-    it: "AI-103 – Quiz e Simulazione Esame Azure AI Apps and Agents | CertifyQuiz",
-    en: "AI-103 Practice Test – Azure AI Apps and Agents Questions | CertifyQuiz",
-    fr: "AI-103 – Quiz et Simulation Examen Azure AI Apps and Agents | CertifyQuiz",
-    es: "AI-103 – Quiz y Simulacro Examen Azure AI Apps and Agents | CertifyQuiz",
+    it: "AI-103 – Domande di pratica Azure AI Apps and Agents",
+    en: "AI-103 Practice Questions – Azure AI Apps and Agents",
+    fr: "AI-103 – Questions d'entraînement Azure AI Apps and Agents",
+    es: "AI-103 – Preguntas de práctica Azure AI Apps and Agents",
   },
 
   metaDescription: {
-    it: "Preparati all'esame Azure AI-103 (ex AI-102) con quiz in stile esame: Microsoft Foundry, agenti AI, computer vision, analisi testo e knowledge mining. Inizia gratis.",
-    en: "Practice for Azure AI-103 (formerly AI-102) with exam-style questions. Covers Microsoft Foundry, AI agents, computer vision, text analysis and information extraction. Start free.",
-    fr: "Préparez l'examen Azure AI-103 (anciennement AI-102) avec des quiz type examen : Microsoft Foundry, agents IA, vision par ordinateur, analyse de texte et knowledge mining. Commencez gratuitement.",
-    es: "Prepárate para el examen Azure AI-103 (antes AI-102) con quizzes tipo examen: Microsoft Foundry, agentes de IA, visión artificial, análisis de texto y knowledge mining. Empieza gratis.",
+    it: "Domande di pratica per Azure AI-103 (ex AI-102) su servizi Azure AI, generative AI ed estrazione di informazioni. Banco in revisione. Inizia gratis.",
+    en: "Practice questions for Azure AI-103 (formerly AI-102) on Azure AI services, generative AI and information extraction. Question bank under review. Start free.",
+    fr: "Questions d'entraînement pour Azure AI-103 (anciennement AI-102) : services Azure AI, IA générative, extraction d'informations. Banque en révision.",
+    es: "Preguntas de práctica para Azure AI-103 (antes AI-102) sobre servicios Azure AI, IA generativa y extracción de información. Banco en revisión. Empieza gratis.",
   },
 
   topics: [
