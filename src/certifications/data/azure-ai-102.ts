@@ -224,25 +224,25 @@ const AZURE_AI_102 = {
       it: [
         "La certificazione Microsoft di riferimento per chi sviluppa agenti e soluzioni AI su Azure con Microsoft Foundry.",
         "Ottima per ruoli AI Engineer, Cloud Developer e Solution Architect orientati all'AI.",
-        "Copre competenze molto richieste: agenti AI, RAG e Microsoft Foundry.",
+        "L'esame misura competenze molto richieste: agenti AI, RAG e Microsoft Foundry.",
         "Passo successivo naturale dopo AI-901 Azure AI Fundamentals.",
       ],
       en: [
         "The reference Microsoft certification for building AI agents and solutions on Azure with Microsoft Foundry.",
         "Great for AI engineer, cloud developer, and AI-focused solution architect roles.",
-        "Covers in-demand skills: AI agents, RAG, and Microsoft Foundry.",
+        "The exam measures in-demand skills: AI agents, RAG, and Microsoft Foundry.",
         "The natural next step after AI-901 Azure AI Fundamentals.",
       ],
       fr: [
         "La certification Microsoft de référence pour développer des agents et solutions IA sur Azure avec Microsoft Foundry.",
         "Idéale pour les rôles AI engineer, cloud developer et solution architect orientés IA.",
-        "Couvre des compétences très demandées : agents IA, RAG et Microsoft Foundry.",
+        "L'examen mesure des compétences très demandées : agents IA, RAG et Microsoft Foundry.",
         "L'étape naturelle après AI-901 Azure AI Fundamentals.",
       ],
       es: [
         "La certificación Microsoft de referencia para desarrollar agentes y soluciones de IA en Azure con Microsoft Foundry.",
         "Ideal para roles de AI engineer, cloud developer y solution architect orientados a la IA.",
-        "Cubre competencias muy demandadas: agentes de IA, RAG y Microsoft Foundry.",
+        "El examen mide competencias muy demandadas: agentes de IA, RAG y Microsoft Foundry.",
         "El paso natural después de AI-901 Azure AI Fundamentals.",
       ],
     },
@@ -260,6 +260,10 @@ const AZURE_AI_102 = {
         {
           q: "Serve prima AI-901?",
           a: "Non è obbligatoria, ma è consigliata se parti da zero. AI-103 è più tecnica e presuppone familiarità con Azure, API, SDK e basi di programmazione.",
+        },
+        {
+          q: "Il banco di domande di CertifyQuiz copre tutto AI-103?",
+          a: "Non ancora. Il nostro banco di domande è in revisione per allinearsi agli obiettivi ufficiali di AI-103 e alcuni contenuti possono ancora riferirsi al programma precedente (AI-102). Usalo come esercizio, insieme alla guida di studio ufficiale Microsoft.",
         },
         {
           q: "Quali argomenti copre AI-103?",
@@ -280,6 +284,10 @@ const AZURE_AI_102 = {
           a: "It is not mandatory, but recommended if you are starting from scratch. AI-103 is more technical and assumes familiarity with Azure, APIs, SDKs, and programming basics.",
         },
         {
+          q: "Does the CertifyQuiz question bank cover all of AI-103?",
+          a: "Not yet. Our question bank is under review to align with the official AI-103 objectives, and some content may still refer to the previous syllabus (AI-102). Use it as practice alongside the official Microsoft study guide.",
+        },
+        {
           q: "What topics does AI-103 cover?",
           a: "It covers planning and managing Azure AI solutions, generative AI and agentic solutions, computer vision, text analysis, and information extraction/knowledge mining.",
         },
@@ -298,6 +306,10 @@ const AZURE_AI_102 = {
           a: "Ce n'est pas obligatoire, mais recommandé si vous débutez. AI-103 est plus technique et suppose une familiarité avec Azure, les API, les SDK et les bases de programmation.",
         },
         {
+          q: "La banque de questions CertifyQuiz couvre-t-elle tout AI-103 ?",
+          a: "Pas encore. Notre banque de questions est en cours de révision pour s'aligner sur les objectifs officiels d'AI-103, et certains contenus peuvent encore faire référence à l'ancien programme (AI-102). Utilisez-la comme entraînement, avec le guide d'étude officiel de Microsoft.",
+        },
+        {
           q: "Quels sujets couvre AI-103 ?",
           a: "Elle couvre la planification et la gestion de solutions Azure AI, les solutions generative AI et agentic, la vision par ordinateur, l'analyse de texte et le knowledge mining/information extraction.",
         },
@@ -314,6 +326,10 @@ const AZURE_AI_102 = {
         {
           q: "¿Necesito AI-901 primero?",
           a: "No es obligatoria, pero sí recomendable si empiezas de cero. AI-103 es más técnica y presupone familiaridad con Azure, APIs, SDKs y bases de programación.",
+        },
+        {
+          q: "¿El banco de preguntas de CertifyQuiz cubre todo AI-103?",
+          a: "Todavía no. Nuestro banco de preguntas está en revisión para alinearse con los objetivos oficiales de AI-103 y algunos contenidos pueden seguir haciendo referencia al programa anterior (AI-102). Úsalo como práctica junto con la guía de estudio oficial de Microsoft.",
         },
         {
           q: "¿Qué temas cubre AI-103?",

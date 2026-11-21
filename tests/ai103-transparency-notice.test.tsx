@@ -92,3 +92,96 @@ test("AI-103 slug, quiz routes and blueprint domains are unchanged", () => {
   for (const lang of LANGS) assert.match(AI103.quizRoute[lang], /azure-ai-102-ai-engineer-associate$/);
   assert.equal(AI103.examBlueprint.domains.length, 5);
 });
+
+/* ---------- Audit messaggi pubblici AI-103 (PR #213, secondo passaggio) ---------- */
+import {
+  AI103_MOCK_COPY,
+  AI103_MOCK_META,
+  AI103_PREMIUM_TITLE,
+  AI103_SLUG,
+  isAi103Slug,
+} from "../src/lib/ai103-public-copy.ts";
+
+const COMPLETE_PROMISE =
+  /complet[ae]?\b|complète|completa|completo|complete preparation|replic|reproduc|official exam simulation|conditions? (r[eé]elles?|of the real|reales)|condizioni reali/i;
+
+test("AI-103 Premium CTA title and mock-exam copy never promise complete preparation or real exam conditions", () => {
+  for (const lang of LANGS) {
+    assert.doesNotMatch(AI103_PREMIUM_TITLE[lang]("AI-103"), COMPLETE_PROMISE, `premium ${lang}`);
+    const m = AI103_MOCK_COPY[lang];
+    for (const text of [m.badge, m.title("AI-103"), m.desc]) assert.doesNotMatch(text, COMPLETE_PROMISE, `mock ${lang}: ${text}`);
+    // La nota può solo NEGARE la replica dell'esame reale.
+    assert.match(m.note, /AI-103/);
+    assert.match(m.note, /non|not|ne |no /i);
+    for (const text of [AI103_MOCK_META[lang].title, AI103_MOCK_META[lang].description]) {
+      assert.doesNotMatch(text, COMPLETE_PROMISE, `mock meta ${lang}`);
+      assert.doesNotMatch(text, /AI-102/);
+    }
+  }
+  assert.equal(AI103_SLUG, AI103.slug);
+  assert.ok(isAi103Slug(AI103_SLUG));
+  assert.ok(!isAi103Slug("ccna") && !isAi103Slug("microsoft-ai") && !isAi103Slug(undefined));
+});
+
+test("Premium CTA and CertificationPage branch on the AI-103 slug only; other certifications keep their copy and tracking", () => {
+  const cta = readFileSync("src/components/certification/PremiumResourcesCta.tsx", "utf8");
+  assert.match(cta, /isAi103Slug\(certificationSlug\) \? AI103_PREMIUM_TITLE\[lang\]\(certificationName\) : t\.title\(certificationName\)/);
+  assert.match(cta, /title: \(n: string\) => `Complete preparation for \$\{n\}`/); // invariato per le altre
+  assert.match(cta, /trackEvent\("certification_premium_card_clicked"/);
+  assert.match(cta, /event: "premium_clicked"/);
+  const page = readFileSync("src/components/CertificationPage.tsx", "utf8");
+  assert.match(page, /data\.slug === "eipass" \|\| isAi103Slug\(data\.slug\) \? pageTitle : resources\?\.certificationName \|\| pageTitle/);
+});
+
+test("mock-exam metadata: AI-103 gets the neutral copy, other certifications are unchanged", async () => {
+  const { generateMetadata: mockMeta } = await import("../src/app/[lang]/quiz/[slug]/mock-exam/layout.tsx");
+  for (const lang of LANGS) {
+    const m = await mockMeta({ params: Promise.resolve({ lang, slug: AI103_SLUG }) });
+    assert.equal(m.title, AI103_MOCK_META[lang].title);
+    assert.equal(m.description, AI103_MOCK_META[lang].description);
+    assert.equal((m.robots as { index: boolean }).index, false);
+  }
+  const ccna = await mockMeta({ params: Promise.resolve({ lang: "en", slug: "ccna" }) });
+  assert.equal(ccna.title, "CCNA 200-301 Mock Test — Timed Practice Exam | CertifyQuiz");
+  assert.equal(ccna.description, "Take a complete CCNA 200-301 mock test with a timer, final score and answer review.");
+  const it = await mockMeta({ params: Promise.resolve({ lang: "it", slug: "isc2-cc" }) });
+  assert.equal(it.title, "Simulazione esame ISC2 CC | CertifyQuiz");
+});
+
+test("mock-exam page uses the AI-103 copy only for the AI-103 slug", () => {
+  const src = readFileSync("src/app/[lang]/quiz/[slug]/mock-exam/page.tsx", "utf8");
+  assert.match(src, /isAi103Slug\(currentSlug\) \? AI103_MOCK_COPY\[currentLang\]/);
+  assert.match(src, /note: "This simulation replicates the real conditions of the official exam\."/); // altre cert invariate
+});
+
+test("whyChoose and FAQ describe the exam, add a transparent coverage FAQ, and no longer say the bank 'covers' skills", () => {
+  const why = (AI103 as any).extraContent.whyChoose;
+  for (const lang of LANGS) {
+    const joined = why[lang].join(" ");
+    assert.doesNotMatch(joined, /\bCovers\b|\bCopre\b|\bCouvre\b|\bCubre\b/, `${lang} whyChoose`);
+    const faqs = (AI103 as any).extraContent.faq[lang] as { q: string; a: string }[];
+    const coverage = faqs.find((f) => /CertifyQuiz/.test(f.q));
+    assert.ok(coverage, `${lang} coverage FAQ`);
+    assert.match(coverage!.a, /AI-103/);
+    assert.match(coverage!.a, /AI-102/);
+    assert.doesNotMatch(coverage!.a, /^(Sì|Yes|Oui|Sí)/);
+    assert.equal(faqs.length, 5, `${lang} FAQ count`);
+  }
+});
+
+test("home card and roadmap metadata no longer name the retired AI-102 as the current exam", () => {
+  const home = readFileSync("src/components/QuizHome.tsx", "utf8");
+  assert.doesNotMatch(home, /Microsoft Azure AI-102 AI Engineer Associate/);
+  assert.match(home, /certPath\(lang, "azure-ai-102-ai-engineer-associate"\)/); // link invariato
+  const roadmap = readFileSync("src/app/roadmap-ai/page.tsx", "utf8");
+  assert.doesNotMatch(roadmap, /Azure AI-102/);
+  assert.match(roadmap, /Azure AI-103/);
+});
+
+test("no other certification registry file was given an AI-103 notice or copy", () => {
+  for (const f of ["lfs101", "az-802", "ccna", "microsoft-ai"]) {
+    let src = "";
+    try { src = readFileSync(`src/certifications/data/${f}.ts`, "utf8"); } catch { continue; }
+    assert.doesNotMatch(src, /AI-103/, f);
+  }
+});

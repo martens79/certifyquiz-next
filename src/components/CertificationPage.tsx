@@ -1,5 +1,6 @@
 import { resolveQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
+import { isAi103Slug } from "@/lib/ai103-public-copy";
 import Image from "next/image";
 import Link from "next/link";
 import type {
@@ -467,7 +468,7 @@ const pageTopics =
 
             <PremiumResourcesCta
               lang={lang}
-              certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
+              certificationName={data.slug === "eipass" || isAi103Slug(data.slug) ? pageTitle : resources?.certificationName || pageTitle}
               certificationId={resources?.certificationId ?? null}
               certificationSlug={data.slug}
               hasGuide={!!resources?.guide.available}

@@ -1,6 +1,7 @@
 // src/app/[lang]/quiz/[slug]/mock-exam/page.tsx
 "use client";
 
+import { AI103_DISPLAY_NAME, AI103_MOCK_COPY, isAi103Slug } from "@/lib/ai103-public-copy";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 
@@ -137,7 +138,13 @@ export default function MockExamPage() {
   } as const;
 
   const baseCopy = mockCopy[currentLang] ?? mockCopy.en;
-  const t = currentSlug === "eipass" ? { ...baseCopy,
+  const ai103 = isAi103Slug(currentSlug) ? AI103_MOCK_COPY[currentLang] ?? AI103_MOCK_COPY.en : null;
+  const t = ai103 ? { ...baseCopy,
+    badge: ai103.badge,
+    title: ai103.title(AI103_DISPLAY_NAME),
+    desc: ai103.desc,
+    note: ai103.note,
+  } : currentSlug === "eipass" ? { ...baseCopy,
     badge: EIPASS_USER_COPY.practiceTitle[currentLang],
     title: `${EIPASS_USER_COPY.practiceTitle[currentLang]} — ${certName}`,
     desc: EIPASS_USER_COPY.practiceNotice[currentLang],

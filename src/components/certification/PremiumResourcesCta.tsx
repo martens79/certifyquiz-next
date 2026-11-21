@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { trackEvent, trackFunnelEvent, userStatusFrom } from "@/lib/analytics";
 import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
+import { AI103_PREMIUM_TITLE, isAi103Slug } from "@/lib/ai103-public-copy";
 
 type Props = {
   lang: Locale;
@@ -97,7 +98,7 @@ export default function PremiumResourcesCta({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-bold text-slate-900">
-            ⭐ {certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumTitle[lang] : t.title(certificationName)}
+            ⭐ {certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumTitle[lang] : isAi103Slug(certificationSlug) ? AI103_PREMIUM_TITLE[lang](certificationName) : t.title(certificationName)}
           </p>
           <p className="mt-0.5 text-xs leading-snug text-slate-700">{certificationSlug === "eipass" ? EIPASS_USER_COPY.premiumNotice[lang] : voci}</p>
         </div>
