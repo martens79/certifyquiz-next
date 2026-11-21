@@ -106,6 +106,13 @@ const SEO_OVERRIDES: Record<string, { title?: string; description?: string }> = 
     description:
       "Practice TensorFlow with quiz questions on machine learning, neural networks, model training, evaluation and deployment.",
   },
+  // LFS101: the EN route used to fall back to the generic "practice exam" title and
+  // the course description from the DB, while IT/FR/ES already use the reviewed registry
+  // copy. Same single-source pattern as cisco-ccst-cybersecurity above.
+  "lfs101": {
+    title: getRegistryCertBySlug("lfs101")?.metaTitle?.en,
+    description: getRegistryCertBySlug("lfs101")?.metaDescription?.en,
+  },
 };
 
 function getCategoryFromSlug(slug: string) {

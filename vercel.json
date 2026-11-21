@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
+      "fix/lfs101-en-seo-metadata-20261121": false,
       "fix/quiz-resume-verdicts": false,
       "sprint2a/package-auth": false,
       "fix/paywall-checkout-integration-20261029": false,
