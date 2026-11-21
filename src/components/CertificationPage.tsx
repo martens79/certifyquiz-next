@@ -1,5 +1,6 @@
 import { resolveQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
+import { isAi103Slug } from "@/lib/ai103-public-copy";
 import Image from "next/image";
 import Link from "next/link";
 import type {
@@ -36,6 +37,15 @@ type DbTopicLink = {
   slug: string;
 };
 /* -------------------- i18n helpers -------------------- */
+// Etichetta tradotta per lo stato editoriale "needs-review": non si mostra mai
+// la stringa tecnica. Gli altri stati mantengono il comportamento esistente.
+const NEEDS_REVIEW_NOTICE_LABEL: Record<Lang, string> = {
+  it: "Aggiornamento in corso",
+  en: "Update in progress",
+  fr: "Mise à jour en cours",
+  es: "Actualización en curso",
+};
+
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
@@ -389,7 +399,11 @@ const pageTopics =
 
         {lifecycleStatus && lifecycleStatus !== "active" && lifecycleNotice ? (
           <aside className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
-            <strong className="mr-1 uppercase">{lifecycleStatus}:</strong>
+            {lifecycleStatus === "needs-review" ? (
+              <strong className="mr-1">{NEEDS_REVIEW_NOTICE_LABEL[lang]}:</strong>
+            ) : (
+              <strong className="mr-1 uppercase">{lifecycleStatus}:</strong>
+            )}
             {pickLabel(lifecycleNotice, lang)}
           </aside>
         ) : null}
@@ -454,7 +468,7 @@ const pageTopics =
 
             <PremiumResourcesCta
               lang={lang}
-              certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
+              certificationName={data.slug === "eipass" || isAi103Slug(data.slug) ? pageTitle : resources?.certificationName || pageTitle}
               certificationId={resources?.certificationId ?? null}
               certificationSlug={data.slug}
               hasGuide={!!resources?.guide.available}
