@@ -98,6 +98,8 @@ import {
   AI103_MOCK_COPY,
   AI103_MOCK_META,
   AI103_PREMIUM_TITLE,
+  AI103_ENGINE_CERT_NAME,
+  AI103_ENGINE_LABELS,
   AI103_SLUG,
   isAi103Slug,
 } from "../src/lib/ai103-public-copy.ts";
@@ -107,7 +109,7 @@ const COMPLETE_PROMISE =
 
 test("AI-103 Premium CTA title and mock-exam copy never promise complete preparation or real exam conditions", () => {
   for (const lang of LANGS) {
-    assert.doesNotMatch(AI103_PREMIUM_TITLE[lang]("AI-103"), COMPLETE_PROMISE, `premium ${lang}`);
+    assert.doesNotMatch(AI103_PREMIUM_TITLE[lang], COMPLETE_PROMISE, `premium ${lang}`);
     const m = AI103_MOCK_COPY[lang];
     for (const text of [m.badge, m.title("AI-103"), m.desc]) assert.doesNotMatch(text, COMPLETE_PROMISE, `mock ${lang}: ${text}`);
     // La nota può solo NEGARE la replica dell'esame reale.
@@ -125,7 +127,7 @@ test("AI-103 Premium CTA title and mock-exam copy never promise complete prepara
 
 test("Premium CTA and CertificationPage branch on the AI-103 slug only; other certifications keep their copy and tracking", () => {
   const cta = readFileSync("src/components/certification/PremiumResourcesCta.tsx", "utf8");
-  assert.match(cta, /isAi103Slug\(certificationSlug\) \? AI103_PREMIUM_TITLE\[lang\]\(certificationName\) : t\.title\(certificationName\)/);
+  assert.match(cta, /isAi103Slug\(certificationSlug\) \? AI103_PREMIUM_TITLE\[lang\] : t\.title\(certificationName\)/);
   assert.match(cta, /title: \(n: string\) => `Complete preparation for \$\{n\}`/); // invariato per le altre
   assert.match(cta, /trackEvent\("certification_premium_card_clicked"/);
   assert.match(cta, /event: "premium_clicked"/);
@@ -184,4 +186,61 @@ test("no other certification registry file was given an AI-103 notice or copy", 
     try { src = readFileSync(`src/certifications/data/${f}.ts`, "utf8"); } catch { continue; }
     assert.doesNotMatch(src, /AI-103/, f);
   }
+});
+
+/* ---------- Rifinitura: motore mock e titolo card Premium ---------- */
+
+test("AI-103 Premium card title is the approved short text in all four languages", () => {
+  assert.deepEqual(AI103_PREMIUM_TITLE, {
+    it: "Risorse Premium per AI-103",
+    en: "Premium resources for AI-103",
+    fr: "Ressources Premium pour AI-103",
+    es: "Recursos Premium para AI-103",
+  });
+});
+
+test("AI-103 engine labels: practice-session wording, no official-exam fidelity, four languages", () => {
+  assert.equal(AI103_ENGINE_CERT_NAME, "AI-103 AI Apps and Agents Developer");
+  assert.doesNotMatch(AI103_ENGINE_CERT_NAME, /102/);
+  for (const lang of LANGS) {
+    const l = AI103_ENGINE_LABELS[lang];
+    for (const [k, v] of Object.entries(l)) {
+      assert.ok(v.length > 4, `${lang}.${k}`);
+      assert.doesNotMatch(v, /mock exam|exam mode|mode examen|modo examen|modalit[aà] esame|simulacro|simulaz|ufficiale|official exam|vero esame|real exam|examen r[eé]el|examen real|replic/i, `${lang}.${k}: ${v}`);
+    }
+    assert.match(l.notice, /no instant feedback|niente feedback immediato|aucun retour imm[eé]diat|sin feedback inmediato/i);
+    assert.match(l.noticeSub, /AI-103/);
+  }
+  assert.equal(new Set(LANGS.map((l) => AI103_ENGINE_LABELS[l].notice)).size, 4);
+});
+
+test("mock page passes engine labels and the public name only for AI-103", () => {
+  const page = readFileSync("src/app/[lang]/quiz/[slug]/mock-exam/page.tsx", "utf8");
+  assert.match(page, /certificationName: isAi103Slug\(currentSlug\) \? AI103_ENGINE_CERT_NAME\.toUpperCase\(\) : certName\.toUpperCase\(\)/);
+  assert.match(page, /mockLabels: isAi103Slug\(currentSlug\) \? \(AI103_ENGINE_LABELS\[currentLang\] \?\? AI103_ENGINE_LABELS\.en\) : undefined/);
+});
+
+test("QuizEngine: label overrides are text-only and every default string is preserved", () => {
+  const src = readFileSync("src/components/quiz/QuizEngine.tsx", "utf8");
+  // override opzionale con fallback ai testi storici
+  assert.match(src, /context\?\.mockLabels\?\.modeBadge \?\? tQuiz\.modeExam/);
+  assert.match(src, /context\.mockLabels\?\.contextBadge \?\? 'MOCK EXAM'/);
+  assert.match(src, /!isAssessment && context\?\.mockLabels \? context\.mockLabels\.notice/);
+  assert.match(src, /!isAssessment && context\?\.mockLabels \? context\.mockLabels\.noticeSub/);
+  // testi storici invariati per le altre certificazioni
+  for (const t of ["'Exam mode: no instant feedback'", "'Modalità esame: niente feedback immediato'", "'Mock Exam'", "'Simulacro'", "'Focus on time management and accuracy. You can review your answers at the end.'"]) {
+    assert.ok(src.includes(t), t);
+  }
+  // nessun uso delle etichette fuori dai punti di sola visualizzazione
+  const uses = src.match(/mockLabels/g)!.length;
+  assert.equal(uses, 7, "mockLabels compare solo nei 4 punti di testo (badge modalità, badge pratica, badge contesto, banner titolo+sottotitolo)");
+  assert.doesNotMatch(src, /if \([^)]*mockLabels/);
+});
+
+test("types: mockLabels is optional on QuizContext; CCNA and ISC2 CC mock pages pass no label override", () => {
+  const types = readFileSync("src/lib/quiz-types.ts", "utf8");
+  assert.match(types, /mockLabels\?: \{/);
+  const page = readFileSync("src/app/[lang]/quiz/[slug]/mock-exam/page.tsx", "utf8");
+  assert.equal((page.match(/mockLabels:/g) ?? []).length, 1);
+  assert.ok(!/ccna|isc2/i.test(page.match(/mockLabels:[^\n]*/)![0]));
 });

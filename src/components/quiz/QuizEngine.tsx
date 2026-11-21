@@ -3393,19 +3393,20 @@ return (
             : `${label('question', lang)} ${idx + 1}/${questions.length}`} ·{' '}
           {label('answered', lang)} {answeredCount}
           <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-            {isAssessment ? label('assessment', lang) : isExam ? tQuiz.modeExam : tQuiz.modeTraining}
+            {isAssessment ? label('assessment', lang) : isExam ? (context?.mockLabels?.modeBadge ?? tQuiz.modeExam) : tQuiz.modeTraining}
           </span>
 
           {hideModeSwitch && isExam && (
             <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
               🧪{' '}
-              {lang === 'it'
-                ? 'Mock Exam'
-                : lang === 'fr'
-                ? 'Mock examen'
-                : lang === 'es'
-                ? 'Simulacro'
-                : 'Mock Exam'}
+              {context?.mockLabels?.practiceBadge ??
+                (lang === 'it'
+                  ? 'Mock Exam'
+                  : lang === 'fr'
+                  ? 'Mock examen'
+                  : lang === 'es'
+                  ? 'Simulacro'
+                  : 'Mock Exam')}
             </span>
           )}
 
@@ -3477,7 +3478,7 @@ return (
   <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
     <p className="text-sm font-semibold">
       ⚠️{' '}
-      {lang === 'it'
+      {!isAssessment && context?.mockLabels ? context.mockLabels.notice : (<>{lang === 'it'
         ? isAssessment
           ? 'Free test: niente soluzioni immediate'
           : 'Modalità esame: niente feedback immediato'
@@ -3491,11 +3492,11 @@ return (
           : 'Modo examen: sin feedback inmediato'
         : isAssessment
         ? 'Free test: no instant answers'
-        : 'Exam mode: no instant feedback'}
+        : 'Exam mode: no instant feedback'}</>)}
     </p>
 
     <p className="mt-1 text-sm text-amber-900/90">
-      {lang === 'it'
+      {!isAssessment && context?.mockLabels ? context.mockLabels.noticeSub : (<>{lang === 'it'
         ? isAssessment
           ? 'Rispondi come in un vero esame. Vedrai il risultato alla fine.'
           : 'Concentrati su gestione del tempo e precisione. Potrai rivedere le risposte alla fine.'
@@ -3509,7 +3510,7 @@ return (
           : 'Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final.'
         : isAssessment
         ? 'Answer like a real exam. You will see your result at the end.'
-        : 'Focus on time management and accuracy. You can review your answers at the end.'}
+        : 'Focus on time management and accuracy. You can review your answers at the end.'}</>)}
     </p>
   </div>
 )}
@@ -3527,7 +3528,7 @@ return (
               )}
 
               <span className="ml-1 inline-flex items-center rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                {context.kind === 'topic' ? 'TOPIC' : context.kind === 'mixed' ? 'MIXED' : 'MOCK EXAM'}
+                {context.kind === 'topic' ? 'TOPIC' : context.kind === 'mixed' ? 'MIXED' : (context.mockLabels?.contextBadge ?? 'MOCK EXAM')}
               </span>
 
               {premiumLocked && (

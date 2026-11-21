@@ -58,4 +58,13 @@ export type QuizContext = {
   // Premium infra (ready-to-flip, non invasivo)
   isPremiumUser?: boolean;
   premiumLocked?: boolean;
+
+  /** Solo testo: etichette alternative per la sessione di pratica a tempo (usate solo da AI-103). */
+  mockLabels?: {
+    contextBadge: string;
+    modeBadge: string;
+    practiceBadge: string;
+    notice: string;
+    noticeSub: string;
+  };
 };
