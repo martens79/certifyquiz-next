@@ -33,3 +33,10 @@ migliora solo il comportamento *dopo* un fallimento di rete, non lo previene.
   Express in `middleware/rateLimitClientKey.js`), ma non è verificato.
 - Log Vercel e Cloudflare per la fascia 21:30–22:20 (ora italiana) del 21/11/2026.
 - Riproduzione su Chrome desktop/mobile con SW già installato, e URL/ordine esatti degli screenshot.
+
+## Come rieseguire la validazione sul quiz (solo locale)
+1. Build: `NEXT_PUBLIC_SANITY_PROJECT_ID=e2edummy NEXT_PUBLIC_SANITY_DATASET=test NEXT_PUBLIC_TURNSTILE_SITE_KEY=fixture API_BASE_URL=http://127.0.0.1:9/api npm run build`
+   (in un ambiente senza rete `next/font` non scarica Inter/Manrope: serve `NEXT_FONT_GOOGLE_MOCKED_RESPONSES`).
+2. `npx next start --hostname 127.0.0.1 --port 3138` con le stesse variabili.
+3. `E2E_BASE_URL=http://localhost:3138 npx playwright test tests/quiz-session-remediation.spec.ts tests/service-worker-quiz-progress.spec.ts`
+   (`tests/service-worker-quiz-progress.spec.ts`: sessione quiz intatta durante SW v4→v5 e dopo navigazione fallita + retry).
