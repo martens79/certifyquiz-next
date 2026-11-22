@@ -43,7 +43,10 @@ export const articleBySlugLang = groq`
   "body": coalesce(body, content),
 
   "seoTitle": seo.title,
-  "seoDescription": description
+  "seoDescription": description,
+
+  // Una pagina con seo.noindex = true resta raggiungibile (HTTP 200) ma dichiara noindex.
+  "noindex": seo.noindex
 }`;
 
  
