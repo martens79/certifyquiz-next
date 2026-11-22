@@ -26,6 +26,7 @@ import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 import { practiceTopicCoverage, practiceTopicLimit } from "@/lib/practice-topic-coverage";
 import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
+import { CCNA_EN_RELATED_RESOURCES, CCNA_EN_RELATED_RESOURCES_TITLE, CCNA_EN_REVIEWS_LINK } from "@/lib/ccna-en-related-resources";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -528,6 +529,20 @@ const pageTopics =
               ))}
             </ul>
           </nav>
+        )}
+
+        {data.slug === "ccna" && lang === "en" && (
+          <section aria-labelledby="ccna-related-resources" className="mb-6 rounded-xl border border-slate-200 bg-white p-4">
+            <h2 id="ccna-related-resources" className="text-lg font-semibold text-slate-900">{CCNA_EN_RELATED_RESOURCES_TITLE}</h2>
+            <ul className="mt-2 space-y-2 text-sm">
+              {[...CCNA_EN_RELATED_RESOURCES, CCNA_EN_REVIEWS_LINK].map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="font-semibold text-blue-700 hover:underline">{item.label}</Link>
+                  <span className="text-slate-600"> — {item.description}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {/* Blocchi */}
