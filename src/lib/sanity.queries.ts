@@ -48,7 +48,7 @@ export const articleBySlugLang = groq`
 
  
 // Blog pagination: stable ordering so articles do not repeat across adjacent pages.
-export const articlesPageByLang = groq`
+export const articlesPageByLang = (start: number, end: number) => groq`
 *[
   _type == "article" &&
   !(_id in path("drafts.**")) &&
@@ -56,7 +56,7 @@ export const articlesPageByLang = groq`
   seo.noindex != true &&
   defined(coalesce(publishedAt, date)) &&
   dateTime(coalesce(publishedAt, date)) <= dateTime(now())
-] | order(coalesce(publishedAt, date) desc, _id desc)[$start...$end]{
+] | order(coalesce(publishedAt, date) desc, _id desc)[${start}...${end}]{
   "id": _id,
   "slug": slug.current,
   title,
