@@ -70,7 +70,20 @@ test("the page does not touch canonical or hreflang for CCNA", () => {
   assert.match(meta, /"ccna": \{\s*title: "CCNA 200-301 Practice Test 2026: 1,400\+ Exam Questions & Labs \| CertifyQuiz"/);
 });
 
-test("lab detail pages are unchanged: no metadata or indexing change for any lab", () => {
-  const lab = readFileSync("src/app/interactive-labs/[lab]/page.tsx", "utf8");
-  assert.doesNotMatch(lab, /generateMetadata|robots|canonical/);
+test("CCNA guided labs are noindex, follow (PR #218); standalone labs keep their own rules; no canonical is added", async () => {
+  // Comportamento reale della rotta EN: generateMetadata dei dettagli lab.
+  const { generateMetadata } = await import("../src/app/interactive-labs/[lab]/page");
+  const { labSlugs } = await import("../src/features/labs/lab-config.ts");
+  const meta = (lab: string) => generateMetadata({ params: Promise.resolve({ lab }) });
+  const ccna = labSlugs.filter((s) => s.startsWith("ccna-"));
+  assert.equal(ccna.length, 18);
+  for (const lab of ccna) {
+    const m = await meta(lab);
+    assert.deepEqual(m.robots, { index: false, follow: true }, lab);
+    assert.equal(m.alternates, undefined, `${lab}: nessun canonical/alternates aggiunto`);
+  }
+  // Lab pubblici non guidati: nessuna regola robots introdotta da #218 (lab non CCNA invariati).
+  for (const lab of ["spreadsheets", "subnetting"]) assert.deepEqual(await meta(lab), {}, lab);
+  // Slug sconosciuto: mai indicizzato.
+  assert.deepEqual((await meta("does-not-exist")).robots, { index: false, follow: false });
 });
