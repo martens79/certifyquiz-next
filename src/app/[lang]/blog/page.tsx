@@ -1,14 +1,31 @@
 import { sanityClient } from "@/lib/sanity.client";
-import { articlesListByLang } from "@/lib/sanity.queries";
+import { articlesPageByLang, articlesCountByLang } from "@/lib/sanity.queries";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import BlogCategoryBadge from "@/components/blog/BlogCategoryBadge";
 import type { Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
-export async function generateMetadata({ params }: { params: Promise<{ lang: Locale }> }): Promise<Metadata> {
+type BlogSearchParams = Promise<{ page?: string | string[] }>;
+const PAGE_SIZE = 20;
+
+function getPage(searchParams: { page?: string | string[] }): number {
+  const raw = searchParams.page;
+  if (raw === undefined) return 1;
+  if (typeof raw !== "string" || !/^[1-9]\d*$/.test(raw)) return 0;
+  const page = Number(raw);
+  return Number.isSafeInteger(page) ? page : 0;
+}
+
+export async function generateMetadata({ params, searchParams }: {
+  params: Promise<{ lang: Locale }>;
+  searchParams?: BlogSearchParams;
+}): Promise<Metadata> {
   const { lang } = await params;
-  const canonical = lang === "en" ? `${SITE}/blog` : `${SITE}/${lang}/blog`;
+  const page = getPage((await searchParams) ?? {});
+  const base = lang === "en" ? `${SITE}/blog` : `${SITE}/${lang}/blog`;
+  const canonical = page > 1 ? `${base}?page=${page}` : base;
   return {
     title: "IT Certification Study Guides and Articles | CertifyQuiz",
     description: "Practical certification study guides, exam-preparation strategies and learning resources.",
@@ -18,16 +35,28 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: Loc
 
 export default async function BlogPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lang: Locale }>;
+  searchParams?: BlogSearchParams;
 }) {
   const { lang } = await params;
+  const page = getPage((await searchParams) ?? {});
+  if (!page) notFound();
 
-  const articles = await sanityClient.fetch(articlesListByLang, { lang });
+  const total = await sanityClient.fetch<number>(articlesCountByLang, { lang });
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (page > totalPages) notFound();
+
+  const start = (page - 1) * PAGE_SIZE;
+  const end = start + PAGE_SIZE;
+  const articles = await sanityClient.fetch(articlesPageByLang, { lang, start, end });
 
   // EN root = /blog
   // altre lingue = /es/blog, /fr/blog, /it/blog
   const base = lang === "en" ? "" : `/${lang}`;
+  const blogPath = `${base}/blog`;
+  const pageHref = (n: number) => n === 1 ? blogPath : `${blogPath}?page=${n}`;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
@@ -81,6 +110,22 @@ export default async function BlogPage({
             </li>
           ))}
         </ul>
+      )}
+
+      {totalPages > 1 && (
+        <nav aria-label="Blog pagination" className="mt-8 flex items-center justify-center gap-4">
+          {page > 1 ? (
+            <Link rel="prev" href={pageHref(page - 1)} className="rounded border px-4 py-2 hover:bg-gray-50">
+              Previous
+            </Link>
+          ) : <span />}
+          <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+          {page < totalPages ? (
+            <Link rel="next" href={pageHref(page + 1)} className="rounded border px-4 py-2 hover:bg-gray-50">
+              Next
+            </Link>
+          ) : <span />}
+        </nav>
       )}
     </main>
   );
