@@ -9,6 +9,24 @@ import type { Metadata } from "next";
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
 type BlogSearchParams = Promise<{ page?: string | string[] }>;
 const PAGE_SIZE = 20;
+const BLOG_METADATA: Record<Locale, { title: string; description: string }> = {
+  en: {
+    title: "IT Certification Study Guides and Articles | CertifyQuiz",
+    description: "Practical certification study guides, exam-preparation strategies and learning resources.",
+  },
+  it: {
+    title: "Guide e articoli per certificazioni informatiche | CertifyQuiz",
+    description: "Guide pratiche, consigli di studio e risorse per prepararti alle certificazioni informatiche.",
+  },
+  fr: {
+    title: "Guides et articles pour certifications informatiques | CertifyQuiz",
+    description: "Guides pratiques, stratégies de révision et ressources pour préparer vos certifications informatiques.",
+  },
+  es: {
+    title: "Guías y artículos para certificaciones informáticas | CertifyQuiz",
+    description: "Guías prácticas, estrategias de estudio y recursos para preparar certificaciones informáticas.",
+  },
+};
 const PAGINATION_LABELS: Record<Locale, { navigation: string; previous: string; next: string; page: string; of: string }> = {
   en: { navigation: "Blog pagination", previous: "Previous", next: "Next", page: "Page", of: "of" },
   it: { navigation: "Paginazione blog", previous: "Precedente", next: "Successiva", page: "Pagina", of: "di" },
@@ -33,8 +51,7 @@ export async function generateMetadata({ params, searchParams }: {
   const base = lang === "en" ? `${SITE}/blog` : `${SITE}/${lang}/blog`;
   const canonical = page > 1 ? `${base}?page=${page}` : base;
   return {
-    title: "IT Certification Study Guides and Articles | CertifyQuiz",
-    description: "Practical certification study guides, exam-preparation strategies and learning resources.",
+    ...BLOG_METADATA[lang],
     alternates: { canonical },
   };
 }
