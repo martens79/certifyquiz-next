@@ -9,6 +9,12 @@ import type { Metadata } from "next";
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
 type BlogSearchParams = Promise<{ page?: string | string[] }>;
 const PAGE_SIZE = 20;
+const PAGINATION_LABELS: Record<Locale, { navigation: string; previous: string; next: string; page: string; of: string }> = {
+  en: { navigation: "Blog pagination", previous: "Previous", next: "Next", page: "Page", of: "of" },
+  it: { navigation: "Paginazione blog", previous: "Precedente", next: "Successiva", page: "Pagina", of: "di" },
+  fr: { navigation: "Pagination du blog", previous: "Précédent", next: "Suivant", page: "Page", of: "sur" },
+  es: { navigation: "Paginación del blog", previous: "Anterior", next: "Siguiente", page: "Página", of: "de" },
+};
 
 function getPage(searchParams: { page?: string | string[] }): number {
   const raw = searchParams.page;
@@ -43,6 +49,7 @@ export default async function BlogPage({
   const { lang } = await params;
   const page = getPage((await searchParams) ?? {});
   if (!page) notFound();
+  const labels = PAGINATION_LABELS[lang];
 
   const total = await sanityClient.fetch<number>(articlesCountByLang, { lang });
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -113,16 +120,16 @@ export default async function BlogPage({
       )}
 
       {totalPages > 1 && (
-        <nav aria-label="Blog pagination" className="mt-8 flex items-center justify-center gap-4">
+        <nav aria-label={labels.navigation} className="mt-8 flex items-center justify-center gap-4">
           {page > 1 ? (
             <Link rel="prev" href={pageHref(page - 1)} className="rounded border px-4 py-2 hover:bg-gray-50">
-              Previous
+              {labels.previous}
             </Link>
           ) : <span />}
-          <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+          <span className="text-sm text-gray-700">{labels.page} {page} {labels.of} {totalPages}</span>
           {page < totalPages ? (
             <Link rel="next" href={pageHref(page + 1)} className="rounded border px-4 py-2 hover:bg-gray-50">
-              Next
+              {labels.next}
             </Link>
           ) : <span />}
         </nav>
