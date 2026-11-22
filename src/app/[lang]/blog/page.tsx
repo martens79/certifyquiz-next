@@ -50,7 +50,7 @@ export default async function BlogPage({
 
   const start = (page - 1) * PAGE_SIZE;
   const end = start + PAGE_SIZE;
-  const articles = await sanityClient.fetch(articlesPageByLang, { lang, start, end });
+  const articles = await sanityClient.fetch(articlesPageByLang(start, end), { lang });
 
   // EN root = /blog
   // altre lingue = /es/blog, /fr/blog, /it/blog
