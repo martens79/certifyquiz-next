@@ -233,7 +233,7 @@ test("QuizEngine: label overrides are text-only and every default string is pres
   }
   // nessun uso delle etichette fuori dai punti di sola visualizzazione
   const uses = src.match(/mockLabels/g)!.length;
-  assert.equal(uses, 7, "mockLabels compare solo nei 4 punti di testo (badge modalità, badge pratica, badge contesto, banner titolo+sottotitolo)");
+  assert.equal(uses, 8, "mockLabels compare solo nei 5 punti di testo (badge modalità, badge pratica, badge contesto, banner titolo+sottotitolo, nota Mock Review)");
   assert.doesNotMatch(src, /if \([^)]*mockLabels/);
 });
 
@@ -243,4 +243,38 @@ test("types: mockLabels is optional on QuizContext; CCNA and ISC2 CC mock pages 
   const page = readFileSync("src/app/[lang]/quiz/[slug]/mock-exam/page.tsx", "utf8");
   assert.equal((page.match(/mockLabels:/g) ?? []).length, 1);
   assert.ok(!/ccna|isc2/i.test(page.match(/mockLabels:[^\n]*/)![0]));
+});
+
+/* ---------- Schermata finale: nota Mock Review senza pass Complete ---------- */
+
+test("AI-103 Mock Review note names Premium only: no Complete pass, four languages", () => {
+  for (const lang of LANGS) {
+    const note = AI103_ENGINE_LABELS[lang].reviewNote;
+    assert.match(note, /Premium/, lang);
+    assert.doesNotMatch(note, /Complete|pass\b|pase|pack|pacchetto|paquete|forfait/i, `${lang}: ${note}`);
+    assert.doesNotMatch(note, /simulaz|simulation|simulaci/i, `${lang}: ${note}`);
+  }
+  assert.equal(new Set(LANGS.map((l) => AI103_ENGINE_LABELS[l].reviewNote)).size, 4);
+});
+
+test("QuizEngine Mock Review screen: text-only override for AI-103, historical copy and logic untouched", () => {
+  const src = readFileSync("src/components/quiz/QuizEngine.tsx", "utf8");
+  assert.match(src, /\{context\?\.mockLabels\?\.reviewNote \?\? \(lang === 'it'/);
+  for (const t of [
+    "Incluso nel pass Complete della certificazione e in Premium.",
+    "Inclus dans le pass Complete de la certification et dans Premium.",
+    "Incluido en el pase Complete de la certificación y en Premium.",
+    "Included in the certification Complete pass and in Premium.",
+  ]) assert.ok(src.includes(t), t);
+  // La logica di accesso/revisione/pagamento non dipende dalle etichette.
+  assert.match(src, /effectiveMode === 'exam' && mockReviewGate && !isPremiumUser/);
+  assert.match(src, /setMockReviewGate\(res\.reviewAvailable \? null : crypto\.randomUUID\(\)\)/);
+  assert.match(src, /<MockCompleteLink lang=\{lang\} certificationSlug=\{context\.certificationSlug\} \/>/);
+  assert.match(src, /trackFunnelEvent\(\{\s*event: 'mock_review_cta_clicked'/);
+});
+
+test("MockCompleteLink is unchanged and only renders for slugs with a real Complete offer", () => {
+  const src = readFileSync("src/components/quiz/MockCompleteLink.tsx", "utf8");
+  assert.match(src, /packageKind\(o\.productCode\) === "complete" && o\.checkoutAvailable/);
+  assert.match(src, /if \(!offerCode \|\| twa\) return null;/);
 });

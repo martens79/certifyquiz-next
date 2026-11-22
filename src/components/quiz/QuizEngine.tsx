@@ -3003,13 +3003,13 @@ const assessmentCopy =
                     : 'Mock Review: see exactly where you went wrong'}
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-gray-700">
-                  {lang === 'it'
+                  {context?.mockLabels?.reviewNote ?? (lang === 'it'
                     ? 'Rivedi ogni domanda della simulazione con la tua risposta e quella corretta. Incluso nel pass Complete della certificazione e in Premium.'
                     : lang === 'fr'
                     ? 'Revois chaque question de la simulation avec ta réponse et la bonne réponse. Inclus dans le pass Complete de la certification et dans Premium.'
                     : lang === 'es'
                     ? 'Revisa cada pregunta de la simulación con tu respuesta y la correcta. Incluido en el pase Complete de la certificación y en Premium.'
-                    : 'Review every simulation question with your answer and the correct one. Included in the certification Complete pass and in Premium.'}
+                    : 'Review every simulation question with your answer and the correct one. Included in the certification Complete pass and in Premium.')}
                 </p>
                 {context?.certificationSlug && <MockCompleteLink lang={lang} certificationSlug={context.certificationSlug} />}
                 <a

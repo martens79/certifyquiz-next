@@ -66,5 +66,7 @@ export type QuizContext = {
     practiceBadge: string;
     notice: string;
     noticeSub: string;
+    /** Frase della schermata finale sulla Mock Review (nessun pass Complete per AI-103). */
+    reviewNote: string;
   };
 };

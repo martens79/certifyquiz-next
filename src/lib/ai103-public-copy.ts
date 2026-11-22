@@ -28,7 +28,7 @@ export const AI103_ENGINE_CERT_NAME = "AI-103 AI Apps and Agents Developer";
  */
 export const AI103_ENGINE_LABELS: Record<
   Ai103Lang,
-  { contextBadge: string; modeBadge: string; practiceBadge: string; notice: string; noticeSub: string }
+  { contextBadge: string; modeBadge: string; practiceBadge: string; notice: string; noticeSub: string; reviewNote: string }
 > = {
   it: {
     contextBadge: "SESSIONE DI PRATICA",
@@ -36,6 +36,7 @@ export const AI103_ENGINE_LABELS: Record<
     practiceBadge: "Sessione di pratica",
     notice: "Pratica a tempo: niente feedback immediato",
     noticeSub: "Concentrati su tempo e precisione. Potrai rivedere le risposte alla fine. Il banco di domande è in revisione rispetto agli obiettivi AI-103.",
+    reviewNote: "Rivedi ogni domanda della sessione con la tua risposta e quella corretta. Incluso in Premium.",
   },
   en: {
     contextBadge: "PRACTICE SESSION",
@@ -43,6 +44,7 @@ export const AI103_ENGINE_LABELS: Record<
     practiceBadge: "Practice session",
     notice: "Timed practice: no instant feedback",
     noticeSub: "Focus on time and accuracy. You can review your answers at the end. The question bank is under review against the AI-103 objectives.",
+    reviewNote: "Review every question of the session with your answer and the correct one. Included in Premium.",
   },
   fr: {
     contextBadge: "SESSION D'ENTRAÎNEMENT",
@@ -50,6 +52,7 @@ export const AI103_ENGINE_LABELS: Record<
     practiceBadge: "Session d'entraînement",
     notice: "Entraînement chronométré : aucun retour immédiat",
     noticeSub: "Concentre-toi sur le temps et la précision. Tu pourras revoir tes réponses à la fin. La banque de questions est en cours de révision par rapport aux objectifs AI-103.",
+    reviewNote: "Revois chaque question de la session avec ta réponse et la bonne réponse. Inclus dans Premium.",
   },
   es: {
     contextBadge: "SESIÓN DE PRÁCTICA",
@@ -57,6 +60,7 @@ export const AI103_ENGINE_LABELS: Record<
     practiceBadge: "Sesión de práctica",
     notice: "Práctica cronometrada: sin feedback inmediato",
     noticeSub: "Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final. El banco de preguntas está en revisión respecto a los objetivos de AI-103.",
+    reviewNote: "Revisa cada pregunta de la sesión con tu respuesta y la correcta. Incluido en Premium.",
   },
 };
 
