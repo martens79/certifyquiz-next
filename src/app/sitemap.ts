@@ -329,6 +329,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             changeFrequency: "monthly" as const,
             priority: 0.7,
           },
+          // Indice blog (pagina 1, indicizzabile, canonical su se stessa): /blog, /it|fr|es/blog.
+          // Le pagine ?page=N non sono incluse: indicizzabilita' da valutare a parte.
+          {
+            url: `${base}/${BLOG_SEGMENT_BY_LANG[lang]}`,
+            changeFrequency: "weekly" as const,
+            priority: 0.75,
+          },
           // Statiche lingua
           {
             url: `${base}/${GAMES_SEGMENT_BY_LANG[lang]}`,
