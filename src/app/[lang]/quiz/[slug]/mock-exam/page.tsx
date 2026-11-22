@@ -1,7 +1,7 @@
 // src/app/[lang]/quiz/[slug]/mock-exam/page.tsx
 "use client";
 
-import { AI103_DISPLAY_NAME, AI103_MOCK_COPY, isAi103Slug } from "@/lib/ai103-public-copy";
+import { AI103_DISPLAY_NAME, AI103_ENGINE_CERT_NAME, AI103_ENGINE_LABELS, AI103_MOCK_COPY, isAi103Slug } from "@/lib/ai103-public-copy";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 
@@ -280,7 +280,8 @@ export default function MockExamPage() {
         hideModeSwitch
         context={{
           kind: "mock",
-          certificationName: certName.toUpperCase(),
+          certificationName: isAi103Slug(currentSlug) ? AI103_ENGINE_CERT_NAME.toUpperCase() : certName.toUpperCase(),
+          mockLabels: isAi103Slug(currentSlug) ? (AI103_ENGINE_LABELS[currentLang] ?? AI103_ENGINE_LABELS.en) : undefined,
           certificationSlug: currentSlug,
           certificationId: certId,
           backHref: withLang(currentLang, `/quiz/${currentSlug}`),

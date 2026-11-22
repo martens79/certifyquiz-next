@@ -12,11 +12,56 @@ export const isAi103Slug = (slug: string | null | undefined): boolean => slug ==
 export const AI103_DISPLAY_NAME = "AI-103";
 
 /** Titolo della card Premium nella pagina certificazione (al posto di "Preparazione completa per …"). */
-export const AI103_PREMIUM_TITLE: Record<Ai103Lang, (name: string) => string> = {
-  it: (n) => `Risorse di pratica per ${n}`,
-  en: (n) => `Practice resources for ${n}`,
-  fr: (n) => `Ressources d'entraînement pour ${n}`,
-  es: (n) => `Recursos de práctica para ${n}`,
+export const AI103_PREMIUM_TITLE: Record<Ai103Lang, string> = {
+  it: "Risorse Premium per AI-103",
+  en: "Premium resources for AI-103",
+  fr: "Ressources Premium pour AI-103",
+  es: "Recursos Premium para AI-103",
+};
+
+/** Nome pubblico mostrato nell'intestazione del motore quiz (sostituisce quello ricavato dallo slug). */
+export const AI103_ENGINE_CERT_NAME = "AI-103 AI Apps and Agents Developer";
+
+/**
+ * Etichette del motore quiz per la sessione a tempo AI-103. Solo testo: non cambiano timer,
+ * salvataggio, valutazione. Le altre certificazioni non passano `mockLabels` e restano invariate.
+ */
+export const AI103_ENGINE_LABELS: Record<
+  Ai103Lang,
+  { contextBadge: string; modeBadge: string; practiceBadge: string; notice: string; noticeSub: string; reviewNote: string }
+> = {
+  it: {
+    contextBadge: "SESSIONE DI PRATICA",
+    modeBadge: "PRATICA A TEMPO",
+    practiceBadge: "Sessione di pratica",
+    notice: "Pratica a tempo: niente feedback immediato",
+    noticeSub: "Concentrati su tempo e precisione. Potrai rivedere le risposte alla fine. Il banco di domande è in revisione rispetto agli obiettivi AI-103.",
+    reviewNote: "Rivedi ogni domanda della sessione con la tua risposta e quella corretta. Incluso in Premium.",
+  },
+  en: {
+    contextBadge: "PRACTICE SESSION",
+    modeBadge: "TIMED PRACTICE",
+    practiceBadge: "Practice session",
+    notice: "Timed practice: no instant feedback",
+    noticeSub: "Focus on time and accuracy. You can review your answers at the end. The question bank is under review against the AI-103 objectives.",
+    reviewNote: "Review every question of the session with your answer and the correct one. Included in Premium.",
+  },
+  fr: {
+    contextBadge: "SESSION D'ENTRAÎNEMENT",
+    modeBadge: "ENTRAÎNEMENT CHRONOMÉTRÉ",
+    practiceBadge: "Session d'entraînement",
+    notice: "Entraînement chronométré : aucun retour immédiat",
+    noticeSub: "Concentre-toi sur le temps et la précision. Tu pourras revoir tes réponses à la fin. La banque de questions est en cours de révision par rapport aux objectifs AI-103.",
+    reviewNote: "Revois chaque question de la session avec ta réponse et la bonne réponse. Inclus dans Premium.",
+  },
+  es: {
+    contextBadge: "SESIÓN DE PRÁCTICA",
+    modeBadge: "PRÁCTICA CRONOMETRADA",
+    practiceBadge: "Sesión de práctica",
+    notice: "Práctica cronometrada: sin feedback inmediato",
+    noticeSub: "Concéntrate en el tiempo y la precisión. Podrás revisar tus respuestas al final. El banco de preguntas está en revisión respecto a los objetivos de AI-103.",
+    reviewNote: "Revisa cada pregunta de la sesión con tu respuesta y la correcta. Incluido en Premium.",
+  },
 };
 
 /** Simulazione d'esame: sessione a tempo, senza dichiarare di replicare l'esame ufficiale. */
