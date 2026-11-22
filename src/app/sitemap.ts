@@ -122,6 +122,7 @@ type SanityArticle = {
   title?: string | null;
   excerpt?: string | null;
   body?: unknown;
+  noindex?: boolean | null;
 };
 
 const blogSitemapQuery = `
@@ -138,6 +139,7 @@ const blogSitemapQuery = `
   ,title
   ,excerpt
   ,"body": coalesce(body, content)
+  ,"noindex": seo.noindex
 }`;
 
 async function getRemoteCerts(): Promise<RemoteCert[]> {
