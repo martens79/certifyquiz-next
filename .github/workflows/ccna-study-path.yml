@@ -1,7 +1,7 @@
 name: CCNA Study Path
 on:
   pull_request:
-    paths: ['src/components/quiz/CcnaStudyPath.tsx', 'src/lib/ccna-study-path.ts', 'src/app/**/study-path/**', 'tests/ccna-study-path.browser.cjs', '.github/workflows/ccna-study-path.yml']
+    paths: ['src/components/quiz/CcnaStudyPath.tsx', 'src/lib/ccna-study-path.ts', 'src/app/**/study-path/**', 'tests/ccna-study-path.browser.cjs', 'tests/ccna-study-path.mobile.browser.cjs', '.github/workflows/ccna-study-path.yml']
 jobs:
   diagnostic-ui:
     runs-on: ubuntu-24.04
@@ -14,4 +14,4 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npx playwright install --with-deps chromium
-      - run: node --test tests/ccna-study-path.browser.cjs
+      - run: node --test tests/ccna-study-path.browser.cjs tests/ccna-study-path.mobile.browser.cjs

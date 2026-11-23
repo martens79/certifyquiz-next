@@ -142,9 +142,9 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
     selected = answers.find((a) => a.question_id === q?.id)?.answer_id;
   const isSaved = JSON.stringify(answers) === JSON.stringify(attempt?.answers);
   const primary =
-    "inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50";
+    "scroll-mb-44 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50";
   const ghost =
-    "inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-40";
+    "scroll-mb-44 inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-40";
   const linkBtn =
     "text-sm font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900";
   const topics = attempt?.result?.topics ?? [];
@@ -165,8 +165,10 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
   } as const;
   const first = topics[0];
   const showBody = !loading && !busy && failed?.kind !== "load";
+  // Mobile: the fixed bottom nav (64px) and the site chat button (80-136px from the
+  // bottom) sit over the page end, so keep clear space below the last action (pb-40).
   return (
-    <div className="mx-auto w-full max-w-3xl px-3 py-6 sm:px-4 sm:py-10">
+    <div className="mx-auto w-full max-w-3xl px-3 pb-40 pt-6 sm:px-4 sm:pt-10 md:pb-10">
       <div
         data-testid="ccna-study-path"
         className="space-y-6 rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-5 text-slate-900 shadow-sm sm:p-8"
