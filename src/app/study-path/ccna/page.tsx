@@ -1,8 +1,11 @@
 import CcnaStudyPath from "@/components/quiz/CcnaStudyPath";
 
+import { studyCopy } from "@/lib/ccna-study-path";
+
 // English SEO routes live at the root; middleware canonicalizes /en/* here.
 export const metadata = {
-  title: "CCNA Study Path | CertifyQuiz",
+  title: `${studyCopy.en.title} | CertifyQuiz`,
+  description: studyCopy.en.intro,
   robots: { index: false, follow: true },
 };
 

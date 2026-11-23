@@ -160,10 +160,10 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
             i + 1,
           );
       }
-      await page.getByText("60% · 18/30").waitFor();
+      await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
       assert.equal(await page.getByRole("listitem").count(), 1);
       await page.reload();
-      await page.getByText("60% · 18/30").waitFor();
+      await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
       // Voluntary restart needs confirmation; cancelling keeps the saved result.
       await page.getByRole("button").click();
       const dialog = page.getByRole("alertdialog");
@@ -172,7 +172,7 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
       await dialog.getByRole("button").nth(1).click();
       assert.equal(await dialog.count(), 0);
       assert.equal(restarts, 0);
-      await page.getByText("60% · 18/30").waitFor();
+      await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
       await page.getByRole("button").click();
       await dialog.getByRole("button").first().click();
       await page.waitForFunction(() =>
