@@ -4,7 +4,7 @@ on:
     paths: ['src/components/quiz/CcnaStudyPath.tsx', 'src/lib/ccna-study-path.ts', 'src/app/**/study-path/**', 'tests/ccna-study-path.browser.cjs', '.github/workflows/ccna-study-path.yml']
 jobs:
   diagnostic-ui:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
