@@ -68,8 +68,8 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, in the Italia
 test("seven modules in official order; informational only: no module carries a slug or link", () => {
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.number), [1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.title), OFFICIAL_TITLES);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["coming_soon", "available", "coming_soon", "coming_soon", "coming_soon", "coming_soon", "available"]);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [undefined, 570, undefined, undefined, undefined, undefined, 575]);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["available", "available", "available", "available", "available", "coming_soon", "available"]);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [569, 570, 571, 572, 573, undefined, 575]);
   const reg = CERTS_BY_SLUG[SLUG];
   assert.equal(reg.topics.length, 7);
   for (const t of reg.topics) {
