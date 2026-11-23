@@ -425,7 +425,7 @@ const pageTopics =
 
         {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
         {data.slug === "eipass" && lang === "it" && <EipassStandardPointer />}
-        {data.slug === "ccna" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4"><Link className="font-semibold underline" href={`/${lang}/study-path/ccna`}>{({it:"Study Path CCNA · Diagnostico gratuito, 30 domande",en:"CCNA Study Path · Free 30-question diagnostic",fr:"Parcours CCNA · Diagnostic gratuit de 30 questions",es:"Ruta CCNA · Diagnóstico gratuito de 30 preguntas"})[lang]}</Link></p>}
+        {data.slug === "ccna" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4"><Link className="font-semibold underline" href={`/${lang}/study-path/ccna`}>{({it:"Scopri quanto sei preparato per il CCNA · 30 domande",en:"Find out how ready you are for the CCNA · 30 questions",fr:"Découvrez où vous en êtes pour le CCNA · 30 questions",es:"Descubre cómo vas de preparación para el CCNA · 30 preguntas"})[lang]}</Link></p>}
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}

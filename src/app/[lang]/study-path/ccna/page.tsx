@@ -1,10 +1,19 @@
 import { notFound } from "next/navigation";
 import CcnaStudyPath from "@/components/quiz/CcnaStudyPath";
-import type { StudyLang } from "@/lib/ccna-study-path";
-export const metadata = {
-  title: "CCNA Study Path | CertifyQuiz",
-  robots: { index: false, follow: true },
-};
+import { studyCopy, type StudyLang } from "@/lib/ccna-study-path";
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const c = studyCopy[(lang in studyCopy ? lang : "it") as StudyLang];
+  return {
+    title: `${c.title} | CertifyQuiz`,
+    description: c.intro,
+    robots: { index: false, follow: true },
+  };
+}
 export default async function Page({
   params,
 }: {
