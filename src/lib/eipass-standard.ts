@@ -25,7 +25,7 @@ export const EIPASS_USER_LANDING_PATH = "/it/certificazioni/eipass";
 export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDARD_SLUG}`;
 
 /**
- * "available" is DORMANT: no module uses it today. A module becomes available only by a deliberate code change in this
+ * "available" marks the modules with a live topic (2, 3, 4, 5 and 7 at the time of writing). A module becomes available only by a deliberate code change in this
  * file (status + topicId) together with the database activation of its topic (see docs/eipass-standard/M2_RELEASE.md);
  * a database flag alone never shows a link. The visible copy follows the availability automatically
  * (eipassStandardCopy below) and tests/eipass-standard-modules.test.tsx keeps the registry text equal to that helper.
@@ -48,9 +48,9 @@ export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
   { number: 1, title: "I fondamenti dell'ICT", digcompArea: { number: 5, name: "Risolvere problemi" }, status: "coming_soon" },
   // Module 2 is the first module with a short practice. topicId = topics.id of the module in the database (verified in Production on 2026-11-05: certification 79, topics 569-575).
   { number: 2, title: "Navigare e cercare informazioni sul Web", digcompArea: { number: 1, name: "Alfabetizzazione su informazioni e dati" }, status: "available", topicId: 570 },
-  { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" }, status: "coming_soon" },
-  { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "coming_soon" },
-  { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
+  { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" }, status: "available", topicId: 571 },
+  { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "available", topicId: 572 },
+  { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 573 },
   { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
   { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 575 },
 ] as const;
@@ -136,7 +136,7 @@ export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> 
       cardPill: undefined,
     };
   }
-  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.join(" e ")}`;
+  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.length > 2 ? `${available.slice(0, -1).join(", ")} e ${available[available.length - 1]}` : available.join(" e ")}`;
   const multiple = available.length > 1;
   const label = multiple ? "Moduli disponibili" : EIPASS_STANDARD_PARTIAL_LABEL;
   const practice = multiple ? "sono disponibili esercitazioni brevi" : "è disponibile un'esercitazione breve";
