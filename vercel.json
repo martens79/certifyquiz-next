@@ -29,7 +29,8 @@
       "codex/fix-registration-response-20261113": false,
       "codex/fix-quiz-question-milestone-20261113": false,
       "fix/quiz-result-and-guest-copy": false,
-      "fix/maps-package-access": false
+      "fix/maps-package-access": false,
+      "feat/ccna-study-path-mvp-20261123": false
     }
   }
 }
