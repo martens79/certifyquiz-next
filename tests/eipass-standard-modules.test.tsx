@@ -82,9 +82,9 @@ const withModule2Available = dormantModules.map((m) =>
   m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m,
 );
 
-test("activation state: modules 2, 3, 4, 5 and 7 have links; modules 1 and 6 are coming soon", () => {
+test("activation state: modules 1, 2, 3, 4, 5 and 7 have links; module 6 is coming soon", () => {
   assert.equal(standard.hasAvailableEipassStandardModule(), true);
-  const topics = new Map([[2, 570], [3, 571], [4, 572], [5, 573], [7, 575]]);
+  const topics = new Map([[1, 569], [2, 570], [3, 571], [4, 572], [5, 573], [7, 575]]);
   for (const m of standard.EIPASS_STANDARD_MODULES) {
     const topicId = topics.get(m.number);
     if (topicId !== undefined) {
@@ -99,11 +99,11 @@ test("activation state: modules 2, 3, 4, 5 and 7 have links; modules 1 and 6 are
   }
 });
 
-test("registry render: links to modules 2, 3, 4, 5 and 7, two disabled 'Prossimamente' modules", async () => {
+test("registry render: links to modules 1, 2, 3, 4, 5 and 7, one disabled 'Prossimamente' modules", async () => {
   const r = await render();
-  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/570", "/it/quiz/topic/571", "/it/quiz/topic/572", "/it/quiz/topic/573", "/it/quiz/topic/575"]);
-  assert.equal(r.root.findAllByType("button").length, 2);
-  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 2);
+  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/569", "/it/quiz/topic/570", "/it/quiz/topic/571", "/it/quiz/topic/572", "/it/quiz/topic/573", "/it/quiz/topic/575"]);
+  assert.equal(r.root.findAllByType("button").length, 1);
+  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 1);
 });
 
 test("available module 2: one link to its topic, one 'Disponibile', six disabled buttons, honest copy", async () => {
