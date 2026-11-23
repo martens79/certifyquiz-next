@@ -6,6 +6,8 @@ const path = require("node:path");
 const esbuild = require("esbuild");
 const { chromium } = require("@playwright/test");
 
+const RETRY = { it: "Riprova", en: "Try again", fr: "Réessayer", es: "Reintentar" };
+
 test("CCNA component: four languages, resume, server result, recovery and guest login", async (t) => {
   const root = path.resolve(__dirname, "..");
   const bundle = await esbuild.build({
@@ -72,12 +74,19 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
         viewport: { width: 390, height: 844 },
       });
       let attempt = null,
-        unavailable = false;
+        unavailable = false,
+        failNext = false,
+        restarts = 0;
       await page.route("**/api/study-path/**", async (route) => {
         const req = route.request(),
           url = new URL(req.url());
         if (unavailable)
           return route.fulfill({ status: 503, json: { error: "unavailable" } });
+        if (url.pathname.endsWith("/restart")) restarts++;
+        if (failNext && url.pathname.endsWith("/progress")) {
+          failNext = false;
+          return route.fulfill({ status: 500, json: { error: "temporary" } });
+        }
         if (
           url.pathname.endsWith("/start") ||
           url.pathname.endsWith("/restart")
@@ -133,7 +142,17 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
       );
       for (let i = 2; i <= 30; i++) {
         await page.getByRole("radio").first().check();
-        await page.locator("section button").last().click();
+        if (i === 2) {
+          // Temporary failure: only "retry" is offered, the selection is kept, no restart request.
+          failNext = true;
+          await page.locator("section button").last().click();
+          await page.getByRole("alert").waitFor();
+          assert.equal(await page.getByRole("alert").getByRole("button").count(), 1);
+          assert.equal(await page.getByRole("radio").first().isChecked(), true);
+          assert.equal(restarts, 0);
+          assert.equal(await page.getByRole("alert").getByRole("button").innerText(), RETRY[lang]);
+          await page.getByRole("alert").getByRole("button").click();
+        } else await page.locator("section button").last().click();
         if (i < 30)
           await page.waitForFunction(
             (n) =>
@@ -145,6 +164,34 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
       assert.equal(await page.getByRole("listitem").count(), 1);
       await page.reload();
       await page.getByText("60% · 18/30").waitFor();
+      // Voluntary restart needs confirmation; cancelling keeps the saved result.
+      await page.getByRole("button").click();
+      const dialog = page.getByRole("alertdialog");
+      await dialog.waitFor();
+      assert.equal(await dialog.getByRole("button").count(), 2);
+      await dialog.getByRole("button").nth(1).click();
+      assert.equal(await dialog.count(), 0);
+      assert.equal(restarts, 0);
+      await page.getByText("60% · 18/30").waitFor();
+      await page.getByRole("button").click();
+      await dialog.getByRole("button").first().click();
+      await page.waitForFunction(() =>
+        document.querySelector("legend")?.textContent?.endsWith("Q1"),
+      );
+      assert.equal(restarts, 1);
+      unavailable = true;
+      await page.reload();
+      await page.getByRole("alert").waitFor();
+      // Unavailable/temporary load error: retry only, never restart, and no start button.
+      assert.equal(await page.getByRole("alert").getByRole("button").count(), 1);
+      assert.equal(await page.getByRole("button").count(), 1);
+      assert.equal(await page.getByRole("alert").getByRole("button").innerText(), RETRY[lang]);
+      unavailable = false;
+      await page.getByRole("alert").getByRole("button").click();
+      await page.waitForFunction(() =>
+        document.querySelector("legend")?.textContent?.endsWith("Q1"),
+      );
+      assert.equal(restarts, 1);
       unavailable = true;
       await page.reload();
       await page.getByRole("alert").waitFor();

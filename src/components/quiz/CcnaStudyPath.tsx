@@ -17,7 +17,13 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
   const [answers, setAnswers] = useState<StudyAnswer[]>([]);
   const [index, setIndex] = useState(0),
     [busy, setBusy] = useState(true),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    // What to repeat after a failure. A temporary error never discards the attempt.
+    [failed, setFailed] = useState<{
+      kind: "load" | "start" | "restart" | "progress" | "finish";
+      conflict: boolean;
+    } | null>(null),
+    [confirmRestart, setConfirmRestart] = useState(false);
   const generation = useRef(0);
   async function request(path: string, method = "GET", body?: unknown) {
     const r = await apiFetch(
@@ -34,24 +40,20 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
       { redirectOnUnauthorized: false },
     );
     if (!r.ok)
-      throw new Error(
-        r.status === 404 || r.status === 503 ? c.unavailable : c.error,
+      throw Object.assign(
+        new Error(
+          r.status === 404 || r.status === 503
+            ? c.unavailable
+            : r.status === 409
+              ? c.conflict
+              : c.error,
+        ),
+        { status: r.status },
       );
     return (await r.json()).attempt as StudyAttempt | null;
   }
-  useEffect(() => {
-    const g = ++generation.current;
-    setAttempt(null);
-    setAnswers([]);
-    setIndex(0);
-    setError("");
-    if (loading) return;
-    if (!user) {
-      setBusy(false);
-      return;
-    }
-    setBusy(true);
-    request("")
+  function load(g: number) {
+    return request("")
       .then((a) => {
         if (g !== generation.current) return;
         setAttempt(a);
@@ -59,11 +61,29 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
         setIndex(Math.min(a?.answers.length || 0, 29));
       })
       .catch((e) => {
-        if (g === generation.current) setError(e.message);
+        if (g !== generation.current) return;
+        setError(e.message || c.error);
+        setFailed({ kind: "load", conflict: e?.status === 409 });
       })
       .finally(() => {
         if (g === generation.current) setBusy(false);
       });
+  }
+  useEffect(() => {
+    const g = ++generation.current;
+    setAttempt(null);
+    setAnswers([]);
+    setIndex(0);
+    setError("");
+    setFailed(null);
+    setConfirmRestart(false);
+    if (loading) return;
+    if (!user) {
+      setBusy(false);
+      return;
+    }
+    setBusy(true);
+    load(g);
     const guard = generation;
     return () => {
       guard.current++;
@@ -71,10 +91,23 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
     // Reload whenever the authenticated identity or language changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, loading, lang]);
+  function retry() {
+    if (!failed) return;
+    if (failed.kind === "load" || failed.conflict) {
+      // Reload the server copy: local selections are kept only if the attempt is unchanged.
+      const g = ++generation.current;
+      setBusy(true);
+      setError("");
+      setFailed(null);
+      load(g);
+    } else void act(failed.kind);
+  }
   async function act(kind: "start" | "restart" | "progress" | "finish") {
     const g = generation.current;
     setBusy(true);
     setError("");
+    setFailed(null);
+    setConfirmRestart(false);
     try {
       const a = await request(
         `/${kind}`,
@@ -87,8 +120,10 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
       if (kind === "progress") setIndex(Math.min(index + 1, 29));
       else if (kind === "restart" || kind === "start") setIndex(0);
     } catch (e) {
-      if (g === generation.current)
+      if (g === generation.current) {
         setError(e instanceof Error ? e.message : c.error);
+        setFailed({ kind, conflict: (e as { status?: number })?.status === 409 });
+      }
     } finally {
       if (g === generation.current) setBusy(false);
     }
@@ -100,18 +135,45 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
       <h1 className="text-3xl font-bold">{c.title}</h1>
       <p>{c.intro}</p>
       {error && (
-        <div role="alert" className="rounded border border-red-300 p-4">
+        <div role="alert" className="rounded border border-red-300 p-4 space-y-3">
           <p>{error}</p>
-          {user && !busy && (
-            <button className="underline" onClick={() => act("restart")}>
-              {c.restart}
-            </button>
+          {user && !busy && failed && (
+            <div className="flex gap-4">
+              <button className="underline" onClick={retry}>
+                {c.retry}
+              </button>
+              {failed.conflict && attempt && (
+                <button
+                  className="underline"
+                  onClick={() => setConfirmRestart(true)}
+                >
+                  {c.restart}
+                </button>
+              )}
+            </div>
           )}
+        </div>
+      )}
+      {confirmRestart && !busy && (
+        <div
+          role="alertdialog"
+          aria-label={c.restartConfirm}
+          className="rounded border border-amber-400 p-4 space-y-3"
+        >
+          <p>{c.restartConfirm}</p>
+          <div className="flex gap-4">
+            <button className="underline" onClick={() => act("restart")}>
+              {c.restartYes}
+            </button>
+            <button className="underline" onClick={() => setConfirmRestart(false)}>
+              {c.cancel}
+            </button>
+          </div>
         </div>
       )}
       {loading || busy ? (
         <p role="status">{c.loading}</p>
-      ) : !user ? (
+      ) : failed?.kind === "load" ? null : !user ? (
         <Link
           className="underline"
           href={`/${lang}/login?redirect=${encodeURIComponent(`/${lang}/study-path/ccna`)}`}
@@ -147,7 +209,7 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
               </li>
             ))}
           </ol>
-          <button className="underline" onClick={() => act("restart")}>
+          <button className="underline" onClick={() => setConfirmRestart(true)}>
             {c.restart}
           </button>
           <p>{c.future}</p>

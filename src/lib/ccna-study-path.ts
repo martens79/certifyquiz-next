@@ -15,6 +15,12 @@ export const studyCopy = {
       "Operazione non riuscita. Riprova: i progressi già salvati sono conservati.",
     unavailable: "Il diagnostico non è ancora disponibile. Riprova più tardi.",
     retry: "Riprova",
+    conflict:
+      "Il diagnostico è cambiato o è stato aggiornato da un altro dispositivo. Riprova per ricaricare i progressi salvati.",
+    restartConfirm:
+      "Avviare un nuovo diagnostico? Le risposte e l’anteprima attuali saranno sostituite.",
+    restartYes: "Sì, avvia un nuovo diagnostico",
+    cancel: "Annulla",
     result: "La tua anteprima personalizzata",
     priorities: "Argomenti da affrontare per primi",
     weak: "Da rafforzare",
@@ -44,6 +50,12 @@ export const studyCopy = {
       "The operation failed. Try again: previously saved progress is preserved.",
     unavailable: "The diagnostic is not available yet. Please try again later.",
     retry: "Try again",
+    conflict:
+      "The diagnostic changed or was updated from another device. Try again to reload your saved progress.",
+    restartConfirm:
+      "Start a new diagnostic? Your current answers and preview will be replaced.",
+    restartYes: "Yes, start a new diagnostic",
+    cancel: "Cancel",
     result: "Your personalized preview",
     priorities: "Topics to study first",
     weak: "Needs work",
@@ -74,6 +86,12 @@ export const studyCopy = {
     unavailable:
       "Le diagnostic n’est pas encore disponible. Réessayez plus tard.",
     retry: "Réessayer",
+    conflict:
+      "Le diagnostic a changé ou a été mis à jour depuis un autre appareil. Réessayez pour recharger vos progrès enregistrés.",
+    restartConfirm:
+      "Commencer un nouveau diagnostic ? Vos réponses et votre aperçu actuels seront remplacés.",
+    restartYes: "Oui, commencer un nouveau diagnostic",
+    cancel: "Annuler",
     result: "Votre aperçu personnalisé",
     priorities: "Sujets à étudier en premier",
     weak: "À renforcer",
@@ -103,6 +121,12 @@ export const studyCopy = {
       "La operación ha fallado. Inténtalo de nuevo: los progresos ya guardados se conservan.",
     unavailable: "El diagnóstico aún no está disponible. Inténtalo más tarde.",
     retry: "Reintentar",
+    conflict:
+      "El diagnóstico ha cambiado o se actualizó desde otro dispositivo. Inténtalo de nuevo para recargar tu progreso guardado.",
+    restartConfirm:
+      "¿Iniciar un nuevo diagnóstico? Tus respuestas y la vista previa actuales serán reemplazadas.",
+    restartYes: "Sí, iniciar un nuevo diagnóstico",
+    cancel: "Cancelar",
     result: "Tu vista previa personalizada",
     priorities: "Temas que estudiar primero",
     weak: "Por reforzar",
