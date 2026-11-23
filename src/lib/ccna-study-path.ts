@@ -89,7 +89,7 @@ export const studyCopy = {
     saved: "Progrès enregistrés sur votre compte.",
   },
   es: {
-    restart: "Iniciar un nuevo diagn�stico",
+    restart: "Iniciar un nuevo diagnóstico",
     title: "Ruta de estudio CCNA",
     intro:
       "Diagnóstico gratuito: 30 preguntas para elegir por dónde empezar. No es un simulacro ni una predicción de aprobado.",

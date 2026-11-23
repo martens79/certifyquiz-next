@@ -1,5 +1,12 @@
 # CCNA Study Path — frontend MVP A/B
 
+Aggiornamento finale: collaudo su Express/Next/MySQL e autenticazione reali PASS,
+15 scenari (otto percorsi IT/EN/FR/ES su desktop/mobile più sette casi tecnici).
+Report: `docs/ccna-study-path-integrated-validation-2026-11-23.md` nella PR backend #186.
+La route EN canonica è `/study-path/ccna`; `/en/study-path/ccna` vi redirige tramite
+il middleware preesistente. Corrette anche la label ES del riavvio e la duplicazione
+del landmark `main`. Nessun blocco tecnico residuo nel collaudo richiesto.
+
 Nuova pagina `/{it|en|fr|es}/study-path/ccna`, collegata dalla pagina CCNA.
 Diagnostico gratuito di 30 domande, autenticazione esistente, salvataggio esplicito
 a ogni “Salva e continua”, ripristino dal server, punteggio e priorità per topic.

@@ -96,7 +96,7 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
   const q = attempt?.questions[index],
     selected = answers.find((a) => a.question_id === q?.id)?.answer_id;
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 space-y-6">
+    <div data-testid="ccna-study-path" className="mx-auto max-w-3xl px-4 py-10 space-y-6">
       <h1 className="text-3xl font-bold">{c.title}</h1>
       <p>{c.intro}</p>
       {error && (
@@ -218,6 +218,6 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
           </p>
         </section>
       ) : null}
-    </main>
+    </div>
   );
 }
