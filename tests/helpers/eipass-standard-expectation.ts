@@ -22,6 +22,7 @@ export function eipassStandardExpectation(modules: ReadonlyArray<EipassStandardM
   }));
   const availableHrefs = list.filter((m) => m.available).map((m) => m.href as string);
   const dormant = availableHrefs.length === 0;
+  const complete = availableHrefs.length === list.length;   // all seven modules available: nothing may say that other modules are still in preparation
   const availableLabel = availableHrefs.length === 1 ? "Primo modulo disponibile" : "Moduli disponibili";
   return {
     dormant,
@@ -39,11 +40,15 @@ export function eipassStandardExpectation(modules: ReadonlyArray<EipassStandardM
     /** Phrases that must appear in the landing content. */
     mustSay: dormant
       ? [/solo informativa/, /non sono ancora disponibili quiz/]
-      : [/esercitazion[ei] brev[ei]/, /non una simulazione dell'esame ufficiale/, /senza alcuna garanzia di superamento/, /Gli altri moduli sono in preparazione/],
+      : complete
+        ? [/esercitazion[ei] brev[ei]/, /non una simulazione dell'esame ufficiale/, /senza alcuna garanzia di superamento/, /tutti e sette i moduli/]
+        : [/esercitazion[ei] brev[ei]/, /non una simulazione dell'esame ufficiale/, /senza alcuna garanzia di superamento/, /Gli altri moduli sono in preparazione/],
     /** Phrases that must NOT appear in the landing content. */
     mustNotSay: dormant
       ? [/Primo modulo disponibile/, /Inizia l'esercitazione breve/, /\bDisponibile\b/]
-      : [/solo informativa/, /non sono ancora disponibili quiz/, /Quiz di preparazione in arrivo/],
+      : complete
+        ? [/solo informativa/, /non sono ancora disponibili quiz/, /Quiz di preparazione in arrivo/, /in preparazione/i]
+        : [/solo informativa/, /non sono ancora disponibili quiz/, /Quiz di preparazione in arrivo/],
     /** Never allowed, in either state: promises, exam simulation, guarantees, unvalidated levels. */
     neverSay: [
       /Inizia il quiz|Avvia (il )?quiz|Passa a Premium|Preparazione completa|Acquista|€/i,

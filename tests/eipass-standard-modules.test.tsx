@@ -82,28 +82,30 @@ const withModule2Available = dormantModules.map((m) =>
   m.number === 2 ? { ...m, status: "available" as const, topicId: 570 } : m,
 );
 
-test("activation state: modules 1, 2, 3, 4, 5 and 7 have links; module 6 is coming soon", () => {
+test("activation state: all seven modules have a link to their topic (569-575, in official order)", () => {
   assert.equal(standard.hasAvailableEipassStandardModule(), true);
-  const topics = new Map([[1, 569], [2, 570], [3, 571], [4, 572], [5, 573], [7, 575]]);
+  const topics = new Map([[1, 569], [2, 570], [3, 571], [4, 572], [5, 573], [6, 574], [7, 575]]);
+  assert.equal(standard.EIPASS_STANDARD_MODULES.length, 7);
   for (const m of standard.EIPASS_STANDARD_MODULES) {
     const topicId = topics.get(m.number);
-    if (topicId !== undefined) {
-      assert.equal(m.status, "available");
-      assert.equal(m.topicId, topicId);
-      assert.equal(standard.getEipassStandardModuleHref(m), `/it/quiz/topic/${topicId}`);
-    } else {
-      assert.equal(m.status, "coming_soon");
-      assert.equal(m.topicId, undefined);
-      assert.equal(standard.getEipassStandardModuleHref(m), null);
-    }
+    assert.equal(m.status, "available");
+    assert.equal(m.topicId, topicId);
+    assert.equal(standard.getEipassStandardModuleHref(m), `/it/quiz/topic/${topicId}`);
   }
+  // Module 6 (Excel) points to topic 574 and nowhere else; the links are Italian only
+  const m6 = standard.EIPASS_STANDARD_MODULES.find((m) => m.number === 6)!;
+  assert.equal(m6.title, "Creare e gestire fogli di lavoro");
+  assert.equal(standard.getEipassStandardModuleHref(m6), "/it/quiz/topic/574");
+  assert.deepEqual([...standard.EIPASS_STANDARD_LANGS], ["it"]);
 });
 
-test("registry render: links to modules 1, 2, 3, 4, 5 and 7, one disabled 'Prossimamente' modules", async () => {
+
+test("registry render: seven links (topics 569-575, module 6 -> 574), no disabled button and no 'Prossimamente'", async () => {
   const r = await render();
-  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/569", "/it/quiz/topic/570", "/it/quiz/topic/571", "/it/quiz/topic/572", "/it/quiz/topic/573", "/it/quiz/topic/575"]);
-  assert.equal(r.root.findAllByType("button").length, 1);
-  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 1);
+  assert.deepEqual(r.root.findAllByType("a").map((a) => a.props.href), ["/it/quiz/topic/569", "/it/quiz/topic/570", "/it/quiz/topic/571", "/it/quiz/topic/572", "/it/quiz/topic/573", "/it/quiz/topic/574", "/it/quiz/topic/575"]);
+  assert.equal(r.root.findAllByType("button").length, 0);
+  assert.equal((flat(r).match(/Prossimamente/g) ?? []).length, 0);
+  assert.equal((flat(r).match(/Disponibile/g) ?? []).length, 7);
 });
 
 test("available module 2: one link to its topic, one 'Disponibile', six disabled buttons, honest copy", async () => {

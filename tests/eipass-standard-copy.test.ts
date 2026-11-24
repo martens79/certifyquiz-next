@@ -53,3 +53,24 @@ test("a module 'available' without a valid topic id changes nothing", () => {
   assert.equal(hasAvailableEipassStandardModule(withoutTopicId), false);
   assert.deepEqual(eipassStandardCopy(withoutTopicId), eipassStandardCopy(dormant));
 });
+
+test("copy, all seven modules available: nothing says other modules are still in preparation or that quizzes are coming", () => {
+  const allAvailable = EIPASS_STANDARD_MODULES.map((m, i) => ({ ...m, status: "available" as const, topicId: 569 + i }));
+  const c = eipassStandardCopy(allAvailable);
+  assert.deepEqual(eipassStandardCopy(), c, "the production registry is the all-available state");
+  assert.equal(c.partial, true);
+  const all = Object.values(c).filter((v): v is string => typeof v === "string").join("\n");
+  assert.match(all, /tutti e sette i moduli/);
+  assert.match(all, /esercitazion\w* brev\w*/i);
+  assert.match(all, /non rilascia la certificazione/);
+  assert.doesNotMatch(all, /in preparazione|in arrivo|solo informativa|non sono ancora disponibili quiz|altri moduli/i);
+  for (const m of all.matchAll(/simulazion\w*/gi)) {
+    const before = all.slice(Math.max(0, m.index - 12), m.index).toLowerCase();
+    assert.match(before, /non (è )?una $/, `unnegated: ${before}${m[0]}`);
+  }
+  assert.doesNotMatch(all, /garantit\w+ (il )?superamento(?!\.)|supera(re)? l'esame|partner|ufficiale CERTIPASS|certificat[oi] da CERTIPASS/i);
+  assert.ok(c.metaTitle.length <= 65 && c.metaDescription.length <= 170);
+  // six of seven (as before this change) still says the remaining module is in preparation
+  const sixOfSeven = allAvailable.map((m) => (m.number === 6 ? { ...m, status: "coming_soon" as const, topicId: undefined } : m));
+  assert.match(eipassStandardCopy(sixOfSeven).panelText, /moduli 1, 2, 3, 4, 5 e 7: .*Gli altri moduli sono in preparazione/);
+});

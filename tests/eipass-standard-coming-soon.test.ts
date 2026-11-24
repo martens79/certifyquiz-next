@@ -68,8 +68,8 @@ test("registry: coming_soon (not planned), Italian-only, no DB id, in the Italia
 test("seven modules in official order; informational only: no module carries a slug or link", () => {
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.number), [1, 2, 3, 4, 5, 6, 7]);
   assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.title), OFFICIAL_TITLES);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["available", "available", "available", "available", "available", "coming_soon", "available"]);
-  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [569, 570, 571, 572, 573, undefined, 575]);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.status), ["available", "available", "available", "available", "available", "available", "available"]);
+  assert.deepEqual(EIPASS_STANDARD_MODULES.map((m) => m.topicId), [569, 570, 571, 572, 573, 574, 575]);
   const reg = CERTS_BY_SLUG[SLUG];
   assert.equal(reg.topics.length, 7);
   for (const t of reg.topics) {
@@ -183,7 +183,8 @@ test("copy: states 'in arrivo', original, DigComp 2.2 and the User difference; n
   assert.match(all, /DigComp 2\.2/);
   assert.match(guide, /Differenze rispetto a EIPASS 7 Moduli User/);
   assert.match(all, /non rilascia/i);
-  assert.match(all, /in preparazione/i, "the other modules are still in preparation");
+  assert.doesNotMatch(all, /in preparazione|in arrivo/i, "all seven modules are available: nothing says that other modules are still in preparation");
+  assert.match(all, /tutti e sette i moduli/);
   assert.doesNotMatch(all, /inizia il quiz|quiz gratuit|simulazione d'esame|copertura completa|garantit|replica|punti in graduatoria|\bCIAD\b|\bGPS\b|Accredia|accreditat/i);
   assert.equal(reg.imageUrl, "/images/certifications/eipass-standard.svg", "original illustration, not the EIPASS logo");
   assert.notEqual(reg.imageUrl, CERTS_BY_SLUG["eipass"].imageUrl);
