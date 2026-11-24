@@ -62,6 +62,15 @@ export const studyCopy = {
     badge: { weak: "Da migliorare", insufficient: "Da approfondire", consolidate: "Da consolidare", strong: "Punto di forza" },
     readiness: "Readiness resta disponibile e misura la preparazione nel tempo.",
     profile: "Vai al profilo",
+    initialLabel: "Test iniziale",
+    recentLabel: "Allenamento recente",
+    recentNone: "Non ancora disponibile: servono almeno 3 risposte",
+    recentValue: "{p}% su {n} risposte",
+    coverageLabel: "Domande affrontate",
+    coverageValue: "{a} di {b}",
+    progressNote: "I suggerimenti si aggiornano dopo ogni allenamento: non devi rifare il test da 30 domande. Il risultato del test iniziale resta come riferimento.",
+    continueNext: "Continua dal prossimo argomento consigliato",
+    updatedBadge: "Aggiornato con i tuoi allenamenti",
   },
   en: {
     eyebrow: "CCNA Study Path",
@@ -124,6 +133,15 @@ export const studyCopy = {
     badge: { weak: "To improve", insufficient: "Worth exploring", consolidate: "To consolidate", strong: "Strength" },
     readiness: "Readiness remains available and measures preparation over time.",
     profile: "Go to profile",
+    initialLabel: "Initial test",
+    recentLabel: "Recent training",
+    recentNone: "Not available yet: at least 3 answers needed",
+    recentValue: "{p}% on {n} answers",
+    coverageLabel: "Questions covered",
+    coverageValue: "{a} of {b}",
+    progressNote: "Suggestions update after each training session, so you don’t need to retake the 30-question test. Your initial test result stays as a reference.",
+    continueNext: "Continue with the next recommended topic",
+    updatedBadge: "Updated with your training",
   },
   fr: {
     eyebrow: "Parcours CCNA",
@@ -186,6 +204,15 @@ export const studyCopy = {
     badge: { weak: "À améliorer", insufficient: "À approfondir", consolidate: "À consolider", strong: "Point fort" },
     readiness: "Readiness reste disponible pour mesurer la préparation dans le temps.",
     profile: "Voir le profil",
+    initialLabel: "Test initial",
+    recentLabel: "Entraînement récent",
+    recentNone: "Pas encore disponible : au moins 3 réponses nécessaires",
+    recentValue: "{p} % sur {n} réponses",
+    coverageLabel: "Questions abordées",
+    coverageValue: "{a} sur {b}",
+    progressNote: "Les conseils se mettent à jour après chaque entraînement : inutile de refaire le test de 30 questions. Le résultat du test initial reste comme référence.",
+    continueNext: "Continuer avec le prochain sujet conseillé",
+    updatedBadge: "Mis à jour avec vos entraînements",
   },
   es: {
     eyebrow: "Ruta de estudio CCNA",
@@ -248,6 +275,15 @@ export const studyCopy = {
     badge: { weak: "Por mejorar", insufficient: "Por profundizar", consolidate: "Por consolidar", strong: "Punto fuerte" },
     readiness: "Readiness sigue disponible y mide la preparación a lo largo del tiempo.",
     profile: "Ir al perfil",
+    initialLabel: "Test inicial",
+    recentLabel: "Entrenamiento reciente",
+    recentNone: "Aún no disponible: se necesitan al menos 3 respuestas",
+    recentValue: "{p}% en {n} respuestas",
+    coverageLabel: "Preguntas abordadas",
+    coverageValue: "{a} de {b}",
+    progressNote: "Las sugerencias se actualizan tras cada entrenamiento: no hace falta repetir el test de 30 preguntas. El resultado del test inicial se conserva como referencia.",
+    continueNext: "Continuar con el siguiente tema recomendado",
+    updatedBadge: "Actualizado con tus entrenamientos",
   },
 } as const;
 export type StudyQuestion = {
@@ -277,4 +313,22 @@ export type StudyAttempt = {
       evidence: "weak" | "insufficient" | "consolidate";
     }[];
   };
+};
+
+export type StudyProgressTopic = {
+  topicId: number;
+  title: string;
+  status: "weak" | "insufficient" | "consolidate";
+  strong: boolean;
+  initial: { correct: number; total: number; evidence: string } | null;
+  training: { answered: number; correct: number; accuracy: number | null };
+  recent: { answered: number; correct: number; accuracy: number | null };
+  coverage: { answered: number; available: number; remaining: number; ratio: number | null };
+  lastActivityAt: string | null;
+};
+export type StudyProgress = {
+  diagnostic: { attemptId: string; percentage: number; correct: number; total: number } | null;
+  history: { at: string | null; percentage: number; correct: number; total: number }[];
+  topics: StudyProgressTopic[];
+  next: { topicId: number } | null;
 };

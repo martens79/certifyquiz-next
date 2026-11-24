@@ -20,15 +20,12 @@ L'ordine dei gruppi e dei topic è quello già calcolato dal server (lacune → 
 
 ## Verifiche sui dati esistenti (nessuna ipotesi)
 - Il training per topic carica il pool del topic tramite `GET /questions/:topicId` (backend: `ORDER BY q.id` con `shuffle=0`, o `RAND()` con `shuffle=1`) e il client costruisce la sessione. **Non esiste oggi una preferenza per le domande non ancora svolte** nel training. Il diagnostico invece la ha (prima mai viste, poi meno viste).
-- Il completamento di un training invia `POST /save-exam` con `topicId` e `attempts[]`: scrive `quiz_results` (con `topic_id`) e aggiorna `user_question_stats` e le prime risposte, cioè le stesse tabelle che il diagnostico legge per scegliere le domande.
-- `user_question_stats.wrong_count` è un contatore degli errori consecutivi (torna a 0 alla prima risposta corretta): **non è un totale di errori** e non va usato come accuratezza del topic. Per l'accuratezza storica per topic servono `quiz_results` (per sessione) o le risposte delle sessioni.
+- **Correzione (Fase C2):** il training per topic **non salva sessioni**: non scrive `quiz_results` né aggiorna `user_question_stats`. Solo la modalità esame invia `POST /save-exam`. L'unica traccia per-risposta è `question_first_attempts` (prima risposta a ogni domanda, scritta da `POST /answers/check`), che il diagnostico legge per scegliere le domande.
+- `user_question_stats.wrong_count` è un contatore degli errori consecutivi (torna a 0 alla prima risposta corretta): **non è un totale di errori** e non va usato come accuratezza del topic. L'accuratezza si calcola dalle prime risposte (vedi `docs/ccna-study-path-progress-c2.md` nel backend).
 - `GET /me/weak-areas` esiste ma non è limitato a una certificazione e restituisce al massimo 10 topic su tutte le certificazioni: non è affidabile per aggiornare i consigli CCNA.
 
 ## Aggiornamento dei consigli oggi
 Dopo l'allenamento l'utente può usare «Rifai il test»: il nuovo diagnostico preferisce domande mai viste e produce un'analisi aggiornata (invariato). Il testo sotto il pulsante lo dice in modo esplicito.
 
-## Proposta per la fase successiva (richiede autorizzazione, NON implementata)
-1. Endpoint backend di sola lettura `GET /api/study-path/ccna/progress?lang=` che, per i topic CCNA, restituisce: domande distinte affrontate / domande disponibili, domande attualmente da ripassare (`wrong_count > 0`) e accuratezza recente da `quiz_results` dei training, con le stesse soglie di evidenza del diagnostico (almeno 3 risposte, almeno 2 errori, sotto il 70%).
-2. Nel frontend, un blocco «Dopo l'allenamento» che aggiorna lo stato dei topic senza rifare le 30 domande.
-3. Preferenza per le domande non ancora svolte nel training: richiede una modifica al motore/alla route di training; da valutare a parte, con test, perché tocca il percorso di tutte le certificazioni.
-4. Nessun livello di difficoltà finché non esiste una classificazione affidabile delle domande.
+## Fase successiva
+Implementata in Fase C2 (endpoint `GET /api/study-path/ccna/progress` + schede di progresso). Restano fuori: preferenza per le domande non ancora svolte nel training (tocca il motore comune a tutte le certificazioni, da valutare a parte con test) e livelli di difficoltà (nessuna classificazione affidabile).

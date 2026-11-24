@@ -8,6 +8,7 @@ import {
   type StudyLang,
   type StudyAttempt,
   type StudyAnswer,
+  type StudyProgress,
 } from "@/lib/ccna-study-path";
 
 export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
@@ -24,7 +25,9 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
       conflict: boolean;
     } | null>(null),
     [confirmRestart, setConfirmRestart] = useState(false),
-    [resumed, setResumed] = useState(false);
+    [resumed, setResumed] = useState(false),
+    // Read-only progress after the diagnostic; null = unavailable (older backend, error, no data): C1 view.
+    [progress, setProgress] = useState<StudyProgress | null>(null);
   const generation = useRef(0);
   async function request(path: string, method = "GET", body?: unknown) {
     const r = await apiFetch(
@@ -94,6 +97,35 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
     // Reload whenever the authenticated identity or language changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, loading, lang]);
+  const finished = Boolean(attempt?.result);
+  const uid = user?.id;
+  useEffect(() => {
+    setProgress(null);
+    if (!finished || !uid) return;
+    let cancelled = false;
+    const refresh = () =>
+      apiFetch(
+        `/study-path/ccna/progress?lang=${lang}`,
+        { method: "GET" },
+        { redirectOnUnauthorized: false },
+      )
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!cancelled) setProgress(d && Array.isArray(d.topics) ? d : null);
+        })
+        .catch(() => {});
+    refresh();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [finished, uid, lang]);
   function retry() {
     if (!failed) return;
     if (failed.kind === "load" || failed.conflict) {
@@ -154,22 +186,71 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
   const linkBtn =
     "text-sm font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900";
   const topics = attempt?.result?.topics ?? [];
-  const strong = topics.filter(
-    (t) => t.evidence === "consolidate" && t.correct / t.total >= 0.7,
-  );
+  const live = progress && progress.next && progress.topics.length ? progress : null;
+  type Key = "weak" | "insufficient" | "consolidate" | "strong";
+  type Row = { topicId: number; title: string; key: Key; correct: number; total: number; p?: StudyProgress["topics"][number] };
+  const rows: Row[] = live
+    ? live.topics.map((p) => ({
+        topicId: p.topicId,
+        title: p.title,
+        key: (p.strong ? "strong" : p.status) as Key,
+        correct: p.initial?.correct ?? 0,
+        total: p.initial?.total ?? 0,
+        p,
+      }))
+    : topics.map((t) => ({
+        topicId: t.topicId,
+        title: t.title,
+        key: (t.evidence === "consolidate" && t.correct / t.total >= 0.7 ? "strong" : t.evidence) as Key,
+        correct: t.correct,
+        total: t.total,
+      }));
   const groups = [
-    { key: "weak", title: c.gaps, hint: "", list: topics.filter((t) => t.evidence === "weak"), tone: "rose" },
-    { key: "insufficient", title: c.unclear, hint: c.unclearHint, list: topics.filter((t) => t.evidence === "insufficient"), tone: "amber" },
-    { key: "consolidate", title: c.consolidate, hint: "", list: topics.filter((t) => t.evidence === "consolidate" && !strong.includes(t)), tone: "sky" },
-    { key: "strong", title: c.strengths, hint: "", list: strong, tone: "emerald" },
+    { key: "weak", title: c.gaps, hint: "", list: rows.filter((r) => r.key === "weak"), tone: "rose" },
+    { key: "insufficient", title: c.unclear, hint: c.unclearHint, list: rows.filter((r) => r.key === "insufficient"), tone: "amber" },
+    { key: "consolidate", title: c.consolidate, hint: "", list: rows.filter((r) => r.key === "consolidate"), tone: "sky" },
+    { key: "strong", title: c.strengths, hint: "", list: rows.filter((r) => r.key === "strong"), tone: "emerald" },
   ] as const;
+  const trainingText = (p: StudyProgress["topics"][number]) =>
+    p.recent.accuracy === null
+      ? c.recentNone
+      : c.recentValue.replace("{p}", String(p.recent.accuracy)).replace("{n}", String(p.recent.answered));
+  const coverageText = (p: StudyProgress["topics"][number]) =>
+    c.coverageValue.replace("{a}", String(p.coverage.answered)).replace("{b}", String(p.coverage.available));
+  const rowText = (r: Row) =>
+    r.p ? (
+      <dl className="mt-2 grid gap-1 text-sm text-slate-600">
+        {r.p.initial && (
+          <div className="flex flex-wrap justify-between gap-x-3">
+            <dt>{c.initialLabel}</dt>
+            <dd className="font-medium text-slate-800">{correctText(r.p.initial.correct, r.p.initial.total)}</dd>
+          </div>
+        )}
+        <div className="flex flex-wrap justify-between gap-x-3">
+          <dt>{c.recentLabel}</dt>
+          <dd data-testid="recent-training" className="font-medium text-slate-800">{trainingText(r.p)}</dd>
+        </div>
+        <div className="flex flex-wrap justify-between gap-x-3">
+          <dt>{c.coverageLabel}</dt>
+          <dd data-testid="coverage" className="font-medium text-slate-800">{coverageText(r.p)}</dd>
+        </div>
+      </dl>
+    ) : (
+      <p className="mt-1 text-sm text-slate-600">{correctText(r.correct, r.total)}</p>
+    );
+  const barPct = (r: Row) =>
+    r.p
+      ? Math.round((r.p.coverage.ratio ?? 0) * 100)
+      : r.total
+        ? Math.round((r.correct / r.total) * 100)
+        : 0;
   const tones = {
     rose: { bar: "bg-rose-500", badge: "bg-rose-100 text-rose-800" },
     amber: { bar: "bg-amber-500", badge: "bg-amber-100 text-amber-900" },
     sky: { bar: "bg-sky-500", badge: "bg-sky-100 text-sky-800" },
     emerald: { bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-800" },
   } as const;
-  const first = topics[0];
+  const first = live ? rows.find((r) => r.topicId === live.next?.topicId) : rows[0];
   const showBody = !loading && !busy && failed?.kind !== "load";
   // Mobile: the fixed bottom nav (64px) and the site chat button (80-136px from the
   // bottom) sit over the page end, so keep clear space below the last action (pb-40).
@@ -304,16 +385,24 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
                   {c.startHere}
                 </p>
                 <p className="mt-1 text-xl font-bold leading-snug text-white">{first.title}</p>
-                <p className="mt-1 text-sm font-medium text-blue-100">
-                  {correctText(first.correct, first.total)}
+                {first.p ? (
+                  <p className="mt-1 text-sm font-medium text-blue-100">
+                    {c.coverageLabel}: {coverageText(first.p)}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-sm font-medium text-blue-100">
+                    {correctText(first.correct, first.total)}
+                  </p>
+                )}
+                <p className="mt-2 text-sm leading-6 text-blue-50">
+                  {c.startHereText[first.key === "strong" ? "consolidate" : first.key]}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-blue-50">{c.startHereText[first.evidence]}</p>
                 <Link
                   data-testid="train-start-here"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-white px-5 py-3 text-base font-bold !text-blue-700 no-underline shadow-sm transition hover:bg-blue-50 hover:no-underline focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 sm:w-auto"
                   href={trainHref(first.topicId)}
                 >
-                  {c.train}
+                  {live ? c.continueNext : c.train}
                 </Link>
               </div>
             )}
@@ -334,13 +423,11 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
                             {c.badge[g.key]}
                           </span>
                         </div>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {correctText(t.correct, t.total)}
-                        </p>
+                        {rowText(t)}
                         <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
                           <div
                             className={`h-full rounded-full ${tones[g.tone].bar}`}
-                            style={{ width: `${Math.round((t.correct / t.total) * 100)}%` }}
+                            style={{ width: `${barPct(t)}%` }}
                           />
                         </div>
                         {g.key !== "strong" && (
@@ -361,7 +448,7 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
               <button className={ghost} onClick={() => setConfirmRestart(true)}>
                 {c.restart}
               </button>
-              <p className="text-sm leading-6 text-slate-600">{c.afterTrain}</p>
+              <p className="text-sm leading-6 text-slate-600">{live ? c.progressNote : c.afterTrain}</p>
               <p className="text-sm leading-6 text-slate-600">
                 {c.readiness}{" "}
                 <Link className={linkBtn} href={`/${lang}/profile`}>
