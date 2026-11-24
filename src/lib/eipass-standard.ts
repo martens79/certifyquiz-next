@@ -25,7 +25,7 @@ export const EIPASS_USER_LANDING_PATH = "/it/certificazioni/eipass";
 export const EIPASS_STANDARD_LANDING_PATH = `/it/certificazioni/${EIPASS_STANDARD_SLUG}`;
 
 /**
- * "available" marks the modules with a live topic (all but module 6 at the time of writing). A module becomes available only by a deliberate code change in this
+ * "available" marks the modules with a live topic (all seven at the time of writing: topics 569-575). A module becomes available only by a deliberate code change in this
  * file (status + topicId) together with the database activation of its topic (see docs/eipass-standard/M2_RELEASE.md);
  * a database flag alone never shows a link. The visible copy follows the availability automatically
  * (eipassStandardCopy below) and tests/eipass-standard-modules.test.tsx keeps the registry text equal to that helper.
@@ -51,7 +51,7 @@ export const EIPASS_STANDARD_MODULES: ReadonlyArray<EipassStandardModule> = [
   { number: 3, title: "Comunicare e collaborare in Rete", digcompArea: { number: 2, name: "Comunicazione e collaborazione" }, status: "available", topicId: 571 },
   { number: 4, title: "Sicurezza informatica", digcompArea: { number: 4, name: "Sicurezza" }, status: "available", topicId: 572 },
   { number: 5, title: "Creare documenti elettronici", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 573 },
-  { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "coming_soon" },
+  { number: 6, title: "Creare e gestire fogli di lavoro", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 574 },
   { number: 7, title: "Creare presentazioni multimediali", digcompArea: { number: 3, name: "Creazione di contenuti digitali" }, status: "available", topicId: 575 },
 ] as const;
 
@@ -136,25 +136,33 @@ export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> 
       cardPill: undefined,
     };
   }
-  const which = available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.length > 2 ? `${available.slice(0, -1).join(", ")} e ${available[available.length - 1]}` : available.join(" e ")}`;
+  // All seven modules available: nothing may say that other modules are "in preparazione".
+  const all = available.length === modules.length;
+  const which = all
+    ? "tutti e sette i moduli"
+    : available.length === 1 ? `il Modulo ${available[0]}` : `i moduli ${available.length > 2 ? `${available.slice(0, -1).join(", ")} e ${available[available.length - 1]}` : available.join(" e ")}`;
   const multiple = available.length > 1;
   const label = multiple ? "Moduli disponibili" : EIPASS_STANDARD_PARTIAL_LABEL;
   const practice = multiple ? "sono disponibili esercitazioni brevi" : "è disponibile un'esercitazione breve";
   const whichCap = which.charAt(0).toUpperCase() + which.slice(1);
+  const othersSoon = all ? "" : " Gli altri moduli sono in preparazione.";
+  const othersSoonShort = all ? "" : "; gli altri moduli sono in preparazione";
   return {
     partial: true,
     statusLabel: label,
-    panelText: `Su CertifyQuiz ${practice} per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento. Gli altri moduli sono in preparazione. CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
-    description: `EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, articolata in sette moduli d'esame. CertifyQuiz offre esercitazioni indipendenti per ${which}. Gli altri moduli sono in preparazione. CertifyQuiz non rilascia la certificazione.`,
+    panelText: `Su CertifyQuiz ${practice} per ${which}: poche domande originali per allenarti, non una simulazione dell'esame ufficiale e senza alcuna garanzia di superamento.${othersSoon} CertifyQuiz offre preparazione indipendente e non rilascia la certificazione.`,
+    description: `EIPASS Standard è una certificazione informatica basata sul DigComp 2.2, articolata in sette moduli d'esame. CertifyQuiz offre esercitazioni indipendenti per ${which}.${othersSoon} CertifyQuiz non rilascia la certificazione.`,
     metaTitle: multiple ? "EIPASS Standard: 7 moduli e quiz | CertifyQuiz" : "EIPASS Standard: 7 moduli e primo quiz | CertifyQuiz",
     metaDescription:
-      `EIPASS Standard e DigComp 2.2. Esercitazioni indipendenti per ${which}. Gli altri moduli sono in preparazione.`,
+      `EIPASS Standard e DigComp 2.2. Esercitazioni indipendenti per ${which}.${othersSoon}`,
     guideTitle: "Cosa offre CertifyQuiz oggi",
-    guideParagraph: `${whichCap}: esercitazioni brevi e indipendenti con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Per gli altri moduli le esercitazioni sono in preparazione; seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.`,
+    guideParagraph: all
+      ? `${whichCap}: esercitazioni brevi e indipendenti con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Seguono le regole di CertifyQuiz valide per tutti i quiz di allenamento.`
+      : `${whichCap}: esercitazioni brevi e indipendenti con domande originali. Non è una simulazione dell'esame ufficiale, non copre l'intero programma e non garantisce il superamento. Per gli altri moduli le esercitazioni sono in preparazione; seguiranno le regole di CertifyQuiz valide per tutti i quiz di allenamento.`,
     faqQuestion: "Quali quiz di EIPASS Standard sono disponibili su CertifyQuiz?",
-    faqAnswer: `Per ora ${practice} per ${which}. Non è una simulazione dell'esame ufficiale. Gli altri moduli sono in preparazione.`,
+    faqAnswer: `Per ora ${practice} per ${which}. Non è una simulazione dell'esame ufficiale.${othersSoon}`,
     pointerLabel: label,
-    pointerText: `è un percorso distinto da EIPASS 7 Moduli User. Per ora ${practice} per ${which}; gli altri moduli sono in preparazione.`,
+    pointerText: `è un percorso distinto da EIPASS 7 Moduli User. Per ora ${practice} per ${which}${othersSoonShort}.`,
     ogSubtitle: label,
     cardPill: label,
   };
