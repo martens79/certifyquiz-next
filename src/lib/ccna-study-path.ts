@@ -42,6 +42,9 @@ export const studyCopy = {
     resultIntro: "Ecco come è andato il test e da dove ti conviene partire.",
     scoreCaption: "risposte corrette",
     startHere: "Da dove iniziare",
+    train: "Allenati su questo argomento",
+    afterTrain:
+      "Dopo l’allenamento puoi rifare il test: avrai nuove domande, quando disponibili, e un’analisi aggiornata.",
     startHereText: {
       weak: "È l’argomento con più margine di miglioramento: parti da qui.",
       insufficient:
@@ -101,6 +104,9 @@ export const studyCopy = {
     resultIntro: "Here is how the test went and where it makes sense to start.",
     scoreCaption: "correct answers",
     startHere: "Where to start",
+    train: "Practice this topic",
+    afterTrain:
+      "After practicing you can retake the test: you will get new questions, when available, and an updated analysis.",
     startHereText: {
       weak: "This is the topic with the most room for improvement: start here.",
       insufficient:
@@ -160,6 +166,9 @@ export const studyCopy = {
     resultIntro: "Voici comment s’est passé le test et par où il vaut mieux commencer.",
     scoreCaption: "réponses correctes",
     startHere: "Par où commencer",
+    train: "S’entraîner sur ce sujet",
+    afterTrain:
+      "Après l’entraînement, vous pouvez refaire le test : de nouvelles questions, si disponibles, et une analyse mise à jour.",
     startHereText: {
       weak: "C’est le sujet avec la plus grande marge de progression : commencez par là.",
       insufficient:
@@ -219,6 +228,9 @@ export const studyCopy = {
     resultIntro: "Así te ha ido en el test y por dónde te conviene empezar.",
     scoreCaption: "respuestas correctas",
     startHere: "Por dónde empezar",
+    train: "Entrénate en este tema",
+    afterTrain:
+      "Después de entrenar puedes repetir el test: tendrás preguntas nuevas, cuando haya, y un análisis actualizado.",
     startHereText: {
       weak: "Es el tema con más margen de mejora: empieza por aquí.",
       insufficient:

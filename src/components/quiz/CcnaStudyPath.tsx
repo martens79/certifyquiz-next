@@ -145,6 +145,12 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
     "scroll-mb-44 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3.5 text-base font-bold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50";
   const ghost =
     "scroll-mb-44 inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300 disabled:cursor-not-allowed disabled:opacity-40";
+  const trainPrimary =
+    "inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-base font-bold !text-white no-underline shadow-sm transition hover:bg-blue-700 hover:no-underline focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 sm:w-auto";
+  const trainGhost =
+    "inline-flex w-full items-center justify-center rounded-2xl border border-blue-300 bg-white px-5 py-3 text-base font-semibold !text-blue-700 no-underline transition hover:bg-blue-50 hover:no-underline focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 sm:w-auto";
+  // Existing FREE topic training route; topicId is the real questions.topic_id from the result.
+  const trainHref = (topicId: number) => `/${lang}/quiz/topic/${topicId}`;
   const linkBtn =
     "text-sm font-semibold text-blue-700 underline underline-offset-2 hover:text-blue-900";
   const topics = attempt?.result?.topics ?? [];
@@ -302,6 +308,13 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
                   {correctText(first.correct, first.total)}
                 </p>
                 <p className="mt-2 text-sm leading-6 text-blue-50">{c.startHereText[first.evidence]}</p>
+                <Link
+                  data-testid="train-start-here"
+                  className="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-white px-5 py-3 text-base font-bold !text-blue-700 no-underline shadow-sm transition hover:bg-blue-50 hover:no-underline focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-200 sm:w-auto"
+                  href={trainHref(first.topicId)}
+                >
+                  {c.train}
+                </Link>
               </div>
             )}
             {groups
@@ -330,6 +343,15 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
                             style={{ width: `${Math.round((t.correct / t.total) * 100)}%` }}
                           />
                         </div>
+                        {g.key !== "strong" && (
+                          <Link
+                            data-testid={`train-${g.key}`}
+                            className={`mt-4 ${g.key === "weak" ? trainPrimary : trainGhost}`}
+                            href={trainHref(t.topicId)}
+                          >
+                            {c.train}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -339,6 +361,7 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
               <button className={ghost} onClick={() => setConfirmRestart(true)}>
                 {c.restart}
               </button>
+              <p className="text-sm leading-6 text-slate-600">{c.afterTrain}</p>
               <p className="text-sm leading-6 text-slate-600">
                 {c.readiness}{" "}
                 <Link className={linkBtn} href={`/${lang}/profile`}>

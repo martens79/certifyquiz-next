@@ -116,14 +116,10 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
             correct: 18,
             total: 30,
             topics: [
-              {
-                topicId: 1,
-                title: "Routing",
-                correct: 1,
-                total: 5,
-                errors: 4,
-                evidence: "weak",
-              },
+              { topicId: 1, title: "Routing", correct: 1, total: 5, errors: 4, evidence: "weak" },
+              { topicId: 2, title: "Switching", correct: 1, total: 2, errors: 1, evidence: "insufficient" },
+              { topicId: 3, title: "Services", correct: 2, total: 3, errors: 1, evidence: "consolidate" },
+              { topicId: 4, title: "Security", correct: 5, total: 5, errors: 0, evidence: "consolidate" },
             ],
           };
         }
@@ -161,7 +157,21 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
           );
       }
       await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
-      assert.equal(await page.getByRole("listitem").count(), 1);
+      assert.equal(await page.getByRole("listitem").count(), 4);
+      // Phase C1: every recommended topic links to the existing FREE topic training with its real id.
+      const TRAIN = { it: "Allenati su questo argomento", en: "Practice this topic", fr: "S’entraîner sur ce sujet", es: "Entrénate en este tema" };
+      const href = (id) => `/${lang}/quiz/topic/${id}`;
+      const start = page.getByTestId("train-start-here");
+      assert.equal(await start.getAttribute("href"), href(1));
+      assert.equal((await start.innerText()).trim(), TRAIN[lang]);
+      assert.equal(await page.getByTestId("train-weak").getAttribute("href"), href(1));
+      // Insufficient evidence stays distinct (own group, secondary style) but is still linked.
+      assert.equal(await page.getByTestId("train-insufficient").getAttribute("href"), href(2));
+      assert.equal(await page.getByTestId("train-consolidate").getAttribute("href"), href(3));
+      // Strengths get no training link; links never trigger a restart or any study-path call.
+      assert.equal(await page.getByRole("link", { name: TRAIN[lang] }).count(), 4);
+      assert.equal(await page.getByTestId("train-strong").count(), 0);
+      assert.equal(restarts, 0);
       await page.reload();
       await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
       // Voluntary restart needs confirmation; cancelling keeps the saved result.
