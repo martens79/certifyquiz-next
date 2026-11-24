@@ -212,9 +212,9 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
     { key: "strong", title: c.strengths, hint: "", list: rows.filter((r) => r.key === "strong"), tone: "emerald" },
   ] as const;
   const trainingText = (p: StudyProgress["topics"][number]) =>
-    p.recent.accuracy === null
+    p.lastFirstAnswers.accuracy === null
       ? c.recentNone
-      : c.recentValue.replace("{p}", String(p.recent.accuracy)).replace("{n}", String(p.recent.answered));
+      : c.recentValue.replace("{p}", String(p.lastFirstAnswers.accuracy)).replace("{n}", String(p.lastFirstAnswers.answered));
   const coverageText = (p: StudyProgress["topics"][number]) =>
     c.coverageValue.replace("{a}", String(p.coverage.answered)).replace("{b}", String(p.coverage.available));
   const rowText = (r: Row) =>
@@ -228,7 +228,7 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
         )}
         <div className="flex flex-wrap justify-between gap-x-3">
           <dt>{c.recentLabel}</dt>
-          <dd data-testid="recent-training" className="font-medium text-slate-800">{trainingText(r.p)}</dd>
+          <dd data-testid="last-first-answers" className="font-medium text-slate-800">{trainingText(r.p)}</dd>
         </div>
         <div className="flex flex-wrap justify-between gap-x-3">
           <dt>{c.coverageLabel}</dt>
@@ -424,9 +424,14 @@ export default function CcnaStudyPath({ lang }: { lang: StudyLang }) {
                           </span>
                         </div>
                         {rowText(t)}
-                        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200" aria-hidden="true">
+                        <div
+                          {...(t.p
+                            ? { role: "progressbar", "aria-label": c.coverageLabel, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": barPct(t), "aria-valuetext": coverageText(t.p) }
+                            : { "aria-hidden": true })}
+                          className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200"
+                        >
                           <div
-                            className={`h-full rounded-full ${tones[g.tone].bar}`}
+                            className={`h-full rounded-full ${t.p ? "bg-slate-500" : tones[g.tone].bar}`}
                             style={{ width: `${barPct(t)}%` }}
                           />
                         </div>

@@ -179,15 +179,14 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
       assert.equal(await page.getByTestId("train-strong").count(), 0);
       assert.equal(restarts, 0);
       // Without the progress endpoint (404) the C1 view above is kept and nothing is invented.
-      assert.equal(await page.getByTestId("recent-training").count(), 0);
+      assert.equal(await page.getByTestId("last-first-answers").count(), 0);
       // Phase C2: with the read-only progress endpoint the suggestions are updated from training.
       const CONTINUE = { it: "Continua dal prossimo argomento consigliato", en: "Continue with the next recommended topic", fr: "Continuer avec le prochain sujet conseillé", es: "Continuar con el siguiente tema recomendado" };
       const NONE = { it: "Non ancora disponibile", en: "Not available yet", fr: "Pas encore disponible", es: "Aún no disponible" };
       const row = (topicId, status, strong, ic, it, answered, correct, accuracy, covered, available) => ({
         topicId, title: `T${topicId}`, status, strong,
         initial: { correct: ic, total: it, evidence: "weak" },
-        training: { answered, correct, accuracy },
-        recent: { answered, correct, accuracy },
+        lastFirstAnswers: { answered, correct, accuracy },
         coverage: { answered: covered, available, remaining: available - covered, ratio: covered / available },
         lastActivityAt: null,
       });
@@ -204,22 +203,36 @@ test("CCNA component: four languages, resume, server result, recovery and guest 
       };
       await page.reload();
       await page.getByTestId("score-percentage").filter({ hasText: "60%" }).waitFor();
-      await page.getByTestId("recent-training").first().waitFor();
+      await page.getByTestId("last-first-answers").first().waitFor();
       assert.equal(await page.getByTestId("score-percentage").innerText(), "60%"); // original result kept
-      assert.equal(await page.getByTestId("recent-training").count(), 4);
+      assert.equal(await page.getByTestId("last-first-answers").count(), 4);
       const startC2 = page.getByTestId("train-start-here");
       assert.equal(await startC2.getAttribute("href"), href(2));
       assert.equal((await startC2.innerText()).trim(), CONTINUE[lang]);
       assert.equal(await page.getByTestId("train-weak").getAttribute("href"), href(2));
       assert.equal(await page.getByTestId("train-insufficient").getAttribute("href"), href(3));
       assert.equal(await page.getByTestId("train-consolidate").getAttribute("href"), href(1));
-      const recent = await page.getByTestId("recent-training").allInnerTexts();
+      const recent = await page.getByTestId("last-first-answers").allInnerTexts();
       assert.ok(recent.some((x) => x.includes("33") && x.includes("3")));
       assert.ok(recent.some((x) => x.includes("80") && x.includes("10")));
       assert.equal(recent.filter((x) => x.startsWith(NONE[lang])).length, 1); // < 3 answers: no percentage
       assert.ok((await page.getByTestId("coverage").allInnerTexts()).some((x) => x.includes("14") && x.includes("20")));
       assert.equal(await page.getByRole("listitem").count(), 4);
       assert.equal(restarts, 0);
+      // Distinct measures, honest labels: nothing is called "training"/"allenamento recente";
+      // the coverage bar is a labelled progressbar, accuracy is only text.
+      const body = (await page.locator("body").innerText()).toLowerCase();
+      for (const bad of ["allenamento recente", "recent training", "entraînement récent", "entrenamiento reciente"])
+        assert.ok(!body.includes(bad), bad);
+      const LABELS = { it: ["test iniziale", "ultime prime risposte", "copertura"], en: ["initial", "first answers", "coverage"], fr: ["test initial", "premières réponses", "couverture"], es: ["test inicial", "primeras respuestas", "cobertura"] };
+      for (const l of LABELS[lang]) assert.ok(body.includes(l), l);
+      const bars = page.getByRole("progressbar");
+      assert.equal(await bars.count(), 4);
+      assert.match(await bars.first().getAttribute("aria-label"), /copertura|coverage|couverture|cobertura/i);
+      // Coverage 5/20 = 25%, never the 33% accuracy.
+      assert.equal(await bars.first().getAttribute("aria-valuenow"), "25");
+      // The note never promises that progress improves after every training.
+      assert.ok(!/dopo ogni allenamento|after each training|après chaque entraînement|tras cada entrenamiento/i.test(body));
       // After more training the user returns to the tab: suggestions refresh without retaking the test.
       progressData = { ...progressData, next: { topicId: 3 }, topics: [progressData.topics[1], progressData.topics[0], ...progressData.topics.slice(2)] };
       await page.evaluate(() => window.dispatchEvent(new Event("focus")));

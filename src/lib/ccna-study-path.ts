@@ -62,15 +62,14 @@ export const studyCopy = {
     badge: { weak: "Da migliorare", insufficient: "Da approfondire", consolidate: "Da consolidare", strong: "Punto di forza" },
     readiness: "Readiness resta disponibile e misura la preparazione nel tempo.",
     profile: "Vai al profilo",
-    initialLabel: "Test iniziale",
-    recentLabel: "Allenamento recente",
+    initialLabel: "Test iniziale da 30 domande",
+    recentLabel: "Ultime prime risposte registrate",
     recentNone: "Non ancora disponibile: servono almeno 3 risposte",
     recentValue: "{p}% su {n} risposte",
-    coverageLabel: "Domande affrontate",
+    coverageLabel: "Copertura: domande affrontate",
     coverageValue: "{a} di {b}",
-    progressNote: "I suggerimenti si aggiornano dopo ogni allenamento: non devi rifare il test da 30 domande. Il risultato del test iniziale resta come riferimento.",
+    progressNote: "Questi dati si basano sulla prima risposta registrata a ciascuna domanda, data nel test o negli allenamenti. Rispondere di nuovo a una domanda già vista non li modifica: cambiano quando affronti domande nuove. Il test iniziale resta come riferimento.",
     continueNext: "Continua dal prossimo argomento consigliato",
-    updatedBadge: "Aggiornato con i tuoi allenamenti",
   },
   en: {
     eyebrow: "CCNA Study Path",
@@ -133,15 +132,14 @@ export const studyCopy = {
     badge: { weak: "To improve", insufficient: "Worth exploring", consolidate: "To consolidate", strong: "Strength" },
     readiness: "Readiness remains available and measures preparation over time.",
     profile: "Go to profile",
-    initialLabel: "Initial test",
-    recentLabel: "Recent training",
+    initialLabel: "Initial 30-question test",
+    recentLabel: "Latest first answers recorded",
     recentNone: "Not available yet: at least 3 answers needed",
     recentValue: "{p}% on {n} answers",
-    coverageLabel: "Questions covered",
+    coverageLabel: "Coverage: questions covered",
     coverageValue: "{a} of {b}",
-    progressNote: "Suggestions update after each training session, so you don’t need to retake the 30-question test. Your initial test result stays as a reference.",
+    progressNote: "These figures rely on the first answer recorded for each question, given in the test or in training. Answering an already seen question again does not change them: they change when you face new questions. Your initial test stays as a reference.",
     continueNext: "Continue with the next recommended topic",
-    updatedBadge: "Updated with your training",
   },
   fr: {
     eyebrow: "Parcours CCNA",
@@ -204,15 +202,14 @@ export const studyCopy = {
     badge: { weak: "À améliorer", insufficient: "À approfondir", consolidate: "À consolider", strong: "Point fort" },
     readiness: "Readiness reste disponible pour mesurer la préparation dans le temps.",
     profile: "Voir le profil",
-    initialLabel: "Test initial",
-    recentLabel: "Entraînement récent",
+    initialLabel: "Test initial de 30 questions",
+    recentLabel: "Dernières premières réponses enregistrées",
     recentNone: "Pas encore disponible : au moins 3 réponses nécessaires",
     recentValue: "{p} % sur {n} réponses",
-    coverageLabel: "Questions abordées",
+    coverageLabel: "Couverture : questions abordées",
     coverageValue: "{a} sur {b}",
-    progressNote: "Les conseils se mettent à jour après chaque entraînement : inutile de refaire le test de 30 questions. Le résultat du test initial reste comme référence.",
+    progressNote: "Ces données reposent sur la première réponse enregistrée pour chaque question, donnée dans le test ou à l’entraînement. Répondre à nouveau à une question déjà vue ne les modifie pas : elles changent avec de nouvelles questions. Le test initial reste comme référence.",
     continueNext: "Continuer avec le prochain sujet conseillé",
-    updatedBadge: "Mis à jour avec vos entraînements",
   },
   es: {
     eyebrow: "Ruta de estudio CCNA",
@@ -275,15 +272,14 @@ export const studyCopy = {
     badge: { weak: "Por mejorar", insufficient: "Por profundizar", consolidate: "Por consolidar", strong: "Punto fuerte" },
     readiness: "Readiness sigue disponible y mide la preparación a lo largo del tiempo.",
     profile: "Ir al perfil",
-    initialLabel: "Test inicial",
-    recentLabel: "Entrenamiento reciente",
+    initialLabel: "Test inicial de 30 preguntas",
+    recentLabel: "Últimas primeras respuestas registradas",
     recentNone: "Aún no disponible: se necesitan al menos 3 respuestas",
     recentValue: "{p}% en {n} respuestas",
-    coverageLabel: "Preguntas abordadas",
+    coverageLabel: "Cobertura: preguntas abordadas",
     coverageValue: "{a} de {b}",
-    progressNote: "Las sugerencias se actualizan tras cada entrenamiento: no hace falta repetir el test de 30 preguntas. El resultado del test inicial se conserva como referencia.",
+    progressNote: "Estos datos se basan en la primera respuesta registrada a cada pregunta, dada en el test o en el entrenamiento. Volver a responder una pregunta ya vista no los modifica: cambian al afrontar preguntas nuevas. El test inicial se conserva como referencia.",
     continueNext: "Continuar con el siguiente tema recomendado",
-    updatedBadge: "Actualizado con tus entrenamientos",
   },
 } as const;
 export type StudyQuestion = {
@@ -321,8 +317,7 @@ export type StudyProgressTopic = {
   status: "weak" | "insufficient" | "consolidate";
   strong: boolean;
   initial: { correct: number; total: number; evidence: string } | null;
-  training: { answered: number; correct: number; accuracy: number | null };
-  recent: { answered: number; correct: number; accuracy: number | null };
+  lastFirstAnswers: { answered: number; correct: number; accuracy: number | null };
   coverage: { answered: number; available: number; remaining: number; ratio: number | null };
   lastActivityAt: string | null;
 };
