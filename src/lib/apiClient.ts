@@ -623,6 +623,18 @@ export type AnswerCheckResult = {
     consumed?: boolean;
   };
   first_attempt?: { correct: boolean; recorded_now: boolean };
+  /** Fonti verificabili (solo se il backend ha SOURCES_ENABLED): gia' filtrate lato server. */
+  sources?: Array<{
+    id: number;
+    level: 'A' | 'B';
+    kind: 'explanation' | 'background';
+    title: string;
+    publisher: string;
+    language: Locale;
+    url: string;
+    locator: string;
+    version?: string;
+  }>;
 };
 
 /** Training: correttezza + spiegazione (se l'utente ne ha diritto). */
