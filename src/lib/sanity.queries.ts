@@ -43,5 +43,40 @@ export const articleBySlugLang = groq`
   "body": coalesce(body, content),
 
   "seoTitle": seo.title,
-  "seoDescription": description
+  "seoDescription": description,
+
+  // Una pagina con seo.noindex = true resta raggiungibile (HTTP 200) ma dichiara noindex.
+  "noindex": seo.noindex
 }`;
+
+ 
+// Blog pagination: stable ordering so articles do not repeat across adjacent pages.
+export const articlesPageByLang = (start: number, end: number) => groq`
+*[
+  _type == "article" &&
+  !(_id in path("drafts.**")) &&
+  lang == $lang &&
+  seo.noindex != true &&
+  defined(coalesce(publishedAt, date)) &&
+  dateTime(coalesce(publishedAt, date)) <= dateTime(now())
+] | order(coalesce(publishedAt, date) desc, _id desc)[${start}...${end}]{
+  "id": _id,
+  "slug": slug.current,
+  title,
+  excerpt,
+  lang,
+  category,
+  "publishedAt": coalesce(publishedAt, date),
+  "coverUrl": coalesce(coverImage.asset->url, cover.asset->url)
+}`;
+
+export const articlesCountByLang = groq`
+count(*[
+  _type == "article" &&
+  !(_id in path("drafts.**")) &&
+  lang == $lang &&
+  seo.noindex != true &&
+  defined(coalesce(publishedAt, date)) &&
+  dateTime(coalesce(publishedAt, date)) <= dateTime(now())
+])
+`;

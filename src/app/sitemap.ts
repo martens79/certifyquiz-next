@@ -61,6 +61,9 @@ const SITEMAP_CERTIFICATION_ALIASES: Record<string, string> = {
 const canonicalCertificationSlug = (slug: string) =>
   SITEMAP_CERTIFICATION_ALIASES[slug] ?? slug;
 
+/** Topic EN candidati alla sitemap: pubblicati solo se isTopicIndexable li ammette (stessa regola della pagina). */
+const VERIFIED_TOPIC_CANDIDATES_EN = [{ certSlug: "ccna", topicSlug: "ip-services" }] as const;
+
 type RemoteReviewListItem = { certSlug:string; topicSlug:string; topicId:number; href:string };
 
 /**
@@ -119,6 +122,7 @@ type SanityArticle = {
   title?: string | null;
   excerpt?: string | null;
   body?: unknown;
+  noindex?: boolean | null;
 };
 
 const blogSitemapQuery = `
@@ -135,6 +139,7 @@ const blogSitemapQuery = `
   ,title
   ,excerpt
   ,"body": coalesce(body, content)
+  ,"noindex": seo.noindex
 }`;
 
 async function getRemoteCerts(): Promise<RemoteCert[]> {
@@ -238,6 +243,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Topic EN la cui pagina e' indicizzabile secondo la STESSA regola dei metadata (isTopicIndexable).
+  // Lista esplicita (non si pubblicano le righe del DB); gli altri topic restano fuori finche' la regola
+  // non li ammette. Se il dato non e' verificabile o non supera la regola, l'URL non viene pubblicato.
+  const verifiedIndexableTopicsEn: Array<{ certSlug: string; topicSlug: string }> = [];
+  for (const candidate of VERIFIED_TOPIC_CANDIDATES_EN) {
+    if (!certs.some(c => c.slug === candidate.certSlug)) continue;
+    const page = requireData(
+      await backendGetJson<{ questionCount: number; topic: Record<string, unknown> }>(
+        `${API_BASE}/topic-pages/${encodeURIComponent(candidate.certSlug)}/${encodeURIComponent(candidate.topicSlug)}?lang=en`,
+        { revalidate: SITEMAP_FETCH_REVALIDATE, tags: [`cert:${candidate.certSlug}`] }
+      ),
+      `topic ${candidate.certSlug}/${candidate.topicSlug} en`
+    );
+    if (
+      page &&
+      isTopicIndexable({ ...(page.topic as object), certificationSlug: candidate.certSlug, questionCount: page.questionCount } as Parameters<typeof isTopicIndexable>[0])
+    ) {
+      verifiedIndexableTopicsEn.push(candidate);
+    }
+  }
+
   // The API still exposes two legacy registry slugs. Publish only their final
   // public destinations so every certification URL in the sitemap is a 200.
   // EIPASS Standard is never derived from the backend list: its only URL is the static Italian landing below, even
@@ -302,6 +328,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${SITE}${pricingPath(lang)}`,
             changeFrequency: "monthly" as const,
             priority: 0.7,
+          },
+          // Indice blog (pagina 1, indicizzabile, canonical su se stessa): /blog, /it|fr|es/blog.
+          // Le pagine ?page=N non sono incluse: indicizzabilita' da valutare a parte.
+          {
+            url: `${base}/${BLOG_SEGMENT_BY_LANG[lang]}`,
+            changeFrequency: "weekly" as const,
+            priority: 0.75,
           },
           // Statiche lingua
           {
@@ -389,6 +422,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             url: `${base}/${listSegment}/apple-device-support/${slug}`,
             changeFrequency: "monthly" as const,
             priority: 0.7,
+          })),
+          ...(lang === "en" ? verifiedIndexableTopicsEn : []).map(({ certSlug, topicSlug }) => ({
+            url: `${SITE}/certifications/${certSlug}/${topicSlug}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.6,
           })),
           // Other topic URLs are intentionally omitted until the backend sitemap feed
           // exposes the same editorial-quality signal used by topic metadata.

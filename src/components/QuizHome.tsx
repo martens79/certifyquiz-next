@@ -266,7 +266,7 @@ cloud: [
   { name: "Microsoft AI Fundamentals", link: certPath(lang, "microsoft-ai") },
 
   {
-    name: "Microsoft Azure AI-102 AI Engineer Associate",
+    name: "Microsoft Azure AI-103 AI Apps and Agents Developer",
     link: certPath(lang, "azure-ai-102-ai-engineer-associate"),
   },
 

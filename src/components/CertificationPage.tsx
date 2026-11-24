@@ -1,5 +1,6 @@
 import { resolveQuizInventory, unavailableQuizLabels } from "@/lib/quiz-availability";
 // src/components/CertificationPage.tsx
+import { isAi103Slug } from "@/lib/ai103-public-copy";
 import Image from "next/image";
 import Link from "next/link";
 import type {
@@ -25,6 +26,7 @@ import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 import { practiceTopicCoverage, practiceTopicLimit } from "@/lib/practice-topic-coverage";
 import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
+import { CCNA_EN_RELATED_RESOURCES, CCNA_EN_RELATED_RESOURCES_TITLE, CCNA_EN_REVIEWS_LINK } from "@/lib/ccna-en-related-resources";
 type Lang = "it" | "en" | "fr" | "es";
 
 type TopicLinkItem = {
@@ -36,6 +38,15 @@ type DbTopicLink = {
   slug: string;
 };
 /* -------------------- i18n helpers -------------------- */
+// Etichetta tradotta per lo stato editoriale "needs-review": non si mostra mai
+// la stringa tecnica. Gli altri stati mantengono il comportamento esistente.
+const NEEDS_REVIEW_NOTICE_LABEL: Record<Lang, string> = {
+  it: "Aggiornamento in corso",
+  en: "Update in progress",
+  fr: "Mise à jour en cours",
+  es: "Actualización en curso",
+};
+
 function pickLabel(obj: LocalizedText | string | undefined, lang: Lang): string {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
@@ -389,7 +400,11 @@ const pageTopics =
 
         {lifecycleStatus && lifecycleStatus !== "active" && lifecycleNotice ? (
           <aside className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="note">
-            <strong className="mr-1 uppercase">{lifecycleStatus}:</strong>
+            {lifecycleStatus === "needs-review" ? (
+              <strong className="mr-1">{NEEDS_REVIEW_NOTICE_LABEL[lang]}:</strong>
+            ) : (
+              <strong className="mr-1 uppercase">{lifecycleStatus}:</strong>
+            )}
             {pickLabel(lifecycleNotice, lang)}
           </aside>
         ) : null}
@@ -410,6 +425,7 @@ const pageTopics =
 
         {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
         {data.slug === "eipass" && lang === "it" && <EipassStandardPointer />}
+        {data.slug === "ccna" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4"><Link className="font-semibold underline" href={`/${lang}/study-path/ccna`}>{({it:"Scopri quanto sei preparato per il CCNA · 30 domande",en:"Find out how ready you are for the CCNA · 30 questions",fr:"Découvrez où vous en êtes pour le CCNA · 30 questions",es:"Descubre cómo vas de preparación para el CCNA · 30 preguntas"})[lang]}</Link></p>}
         <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
@@ -454,7 +470,7 @@ const pageTopics =
 
             <PremiumResourcesCta
               lang={lang}
-              certificationName={data.slug === "eipass" ? pageTitle : resources?.certificationName || pageTitle}
+              certificationName={data.slug === "eipass" || isAi103Slug(data.slug) ? pageTitle : resources?.certificationName || pageTitle}
               certificationId={resources?.certificationId ?? null}
               certificationSlug={data.slug}
               hasGuide={!!resources?.guide.available}
@@ -514,6 +530,20 @@ const pageTopics =
               ))}
             </ul>
           </nav>
+        )}
+
+        {data.slug === "ccna" && lang === "en" && (
+          <section aria-labelledby="ccna-related-resources" className="mb-6 rounded-xl border border-slate-200 bg-white p-4">
+            <h2 id="ccna-related-resources" className="text-lg font-semibold text-slate-900">{CCNA_EN_RELATED_RESOURCES_TITLE}</h2>
+            <ul className="mt-2 space-y-2 text-sm">
+              {[...CCNA_EN_RELATED_RESOURCES, CCNA_EN_REVIEWS_LINK].map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href} className="font-semibold text-blue-700 hover:underline">{item.label}</Link>
+                  <span className="text-slate-600"> — {item.description}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         {/* Blocchi */}

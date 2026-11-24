@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { isLocale, locales, type Locale } from "@/lib/i18n";
 import { toHreflang } from "@/lib/paths";
+import { AI103_MOCK_META, isAi103Slug } from "@/lib/ai103-public-copy";
 import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
 
 const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.certifyquiz.com").replace(/\/+$/, "");
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
     fr: { title: `Examen blanc ${name} | CertifyQuiz`, description: `Passez un examen blanc complet ${name} avec chronomètre, score final et révision des réponses.` },
     es: { title: `Simulacro de examen ${name} | CertifyQuiz`, description: `Realiza un simulacro completo de ${name} con temporizador, puntuación final y revisión de respuestas.` },
   }[locale];
-  const copy = slug === "eipass" ? { title: `${EIPASS_USER_COPY.practiceTitle[locale]} — EIPASS 7 Moduli User | CertifyQuiz`, description: EIPASS_USER_COPY.practiceNotice[locale] } : defaultCopy;
+  const copy = isAi103Slug(slug) ? AI103_MOCK_META[locale] : slug === "eipass" ? { title: `${EIPASS_USER_COPY.practiceTitle[locale]} — EIPASS 7 Moduli User | CertifyQuiz`, description: EIPASS_USER_COPY.practiceNotice[locale] } : defaultCopy;
   const canonical = `${SITE}/${locale}/quiz/${slug}/mock-exam`;
   const languages: Record<string, string> = {};
   for (const candidate of locales) languages[toHreflang(candidate)] = `${SITE}/${candidate}/quiz/${slug}/mock-exam`;

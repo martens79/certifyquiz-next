@@ -14,6 +14,8 @@ export function articleWordCount(body: unknown): number {
   return strings.join(" ").trim().split(/\s+/).filter(Boolean).length;
 }
 
-export function isArticleIndexable(article: { title?: string | null; excerpt?: string | null; body?: unknown }): boolean {
+export function isArticleIndexable(article: { title?: string | null; excerpt?: string | null; body?: unknown; noindex?: boolean | null }): boolean {
+  // La decisione editoriale (seo.noindex in Sanity) prevale su ogni altra regola.
+  if (article.noindex === true) return false;
   return Boolean(article.title?.trim()) && Boolean(article.excerpt?.trim()) && articleWordCount(article.body) >= 500;
 }

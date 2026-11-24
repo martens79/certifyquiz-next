@@ -16,4 +16,6 @@ export type SanityArticle = {
   body?: PortableTextBlock[] | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  /** seo.noindex da Sanity; assente nei documenti esistenti. */
+  noindex?: boolean | null;
 };

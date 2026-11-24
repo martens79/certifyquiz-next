@@ -1,6 +1,22 @@
-const CACHE_NAME = "certifyquiz-v4";
+const CACHE_NAME = "certifyquiz-v5";
 
 const OFFLINE_URL = "/offline.html";
+
+// One bounded retry for page NAVIGATIONS only. It runs when the first attempt fails fast
+// (DNS, reset, handshake: nothing hung) and the browser still reports online, so a slow
+// failure never waits twice and an offline device is not delayed. Non-navigation requests
+// (API, chunks, images) are never retried here: callers own their retry/resume logic.
+const NAVIGATION_RETRY_DELAY_MS = 350;
+const NAVIGATION_RETRY_MAX_FAST_FAIL_MS = 3000;
+
+function fetchNavigation(request) {
+  const startedAt = Date.now();
+  return fetch(request).catch((error) => {
+    const failedFast = Date.now() - startedAt <= NAVIGATION_RETRY_MAX_FAST_FAIL_MS;
+    if (!failedFast || self.navigator.onLine === false) throw error;
+    return new Promise((resolve) => setTimeout(resolve, NAVIGATION_RETRY_DELAY_MS)).then(() => fetch(request));
+  });
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -28,7 +44,7 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   event.respondWith(
-    fetch(event.request).catch(() => {
+    (event.request.mode === "navigate" ? fetchNavigation(event.request) : fetch(event.request)).catch(() => {
       // An HTML navigation fallback is never an API response or a script.
       // Preserve a transport failure so callers can safely resume/retry.
       if (event.request.mode !== "navigate") {
