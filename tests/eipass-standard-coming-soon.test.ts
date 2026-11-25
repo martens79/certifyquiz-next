@@ -142,8 +142,11 @@ test("wiring: landing renders from the registry only; quiz, topics and other lan
   assert.match(read("../src/app/[lang]/quiz/[slug]/layout.tsx"), /if \(isEipassStandardSlug\(slug\)\) notFound\(\)/);
   assert.match(read("../src/components/CertificationPage.tsx"), /!isEipassStandardSlug\(data\.slug\) && <StudyMaterialGrid/);
   const cp = read("../src/components/CertificationPage.tsx");
+  // Standard: only the Dolphin card (client-rendered, shown only with an active offer), never the Premium CTA.
+  const stdCard = cp.search(/\{isEipassStandardSlug\(data\.slug\) && \(\s*<CertificationPackageOffers[\s\S]*?certificationName=\{EIPASS_STANDARD_PACKAGE_NAME\}[\s\S]*?scopeNote=\{EIPASS_STANDARD_PACKAGE_SCOPE_NOTE\}[\s\S]*?\/>\s*\)\}/);
   const gate = cp.search(/\{!isEipassStandardSlug\(data\.slug\) && \(\s*<>\s*<CertificationPackageOffers/);
-  assert.ok(gate >= 0 && gate < cp.search(/<PremiumResourcesCta/), "no package offer and no Premium CTA for Standard (client-rendered, invisible to an SSR smoke)");
+  assert.ok(stdCard >= 0 && stdCard < gate, "Standard renders only the package card, with its own name and Italian-only scope note");
+  assert.ok(gate >= 0 && gate < cp.search(/<PremiumResourcesCta/), "no Premium CTA for Standard (client-rendered copy promises complete preparation)");
   assert.match(read("../src/app/[lang]/categorie/[cat]/page.tsx"), /isPubliclyListed\(s, CERTS_BY_SLUG\)/);
   assert.match(read("../src/lib/server/home-data.ts"), /isPubliclyListed\(slug, CERTS_BY_SLUG\)/, "home keeps excluding coming-soon certifications");
   const listView = read("../src/app/[lang]/certificazioni/CertificationsListView.tsx");

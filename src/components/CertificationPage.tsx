@@ -11,7 +11,7 @@ import type {
 } from "@/certifications/types";
 import CertificationPracticeBox from "@/components/certifications/CertificationPracticeBox";
 import StudyMaterialGrid from "@/components/certification/StudyMaterialGrid";
-import { isEipassStandardSlug } from "@/lib/eipass-standard";
+import { isEipassStandardSlug, EIPASS_STANDARD_PACKAGE_NAME, EIPASS_STANDARD_PACKAGE_SCOPE_NOTE } from "@/lib/eipass-standard";
 import { EipassStandardPointer } from "@/components/certification/EipassStandardComingSoon";
 import EipassStandardModules from "@/components/certification/EipassStandardModules";
 import PremiumResourcesCta from "@/components/certification/PremiumResourcesCta";
@@ -458,14 +458,25 @@ const pageTopics =
           className="mb-8"
         />)}
 
-        {/* EIPASS Standard (coming soon): nothing is for sale or available, so no package offer and no Premium CTA
-            (its client-rendered copy would otherwise promise "complete preparation"). */}
+        {/* EIPASS Standard: only the Dolphin Study card (shown only when the backend has an active offer), with an
+            explicit Italian-only scope note. No Premium CTA: its client-rendered copy promises "complete preparation". */}
+        {isEipassStandardSlug(data.slug) && (
+          <CertificationPackageOffers
+            lang={lang}
+            certificationSlug={data.slug}
+            resources={null}
+            certificationName={EIPASS_STANDARD_PACKAGE_NAME}
+            scopeNote={EIPASS_STANDARD_PACKAGE_SCOPE_NOTE}
+          />
+        )}
         {!isEipassStandardSlug(data.slug) && (
           <>
             <CertificationPackageOffers
               lang={lang}
               certificationSlug={data.slug}
               resources={resources}
+              certificationName={data.slug === "eipass" ? EIPASS_USER_COPY.name[lang] : undefined}
+              scopeNote={data.slug === "eipass" ? EIPASS_USER_COPY.packageNote[lang] : undefined}
             />
 
             <PremiumResourcesCta

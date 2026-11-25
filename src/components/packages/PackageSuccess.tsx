@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/auth";
 import type { Locale } from "@/lib/paths";
 import { trackEventOnce } from "@/lib/analytics";
 import { activeUntilLabel, packageDisplayName } from "@/lib/commercial-packages";
+import { packageStudyHref } from "@/lib/eipass-standard";
 
 type Order = {
   status: string; tier: string; certification_name: string; certification_slug: string;
@@ -61,4 +62,4 @@ export default function PackageSuccess({lang}:{lang:Locale}){
   if(failed)return <main className="mx-auto max-w-xl p-6"><h1 className="text-2xl font-black">{t.fail}</h1></main>;
   const paid=data?.status==="paid";
   const until=paid?activeUntilLabel(data?.expires_at,lang):null;
-  return <main className="mx-auto max-w-xl p-6"><div className="rounded-2xl border bg-white p-6 text-center shadow"><div className="text-4xl">{paid?"✅":"⏳"}</div><h1 className="mt-3 text-2xl font-black">{!data?t.wait:paid?t.ok:t.pending}</h1>{data?<p className="mt-2 text-slate-600">{packageDisplayName(data.tier,data.certification_name,lang)}</p>:null}{until?<p className="mt-1 text-sm font-semibold text-emerald-800">{until}</p>:null}<div className="mt-5 flex flex-wrap justify-center gap-3"><Link className="rounded-lg bg-blue-700 px-4 py-3 font-bold text-white" href={`${prefix}/profile#my-packages`}>{t.profile}</Link>{paid&&data?<Link className="rounded-lg border px-4 py-3 font-bold" href={`${prefix}/quiz/${data.certification_slug}`}>{t.study}</Link>:null}</div></div></main>}
+  return <main className="mx-auto max-w-xl p-6"><div className="rounded-2xl border bg-white p-6 text-center shadow"><div className="text-4xl">{paid?"✅":"⏳"}</div><h1 className="mt-3 text-2xl font-black">{!data?t.wait:paid?t.ok:t.pending}</h1>{data?<p className="mt-2 text-slate-600">{packageDisplayName(data.tier,data.certification_name,lang)}</p>:null}{until?<p className="mt-1 text-sm font-semibold text-emerald-800">{until}</p>:null}<div className="mt-5 flex flex-wrap justify-center gap-3"><Link className="rounded-lg bg-blue-700 px-4 py-3 font-bold text-white" href={`${prefix}/profile#my-packages`}>{t.profile}</Link>{paid&&data?<Link className="rounded-lg border px-4 py-3 font-bold" href={packageStudyHref(prefix,data.certification_slug)}>{t.study}</Link>:null}</div></div></main>}

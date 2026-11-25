@@ -168,6 +168,40 @@ export function eipassStandardCopy(modules: ReadonlyArray<EipassStandardModule> 
   };
 }
 
+/**
+ * Dolphin Study (one-time package) on the Italian landing. The card is client-rendered and appears only when the
+ * backend returns an ACTIVE offer for this slug (or an inactive one to an admin): no offer, no card. The name and the
+ * scope note keep the two EIPASS paths distinct and promise nothing beyond the available content.
+ */
+export const EIPASS_STANDARD_PACKAGE_NAME = "EIPASS Standard";
+export const EIPASS_STANDARD_PACKAGE_SCOPE_NOTE =
+  "Solo in italiano. Esercitazioni indipendenti sui 7 moduli di EIPASS Standard (non EIPASS 7 Moduli User): non è una simulazione dell'esame ufficiale e non copre l'intero programma. CertifyQuiz non rilascia la certificazione.";
+
+/**
+ * "Study" link of a purchased package (profile, checkout success). EIPASS Standard has no /quiz/<slug> route (404 by
+ * design): its study entry point is the Italian landing with the seven module links.
+ */
+export function packageStudyHref(quizPrefix: string, certificationSlug: string): string {
+  if (isEipassStandardSlug(certificationSlug)) return EIPASS_STANDARD_LANDING_PATH;
+  return `${quizPrefix}/quiz/${certificationSlug}`;
+}
+
+/**
+ * Languages in which a one-time package is PROMOTED (card, pricing upsell). Commercial decision of 25/11/2026:
+ * EIPASS Standard only in Italian; EIPASS 7 Moduli User only in Italian and English (FR/ES have too few questions).
+ * Certifications not listed here: every language, as before. Presentation only: free access to questions and
+ * existing entitlements are never affected.
+ */
+const PACKAGE_LANGS: Readonly<Record<string, ReadonlyArray<string>>> = {
+  [EIPASS_STANDARD_SLUG]: EIPASS_STANDARD_LANGS,
+  eipass: ["it", "en"],
+};
+
+export function isPackageCertificationOfferedInLang(certificationSlug: string, lang: string): boolean {
+  const langs = PACKAGE_LANGS[certificationSlug];
+  return !langs || langs.includes(lang);
+}
+
 /** The one visible status line of the landing. */
 export const EIPASS_STANDARD_COMING_SOON_LABEL = "Quiz di preparazione in arrivo";
 
