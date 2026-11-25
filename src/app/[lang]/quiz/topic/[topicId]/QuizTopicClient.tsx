@@ -32,6 +32,7 @@ import {
 import { getCertSlugById } from "@/lib/certs";
 import { isPostGateLimitError } from "@/lib/quiz-explanation-access";
 import { isTopicNotAvailableError, isTopicPremiumRequiredError } from "@/lib/topic-access";
+import { isTransientFetchError } from "@/lib/quiz-session";
 import { getExamSpecForCert } from "@/lib/exam-specs";
 import { APPLE_DEVICE_SUPPORT_SLUG } from "@/lib/apple-device-support-release";
 
@@ -237,6 +238,8 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
             strict: L !== "it",
             mode: "training",
             pool: hint?.pool,
+            // Un fetch appeso diventa un errore transitorio (TimeoutError) invece di un caricamento infinito.
+            signal: typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(25000) : undefined,
           });
 
       const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
@@ -265,6 +268,11 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
       if (isPostGateLimitError(e)) {
         throw e;
       }
+
+      // Errore transitorio (429, 5xx, timeout, rete): NON e' un pool vuoto.
+      // Si rilancia: QuizEngine conserva la sessione salvata (token, ID,
+      // risposte, posizione) e mostra "Riprova" invece di ripartire da zero.
+      if (isTransientFetchError(e)) throw e;
 
       console.error("🟥 getQuestionsByTopic FAILED", e);
       return [];

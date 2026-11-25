@@ -1,0 +1,25 @@
+name: Topic transient error
+on:
+  pull_request:
+    paths:
+      - 'src/lib/apiClient.ts'
+      - 'src/lib/quiz-session.ts'
+      - 'src/components/quiz/QuizEngine.tsx'
+      - 'src/app/[[]lang]/quiz/topic/**'
+      - 'tests/topic-transient-error.test.tsx'
+      - '.github/workflows/topic-transient-error.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  topic-transient-error:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx tsx --tsconfig tsconfig.test.json --test tests/topic-transient-error.test.tsx tests/topic-pool-pinning.test.tsx tests/topic-premium-required.test.tsx
