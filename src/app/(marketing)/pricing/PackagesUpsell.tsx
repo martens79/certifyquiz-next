@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/auth";
 import { certPath, type Locale } from "@/lib/paths";
 import { detectTwa } from "@/lib/twa";
+import { isPackageCertificationOfferedInLang, isEipassStandardSlug, EIPASS_STANDARD_PACKAGE_NAME } from "@/lib/eipass-standard";
+import { EIPASS_USER_COPY, EIPASS_USER_SLUG } from "@/lib/eipass-user-release";
 
 type Cert = { slug: string; name: string; fromPriceMinor: number; currency: string };
 
@@ -47,7 +49,15 @@ export default function PackagesUpsell({ lang }: { lang: Locale }) {
     apiFetch(`/packages/certifications?lang=${lang}`, { cache: "default" })
       .then((r) => (r.ok ? r.json() : null))
       .then((v) => {
-        if (alive) setCerts(v?.certifications || []);
+        if (!alive) return;
+        // EIPASS Standard is Italian-only (other-language routes are 404); the two EIPASS paths get unambiguous names.
+        const list: Cert[] = (v?.certifications || [])
+          .filter((c: Cert) => isPackageCertificationOfferedInLang(c.slug, lang))
+          .map((c: Cert) => ({
+            ...c,
+            name: c.slug === EIPASS_USER_SLUG ? EIPASS_USER_COPY.name[lang] : isEipassStandardSlug(c.slug) ? EIPASS_STANDARD_PACKAGE_NAME : c.name,
+          }));
+        setCerts(list);
       })
       .catch(() => {
         if (alive) setCerts([]);

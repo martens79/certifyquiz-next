@@ -52,6 +52,12 @@ export const EIPASS_USER_COPY = {
     "fr": "Entraînez-vous à EIPASS 7 Moduli User avec Premium",
     "es": "Practica EIPASS 7 Moduli User con Premium"
   },
+  "packageNote": {
+    "it": "Percorso EIPASS 7 Moduli User: non sostituisce EIPASS Standard / CIAD. Le domande disponibili variano per lingua. CertifyQuiz non rilascia la certificazione.",
+    "en": "EIPASS 7 Moduli User path: it does not replace EIPASS Standard / CIAD. Question availability varies by language. CertifyQuiz does not issue the certification.",
+    "fr": "Parcours EIPASS 7 Moduli User : il ne remplace pas EIPASS Standard / CIAD. Les questions disponibles varient selon la langue. CertifyQuiz ne délivre pas la certification.",
+    "es": "Itinerario EIPASS 7 Moduli User: no sustituye EIPASS Standard / CIAD. Las preguntas disponibles varían según el idioma. CertifyQuiz no emite la certificación."
+  },
   "premiumNotice": {
     "it": "Accesso Premium ai quiz e alle spiegazioni disponibili. La copertura del programma e le traduzioni sono in revisione.",
     "en": "Premium access to the available quizzes and explanations. Syllabus coverage and translations are under review.",

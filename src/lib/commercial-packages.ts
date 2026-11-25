@@ -160,9 +160,17 @@ const positive = (v: number | null | undefined) => (Number.isFinite(Number(v)) &
  *             ripasso errori/simulazioni). Le spiegazioni illimitate sono nel
  *             pacchetto base per decisione del product owner (13/10/2026).
  */
-export function packageFeatures(productCode: string | null | undefined, counts: PackageResourceCounts, lang: Locale): string[] {
+export function packageFeatures(
+  productCode: string | null | undefined,
+  counts: PackageResourceCounts,
+  lang: Locale,
+  /** Risorse realmente incluse nell'offerta (includedResources di /packages/offers). Assente: comportamento
+   *  storico. Presente: spiegazioni, ripassi, guida e mappe compaiono solo se incluse. */
+  included?: ReadonlyArray<string> | null
+): string[] {
   const t = FEATURE[lang];
   const kind = packageKind(productCode);
+  const has = (r: string) => !included || included.includes(r);
   const questions = positive(counts.questionCount);
   const out: string[] = [questions ? t.questions(questions.toLocaleString(LOCALE_TAG[lang])) : t.questionBank];
   if (kind === "complete") {
@@ -172,11 +180,11 @@ export function packageFeatures(productCode: string | null | undefined, counts: 
     if (labs) out.push(t.labs(labs));
     if (scenarios) out.push(t.scenarios(scenarios));
   } else {
-    if (kind === "study") out.push(t.explanations);
-    out.push(t.reviews);
+    if (kind === "study" && has("explanation")) out.push(t.explanations);
+    if (has("review")) out.push(t.reviews);
   }
-  const guidePages = positive(counts.guidePages);
-  const mapPages = positive(counts.mapPages);
+  const guidePages = has("guide") ? positive(counts.guidePages) : 0;
+  const mapPages = has("map") ? positive(counts.mapPages) : 0;
   if (guidePages) out.push(t.guide(guidePages));
   if (mapPages) out.push(t.maps(mapPages));
   return out;

@@ -38,6 +38,8 @@ type Offer = {
   code: string; productCode: string; name: string; amountMinor: number; effectiveAmountMinor: number | null;
   creditMinor: number; purchaseType: string | null; blockedReason: string | null; currency: string; status: string;
   checkoutAvailable: boolean; accessDurationDays?: number | null;
+  /** Risorse realmente incluse (backend); assente sulle risposte precedenti. */
+  includedResources?: string[] | null;
 };
 type Payload = {
   offers: Offer[]; owned: { tier: string; expiresAt?: string | null } | null; premium: boolean; darkLaunch: boolean;
@@ -61,7 +63,13 @@ function errorMessage(code: string, t: (typeof TEXT)[Locale]) {
   return t.errors.generic;
 }
 
-type CertificationPackageOffersProps = { lang: Locale; certificationSlug: string; resources: CertificationResources | null };
+type CertificationPackageOffersProps = {
+  lang: Locale; certificationSlug: string; resources: CertificationResources | null;
+  /** Nome mostrato nella card quando quello del DB e' ambiguo (es. "EIPASS 7 Moduli User" vs "EIPASS Standard"). */
+  certificationName?: string;
+  /** Nota di perimetro sotto i vantaggi (lingue, copertura): nessuna promessa oltre i contenuti disponibili. */
+  scopeNote?: string;
+};
 
 /**
  * Nell'app Android (TWA) le offerte a pagamento non vengono ne' caricate ne'
@@ -73,7 +81,7 @@ export default function CertificationPackageOffers(props: CertificationPackageOf
   return <CertificationPackageOffersInner {...props} />;
 }
 
-function CertificationPackageOffersInner({ lang, certificationSlug, resources }: CertificationPackageOffersProps) {
+function CertificationPackageOffersInner({ lang, certificationSlug, resources, certificationName: nameOverride, scopeNote }: CertificationPackageOffersProps) {
   const t = TEXT[lang];
   const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -97,7 +105,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
 
   const offers = useMemo(() => data?.offers || [], [data]);
   const certificationId = data?.certificationId ?? resources?.certificationId ?? null;
-  const certificationName = resources?.certificationName || null;
+  const certificationName = nameOverride || resources?.certificationName || null;
 
   // Offers load after hydration, so native fragment scrolling can run too early.
   useEffect(() => {
@@ -282,7 +290,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources }:
           <p className="mt-3 text-2xl font-black">{money(o)}</p>
           <p className="text-xs font-bold uppercase text-slate-500">{oneTimePaymentLabel(lang)}</p>
           <p className="mt-1 text-sm font-semibold text-indigo-900">{accessValidityLabel(o.accessDurationDays, lang)}</p>
-          <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang).map((f) => <li key={f}>✓ {f}</li>)}</ul>
+          <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang, o.includedResources).map((f) => <li key={f}>✓ {f}</li>)}</ul>{scopeNote ? <p className="mt-2 text-xs text-slate-600">{scopeNote}</p> : null}
           {activeUntil ? <p className="mt-3 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{activeUntil}</p> : null}
           {renewal ? <p className="mt-1 text-xs text-slate-500">{t.renewNote}</p> : null}
           <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
