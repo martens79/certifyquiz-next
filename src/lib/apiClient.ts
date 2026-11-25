@@ -404,7 +404,7 @@ async function parseJson<T>(res: Response): Promise<T> {
 export function parseRetryAfterSec(raw: string | null | undefined, now = Date.now()): number | null {
   if (!raw) return null;
   const t = raw.trim();
-  let sec = /^\d+$/.test(t) ? Number(t) : Math.ceil((Date.parse(t) - now) / 1000);
+  const sec = /^\d+$/.test(t) ? Number(t) : Math.ceil((Date.parse(t) - now) / 1000);
   if (!Number.isFinite(sec)) return null;
   return Math.min(300, Math.max(1, sec));
 }
