@@ -186,9 +186,20 @@ export function packageStudyHref(quizPrefix: string, certificationSlug: string):
   return `${quizPrefix}/quiz/${certificationSlug}`;
 }
 
-/** Package lists are shown in every language: EIPASS Standard exists only in Italian. */
+/**
+ * Languages in which a one-time package is PROMOTED (card, pricing upsell). Commercial decision of 25/11/2026:
+ * EIPASS Standard only in Italian; EIPASS 7 Moduli User only in Italian and English (FR/ES have too few questions).
+ * Certifications not listed here: every language, as before. Presentation only: free access to questions and
+ * existing entitlements are never affected.
+ */
+const PACKAGE_LANGS: Readonly<Record<string, ReadonlyArray<string>>> = {
+  [EIPASS_STANDARD_SLUG]: EIPASS_STANDARD_LANGS,
+  eipass: ["it", "en"],
+};
+
 export function isPackageCertificationOfferedInLang(certificationSlug: string, lang: string): boolean {
-  return !isEipassStandardSlug(certificationSlug) || isEipassStandardLang(lang);
+  const langs = PACKAGE_LANGS[certificationSlug];
+  return !langs || langs.includes(lang);
 }
 
 /** The one visible status line of the landing. */

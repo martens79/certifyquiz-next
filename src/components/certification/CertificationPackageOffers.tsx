@@ -9,6 +9,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useTwa } from "@/hooks/useTwa";
 import { detectTwa } from "@/lib/twa";
 import type { CertificationResources } from "@/lib/data";
+import { isPackageCertificationOfferedInLang } from "@/lib/eipass-standard";
 import { pricingPath, type Locale } from "@/lib/paths";
 import {
   analyticsUserStateFrom,
@@ -78,6 +79,8 @@ type CertificationPackageOffersProps = {
 export default function CertificationPackageOffers(props: CertificationPackageOffersProps) {
   const isTwa = useTwa();
   if (isTwa) return null;
+  // Packages promoted only in their commercial languages (EIPASS: see isPackageCertificationOfferedInLang).
+  if (!isPackageCertificationOfferedInLang(props.certificationSlug, props.lang)) return null;
   return <CertificationPackageOffersInner {...props} />;
 }
 

@@ -46,10 +46,14 @@ test("names keep the two EIPASS paths distinct", () => {
   assert.doesNotMatch(EIPASS_STANDARD_PACKAGE_SCOPE_NOTE, /garanti|completa|tutto il programma/i);
 });
 
-test("EIPASS Standard: package lists only in Italian, study link to the landing (its /quiz route is 404)", () => {
+test("EIPASS: packages promoted only in IT (Standard) and IT/EN (User), study link to the landing (its /quiz route is 404)", () => {
   assert.equal(isPackageCertificationOfferedInLang("eipass-standard", "it"), true);
   for (const lang of ["en", "fr", "es"]) assert.equal(isPackageCertificationOfferedInLang("eipass-standard", lang), false);
-  for (const lang of ["it", "en", "fr", "es"]) assert.equal(isPackageCertificationOfferedInLang("eipass", lang), true);
+  assert.equal(isPackageCertificationOfferedInLang("eipass", "it"), true);
+  assert.equal(isPackageCertificationOfferedInLang("eipass", "en"), true);
+  assert.equal(isPackageCertificationOfferedInLang("eipass", "fr"), false);
+  assert.equal(isPackageCertificationOfferedInLang("eipass", "es"), false);
+  for (const lang of ["it", "en", "fr", "es"]) assert.equal(isPackageCertificationOfferedInLang("ccna", lang), true, "other packages unchanged");
   assert.equal(packageStudyHref("/it", "eipass-standard"), EIPASS_STANDARD_LANDING_PATH);
   assert.equal(packageStudyHref("", "eipass-standard"), EIPASS_STANDARD_LANDING_PATH);
   assert.equal(packageStudyHref("/it", "eipass"), "/it/quiz/eipass");
@@ -57,7 +61,10 @@ test("EIPASS Standard: package lists only in Italian, study link to the landing 
 });
 
 test("wiring: card uses includedResources, upsell filters by language, profile/success use the study link", () => {
-  assert.match(read("../src/components/certification/CertificationPackageOffers.tsx"), /packageFeatures\(o\.productCode, counts, lang, o\.includedResources\)/);
+  const card = read("../src/components/certification/CertificationPackageOffers.tsx");
+  assert.match(card, /packageFeatures\(o\.productCode, counts, lang, o\.includedResources\)/);
+  const gate = card.search(/if \(!isPackageCertificationOfferedInLang\(props\.certificationSlug, props\.lang\)\) return null;/);
+  assert.ok(gate > 0 && gate < card.indexOf("<CertificationPackageOffersInner"), "card hidden (no offer fetch, no checkout) outside the commercial languages");
   const upsell = read("../src/app/(marketing)/pricing/PackagesUpsell.tsx");
   assert.match(upsell, /\.filter\(\(c: Cert\) => isPackageCertificationOfferedInLang\(c\.slug, lang\)\)/);
   const mine = read("../src/components/profile/MyPackages.tsx");
