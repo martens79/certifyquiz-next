@@ -120,6 +120,14 @@ async function gradeTrainingAnswers(
   return grades;
 }
 
+// Errore temporaneo di caricamento (429/5xx/timeout/rete): i progressi sono al sicuro.
+const TRANSIENT_LOAD_MESSAGE: Record<string, string> = {
+  it: 'Il server è temporaneamente non raggiungibile o sta ricevendo troppe richieste. I tuoi progressi sono al sicuro: riprova tra qualche istante.',
+  en: 'The server is temporarily unreachable or receiving too many requests. Your progress is safe: please try again in a moment.',
+  fr: 'Le serveur est temporairement injoignable ou reçoit trop de requêtes. Votre progression est conservée : réessayez dans un instant.',
+  es: 'El servidor no está disponible temporalmente o recibe demasiadas solicitudes. Tu progreso está a salvo: inténtalo de nuevo en un momento.',
+};
+
 const L = {
   training: { it: 'Allenamento', en: 'Training', fr: 'Entraînement', es: 'Entrenamiento' },
   exam: { it: 'Esame', en: 'Exam', fr: 'Examen', es: 'Examen' },
@@ -656,6 +664,14 @@ useEffect(() => {
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  // Fine dell'attesa (Retry-After) prima di poter ripremere "Riprova" dopo un errore transitorio.
+  const [retryAt, setRetryAt] = useState<number | null>(null);
+  const [retryNow, setRetryNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (retryAt == null) return;
+    const t = setInterval(() => setRetryNow(Date.now()), 500);
+    return () => clearInterval(t);
+  }, [retryAt]);
   const [versionedConflict,setVersionedConflict]=useState(false);
   const [, setActionsOpen] = useState(false);
 
@@ -1357,6 +1373,18 @@ const openFeedback = () => {
           return;
         }
 
+        // Errore transitorio (429, 5xx, timeout, rete): la sessione salvata
+        // (token, ID, risposte, posizione) resta intatta in locale e sul
+        // server; si mostra un messaggio localizzato con "Riprova", che
+        // rispetta Retry-After. Nessun retry automatico (anti-abuso).
+        if (isTransientFetchError(err)) {
+          const ra = typeof err?.retryAfterSec === 'number' ? err.retryAfterSec : (status === 429 ? 15 : 3);
+          setRetryAt(Date.now() + ra * 1000);
+          setErr(TRANSIENT_LOAD_MESSAGE[lang] ?? TRANSIENT_LOAD_MESSAGE.en);
+          return;
+        }
+
+        setRetryAt(null);
         setErr(
           typeof err?.message === 'string' && err.message.trim()
             ? err.message
@@ -2678,13 +2706,16 @@ const submitAssessmentReport = async () => {
   /* --------------------------- STATO BASE ----------------------------- */
   if (loading) return <div className="min-h-screen grid place-items-center">⏳</div>;
   if(versionedConflict)return <div className="min-h-screen grid place-items-center"><div role="alert" className="max-w-lg p-6 space-y-4"><p>{({en:'This session changed on another device. Your unsent progress is retained locally. Continue with the saved session and keep a local backup of the unsent copy.',it:'La sessione è cambiata su un altro dispositivo. I progressi non inviati sono conservati localmente. Continua con la sessione salvata mantenendo una copia locale dei progressi non inviati.',fr:'La session a changé sur un autre appareil. Votre progression non envoyée est conservée localement. Continuez avec la session enregistrée en gardant une copie locale.',es:'La sesión cambió en otro dispositivo. El progreso no enviado se conserva localmente. Continúa con la sesión guardada manteniendo una copia local.'})[lang]}</p><button type="button" className="rounded bg-emerald-600 p-3" onClick={async()=>{try{await versionedTrainingRef.current?.useServerProgress();setVersionedReload(n=>n+1);}catch(e){setErr(e instanceof Error?e.message:'Retry failed');}}}>{({en:'Use saved session',it:'Usa la sessione salvata',fr:'Utiliser la session enregistrée',es:'Usar la sesión guardada'})[lang]}</button>{err&&<p>{err}</p>}</div></div>;
-  if (err) return <div className="min-h-screen grid place-items-center p-6">
-    <div className="space-y-4 text-center"><p className="text-red-600">{err}</p>
-      <button className="rounded-lg bg-blue-600 px-4 py-2 text-white" onClick={() => setLoadGeneration(n => n + 1)}>
-        {lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Retry'}
+  if (err) {
+    const waitSec = retryAt != null ? Math.max(0, Math.ceil((retryAt - retryNow) / 1000)) : 0;
+    return <div className="min-h-screen grid place-items-center p-6">
+    <div className="space-y-4 text-center"><p role="alert" data-testid="load-error" className="text-red-600">{err}</p>
+      <button disabled={waitSec > 0} data-testid="load-retry" className="rounded-lg bg-blue-600 px-4 py-2 text-white disabled:opacity-60" onClick={() => { setRetryAt(null); setLoadGeneration(n => n + 1); }}>
+        {(lang === 'it' ? 'Riprova' : lang === 'fr' ? 'Réessayer' : lang === 'es' ? 'Reintentar' : 'Retry') + (waitSec > 0 ? ` (${waitSec})` : '')}
       </button>
     </div>
   </div>;
+  }
   if (attemptClosed && effectiveMode === 'exam') {
     return <div data-testid="exam-attempt-closed" className="min-h-screen grid place-items-center p-6">
       <div className="space-y-4 text-center">

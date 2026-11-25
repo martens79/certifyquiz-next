@@ -400,6 +400,15 @@ async function parseJson<T>(res: Response): Promise<T> {
   return decodeApiJson<T>(res);
 }
 
+/** Retry-After (secondi o data HTTP) -> secondi, limitato a 1..300; null se assente/illeggibile. */
+export function parseRetryAfterSec(raw: string | null | undefined, now = Date.now()): number | null {
+  if (!raw) return null;
+  const t = raw.trim();
+  const sec = /^\d+$/.test(t) ? Number(t) : Math.ceil((Date.parse(t) - now) / 1000);
+  if (!Number.isFinite(sec)) return null;
+  return Math.min(300, Math.max(1, sec));
+}
+
 async function toApiError(res: Response) {
   let detail: unknown = null;
   try {
@@ -412,6 +421,8 @@ async function toApiError(res: Response) {
   const err = new Error(`HTTP ${res.status} ${res.statusText}`);
   (err as any).status = res.status;
   (err as any).detail = detail;
+  const ra = parseRetryAfterSec(res.headers?.get?.("retry-after"));
+  if (ra != null) (err as any).retryAfterSec = ra;
   return err;
 }
 
@@ -532,6 +543,7 @@ export const getQuestionsByTopic = (
     limit?: number; shuffle?: boolean; strict?: boolean; mode?: QuestionsRequestMode;
     /** Pool della sessione: "new" (nuova sessione), "legacy" (sessione nata prima dei token) o il poolToken salvato. */
     pool?: string;
+    signal?: AbortSignal;
   }
 ) => {
   const params = new URLSearchParams({ lang });
@@ -547,7 +559,7 @@ export const getQuestionsByTopic = (
   if (opts?.mode) params.set("mode", opts.mode);
   if (opts?.pool) params.set("pool", opts.pool);
 
-  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false).then(validateQuestionPayload);
+  return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false, opts?.signal).then(validateQuestionPayload);
 };
 
 export const getMixedQuestions = (
