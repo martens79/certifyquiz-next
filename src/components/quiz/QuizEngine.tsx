@@ -1,7 +1,7 @@
 // src/components/quiz/QuizEngine.tsx
 'use client';
 
-import { trackEventOnce, studyEngagementKey } from '@/lib/analytics';
+import { trackEventOnce as trackEventOnceReal, studyEngagementKey } from '@/lib/analytics';
 import { observeQuizQuestionMilestone } from '@/lib/quiz-question-milestone';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,11 +10,11 @@ import Link from 'next/link';
 import type { Answer, Question, QuizSummary, Locale, QuizContext } from '@/lib/quiz-types';
 import {
   loadProgress,
-  saveProgress,
-  clearProgress,
+  saveProgress as saveProgressReal,
+  clearProgress as clearProgressReal,
   loadSnapshot,
-  saveSnapshot,
-  pruneStaleSnapshots,
+  saveSnapshot as saveSnapshotReal,
+  pruneStaleSnapshots as pruneStaleSnapshotsReal,
 } from '@/lib/quiz-storage';
 import {
   buildSnapshot,
@@ -26,7 +26,7 @@ import {
 } from '@/lib/quiz-session';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
 import {
-  readExamAttempt, saveExamAttempt, clearExamAttempt, createExamAttempt,
+  readExamAttempt, saveExamAttempt as saveExamAttemptReal, clearExamAttempt as clearExamAttemptReal, createExamAttempt,
   attemptRemaining, checkpointAttempt, closeAttempt, sameAttemptQuestions,
   type ExamAttempt,
 } from '@/lib/exam-attempt';
@@ -51,29 +51,29 @@ import {
 import { pricingPath } from "@/lib/paths";
 import { premiumClickMetadata, withCtaParam } from "@/lib/commercial-origin";
 import {
-  checkAnswer,
+  checkAnswer as checkAnswerReal,
   evaluateAnswers,
   evaluateMockExam,
   type AnswerCheckResult,
 } from "@/lib/apiClient";
 import VerifiedSources from "./VerifiedSources";
-import { apiFetch } from "@/lib/auth";
+import { apiFetch as apiFetchReal } from "@/lib/auth";
 import {
   adoptServerRev,
   chunk,
-  clearPendingClose,
-  closeServerProgress,
+  clearPendingClose as clearPendingCloseReal,
+  closeServerProgress as closeServerProgressReal,
   readPendingClose,
-  savePendingClose,
+  savePendingClose as savePendingCloseReal,
 } from "@/lib/quiz-progress-sync";
 import {VersionedTrainingError,type VersionedTrainingClient} from '@/lib/ccst-versioned-training';
-import { trackMetaPixel } from "@/lib/metaPixel";
+import { trackMetaPixel as trackMetaPixelReal } from "@/lib/metaPixel";
 import {
   getAnonymousSessionId,
   getAnonymousVisitorId,
-  trackEvent as trackAnalyticsEvent,
-  trackFunnelEvent,
-  trackFunnelEventOnce,
+  trackEvent as trackAnalyticsEventReal,
+  trackFunnelEvent as trackFunnelEventReal,
+  trackFunnelEventOnce as trackFunnelEventOnceReal,
 } from "@/lib/analytics";
 import { readConversionContext, withConversionContext } from "@/lib/conversion-context";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -394,6 +394,13 @@ type Props = {
 
     /** Segnala un problema sulla domanda (typo/errata/etc.) */
 
+  /**
+   * Anteprima amministrativa (una sola domanda per ID). Se presente, il motore e' in SOLA LETTURA: la correttezza e la spiegazione
+   * arrivano da questa funzione (endpoint admin) e NESSUN effetto collaterale parte: niente tentativi, statistiche, progressi,
+   * autosave/snapshot, sync DB, quota, analytics/funnel/pixel, `/me/*`. Vedi il blocco `previewGuards` nel componente.
+   */
+  previewCheckAnswer?: (questionId: number, answerId: number, lang: Locale) => Promise<AnswerCheckResult>;
+
   onFeedback?: (p: {
     questionId: number;
     type: "typo" | "wrong_answer" | "outdated" | "other";
@@ -401,6 +408,36 @@ type Props = {
   }) => Promise<void>;
 };
 
+
+/**
+ * Anteprima admin: ogni funzione con effetti collaterali (rete verso /me/*, localStorage, analytics) e' sostituita da un no-op
+ * e `checkAnswer` dall'endpoint di anteprima. Le funzioni sono costanti di modulo: l'identita' resta stabile fra i render.
+ */
+const NOOP = () => undefined;
+const PREVIEW_API = async () => new Response(null, { status: 404 });
+export function previewMode(previewCheck: Props["previewCheckAnswer"]) {
+  if (!previewCheck) {
+    return {
+      apiFetch: apiFetchReal, saveProgress: saveProgressReal, clearProgress: clearProgressReal, saveSnapshot: saveSnapshotReal,
+      pruneStaleSnapshots: pruneStaleSnapshotsReal, saveExamAttempt: saveExamAttemptReal, clearExamAttempt: clearExamAttemptReal,
+      savePendingClose: savePendingCloseReal, clearPendingClose: clearPendingCloseReal, closeServerProgress: closeServerProgressReal,
+      trackEventOnce: trackEventOnceReal, trackFunnelEvent: trackFunnelEventReal, trackFunnelEventOnce: trackFunnelEventOnceReal,
+      trackAnalyticsEvent: trackAnalyticsEventReal, trackMetaPixel: trackMetaPixelReal, checkAnswer: checkAnswerReal,
+    } as const;
+  }
+  return {
+    apiFetch: PREVIEW_API as unknown as typeof apiFetchReal, saveProgress: NOOP as unknown as typeof saveProgressReal,
+    clearProgress: NOOP as unknown as typeof clearProgressReal, saveSnapshot: NOOP as unknown as typeof saveSnapshotReal,
+    pruneStaleSnapshots: NOOP as unknown as typeof pruneStaleSnapshotsReal, saveExamAttempt: NOOP as unknown as typeof saveExamAttemptReal,
+    clearExamAttempt: NOOP as unknown as typeof clearExamAttemptReal, savePendingClose: NOOP as unknown as typeof savePendingCloseReal,
+    clearPendingClose: NOOP as unknown as typeof clearPendingCloseReal,
+    closeServerProgress: (async () => true) as unknown as typeof closeServerProgressReal,
+    trackEventOnce: NOOP as unknown as typeof trackEventOnceReal, trackFunnelEvent: NOOP as unknown as typeof trackFunnelEventReal,
+    trackFunnelEventOnce: NOOP as unknown as typeof trackFunnelEventOnceReal, trackAnalyticsEvent: NOOP as unknown as typeof trackAnalyticsEventReal,
+    trackMetaPixel: NOOP as unknown as typeof trackMetaPixelReal,
+    checkAnswer: ((id: number | string, aid: number | string, l: Locale) => previewCheck(Number(id), Number(aid), l)) as unknown as typeof checkAnswerReal,
+  } as const;
+}
 
 export default function QuizEngine({
   lang,
@@ -420,8 +457,14 @@ export default function QuizEngine({
   hideModeSwitch = false,
   context,
   onFeedback,
+  previewCheckAnswer,
 }: Props) {
   const router = useRouter();
+  const previewGuards = previewMode(previewCheckAnswer);
+  const {
+    apiFetch, saveProgress, clearProgress, saveSnapshot, pruneStaleSnapshots, saveExamAttempt, clearExamAttempt, savePendingClose, clearPendingClose,
+    closeServerProgress, trackEventOnce, trackFunnelEvent, trackFunnelEventOnce, trackAnalyticsEvent, trackMetaPixel, checkAnswer,
+  } = previewGuards;
   const searchParams = useSearchParams();
   const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();
@@ -4061,7 +4104,7 @@ function GateShownTracker({
       paywall_type: 'wrong_explanation',
       source_page: source ?? 'quiz',
     });
-    trackFunnelEventOnce(
+    trackFunnelEventOnceReal(
       `paywall_viewed:wrong_explanation:${cohort.gateInstanceId}:${getAnonymousSessionId()}:${source ?? 'quiz'}`,
       {
         event: 'paywall_viewed',
@@ -4078,7 +4121,7 @@ function GateShownTracker({
       }
     );
     onBlockReviewGateViewed?.();
-    trackMetaPixel("Lead");
+    trackMetaPixelReal("Lead");
   }, [questionId, lang, mode, certificationSlug, topicSlug, source, onBlockReviewGateViewed, userId]);
 
   return null;
@@ -4125,7 +4168,7 @@ function HardQuizPaywallShownTracker({
       post_gate_questions_used: postGateQuestionsUsed,
       post_gate_question_limit: postGateQuestionLimit,
     });
-    trackFunnelEventOnce(
+    trackFunnelEventOnceReal(
       `paywall_viewed:post_explanation_quiz_limit:${cohort?.gateInstanceId ?? 'no-cohort'}:${getAnonymousSessionId()}`,
       {
         event: 'paywall_viewed',
@@ -4141,7 +4184,7 @@ function HardQuizPaywallShownTracker({
         },
       }
     );
-    trackMetaPixel("Lead");
+    trackMetaPixelReal("Lead");
   }, [lang, mode, certificationSlug, topicSlug, userId, postGateQuestionsUsed, postGateQuestionLimit]);
 
   return null;
@@ -4173,7 +4216,7 @@ function trackQuizEvent(
   eventName: string,
   params: Record<string, string | number | boolean | null | undefined> = {}
 ) {
-  trackAnalyticsEvent(eventName, {
+  trackAnalyticsEventReal(eventName, {
     event_category: 'quiz',
     ...params,
   });
