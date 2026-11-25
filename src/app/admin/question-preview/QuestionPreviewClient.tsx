@@ -30,7 +30,7 @@ const parseLang = (v: string | null): Locale => (LANGS.includes(v as Locale) ? (
 export default function QuestionPreviewClient() {
   const router = useRouter();
   const params = useSearchParams();
-  const { isAdmin, user } = useAuth();
+  const { isAdmin, user, loading: authLoading } = useAuth();
   const idParam = params.get("id") ?? "";
   const lang = parseLang(params.get("lang"));
   const [draftId, setDraftId] = useState(idParam);
@@ -71,6 +71,7 @@ export default function QuestionPreviewClient() {
   const fetchQuestions = useCallback(async () => (data ? [data.question as Question] : []), [data]);
   const scope = useMemo(() => `admin-preview:${idParam}:${lang}`, [idParam, lang]);
 
+  if (authLoading) return <main className="mx-auto max-w-3xl p-6" role="status">Caricamento…</main>;
   if (!user) return <main className="mx-auto max-w-3xl p-6">Accedi con un account amministratore.</main>;
   if (!isAdmin) return <main className="mx-auto max-w-3xl p-6">Pagina riservata agli amministratori.</main>;
 
