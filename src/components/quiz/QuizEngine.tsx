@@ -477,6 +477,12 @@ export default function QuizEngine({
     apiFetch, saveProgress, clearProgress, saveSnapshot, pruneStaleSnapshots, saveExamAttempt, clearExamAttempt, savePendingClose, clearPendingClose,
     closeServerProgress, trackEventOnce, trackFunnelEvent, trackFunnelEventOnce, trackAnalyticsEvent, trackMetaPixel, checkAnswer,
   } = previewGuards;
+  // Gli eventi quiz del motore passano dalla guardia: in anteprima admin `trackAnalyticsEvent` e' un no-op,
+  // quindi nessun evento GA4 (quiz_loaded, study_started, quiz_question_reached, ...) con o senza consenso.
+  const trackQuizEvent = (
+    eventName: string,
+    params: Record<string, string | number | boolean | null | undefined> = {}
+  ) => trackAnalyticsEvent(eventName, { event_category: 'quiz', ...params });
   const searchParams = useSearchParams();
   const conversionContext = useMemo(() => readConversionContext(searchParams), [searchParams]);
   const { user } = useAuth();

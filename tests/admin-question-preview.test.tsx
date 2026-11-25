@@ -60,3 +60,19 @@ test("guard statici: la pagina usa solo l'endpoint admin e non importa storage/a
   const body = src.slice(src.indexOf("export default function QuizEngine"), src.indexOf("function GateShownTracker"));
   assert.ok(!/\b(saveProgressReal|saveSnapshotReal|apiFetchReal|checkAnswerReal|trackFunnelEventReal|trackAnalyticsEventReal|trackMetaPixelReal)\b/.test(body));
 });
+
+test("anteprima: gli eventi quiz del motore passano dalla guardia (nessun GA4 in anteprima)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { previewMode } = await import("../src/components/quiz/QuizEngine");
+  const assert = (await import("node:assert/strict")).default;
+  // Con previewCheckAnswer le funzioni di tracking sono no-op; senza, sono quelle reali.
+  const guarded = previewMode((async () => ({})) as never);
+  const real = previewMode(undefined);
+  assert.equal(guarded.trackAnalyticsEvent("quiz_loaded", {}), undefined);
+  assert.notEqual(guarded.trackAnalyticsEvent, real.trackAnalyticsEvent);
+  const src = readFileSync(new URL("../src/components/quiz/QuizEngine.tsx", import.meta.url), "utf8");
+  const comp = src.slice(src.indexOf("export default function QuizEngine"), src.indexOf("function GateShownTracker"));
+  assert.match(comp, /const trackQuizEvent = \([\s\S]*?\) => trackAnalyticsEvent\(eventName, \{ event_category: 'quiz', \.\.\.params \}\);/);
+  // nel corpo del componente nessuna chiamata diretta alla versione reale
+  assert.doesNotMatch(comp.replace(/trackAnalyticsEvent: trackAnalyticsEventReal/g, ""), /trackAnalyticsEventReal\(/);
+});
