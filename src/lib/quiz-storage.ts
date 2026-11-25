@@ -47,6 +47,10 @@ export type PersistPayload = {
   blockPaused?: boolean;
   // Links progress to the independent deadline/tombstone record.
   attemptId?: string;
+
+  // Token firmato dal server che FISSA il pool di ID della sessione (topic training). Assente nei salvataggi precedenti:
+  // in quel caso la sessione e' "legacy" e il server ricostruisce lo stesso pool storico.
+  poolToken?: string;
 };
 
 // Chiave storage isolata per quiz (topic/mixed + lingua)

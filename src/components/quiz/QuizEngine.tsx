@@ -25,6 +25,7 @@ import {
   SNAPSHOT_TTL_MS,
 } from '@/lib/quiz-session';
 import { makeSeed, seededShuffle, hashIds } from '@/lib/seeded-shuffle';
+import { poolHint, savedPoolTokenOf } from '@/lib/topic-pool';
 import {
   readExamAttempt, saveExamAttempt, clearExamAttempt, createExamAttempt,
   attemptRemaining, checkpointAttempt, closeAttempt, sameAttemptQuestions,
@@ -341,7 +342,9 @@ type Props = {
   lang: Locale;
 
   /** Carica IL POOL di domande (idealmente molte, es. 500 max). */
-  fetchQuestions: () => Promise<Question[]>;
+  fetchQuestions: (hint?: { pool?: string }) => Promise<Question[] | { questions: Question[]; poolToken?: string }>;
+  /** Topic training: il server fissa il pool della sessione con un token (vedi blocco "pool della sessione"). */
+  pinTopicPool?: boolean;
   resolveVersionedTraining?: () => Promise<VersionedTrainingClient | null>;
 
   /** Chiave base per autosave locale (internamente separiamo per mode). */
@@ -405,6 +408,7 @@ type Props = {
 export default function QuizEngine({
   lang,
   fetchQuestions,
+  pinTopicPool,
   resolveVersionedTraining,
   storageScope,
   categoryColor = 'from-blue-900 to-blue-700',
@@ -723,6 +727,8 @@ const openFeedback = () => {
   const [hydrated, setHydrated] = useState(false);
   const [attemptClosed, setAttemptClosed] = useState(false);
   const [loadGeneration, setLoadGeneration] = useState(0);
+  // Token del pool fissato della sessione in corso (solo topic training): viaggia con il progresso locale e DB.
+  const poolTokenRef = useRef<string | null>(null);
   const attemptRef = useRef<ExamAttempt | null>(null);
   const attemptClockRef = useRef<{ left: number; perfAt: number } | null>(null);
 
@@ -873,22 +879,6 @@ const openFeedback = () => {
           setAttemptClosed(true);
           return;
         }
-        let qs: Question[] = [];
-        let fetchError: unknown = null;
-        try {
-          qs = await fetchQuestions();
-        } catch (e) {
-          fetchError = e;
-        }
-        if (!alive) return;
-
-        // Solo un guasto di trasporto (rete, 5xx, 429) puo' essere assorbito
-        // dallo snapshot, e solo piu' sotto. Ogni altro errore (401, paywall,
-        // lock post-gate, mock non disponibile) segue il percorso di sempre.
-        if (fetchError && !isTransientFetchError(fetchError)) throw fetchError;
-
-        const poolQ = Array.isArray(qs) ? qs : [];
-        if (!fetchError) setPool(poolQ);
 
         pendingExamStartRef.current = null;
         restoredAnsweredRef.current = new Set();
@@ -1019,6 +1009,41 @@ const openFeedback = () => {
           source = { data: dbRow, kind: 'db' };
         }
 
+        // ---- pool della sessione ----
+        // Topic training: il pool di una sessione e' FISSATO dal server con un token firmato (poolToken) salvato insieme al
+        // progresso (locale e DB). Ripresa = stesso token = stessi ID, a prescindere da orario, deploy o dispositivo.
+        //   nessuna sessione salvata        -> 'new'    (campione dall'INTERO pool eleggibile)
+        //   sessione salvata con token      -> il token
+        //   sessione salvata SENZA token    -> 'legacy' (nata col vecchio comportamento: le stesse prime 100, ora fissate)
+        // La fonte si sceglie PRIMA di scaricare il pool: per questo il fetch sta qui e non piu' all'inizio.
+        const pinPool = !!pinTopicPool && effectiveMode !== 'assessment';
+        const savedPoolToken = savedPoolTokenOf(source);
+        let qs: Question[] = [];
+        let fetchError: unknown = null;
+        let servedPoolToken: string | null = null;
+        const runFetch = async (hint?: string) => {
+          qs = [];
+          fetchError = null;
+          servedPoolToken = null;
+          try {
+            const res = await fetchQuestions(hint ? { pool: hint } : undefined);
+            if (Array.isArray(res)) qs = res;
+            else { qs = res?.questions ?? []; servedPoolToken = typeof res?.poolToken === 'string' ? res.poolToken : null; }
+          } catch (e) {
+            fetchError = e;
+          }
+        };
+        await runFetch(poolHint(pinPool, source));
+        if (!alive) return;
+
+        // Solo un guasto di trasporto (rete, 5xx, 429) puo' essere assorbito
+        // dallo snapshot, e solo piu' sotto. Ogni altro errore (401, paywall,
+        // lock post-gate, mock non disponibile) segue il percorso di sempre.
+        if (fetchError && !isTransientFetchError(fetchError)) throw fetchError;
+
+        let poolQ = Array.isArray(qs) ? qs : [];
+        if (!fetchError) setPool(poolQ);
+
         // Seed "candidato" dalla fonte scelta (se c'è) — usato SOLO per
         // verificare se è ancora valido contro il pool attuale.
         const candidateSeed =
@@ -1058,6 +1083,18 @@ const openFeedback = () => {
         }
         if (snapshotQuestions) {
           active = snapshotQuestions;
+          activeIds = active.map((q) => q.id);
+        }
+
+        // Sessione salvata non ricostruibile dal pool servito (es. sessione legacy i cui contenuti sono cambiati, o una domanda
+        // fissata e' stata ritirata): si riparte pulito, ma da un pool NUOVO sull'intero pool eleggibile, non da quello vecchio.
+        if (pinPool && !fetchError && !idMatch && !snapshotQuestions && source && savedPoolToken !== 'new') {
+          await runFetch('new');
+          if (!alive) return;
+          if (fetchError && !isTransientFetchError(fetchError)) throw fetchError;
+          poolQ = Array.isArray(qs) ? qs : [];
+          if (!fetchError) setPool(poolQ);
+          active = buildActiveQuestions(poolQ, effectiveMode, candidateSeed);
           activeIds = active.map((q) => q.id);
         }
 
@@ -1104,6 +1141,7 @@ const openFeedback = () => {
           activeIds = active.map((q) => q.id);
         }
         seedRef.current = seed;
+        poolTokenRef.current = pinPool ? (canRestore ? (servedPoolToken ?? savedPoolToken) : servedPoolToken) : null;
         // A restored session must obtain feedback for the current account.
         // Never reuse explanations/results from the previous in-memory scope.
         setResults({});
@@ -1610,6 +1648,7 @@ clearProgress(`${storageScope}:assessment`);
       savedAt: Date.now(),
       blockPaused: effectiveMode === 'training' ? blockPaused : false,
       attemptId: effectiveMode === 'exam' ? attemptRef.current?.attemptId : undefined,
+      poolToken: poolTokenRef.current ?? undefined,
     };
 
     const flush = () => {
@@ -1726,7 +1765,11 @@ clearProgress(`${storageScope}:assessment`);
           effectiveMode === 'training' && blockSize
             ? Math.floor(idx / blockSize)
             : 0,
-        state: { marked, reviewLater: Array.from(reviewLater) },
+        state: {
+          marked,
+          reviewLater: Array.from(reviewLater),
+          ...(poolTokenRef.current ? { poolToken: poolTokenRef.current } : {}),
+        },
         rev: revRef.current,
       };
 
@@ -2485,6 +2528,13 @@ const submitAssessmentReport = async () => {
   completedTrackedRef.current = false;
   setReportSubmitted(false);
   setReportMessage(null);
+
+  if (pinTopicPool && finished && effectiveMode === 'training') {
+    // Quiz concluso: la sessione e' chiusa (tombstone). Ricominciare = NUOVA sessione, quindi nuovo pool dall'intero pool eleggibile.
+    poolTokenRef.current = null;
+    setLoadGeneration(n => n + 1);
+    return;
+  }
 
   setIdx(0);
   setMarked({});

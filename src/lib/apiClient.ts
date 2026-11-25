@@ -55,7 +55,7 @@ export type Question = {
   answers: Answer[];
 };
 
-export type QuestionsResponse = Question[] | { questions: Question[] };
+export type QuestionsResponse = Question[] | { questions: Question[]; poolToken?: string };
 
 export type SaveExamRequest = {
   /**
@@ -528,7 +528,11 @@ export type QuestionsRequestMode = "training";
 export const getQuestionsByTopic = (
   topicId: number | string,
   lang: Locale = "it",
-  opts?: { limit?: number; shuffle?: boolean; strict?: boolean; mode?: QuestionsRequestMode }
+  opts?: {
+    limit?: number; shuffle?: boolean; strict?: boolean; mode?: QuestionsRequestMode;
+    /** Pool della sessione: "new" (nuova sessione), "legacy" (sessione nata prima dei token) o il poolToken salvato. */
+    pool?: string;
+  }
 ) => {
   const params = new URLSearchParams({ lang });
 
@@ -541,6 +545,7 @@ export const getQuestionsByTopic = (
   if (strict) params.set("strict", "1");
 
   if (opts?.mode) params.set("mode", opts.mode);
+  if (opts?.pool) params.set("pool", opts.pool);
 
   return apiGet<QuestionsResponse>(`/questions/${topicId}?${params.toString()}`, false).then(validateQuestionPayload);
 };

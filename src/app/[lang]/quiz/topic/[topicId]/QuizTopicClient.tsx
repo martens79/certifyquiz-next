@@ -219,7 +219,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
   ───────────────────────────────────────────────────────────── */
   const examSpec = useMemo(() => getExamSpecForCert(certificationId, 90), [certificationId]);
 
-  const fetchTopicQuestions = useCallback(async (): Promise<UiQuestion[]> => {
+  const fetchTopicQuestions = useCallback(async (hint?: { pool?: string }): Promise<UiQuestion[] | { questions: UiQuestion[]; poolToken?: string }> => {
     try {
       // Lo scopo lo decide la ROUTE (Paywall Phase 1, Opzione A):
       //  - ?mode=assessment -> route di ASSESSMENT di topic (10 domande decise
@@ -236,10 +236,12 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
             shuffle: false,
             strict: L !== "it",
             mode: "training",
+            pool: hint?.pool,
           });
 
       const raw: ApiQuestion[] = Array.isArray(res) ? res : (res as any).questions;
-      return (raw ?? []).map(normalizeQuestion);
+      const poolToken = !Array.isArray(res) && typeof (res as any).poolToken === "string" ? (res as any).poolToken : undefined;
+      return { questions: (raw ?? []).map(normalizeQuestion), poolToken };
     } catch (e: any) {
       if (e?.status === 401) {
         setNeedsLoginForQuestions(true);
@@ -413,6 +415,7 @@ const isAssessmentMode = searchParams.get("mode") === "assessment";
         }
       }}
       fetchQuestions={fetchTopicQuestions}
+      pinTopicPool={!isAssessmentMode}
       durationsByMode={{
   training: null,
   exam: examSpec.durationSec,
