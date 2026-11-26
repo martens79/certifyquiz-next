@@ -72,5 +72,5 @@ test("wiring: card uses includedResources, upsell filters by language, profile/s
   assert.match(mine, /x\.tier==="dolphin-study"&&!isEipassStandardSlug\(x\.certification_slug\)/, "no 'Passa a Complete' for Standard (no Octopus)");
   assert.match(read("../src/components/packages/PackageSuccess.tsx"), /packageStudyHref\(prefix,data\.certification_slug\)/);
   const page = read("../src/components/CertificationPage.tsx");
-  assert.match(page, /certificationName=\{data\.slug === "eipass" \? EIPASS_USER_COPY\.name\[lang\] : undefined\}/);
+  assert.match(page, /certificationName=\{data\.slug === "eipass" \? EIPASS_USER_COPY\.name\[lang\] : isIcdlSlug\(data\.slug\)/);
 });

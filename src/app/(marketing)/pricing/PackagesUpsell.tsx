@@ -6,6 +6,7 @@ import { certPath, type Locale } from "@/lib/paths";
 import { detectTwa } from "@/lib/twa";
 import { isPackageCertificationOfferedInLang, isEipassStandardSlug, EIPASS_STANDARD_PACKAGE_NAME } from "@/lib/eipass-standard";
 import { EIPASS_USER_COPY, EIPASS_USER_SLUG } from "@/lib/eipass-user-release";
+import { packageCertificationName } from "@/lib/icdl-package";
 
 type Cert = { slug: string; name: string; fromPriceMinor: number; currency: string };
 
@@ -55,7 +56,7 @@ export default function PackagesUpsell({ lang }: { lang: Locale }) {
           .filter((c: Cert) => isPackageCertificationOfferedInLang(c.slug, lang))
           .map((c: Cert) => ({
             ...c,
-            name: c.slug === EIPASS_USER_SLUG ? EIPASS_USER_COPY.name[lang] : isEipassStandardSlug(c.slug) ? EIPASS_STANDARD_PACKAGE_NAME : c.name,
+            name: c.slug === EIPASS_USER_SLUG ? EIPASS_USER_COPY.name[lang] : isEipassStandardSlug(c.slug) ? EIPASS_STANDARD_PACKAGE_NAME : packageCertificationName(c.slug, c.name, lang) ?? c.name,
           }));
         setCerts(list);
       })
