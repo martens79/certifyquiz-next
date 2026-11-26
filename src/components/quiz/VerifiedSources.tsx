@@ -9,13 +9,19 @@ import type { Locale } from '@/lib/quiz-types';
  * pubblicato, livello coerente con explanation_access). Il client non decide mai l'accesso:
  * si limita a non rendere nulla se non ci sono fonti valide e a non seguire URL non HTTPS.
  *
- * Nessuna etichetta "verificata": il payload non porta una prova di verifica da mostrare.
+ * Le etichette descrivono solo metadati espliciti del server. I payload precedenti restano neutri.
  *
  * UX mobile-first: sotto la domanda c'e' solo un pulsante compatto «Consulta le fonti» (e solo
  * se, dopo la risposta, esistono fonti utilizzabili). Le fonti stanno in un <dialog> modale
  * nativo: bottom sheet su smartphone, dialog compatto centrato da `sm:` in su. Il <dialog>
  * nativo fornisce gia' focus trap, Escape e inerzia dello sfondo, senza nuove dipendenze.
  */
+export type SourceReview = {
+  document: 'human_content_review' | 'ai_content_review';
+  association: 'human_content_review' | 'ai_content_review';
+  editorialAuthorization?: 'owner_authorized';
+};
+
 export type VerifiedSource = {
   id: number;
   level: 'A' | 'B';
@@ -26,9 +32,14 @@ export type VerifiedSource = {
   url: string;
   locator: string;
   version?: string;
+  review?: SourceReview;
 };
 
 type Copy = {
+  humanReview: string;
+  aiReview: string;
+  mixedReview: string;
+  reverseMixedReview: string;
   explanation: string;
   background: string;
   section: string;
@@ -40,10 +51,10 @@ type Copy = {
 };
 
 export const SOURCES_COPY: Record<Locale, Copy> = {
-  it: { explanation: 'Fonte della spiegazione', background: 'Approfondimenti', section: 'Sezione', newTab: 'si apre in una nuova scheda', inLanguage: 'Lingua del documento', open: 'Consulta le fonti', close: 'Chiudi', panelTitle: 'Fonti' },
-  en: { explanation: 'Source for the explanation', background: 'Further reading', section: 'Section', newTab: 'opens in a new tab', inLanguage: 'Document language', open: 'View sources', close: 'Close', panelTitle: 'Sources' },
-  fr: { explanation: "Source de l'explication", background: 'Pour approfondir', section: 'Section', newTab: "s'ouvre dans un nouvel onglet", inLanguage: 'Langue du document', open: 'Consulter les sources', close: 'Fermer', panelTitle: 'Sources' },
-  es: { explanation: 'Fuente de la explicación', background: 'Para profundizar', section: 'Sección', newTab: 'se abre en una pestaña nueva', inLanguage: 'Idioma del documento', open: 'Consultar las fuentes', close: 'Cerrar', panelTitle: 'Fuentes' },
+  it: { humanReview: "Contenuto verificato da una persona", aiReview: "Contenuto revisionato dall’AI · Pubblicazione autorizzata dal proprietario", mixedReview: "Documento verificato da una persona · Associazione revisionata dall’AI · Pubblicazione autorizzata dal proprietario", reverseMixedReview: "Documento revisionato dall’AI · Associazione verificata da una persona · Pubblicazione autorizzata dal proprietario", explanation: 'Fonte della spiegazione', background: 'Approfondimenti', section: 'Sezione', newTab: 'si apre in una nuova scheda', inLanguage: 'Lingua del documento', open: 'Consulta le fonti', close: 'Chiudi', panelTitle: 'Fonti' },
+  en: { humanReview: "Content verified by a human", aiReview: "Content reviewed by AI · Publication authorized by the owner", mixedReview: "Document verified by a human · Association reviewed by AI · Publication authorized by the owner", reverseMixedReview: "Document reviewed by AI · Association verified by a human · Publication authorized by the owner", explanation: 'Source for the explanation', background: 'Further reading', section: 'Section', newTab: 'opens in a new tab', inLanguage: 'Document language', open: 'View sources', close: 'Close', panelTitle: 'Sources' },
+  fr: { humanReview: "Contenu vérifié par une personne", aiReview: "Contenu révisé par l’IA · Publication autorisée par le propriétaire", mixedReview: "Document vérifié par une personne · Association révisée par l’IA · Publication autorisée par le propriétaire", reverseMixedReview: "Document révisé par l’IA · Association vérifiée par une personne · Publication autorisée par le propriétaire", explanation: "Source de l'explication", background: 'Pour approfondir', section: 'Section', newTab: "s'ouvre dans un nouvel onglet", inLanguage: 'Langue du document', open: 'Consulter les sources', close: 'Fermer', panelTitle: 'Sources' },
+  es: { humanReview: "Contenido verificado por una persona", aiReview: "Contenido revisado por IA · Publicación autorizada por el propietario", mixedReview: "Documento verificado por una persona · Asociación revisada por IA · Publicación autorizada por el propietario", reverseMixedReview: "Documento revisado por IA · Asociación verificada por una persona · Publicación autorizada por el propietario", explanation: 'Fuente de la explicación', background: 'Para profundizar', section: 'Sección', newTab: 'se abre en una pestaña nueva', inLanguage: 'Idioma del documento', open: 'Consultar las fuentes', close: 'Cerrar', panelTitle: 'Fuentes' },
 };
 
 const LANGS = ['it', 'en', 'fr', 'es'];
@@ -66,6 +77,17 @@ export function isSafeHttpsUrl(value: unknown): value is string {
  */
 const KINDS_BY_LEVEL: Record<string, readonly string[]> = { A: ['background'], B: ['explanation', 'background'] };
 
+export function validSourceReview(input: unknown): input is SourceReview {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return false;
+  const r = input as Record<string, unknown>;
+  if (Object.keys(r).some((key) => !['document', 'association', 'editorialAuthorization'].includes(key))) return false;
+  const methods = ['human_content_review', 'ai_content_review'];
+  if (typeof r.document !== 'string' || typeof r.association !== 'string'
+    || !methods.includes(r.document) || !methods.includes(r.association)) return false;
+  const usesAi = r.document === 'ai_content_review' || r.association === 'ai_content_review';
+  return usesAi ? r.editorialAuthorization === 'owner_authorized' : r.editorialAuthorization === undefined;
+}
+
 export function usableSources(input: unknown): VerifiedSource[] {
   if (!Array.isArray(input)) return [];
   const out: VerifiedSource[] = [];
@@ -80,6 +102,8 @@ export function usableSources(input: unknown): VerifiedSource[] {
     if (typeof r.title !== 'string' || !r.title.trim()) continue;
     if (typeof r.publisher !== 'string' || !r.publisher.trim()) continue;
     if (typeof r.locator !== 'string' || !r.locator.trim()) continue;
+    // Missing review = legacy payload, neutral label. Present but invalid = fail closed.
+    if (Object.prototype.hasOwnProperty.call(r, 'review') && !validSourceReview(r.review)) continue;
     out.push({
       id: r.id,
       level: r.level as VerifiedSource['level'],
@@ -89,6 +113,7 @@ export function usableSources(input: unknown): VerifiedSource[] {
       language: r.language as Locale,
       url: r.url,
       locator: r.locator,
+      ...(validSourceReview(r.review) ? { review: r.review } : {}),
       ...(typeof r.version === 'string' && r.version ? { version: r.version } : {}),
     });
   }
@@ -97,6 +122,11 @@ export function usableSources(input: unknown): VerifiedSource[] {
 
 function SourceItem({ source, lang }: { source: VerifiedSource; lang: Locale }) {
   const t = SOURCES_COPY[lang] ?? SOURCES_COPY.it;
+  const review = source.review;
+  const reviewLabel = !review ? null
+    : review.document === 'human_content_review' && review.association === 'human_content_review' ? t.humanReview
+    : review.document === 'ai_content_review' && review.association === 'ai_content_review' ? t.aiReview
+    : review.document === 'human_content_review' ? t.mixedReview : t.reverseMixedReview;
   return (
     <li className="min-w-0">
       <a
@@ -116,6 +146,7 @@ function SourceItem({ source, lang }: { source: VerifiedSource; lang: Locale }) 
           {` · ${t.inLanguage}: ${source.language.toUpperCase()}`}
         </span>
       </a>
+      {reviewLabel && <p className="px-1 pb-1 text-xs opacity-80" data-testid="source-review-method">{reviewLabel}</p>}
     </li>
   );
 }

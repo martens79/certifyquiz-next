@@ -283,3 +283,40 @@ test('QuizEngine: le fonti vengono lette solo dal risultato del server, dopo la 
   assert.match(engine.slice(i - 140, i), /!isTestLike && chosen != null && serverResult/);
   assert.match(engine.slice(i, i + 260), /explanationGranted=\{serverResult\.explanation_access\?\.granted\}/);
 });
+
+
+test('explicit review metadata distinguishes human, AI and mixed paths in all four languages', () => {
+  for (const lang of ['it', 'en', 'fr', 'es']) {
+    const human = html([{ ...B, review: { document: 'human_content_review', association: 'human_content_review' } }], lang);
+    const ai = html([{ ...B, review: { document: 'ai_content_review', association: 'ai_content_review', editorialAuthorization: 'owner_authorized' } }], lang);
+    const mixed = html([{ ...B, review: { document: 'human_content_review', association: 'ai_content_review', editorialAuthorization: 'owner_authorized' } }], lang);
+    const reverseMixed = html([{ ...B, review: { document: 'ai_content_review', association: 'human_content_review', editorialAuthorization: 'owner_authorized' } }], lang);
+    assert.ok(human.includes(mod.SOURCES_COPY[lang].humanReview));
+    assert.ok(ai.includes(mod.SOURCES_COPY[lang].aiReview));
+    assert.ok(mixed.includes(mod.SOURCES_COPY[lang].mixedReview));
+    assert.ok(reverseMixed.includes(mod.SOURCES_COPY[lang].reverseMixedReview));
+    assert.ok(!ai.includes(mod.SOURCES_COPY[lang].humanReview));
+    assert.ok(!mixed.includes(mod.SOURCES_COPY[lang].humanReview));
+    assert.doesNotMatch(html([B], lang), /data-testid="source-review-method"/);
+  }
+});
+
+test('unknown or incomplete review metadata fails closed; absent legacy metadata stays neutral', () => {
+  for (const review of [null, {}, 'human', [], { document: 'human_content_review' },
+    { document: 'automated_url_check', association: 'human_content_review' },
+    { document: 'ai_content_review', association: 'ai_content_review' },
+    { document: 'ai_content_review', association: 'ai_content_review', editorialAuthorization: 'revoked' },
+    { document: 'human_content_review', association: 'human_content_review', editorialAuthorization: 'owner_authorized' },
+    { document: 'human_content_review', association: 'human_content_review', unexpected: true },
+    { document: ['ai_content_review'], association: ['human_content_review'] }]) {
+    assert.equal(usableSources([{ ...B, review }]).length, 0, JSON.stringify(review));
+  }
+  assert.equal(usableSources([B]).length, 1);
+});
+
+test('AI authorization never grants access to a level B source when explanation is locked', () => {
+  const review = { document: 'ai_content_review', association: 'ai_content_review', editorialAuthorization: 'owner_authorized' };
+  assert.equal(visibleSources([{ ...B, review }], false).length, 0);
+  assert.equal(visibleSources([{ ...A, review }], false).length, 1);
+  assert.equal(visibleSources([{ ...B, review }], true).length, 1);
+});

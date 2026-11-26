@@ -1,0 +1,23 @@
+name: Verifiable source review labels
+on:
+  pull_request:
+    paths:
+      - 'src/components/quiz/VerifiedSources.tsx'
+      - 'src/lib/apiClient.ts'
+      - 'tests/verified-sources.test.tsx'
+      - '.github/workflows/verifiable-sources.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npx tsx --tsconfig tsconfig.test.json --test tests/verified-sources.test.tsx
