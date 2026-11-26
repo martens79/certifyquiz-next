@@ -651,6 +651,12 @@ export type AnswerCheckResult = {
     url: string;
     locator: string;
     version?: string;
+    /** Explicit evidence route; absent on legacy servers. Never infer from origin. */
+    review?: {
+      document: 'human_content_review' | 'ai_content_review';
+      association: 'human_content_review' | 'ai_content_review';
+      editorialAuthorization?: 'owner_authorized';
+    };
   }>;
 };
 
