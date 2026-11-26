@@ -26,6 +26,7 @@ import TopicIntro from "@/components/TopicIntro";
 import { resolveQuestionCountTokens } from "@/lib/question-count-tokens";
 import { practiceTopicCoverage, practiceTopicLimit } from "@/lib/practice-topic-coverage";
 import { EIPASS_USER_COPY } from "@/lib/eipass-user-release";
+import { icdlPackageNote, isIcdlSlug, packageCertificationName } from "@/lib/icdl-package";
 import { CCNA_EN_RELATED_RESOURCES, CCNA_EN_RELATED_RESOURCES_TITLE, CCNA_EN_REVIEWS_LINK } from "@/lib/ccna-en-related-resources";
 type Lang = "it" | "en" | "fr" | "es";
 
@@ -475,8 +476,8 @@ const pageTopics =
               lang={lang}
               certificationSlug={data.slug}
               resources={resources}
-              certificationName={data.slug === "eipass" ? EIPASS_USER_COPY.name[lang] : undefined}
-              scopeNote={data.slug === "eipass" ? EIPASS_USER_COPY.packageNote[lang] : undefined}
+              certificationName={data.slug === "eipass" ? EIPASS_USER_COPY.name[lang] : isIcdlSlug(data.slug) ? packageCertificationName(data.slug, null, lang) ?? undefined : undefined}
+              scopeNote={data.slug === "eipass" ? EIPASS_USER_COPY.packageNote[lang] : icdlPackageNote(data.slug, lang)}
             />
 
             <PremiumResourcesCta
