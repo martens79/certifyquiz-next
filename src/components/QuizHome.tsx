@@ -1,7 +1,6 @@
 // src/components/QuizHome.tsx
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   GraduationCap,
@@ -32,91 +31,6 @@ type I18nText = Partial<Record<Locale, string>>;
 const getLabel = (d: I18nText, lang: Locale) =>
   d[lang] ?? d.it ?? d.en ?? d.fr ?? d.es ?? "";
 
-/* ---------- Tipi availability (backend) ---------- */
-type AvailabilityMap = Record<string, { translated: number; total: number }>;
-type BackendAvailabilityItem = {
-  slug?: string;
-  topics_with_translations?: number;
-  topics_total?: number;
-};
-function isArrayPayload(x: unknown): x is BackendAvailabilityItem[] {
-  return Array.isArray(x);
-}
-function hasItemsPayload(x: unknown): x is { items: BackendAvailabilityItem[] } {
-  return (
-    typeof x === "object" &&
-    x !== null &&
-    Array.isArray((x as Record<string, unknown>).items)
-  );
-}
-
-/* ---------- Util per badge ---------- */
-const slugFromLink = (link?: string | null) => {
-  if (!link) return null;
-  // match sia "certificazioni" (IT) che "certifications" (EN/FR) e "certificaciones" (ES)
-  const m = link.match(
-    /\/(certificazioni|certifications|certificaciones)\/([^/?#]+)/i
-  );
-  return m?.[2] ? m[2].replace(/\/+$/, "") : null;
-};
-const SLUG_ALIASES: Record<string, string> = {
-  "security-plus": "security-plus",
-  "cisco-ccst-security": "cisco-ccst-cybersecurity",
-  "microsoft-ai-fundamentals": "microsoft-ai",
-  "ai-fundamentals": "microsoft-ai",
-};
-
-
-const translatedCountForLink = (
-  availability: AvailabilityMap,
-  link?: string | null
-) => {
-  const raw = slugFromLink(link);
-  if (!raw) return 0;
-
-  const slug = SLUG_ALIASES[raw] ?? raw;
-  const rec = availability[slug];
-  return rec ? Number(rec.translated ?? 0) : 0;
-};
-
-
-const smartBadgeLabel = (
-  availability: AvailabilityMap,
-  link: string | null | undefined,
-  lang: Locale
-) => {
-  const raw = slugFromLink(link);
-  const slug = raw ? SLUG_ALIASES[raw] ?? raw : null;
-
-  const rec = slug ? availability[slug] : undefined;
-  const translated = rec ? Number(rec.translated ?? 0) : 0;
-  const total = rec ? Number(rec.total ?? 0) : 0;
-
-  if (total > 0 && translated >= total) {
-    const L: Record<Locale, string> = {
-      en: "All topics",
-      fr: "Tous les sujets",
-      es: "Todos los temas",
-      it: "Tutti i topic",
-    };
-    return `✓ ${L[lang]}`;
-  }
-  const L2: Record<Locale, (n: number) => string> = {
-    it: (n) => (n === 1 ? "1 topic" : `${n} topic`),
-    en: (n) => (n === 1 ? "1 topic" : `${n} topics`),
-    fr: (n) => (n === 1 ? "1 sujet" : `${n} sujets`),
-    es: (n) => (n === 1 ? "1 tema" : `${n} temas`),
-  };
-  return `✔ ${L2[lang](translated)}`;
-};
-
-const AVAILABLE_TXT: Record<Locale, { title: string; lead: string }> = {
-  en: { title: "Available topics", lead: "Already translated in this language:" },
-  fr: { title: "Sujets disponibles", lead: "Déjà traduits dans cette langue :" },
-  es: { title: "Temas disponibles", lead: "Ya traducidos en este idioma:" },
-  it: { title: "Topic disponibili", lead: "Già disponibili in italiano:" },
-};
-
 /* ---------- Tipi per le certificazioni mostrate ---------- */
 type CertItem = {
   name: string;
@@ -127,59 +41,6 @@ type CertItem = {
 type CertificationNames = Record<CategoryKey, CertItem[]>;
 
 export default function QuizHome({ lang }: { lang: Locale }) {
-  const [availability, setAvailability] = useState<AvailabilityMap>({});
-
-  useEffect(() => {
-  // ✅ reset immediato a ogni cambio lingua
-  setAvailability({});
-
-  // ✅ IT: niente chiamata (ma lo state è già pulito)
-  if (lang === "it") return;
-
-  const ac = new AbortController();
-
-  fetch(`/api/backend/quiz-translation-availability?lang=${lang}&strict=1`, {
-  signal: ac.signal,
-})
-
-    .then((r) => (r.ok ? r.json() : Promise.reject(r)))
-    .then((data: unknown) => {
-      const map: AvailabilityMap = {};
-      const rows: BackendAvailabilityItem[] = isArrayPayload(data)
-        ? data
-        : hasItemsPayload(data)
-        ? data.items
-        : [];
-
-      for (const it of rows) {
-        if (!it?.slug) continue;
-        map[it.slug] = {
-          translated: Number(it.topics_with_translations ?? 0),
-          total: Number(it.topics_total ?? 0),
-        };
-      }
-      // ⬇⬇⬇ METTI QUESTO BLOCCO QUI ⬇⬇⬇
-      console.log("🔎 availability keys:", Object.keys(map));
-      console.log(
-        "🔎 CCST entries:",
-        Object.entries(map).filter(([k]) => k.includes("ccst"))
-      );
-      console.log(
-        "❓ has cisco-ccst-cybersecurity?",
-        map["cisco-ccst-cybersecurity"]
-      );
-      // ⬆⬆⬆ FINE ⬆⬆⬆
-      setAvailability(map);
-    })
-    .catch((err) => {
-      // ignora abort
-      if (err?.name !== "AbortError") setAvailability({});
-    });
-
-  return () => ac.abort();
-}, [lang]);
-
-
   /* ---------- SLUG ufficiali (tutti con certPath) ---------- */
 
 // ✅ base condivisa anche come fallback "default"
@@ -310,25 +171,6 @@ foundations: [
 // also feeds the flat search list, so nothing may be listed here before launch.
 "industrial-automation": [],
 };
-
-  const allCerts: CertItem[] = Object.values(certificationNames).flat();
-
-  const allCertsUnique: CertItem[] = Array.from(
-  new Map(allCerts.map((c) => [c.link ?? `name:${c.name}`, c])).values()
-);
-
-
-  const translatedCertsForLang: CertItem[] =
-  lang !== "it"
-    ? allCertsUnique
-        .filter((c) => translatedCountForLink(availability, c.link) > 0)
-        .sort((a, b) => {
-          const cb = translatedCountForLink(availability, b.link);
-          const ca = translatedCountForLink(availability, a.link);
-          return cb !== ca ? cb - ca : a.name.localeCompare(b.name);
-        })
-    : [];
-
 
   /* ---------- UI ---------- */
   const quizCategories: Array<{
@@ -498,51 +340,6 @@ name: getLabel(
  bg-gray-100 text-gray-900 flex flex-col">
       <main className="flex-1 overflow-y-auto px-3 pt-2 pb-15.5">
         <QuizTitle lang={lang} />
-
-        {lang !== "it" && lang !== "en" && translatedCertsForLang.length > 0 && (
-          <div className="mx-auto max-w-345 mb-4 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-900 p-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-sm">
-                <div className="font-semibold">
-                  {AVAILABLE_TXT[lang]?.title || "Available topics"}
-                </div>
-                <div className="opacity-80">
-                  {AVAILABLE_TXT[lang]?.lead || "Already translated in this language:"}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {translatedCertsForLang.map((c) => {
-                  const label = smartBadgeLabel(availability, c.link, lang);
-                  const isDisabled = !c.link;
-                  return (
-                    <Link
-                      key={`${c.link ?? "nolink"}::${c.name}`}
-                      href={c.link ?? "#"}
-                      onClick={(e) => {
-                        if (isDisabled) e.preventDefault();
-                      }}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition
-                        ${
-                          !isDisabled
-                            ? "bg-white border-emerald-300 hover:bg-emerald-100"
-                            : "bg-gray-200 border-gray-300 cursor-not-allowed text-gray-500"
-                        }`}
-                      title={label}
-                      aria-disabled={isDisabled}
-                      prefetch={false}
-                    >
-                      <span>{c.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-200 text-emerald-900 border border-emerald-400">
-                        {label}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Percorsi gratuiti in evidenza prima delle categorie */}
         <Link
