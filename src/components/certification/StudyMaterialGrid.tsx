@@ -156,8 +156,8 @@ function Card({
           {icon}
         </span>
         {premium ? (
-          <span className="shrink-0 rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900">
-            🔒 Premium
+          <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-900">
+            🔒 {({it:"Accesso a pagamento",en:"Paid access",fr:"Accès payant",es:"Acceso de pago"})[lang]}
           </span>
         ) : null}
       </div>
