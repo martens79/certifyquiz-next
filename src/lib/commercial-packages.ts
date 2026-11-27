@@ -1,8 +1,7 @@
 // src/lib/commercial-packages.ts
 // Copy commerciale dei pacchetti per singola certificazione, indipendente dal
 // product_code interno. I codici DB (dolphin-study / octopus-complete) restano
-// stabili lato backend; l'utente vede solo "<Cert> Complete" / "<Cert> Study".
-// Nessun nome interno (Dolphin/Octopus) deve comparire in UI.
+// stabili lato backend; i marchi Dolphin Study e Octopus Complete sono pubblici.
 
 import type { Locale } from "@/lib/paths";
 
@@ -15,12 +14,12 @@ export function packageKind(productCode: string | null | undefined): PackageKind
 }
 
 const NAME_SUFFIX: Record<PackageKind, Record<Locale, string>> = {
-  complete: { it: "Complete", en: "Complete", fr: "Complete", es: "Complete" },
-  study: { it: "Study", en: "Study", fr: "Study", es: "Study" },
+  complete: { it: "Octopus Complete", en: "Octopus Complete", fr: "Octopus Complete", es: "Octopus Complete" },
+  study: { it: "Dolphin Study", en: "Dolphin Study", fr: "Dolphin Study", es: "Dolphin Study" },
   unknown: { it: "Pack", en: "Pack", fr: "Pack", es: "Pack" },
 };
 
-/** "CCNA Complete", "CCNA Study". Senza nome certificazione: "Complete Pass". */
+/** Brand commerciale seguito dalla certificazione; fallback senza certificazione. */
 export function packageDisplayName(
   productCode: string | null | undefined,
   certificationName: string | null | undefined,
@@ -28,7 +27,7 @@ export function packageDisplayName(
 ): string {
   const suffix = NAME_SUFFIX[packageKind(productCode)][lang];
   const cert = String(certificationName || "").trim();
-  return cert ? `${cert} ${suffix}` : `${suffix} Pass`;
+  return cert ? `${suffix} · ${cert}` : packageKind(productCode) === "unknown" ? `${suffix} Pass` : suffix;
 }
 
 const TAGLINE: Record<PackageKind, Record<Locale, string>> = {
