@@ -36,13 +36,13 @@ const MicrosoftSQLServer = {
     it: "SQL Server Certification – Practice Test e Quiz 2026 | CertifyQuiz",
     en: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
     fr: "SQL Server Certification – Test Pratique 2026 | CertifyQuiz",
-    es: "SQL Server Certification – Practice Test 2026 | CertifyQuiz",
+    es: "SQL Server: test y preguntas de SQL y T-SQL en español",
   },
   metaDescription: {
     it: "Preparati con quiz pratici su SQL Server: query, T-SQL, database design, performance e backup. Ideale per DP-900 e DP-300. Inizia gratis.",
     en: "Practice for SQL Server certification with 760 exam-style questions. T-SQL, database design, backup, security and performance. Start free.",
     fr: "Préparez-vous avec des quiz SQL Server : T-SQL, modélisation, performances, sauvegarde. Idéal pour DP-900 et DP-300. Commencez gratuitement.",
-    es: "Practica para la certificación SQL Server con preguntas tipo examen. T-SQL, diseño, rendimiento, seguridad. Ideal para DP-900 y DP-300. Gratis.",
+    es: "Practica SQL Server con preguntas en español sobre consultas SQL, T-SQL, bases de datos, rendimiento, copias de seguridad y administración de Azure SQL.",
   },
  topics: [
   {
