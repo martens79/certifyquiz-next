@@ -414,12 +414,15 @@ const pageTopics =
             il pulsante di avvio sta sopra, la card "Quiz" resta nel materiale di studio. */}
         {hasQuestions && (
           <div className="mb-5">
+            <div className="flex flex-wrap items-center gap-2">
             <Link
               href={quizHref}
               className="flex min-h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-base font-extrabold text-white shadow hover:bg-blue-700 sm:inline-flex sm:w-auto"
             >
               {startQuizLabels[lang].cta}
             </Link>
+            <span id="cert-package-shortcut" className="contents" />
+            </div>
             <p className="mt-2 text-xs text-slate-600">{startQuizLabels[lang].note}</p>
           </div>
         )}
@@ -427,7 +430,7 @@ const pageTopics =
         {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
         {data.slug === "eipass" && lang === "it" && <EipassStandardPointer />}
         {data.slug === "ccna" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4"><Link className="font-semibold underline" href={`/${lang}/study-path/ccna`}>{({it:"Scopri quanto sei preparato per il CCNA · 30 domande",en:"Find out how ready you are for the CCNA · 30 questions",fr:"Découvrez où vous en êtes pour le CCNA · 30 questions",es:"Descubre cómo vas de preparación para el CCNA · 30 preguntas"})[lang]}</Link></p>}
-        <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
+
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         {/* EIPASS Standard (planned): no study material exists yet, so the generic grid (which always offers the reviews index) is not rendered. */}
@@ -465,6 +468,7 @@ const pageTopics =
           <CertificationPackageOffers
             lang={lang}
             certificationSlug={data.slug}
+            freeQuizHref={hasQuestions ? quizHref : undefined}
             resources={null}
             certificationName={EIPASS_STANDARD_PACKAGE_NAME}
             scopeNote={EIPASS_STANDARD_PACKAGE_SCOPE_NOTE}
@@ -475,6 +479,7 @@ const pageTopics =
             <CertificationPackageOffers
               lang={lang}
               certificationSlug={data.slug}
+              freeQuizHref={hasQuestions ? quizHref : undefined}
               resources={resources}
               certificationName={data.slug === "eipass" ? EIPASS_USER_COPY.name[lang] : isIcdlSlug(data.slug) ? packageCertificationName(data.slug, null, lang) ?? undefined : undefined}
               scopeNote={data.slug === "eipass" ? EIPASS_USER_COPY.packageNote[lang] : icdlPackageNote(data.slug, lang)}
@@ -491,6 +496,8 @@ const pageTopics =
             />
           </>
         )}
+
+        <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {/* fallback: se l'endpoint aggregato non risponde, il conteggio dal
             registry evita di lasciare la pagina senza alcun numero */}

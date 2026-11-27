@@ -3,6 +3,7 @@
 import { checkoutRequest, discardCheckoutRequest } from "@/lib/checkout-analytics";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -68,6 +69,7 @@ type CertificationPackageOffersProps = {
   lang: Locale; certificationSlug: string; resources: CertificationResources | null;
   /** Nome mostrato nella card quando quello del DB e' ambiguo (es. "EIPASS 7 Moduli User" vs "EIPASS Standard"). */
   certificationName?: string;
+  freeQuizHref?: string;
   /** Nota di perimetro sotto i vantaggi (lingue, copertura): nessuna promessa oltre i contenuti disponibili. */
   scopeNote?: string;
 };
@@ -84,7 +86,7 @@ export default function CertificationPackageOffers(props: CertificationPackageOf
   return <CertificationPackageOffersInner {...props} />;
 }
 
-function CertificationPackageOffersInner({ lang, certificationSlug, resources, certificationName: nameOverride, scopeNote }: CertificationPackageOffersProps) {
+function CertificationPackageOffersInner({ lang, certificationSlug, resources, certificationName: nameOverride, scopeNote, freeQuizHref }: CertificationPackageOffersProps) {
   const t = TEXT[lang];
   const { user, isAdmin, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -151,6 +153,9 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
   }, [selectedOffer, offers]);
 
   if (!offers.length) return null;
+
+  const shortcutHost = typeof document !== "undefined" ? document.getElementById("cert-package-shortcut") : null;
+  const publicOfferAvailable = offers.some(o => o.status === "active" && o.checkoutAvailable && !o.blockedReason);
 
   const money = (o: Offer) =>
     new Intl.NumberFormat(lang === "en" ? "en-IE" : `${lang}-${lang.toUpperCase()}`, { style: "currency", currency: o.currency })
@@ -256,16 +261,20 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
   };
   const ownsTier = (o: Offer) => data?.owned?.tier === o.productCode;
 
-  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
+  return <>
+    {shortcutHost?.nodeType === 1 && publicOfferAvailable && !data?.premium ? createPortal(<a href="#packages" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-600 px-4 py-2 text-sm font-bold text-blue-800 hover:bg-blue-50">{{it:"Scopri i pacchetti di studio",en:"Explore study packages",fr:"Découvrir les packs de préparation",es:"Ver paquetes de estudio"}[lang]}</a>, shortcutHost) : null}
+    <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <h2 id="package-title" className="text-xl font-black text-slate-950">{t.title}</h2>
       {data?.darkLaunch && isAdmin ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{t.inactive}</span> : null}
     </div>
     {data?.premium ? <p className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">{t.warning}</p> : null}
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <article className="rounded-xl border bg-white p-4">
+    <div className={`grid gap-3 sm:grid-cols-2 ${offers.length === 2 ? "xl:grid-cols-4" : offers.length === 1 ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
+      <article className="flex min-w-0 flex-col rounded-xl border bg-white p-3 sm:p-4">
         <h3 className="font-black">{t.free}</h3>
-        <p className="mt-2 text-sm text-slate-600">{t.freeBody}</p>
+        <p className="mt-3 text-2xl font-black">{new Intl.NumberFormat(lang === "en" ? "en-IE" : lang, { style: "currency", currency: offers[0].currency, maximumFractionDigits: 0 }).format(0)}</p>
+        <p className="mt-2 text-sm leading-snug text-slate-600">{t.freeBody}</p>
+        {freeQuizHref ? <><div className="min-h-4 flex-1" /><a href={freeQuizHref} className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-blue-600 px-2 py-2 text-center text-sm font-bold text-white hover:bg-blue-700">{{it:"Inizia gratis",en:"Start free",fr:"Commencer gratuitement",es:"Empezar gratis"}[lang]}</a></> : null}
       </article>
       {offers.map((o) => {
         const complete = packageKind(o.productCode) === "complete";
@@ -279,7 +288,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
           : data?.premium ? t.buyAnyway
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
-        return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
+        return <article key={o.code} className={`relative flex min-w-0 flex-col rounded-xl border p-3 sm:p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
           <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
@@ -289,22 +298,24 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
             fr: "Pack sélectionné. Vérifiez l'offre et confirmez pour continuer.",
             es: "Paquete seleccionado. Revisa la oferta y confirma para continuar.",
           }[lang]}</p> : null}
-          <p className="text-sm text-slate-600">{packageTagline(o.productCode, lang)}</p>
+          <p className="text-sm leading-snug text-slate-600">{packageTagline(o.productCode, lang)}</p>
           <p className="mt-3 text-2xl font-black">{money(o)}</p>
           <p className="text-xs font-bold uppercase text-slate-500">{oneTimePaymentLabel(lang)}</p>
           <p className="mt-1 text-sm font-semibold text-indigo-900">{accessValidityLabel(o.accessDurationDays, lang)}</p>
-          <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang, o.includedResources).map((f) => <li key={f}>✓ {f}</li>)}</ul>{scopeNote ? <p className="mt-2 text-xs text-slate-600">{scopeNote}</p> : null}
+          <ul className="mt-3 space-y-1 text-sm leading-snug">{packageFeatures(o.productCode, counts, lang, o.includedResources).map((f) => <li key={f}>✓ {f}</li>)}</ul>{scopeNote ? <p className="mt-2 text-xs text-slate-600">{scopeNote}</p> : null}
           {activeUntil ? <p className="mt-3 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{activeUntil}</p> : null}
           {renewal ? <p className="mt-1 text-xs text-slate-500">{t.renewNote}</p> : null}
-          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
+          <div className="min-h-4 flex-1" />
+          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-auto min-h-11 w-full rounded-lg bg-slate-950 px-2 py-2 text-sm font-bold text-white disabled:opacity-50">{label}</button>
         </article>;
       })}
-      <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
+      <article className="flex min-w-0 flex-col rounded-xl border border-blue-300 bg-blue-950 p-3 text-white sm:p-4">
         <h3 className="font-black">Premium</h3>
-        <p className="mt-2 text-sm text-blue-100">{t.premium}</p>
-        <a href={`${pricingPath(lang)}?source=package_offers&cta=package_offers_premium&certification_slug=${encodeURIComponent(certificationSlug)}`} className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-white px-4 font-bold text-blue-950">{t.premiumCta}</a>
+        <p className="mt-2 text-sm leading-snug text-blue-100">{t.premium}</p>
+        <div className="min-h-4 flex-1" />
+        <a href={`${pricingPath(lang)}?source=package_offers&cta=package_offers_premium&certification_slug=${encodeURIComponent(certificationSlug)}`} className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-white px-2 py-2 text-center text-sm font-bold text-blue-950">{t.premiumCta}</a>
       </article>
     </div>
     {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}
-  </section>;
+  </section></>;
 }
