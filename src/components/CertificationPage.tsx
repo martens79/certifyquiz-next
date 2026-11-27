@@ -427,7 +427,7 @@ const pageTopics =
         {data.slug === "eipass" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">{EIPASS_USER_COPY.notice[lang]}</p>}
         {data.slug === "eipass" && lang === "it" && <EipassStandardPointer />}
         {data.slug === "ccna" && <p className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4"><Link className="font-semibold underline" href={`/${lang}/study-path/ccna`}>{({it:"Scopri quanto sei preparato per il CCNA · 30 domande",en:"Find out how ready you are for the CCNA · 30 questions",fr:"Découvrez où vous en êtes pour le CCNA · 30 questions",es:"Descubre cómo vas de preparación para el CCNA · 30 preguntas"})[lang]}</Link></p>}
-        <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
+
 
         {inventory.state === "zero" && <p className="mb-4 text-slate-600">{unavailableQuizLabels[lang]}</p>}
         {/* EIPASS Standard (planned): no study material exists yet, so the generic grid (which always offers the reviews index) is not rendered. */}
@@ -491,6 +491,8 @@ const pageTopics =
             />
           </>
         )}
+
+        <ExamBlueprintCard blueprint={examBlueprint} lang={lang} />
 
         {/* fallback: se l'endpoint aggregato non risponde, il conteggio dal
             registry evita di lasciare la pagina senza alcun numero */}
