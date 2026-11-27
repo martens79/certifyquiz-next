@@ -54,13 +54,13 @@ practiceName: { it: "ISC2 CC", en: "ISC2 CC", fr: "ISC2 CC", es: "ISC2 CC" },
 metaTitle: {
   it: "ISC2 CC – Practice Test e Quiz Cybersecurity 2026 | CertifyQuiz",
   en: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
-  fr: "ISC2 CC Certified in Cybersecurity – Test Pratique 2026 | CertifyQuiz",
+  fr: "Examen ISC2 CC 2026 : QCM de cybersécurité en français",
   es: "ISC2 CC Certified in Cybersecurity – Practice Test 2026 | CertifyQuiz",
 },
 metaDescription: {
   it: "Preparati all'esame ISC2 CC con quiz gratuiti in stile esame. Copre rischio, controlli, compliance e incident response. Inizia gratis.",
   en: "Prepare for the ISC2 Certified in Cybersecurity exam with free practice questions. Covers risk, security controls, compliance and incident response. Start free.",
-  fr: "Préparez l'examen ISC2 CC avec des questions gratuites type examen. Couvre risque, contrôles, conformité et réponse aux incidents. Commencez gratuitement.",
+  fr: "Préparez l’examen ISC2 Certified in Cybersecurity avec des QCM en français : principes de sécurité, contrôle d’accès, réseaux et réponse aux incidents.",
   es: "Prepárate para el examen ISC2 CC con preguntas gratuitas tipo examen. Cubre riesgo, controles, cumplimiento e incident response. Empieza gratis.",
 },
   // ✅ Allineato ai topic reali del DB + slug reali (10 topic attivi al 2026-10-18; fallback quando l'API non risponde)

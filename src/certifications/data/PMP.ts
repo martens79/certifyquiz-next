@@ -49,14 +49,14 @@ const PMP = {
     it: "PMP Practice Test 2026 – Quiz Project Management | CertifyQuiz",
     en: "PMP Practice Test 2026 – Project Management Exam Questions | CertifyQuiz",
     fr: "PMP Practice Test 2026 – Quiz Gestion de Projet | CertifyQuiz",
-    es: "PMP Practice Test 2026 – Quiz Gestión de Proyectos | CertifyQuiz",
+    es: "Examen PMP 2026: test y preguntas en español | CertifyQuiz",
   },
 
   metaDescription: {
     it: "Preparati alla certificazione PMP con quiz su People, Process, Business Environment, Agile, stakeholder, rischio, pianificazione e governance.",
     en: "Prepare for the PMP certification with quizzes on People, Process, Business Environment, Agile, stakeholders, risk, planning and governance.",
     fr: "Préparez la certification PMP avec des quiz sur People, Process, Business Environment, Agile, parties prenantes, risques, planification et gouvernance.",
-    es: "Prepárate para la certificación PMP con quizzes sobre People, Process, Business Environment, Agile, stakeholders, riesgos, planificación y gobernanza.",
+    es: "Prepara el examen PMP de PMI con preguntas de práctica en español. Repasa gestión de proyectos, equipos, riesgos, planificación y enfoques ágiles e híbridos.",
   },
 
   topics: [
