@@ -3,6 +3,7 @@
 import { checkoutRequest, discardCheckoutRequest } from "@/lib/checkout-analytics";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/auth";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -152,6 +153,9 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
 
   if (!offers.length) return null;
 
+  const shortcutHost = typeof document !== "undefined" ? document.getElementById("cert-package-shortcut") : null;
+  const publicOfferAvailable = offers.some(o => o.status === "active" && o.checkoutAvailable && !o.blockedReason);
+
   const money = (o: Offer) =>
     new Intl.NumberFormat(lang === "en" ? "en-IE" : `${lang}-${lang.toUpperCase()}`, { style: "currency", currency: o.currency })
       .format((o.effectiveAmountMinor ?? o.amountMinor) / 100);
@@ -256,13 +260,15 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
   };
   const ownsTier = (o: Offer) => data?.owned?.tier === o.productCode;
 
-  return <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
+  return <>
+    {shortcutHost && publicOfferAvailable && !data?.premium ? createPortal(<a href="#packages" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-600 px-4 py-2 text-sm font-bold text-blue-800 hover:bg-blue-50">{{it:"Scopri i pacchetti di studio",en:"Explore study packages",fr:"Découvrir les packs de préparation",es:"Ver paquetes de estudio"}[lang]}</a>, shortcutHost) : null}
+    <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <h2 id="package-title" className="text-xl font-black text-slate-950">{t.title}</h2>
       {data?.darkLaunch && isAdmin ? <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">{t.inactive}</span> : null}
     </div>
     {data?.premium ? <p className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">{t.warning}</p> : null}
-    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2">
       <article className="rounded-xl border bg-white p-4">
         <h3 className="font-black">{t.free}</h3>
         <p className="mt-2 text-sm text-slate-600">{t.freeBody}</p>
@@ -279,7 +285,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
           : data?.premium ? t.buyAnyway
           : complete && data?.owned?.tier === "dolphin-study" ? t.upgrade
           : t.buy;
-        return <article key={o.code} className={`relative rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
+        return <article key={o.code} className={`relative flex flex-col rounded-xl border p-4 ${complete ? "border-indigo-400 bg-indigo-50 shadow-sm" : "bg-white"}`}>
           <div id={`package-offer-${o.code}`} className="scroll-mt-24" />
           {complete ? <span className="absolute -top-2.5 right-3 rounded-full bg-indigo-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">{t.recommended}</span> : null}
           <h3 className="font-black text-slate-950">{packageDisplayName(o.productCode, certificationName, lang)}</h3>
@@ -296,7 +302,8 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
           <ul className="mt-3 space-y-1 text-sm">{packageFeatures(o.productCode, counts, lang, o.includedResources).map((f) => <li key={f}>✓ {f}</li>)}</ul>{scopeNote ? <p className="mt-2 text-xs text-slate-600">{scopeNote}</p> : null}
           {activeUntil ? <p className="mt-3 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-800">{activeUntil}</p> : null}
           {renewal ? <p className="mt-1 text-xs text-slate-500">{t.renewNote}</p> : null}
-          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-4 min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
+          <div className="min-h-4 flex-1" />
+          <button type="button" disabled={blocked || authLoading || busy !== null} onClick={() => checkout(o)} className="mt-auto min-h-11 w-full rounded-lg bg-slate-950 px-3 font-bold text-white disabled:opacity-50">{label}</button>
         </article>;
       })}
       <article className="rounded-xl border border-blue-300 bg-blue-950 p-4 text-white">
@@ -306,5 +313,5 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
       </article>
     </div>
     {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}
-  </section>;
+  </section></>;
 }
