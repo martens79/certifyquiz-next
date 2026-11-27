@@ -9,14 +9,15 @@ import {
   packageTagline,
 } from "../src/lib/commercial-packages.ts";
 
-test("i product_code interni non compaiono mai nel nome commerciale", () => {
-  assert.equal(packageDisplayName("octopus-complete", "CCNA", "en"), "CCNA Complete");
-  assert.equal(packageDisplayName("dolphin-study", "CCNA", "it"), "CCNA Study");
-  assert.equal(packageDisplayName("octopus-complete", null, "fr"), "Complete Pass");
+test("i marchi pubblici sono riconoscibili in tutte le lingue", () => {
+  assert.equal(packageDisplayName("octopus-complete", "CCNA", "en"), "Octopus Complete · CCNA");
+  assert.equal(packageDisplayName("dolphin-study", "CCNA", "it"), "Dolphin Study · CCNA");
+  assert.equal(packageDisplayName("octopus-complete", null, "fr"), "Octopus Complete");
   for (const lang of ["it", "en", "fr", "es"] as const) {
     for (const code of ["octopus-complete", "dolphin-study"]) {
       const name = packageDisplayName(code, "CCNA", lang);
-      assert.doesNotMatch(name, /octopus|dolphin/i, `${code}/${lang}`);
+      assert.equal(name, code === "octopus-complete" ? "Octopus Complete · CCNA" : "Dolphin Study · CCNA", `${code}/${lang}`);
+      assert.doesNotMatch(name, /octopus-complete|dolphin-study/, `${code}/${lang}`);
     }
   }
   assert.equal(packageKind("something-else"), "unknown");
