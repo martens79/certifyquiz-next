@@ -36,9 +36,9 @@ test("packageFeatures with includedResources: no review, guide or map promised w
 });
 
 test("names keep the two EIPASS paths distinct", () => {
-  assert.equal(packageDisplayName("dolphin-study", EIPASS_STANDARD_PACKAGE_NAME, "it"), "EIPASS Standard Study");
+  assert.equal(packageDisplayName("dolphin-study", EIPASS_STANDARD_PACKAGE_NAME, "it"), "Dolphin Study · EIPASS Standard");
   for (const lang of ["it", "en", "fr", "es"] as const) {
-    assert.equal(packageDisplayName("dolphin-study", EIPASS_USER_COPY.name[lang], lang), "EIPASS 7 Moduli User Study");
+    assert.equal(packageDisplayName("dolphin-study", EIPASS_USER_COPY.name[lang], lang), "Dolphin Study · EIPASS 7 Moduli User");
     assert.match(EIPASS_USER_COPY.packageNote[lang], /EIPASS Standard \/ CIAD/);
   }
   assert.match(EIPASS_STANDARD_PACKAGE_SCOPE_NOTE, /Solo in italiano/);

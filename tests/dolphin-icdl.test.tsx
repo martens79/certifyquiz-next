@@ -9,10 +9,10 @@ import { ICDL_PACKAGE_NOTE, icdlPackageNote, packageCertificationName } from "..
 const LANGS = ["it", "en", "fr", "es"] as const;
 const read = (p: string) => readFileSync(new URL(p, import.meta.url), "utf8");
 
-test("names: 'ECDL (ICDL) Study' in Italian, 'ICDL Study' elsewhere; DB name 'ECDL' never shown alone", () => {
+test("names: 'Dolphin Study · ECDL (ICDL)' in Italian, 'Dolphin Study · ICDL' elsewhere; DB name 'ECDL' never shown alone", () => {
   const name = (lang: (typeof LANGS)[number]) => packageDisplayName("dolphin-study", packageCertificationName("icdl", "ECDL", lang), lang);
-  assert.equal(name("it"), "ECDL (ICDL) Study");
-  for (const lang of ["en", "fr", "es"] as const) assert.equal(name(lang), "ICDL Study");
+  assert.equal(name("it"), "Dolphin Study · ECDL (ICDL)");
+  for (const lang of ["en", "fr", "es"] as const) assert.equal(name(lang), "Dolphin Study · ICDL");
   assert.equal(packageCertificationName("ccna", "CCNA", "it"), "CCNA", "other certifications unchanged");
   assert.equal(packageCertificationName("eipass", "EIPASS", "en"), "EIPASS");
 });
