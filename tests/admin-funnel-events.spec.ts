@@ -42,6 +42,28 @@ const sample = [
     created_at: "2026-10-24T22:00:00.000Z",
   },
 ];
+const previews = [
+  {
+    id: 11,
+    email: null,
+    event: "map_preview_viewed",
+    cert_slug: "ccna",
+    topic_slug: null,
+    score: null,
+    lang: "it",
+    created_at: "2026-10-25T11:40:00.000Z",
+  },
+  {
+    id: 10,
+    email: null,
+    event: "guide_preview_viewed",
+    cert_slug: "isc2-cc",
+    topic_slug: null,
+    score: null,
+    lang: "en",
+    created_at: "2026-10-25T11:35:00.000Z",
+  },
+];
 async function install(
   page: Page,
   options: { status?: number; empty?: boolean; role?: string } = {},
@@ -79,10 +101,11 @@ async function install(
             json: { error: "SENSITIVE-ERROR" },
           });
         const n = Number(url.searchParams.get("page") ?? 1);
+        const diagnostic = url.searchParams.get("view") === "diagnostic";
         return route.fulfill({
           json: {
             ok: true,
-            events: options.empty ? [] : sample,
+            events: options.empty ? [] : diagnostic ? previews : sample,
             pagination: {
               page: n,
               pages: options.empty ? 1 : 3,
@@ -254,4 +277,25 @@ test("legacy overview errors do not follow the user back to events", async ({
       .slice(before)
       .every((c) => c.pathname === "/api/backend/admin/funnel-events"),
   ).toBe(true);
+});
+
+test("preview events live in the diagnostic view, not in the main one", async ({
+  page,
+}) => {
+  const calls = await install(page);
+  await page.goto("/admin");
+  const region = page.getByRole("region", { name: "Eventi funnel" });
+  await expect(region.getByText("assessment_started", { exact: true })).toBeVisible();
+  await expect(region.getByText("map_preview_viewed")).toHaveCount(0);
+  expect(calls.every((c) => c.searchParams.get("view") === "main")).toBe(true);
+
+  await page.getByRole("combobox", { name: /^Vista/ }).selectOption("diagnostic");
+  await expect.poll(() => calls.at(-1)?.searchParams.get("view")).toBe("diagnostic");
+  await expect(region.getByText("map_preview_viewed", { exact: true })).toBeVisible();
+  await expect(region.getByText("guide_preview_viewed", { exact: true })).toBeVisible();
+  await expect(region.getByText("assessment_started", { exact: true })).toHaveCount(0);
+
+  await page.getByRole("combobox", { name: /^Vista/ }).selectOption("main");
+  await expect(region.getByText("map_preview_viewed")).toHaveCount(0);
+  await expect(region.getByText("assessment_started", { exact: true })).toBeVisible();
 });

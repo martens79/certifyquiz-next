@@ -35,7 +35,14 @@ export const EVENT_LABELS: Record<string, string> = {
   pwa_install_accepted: "Installazione accettata",
   pwa_installed: "App installata",
   pwa_open: "App aperta",
+  map_preview_viewed: "Anteprima mappa visualizzata",
+  guide_preview_viewed: "Anteprima guida visualizzata",
 };
+
+// Eventi server-side di sola esposizione: sempre registrati, ma fuori dalla vista
+// principale. Il backend e' la fonte di verita' del filtro; qui servono solo a
+// non suggerirli nella vista principale.
+export const DIAGNOSTIC_EVENTS = ["map_preview_viewed", "guide_preview_viewed"];
 
 type EventRow = {
   id: number;
@@ -61,6 +68,7 @@ type Query = {
   event: string;
   cert: string;
   lang: string;
+  view: "main" | "diagnostic";
 };
 type Result = {
   key: string;
@@ -75,6 +83,7 @@ const INITIAL: Query = {
   event: "",
   cert: "",
   lang: "all",
+  view: "main",
 };
 const LIMIT = 50;
 
@@ -165,6 +174,7 @@ export default function FunnelEventsClient({ token }: { token: string }) {
     cert: query.cert.trim() || "all",
     lang: query.lang,
     date: query.date,
+    view: query.view,
   };
   const params = new URLSearchParams({
     ...filters,
@@ -226,10 +236,14 @@ export default function FunnelEventsClient({ token }: { token: string }) {
   const activeFilters =
     query.date !== "all" ||
     Boolean(filters.q || query.event.trim() || query.cert.trim()) ||
-    query.lang !== "all";
+    query.lang !== "all" ||
+    query.view !== "main";
+  const diagnostic = query.view === "diagnostic";
   const availableEvents = Array.from(
     new Set([...Object.keys(EVENT_LABELS), ...events.map((e) => e.event)]),
-  ).sort();
+  )
+    .filter((e) => diagnostic || !DIAGNOSTIC_EVENTS.includes(e))
+    .sort();
   const availableCerts = Array.from(
     new Set(
       events.map((e) => e.cert_slug).filter((v): v is string => Boolean(v)),
@@ -293,7 +307,10 @@ export default function FunnelEventsClient({ token }: { token: string }) {
     <section aria-label="Eventi funnel" className={styles.events}>
       <p className={styles.hint}>
         Eventi registrati, dal più recente. Orari in Europe/Rome (ora italiana).
-        Una riga è un evento, non una persona unica.
+        Una riga è un evento, non una persona unica.{" "}
+        {diagnostic
+          ? "Vista diagnostica: solo le anteprime di mappe e guide, escluse dalla vista principale."
+          : "Le anteprime di mappe e guide non compaiono qui: vengono comunque registrate e si leggono dalla vista diagnostica."}
       </p>
       <div className={styles.filters}>
         <label>
@@ -352,6 +369,20 @@ export default function FunnelEventsClient({ token }: { token: string }) {
                 {lang.toUpperCase()}
               </option>
             ))}
+          </select>
+        </label>
+        <label>
+          Vista
+          <select
+            value={query.view}
+            onChange={(e) =>
+              changeFilters({
+                view: e.target.value === "diagnostic" ? "diagnostic" : "main",
+              })
+            }
+          >
+            <option value="main">Eventi principali</option>
+            <option value="diagnostic">Diagnostica · anteprime mappe e guide</option>
           </select>
         </label>
         <label className={styles.search}>
@@ -441,7 +472,9 @@ export default function FunnelEventsClient({ token }: { token: string }) {
       {!loading && !current?.error && !denied && events.length === 0 && (
         <p role="status" className={styles.state}>
           {activeFilters
-            ? "Nessun risultato con i filtri attivi."
+            ? !diagnostic && DIAGNOSTIC_EVENTS.includes(query.event.trim())
+              ? "Questo evento non compare nella vista principale: selezionare la vista diagnostica."
+              : "Nessun risultato con i filtri attivi."
             : "Nessun evento registrato."}
         </p>
       )}
