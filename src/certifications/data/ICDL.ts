@@ -26,15 +26,15 @@ const ICDL: CertificationData = {
 
   metaTitle: {
     it: "ECDL / ICDL: quiz, simulazioni e preparazione certificazione informatica",
-    en: "ICDL: quizzes, practice tests and digital skills preparation",
-    fr: "ICDL : quiz, simulations et préparation aux compétences numériques",
+    en: "ICDL / ECDL Practice Tests: Exam Questions and Quizzes",
+    fr: "ICDL / ECDL : tests et QCM de préparation à l’examen",
     es: "ICDL: quizzes, simulaciones y preparación en competencias digitales",
   },
 
   metaDescription: {
     it: "Preparati alla certificazione ECDL / ICDL con quiz e simulazioni su computer, Office, Internet, sicurezza informatica e competenze digitali.",
-    en: "Prepare for ICDL with quizzes and practice tests on computer use, office tools, internet, IT security and digital skills.",
-    fr: "Préparez la certification ICDL avec des quiz et simulations sur l’ordinateur, la bureautique, Internet et les compétences numériques.",
+    en: "Prepare for ICDL (formerly ECDL) with practice questions on computer basics, word processing, spreadsheets, presentations, internet and IT security.",
+    fr: "Préparez la certification ICDL (anciennement ECDL) avec des QCM sur la bureautique, les tableurs, le traitement de texte, Internet et la sécurité.",
     es: "Prepárate para ICDL con quizzes y simulaciones sobre ordenador, herramientas ofimáticas, Internet y competencias digitales.",
   },
 
