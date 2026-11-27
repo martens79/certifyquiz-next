@@ -414,12 +414,15 @@ const pageTopics =
             il pulsante di avvio sta sopra, la card "Quiz" resta nel materiale di studio. */}
         {hasQuestions && (
           <div className="mb-5">
+            <div className="flex flex-wrap items-center gap-2">
             <Link
               href={quizHref}
               className="flex min-h-12 w-full items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-base font-extrabold text-white shadow hover:bg-blue-700 sm:inline-flex sm:w-auto"
             >
               {startQuizLabels[lang].cta}
             </Link>
+            <span id="cert-package-shortcut" className="contents" />
+            </div>
             <p className="mt-2 text-xs text-slate-600">{startQuizLabels[lang].note}</p>
           </div>
         )}
