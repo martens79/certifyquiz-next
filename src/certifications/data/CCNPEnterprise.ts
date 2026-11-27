@@ -47,13 +47,13 @@ const CCNP_ENTERPRISE = {
   metaTitle: {
     en: "CCNP Enterprise — Practice Test & Exam Prep 2026 | CertifyQuiz",
     it: "CCNP Enterprise in Italiano — Quiz e Simulazione Esame 2026",
-    fr: "CCNP Enterprise en Français — Quiz et Examen Blanc 2026",
+    fr: "Cisco CCNP Enterprise : QCM et préparation à l’examen",
     es: "CCNP Enterprise en Español — Quiz y Examen de Práctica 2026",
   },
   metaDescription: {
     en: "Prepare for CCNP Enterprise with practice questions on advanced routing, switching, SD-WAN, automation and network security. Start free!",
     it: "Preparati al CCNP Enterprise con domande su routing avanzato, switching, SD-WAN, automazione e sicurezza di rete. Inizia gratis!",
-    fr: "Préparez le CCNP Enterprise avec des questions sur le routage avancé, le switching, le SD-WAN, l'automatisation et la sécurité réseau. Commencez gratuitement !",
+    fr: "Entraînez-vous au CCNP Enterprise avec des QCM en français sur le routage, la commutation, le SD-WAN, l’automatisation et la sécurité réseau.",
     es: "Prepárate para el CCNP Enterprise con preguntas sobre routing avanzado, switching, SD-WAN, automatización y seguridad de red. ¡Empieza gratis!",
   },
   topics: [
