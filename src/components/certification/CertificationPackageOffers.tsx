@@ -261,7 +261,7 @@ function CertificationPackageOffersInner({ lang, certificationSlug, resources, c
   const ownsTier = (o: Offer) => data?.owned?.tier === o.productCode;
 
   return <>
-    {shortcutHost && publicOfferAvailable && !data?.premium ? createPortal(<a href="#packages" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-600 px-4 py-2 text-sm font-bold text-blue-800 hover:bg-blue-50">{{it:"Scopri i pacchetti di studio",en:"Explore study packages",fr:"Découvrir les packs de préparation",es:"Ver paquetes de estudio"}[lang]}</a>, shortcutHost) : null}
+    {shortcutHost?.nodeType === 1 && publicOfferAvailable && !data?.premium ? createPortal(<a href="#packages" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-600 px-4 py-2 text-sm font-bold text-blue-800 hover:bg-blue-50">{{it:"Scopri i pacchetti di studio",en:"Explore study packages",fr:"Découvrir les packs de préparation",es:"Ver paquetes de estudio"}[lang]}</a>, shortcutHost) : null}
     <section id="packages" className="mb-6 scroll-mt-24 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-6 [&_article:has([data-package-selected])]:scroll-mt-24 [&_article:has([data-package-selected])]:ring-2 [&_article:has([data-package-selected])]:ring-indigo-600" aria-labelledby="package-title">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
       <h2 id="package-title" className="text-xl font-black text-slate-950">{t.title}</h2>
