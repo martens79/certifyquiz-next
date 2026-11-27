@@ -468,6 +468,7 @@ const pageTopics =
           <CertificationPackageOffers
             lang={lang}
             certificationSlug={data.slug}
+            freeQuizHref={hasQuestions ? quizHref : undefined}
             resources={null}
             certificationName={EIPASS_STANDARD_PACKAGE_NAME}
             scopeNote={EIPASS_STANDARD_PACKAGE_SCOPE_NOTE}
@@ -478,6 +479,7 @@ const pageTopics =
             <CertificationPackageOffers
               lang={lang}
               certificationSlug={data.slug}
+              freeQuizHref={hasQuestions ? quizHref : undefined}
               resources={resources}
               certificationName={data.slug === "eipass" ? EIPASS_USER_COPY.name[lang] : isIcdlSlug(data.slug) ? packageCertificationName(data.slug, null, lang) ?? undefined : undefined}
               scopeNote={data.slug === "eipass" ? EIPASS_USER_COPY.packageNote[lang] : icdlPackageNote(data.slug, lang)}
