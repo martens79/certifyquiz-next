@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Locale } from "@/lib/paths";
+import { useTwa } from "@/hooks/useTwa";
+import { withLang } from "@/lib/i18n";
 import { pricingPath } from "@/lib/paths";
 import { premiumClickMetadata } from "@/lib/commercial-origin";
 import type { MapOverviewItem } from "@/lib/data";
@@ -39,6 +41,9 @@ const LABELS = {
     trialBlocked: "Durante la prova gratuita non puoi scaricare le mappe PDF complete. Sono disponibili le anteprime; il download si sblocca dopo il primo pagamento.",
     downloadError: "Download non riuscito. Riprova.",
     unlock: "Sblocca guida e mappe",
+    buy: "Acquista queste mappe",
+    buying: "Apertura pagamento…",
+    buyError: "Pagamento non disponibile. Riprova o aggiorna la pagina.",
     italianOnly: "",
   },
   en: {
@@ -59,6 +64,9 @@ const LABELS = {
     trialBlocked: "Full PDF map downloads are unavailable during the free trial. Previews remain available; downloads unlock after the first payment.",
     downloadError: "Download failed. Please try again.",
     unlock: "Unlock guide and maps",
+    buy: "Buy these maps",
+    buying: "Opening checkout…",
+    buyError: "Checkout unavailable. Please retry or refresh.",
     italianOnly: "🇮🇹 Currently in Italian only",
   },
   fr: {
@@ -79,6 +87,9 @@ const LABELS = {
     trialBlocked: "Le téléchargement des cartes PDF complètes est indisponible pendant l’essai gratuit. Les aperçus restent disponibles ; le téléchargement est débloqué après le premier paiement.",
     downloadError: "Échec du téléchargement. Réessayez.",
     unlock: "Débloquer le guide et les cartes",
+    buy: "Acheter ces cartes",
+    buying: "Ouverture du paiement…",
+    buyError: "Paiement indisponible. Réessayez ou actualisez la page.",
     italianOnly: "🇮🇹 Disponible uniquement en italien pour l'instant",
   },
   es: {
@@ -99,6 +110,9 @@ const LABELS = {
     trialBlocked: "Durante la prueba gratuita no puedes descargar los mapas PDF completos. Las vistas previas siguen disponibles; la descarga se habilita tras el primer pago.",
     downloadError: "Error al descargar. Inténtalo de nuevo.",
     unlock: "Desbloquear guía y mapas",
+    buy: "Comprar estos mapas",
+    buying: "Abriendo el pago…",
+    buyError: "Pago no disponible. Reintenta o actualiza la página.",
     italianOnly: "🇮🇹 Por ahora solo en italiano",
   },
 } as const;
@@ -124,6 +138,11 @@ export function MapCard({
 }) {
   const t = LABELS[lang];
   const [downloading, setDownloading] = useState(false);
+  const [buying, setBuying] = useState(false);
+  const { user, loading } = useAuth();
+  const isTwa = useTwa();
+  const showBuy = !loading && !isTwa && item.purchase_available === true && (access === "locked" || access === "trial");
+  const price = new Intl.NumberFormat(lang, {style:"currency",currency:"EUR"}).format(item.price);
   const [error, setError] = useState<string | null>(null);
 
   const previewHref = `/api/backend/maps/${encodeURIComponent(
@@ -155,6 +174,29 @@ export function MapCard({
       lang,
       metadata: premiumClickMetadata("map_locked"),
     });
+  }
+
+  async function handleBuy() {
+    if (buying || !showBuy) return;
+    if (!user) {
+      window.location.assign(withLang(lang, "/login?redirect=" + encodeURIComponent(window.location.pathname)));
+      return;
+    }
+    setBuying(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/maps/${encodeURIComponent(item.slug)}/checkout`, {
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({lang})
+      });
+      const data = await res.json();
+      if (!res.ok || typeof data?.url !== "string") throw new Error("checkout_failed");
+      const url = new URL(data.url);
+      if (url.protocol !== "https:" || url.hostname !== "checkout.stripe.com") throw new Error("invalid_checkout_url");
+      window.location.assign(url.href);
+    } catch {
+      setError(t.buyError);
+      setBuying(false);
+    }
   }
 
   async function handleDownload() {
@@ -266,6 +308,13 @@ export function MapCard({
           👁️ {t.preview}
         </a>
 
+        {showBuy ? (
+          <button type="button" onClick={handleBuy} disabled={buying}
+            className={`${ACTION_BASE} border-transparent bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60`}>
+            {buying ? t.buying : `${t.buy} (${price})`}
+          </button>
+        ) : null}
+
         {canDownloadMap(access) ? (
           <button
             type="button"
@@ -293,10 +342,7 @@ export default function MapOverviewGrid({ lang, items }: Props) {
   const t = LABELS[lang];
   const [query, setQuery] = useState("");
   const { loading: authLoading, user } = useAuth();
-  const [liveAccess, setLiveAccess] = useState<Record<
-    number,
-    MapOverviewItem["access"]
-  > | null>(null);
+  const [liveAccess, setLiveAccess] = useState<{owner: typeof user; values: Record<number, MapOverviewItem["access"]>; availability: Record<number, boolean> } | null>(null);
 
   // items arriva da un fetch server-side non autenticato (cache 1h): per un
   // utente Premium mostrerebbe sempre "locked". Qui rifacciamo la stessa
@@ -311,8 +357,9 @@ export default function MapOverviewGrid({ lang, items }: Props) {
         const json = await res.json().catch(() => null);
         if (!cancelled && Array.isArray(json?.items)) {
           const map: Record<number, MapOverviewItem["access"]> = {};
-          for (const it of json.items) map[it.id] = it.access;
-          setLiveAccess(map);
+          const availability: Record<number, boolean> = {};
+          for (const it of json.items) { map[it.id] = it.access; availability[it.id] = it.purchase_available === true; }
+          setLiveAccess({owner:user,values:map,availability});
         }
       } catch {
         // silenzioso: si resta sul fallback SSR (locked)
@@ -409,8 +456,8 @@ export default function MapOverviewGrid({ lang, items }: Props) {
                 <MapCard
                   key={item.id}
                   lang={lang}
-                  item={item}
-                  access={liveAccess?.[item.id] ?? item.access}
+                  item={{...item,purchase_available: user && liveAccess?.owner === user ? liveAccess.availability[item.id] : item.purchase_available}}
+                  access={user && liveAccess?.owner === user ? liveAccess.values[item.id] ?? item.access : item.access}
                   userStatus={userStatus}
                 />
               ))}
