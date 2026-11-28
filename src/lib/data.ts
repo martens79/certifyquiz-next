@@ -190,6 +190,7 @@ export type MapOverviewItem = {
   certification_slug: string;
   certification_name: string;
   access: MapAccess;
+  purchase_available?: boolean;
 };
 
 export async function getMapsList(lang: Locale): Promise<MapOverviewItem[]> {
