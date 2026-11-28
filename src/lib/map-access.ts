@@ -6,8 +6,8 @@
 // Il frontend decide solo cosa MOSTRARE: l'autorizzazione resta sul backend
 // (GET /maps/:slug/download).
 
-export type MapAccess = "premium" | "package" | "locked";
+export type MapAccess = "premium" | "package" | "purchased" | "trial" | "locked";
 
 export function canDownloadMap(access: MapAccess | string | null | undefined): boolean {
-  return access === "premium" || access === "package";
+  return access === "premium" || access === "package" || access === "purchased" || access === "trial";
 }
